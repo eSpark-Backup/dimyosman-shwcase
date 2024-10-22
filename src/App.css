@@ -4,29 +4,26 @@
   box-sizing: border-box;
 }
 
+@font-face {
+  font-family: 'Segoe UI';
+  src: url('./assets/fonts/Segoe\ UI.woff') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Segoe UI';
+  src: url('./assets/fonts/Segoe\ UI\ Bold.woff') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+}
+
 body {
   background-color: #F2F3F4;
 }
 
 body::-webkit-scrollbar {
   display: none;
-}
-
-.custom-input {
-  border: 1px dashed #D1DBD7;
-  height: 43px;
-  width: 100%;
-  outline: none;
-  padding: 0px 15px;
-  font-size: 16px;
-  color: #00141C;
-  font-weight: 100;
-  border-radius: 3px;
-  background-color: rgba(209, 219, 215, 0.2);
-}
-
-.custom-input:focus {
-  border: 1px dashed #D1DBD7;
 }
 
 .input-label {
