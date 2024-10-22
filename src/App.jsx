@@ -1,7 +1,6 @@
-import './App.css'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { Login, Register } from './pages'
-import { Header } from './components'
+import { Header, AuthBox } from './layout'
+import './App.css'
 
 function App() {
 
@@ -9,10 +8,9 @@ function App() {
     <>
       <Header />
       <Routes>
-        <Route path='/' element={<Login />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/register' element={<Register />} />
-        <Route path='*' element={<Navigate to={"/login"} />} />
+        <Route path='/' element={<Navigate to={"/auth?type=login"} />} />
+        <Route path='/auth' element={<AuthBox />} />
+        <Route path='*' element={<Navigate to={"/auth?type=login"} />} />
       </Routes>
     </>
   )

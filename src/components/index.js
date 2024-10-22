@@ -1,4 +1,3 @@
-import AuthBox from "./AuthBox";
-import Header from "./Header";
+import Input from "./input";
 
-export { AuthBox, Header }
+export { Input };
