@@ -4,5 +4,6 @@ import google from "./Google-logo.svg";
 import facebook from "./Facbook-logo.svg";
 import apple from "./Apple-logo.svg";
 import user from "./user.svg";
+import eye from "./eye.svg";
 
-export { react, logo, google, facebook, apple, user };
+export { react, logo, google, facebook, apple, user, eye };

@@ -135,7 +135,7 @@ const Register = () => {
                         <Input
                             label={"repeat password"}
                             name={"conPassword"}
-                            type={"text"}
+                            type={"password"}
                             value={formik.values.conPassword}
                             onInputChange={formik.handleChange}
                             onBlur={formik.handleBlur}
