@@ -38,6 +38,7 @@ body::-webkit-scrollbar {
   align-items: center;
   width: 100%;
   min-height: calc(100vh - 64px);
+  padding-top: 64px;
 }
 
 .auth-box {
@@ -62,6 +63,9 @@ body::-webkit-scrollbar {
   height: 64px;
   width: 100vw;
   background-color: #FFFFFF;
+  position: fixed;
+  top: 0px;
+  z-index: 99;
 }
 
 .header nav {
@@ -150,7 +154,7 @@ body::-webkit-scrollbar {
   }
 
   .nav-links.active {
-    top: 8%;
+    top: 120%;
     transition: all 0.5s ease-in-out;
   }
 

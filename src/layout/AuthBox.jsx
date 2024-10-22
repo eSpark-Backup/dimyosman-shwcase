@@ -10,7 +10,7 @@ const AuthBox = () => {
   const pathType = query.get("type");
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState(pathType === "/register" ? 1 : 0);
+  const [activeTab, setActiveTab] = useState(pathType === "register" ? 1 : 0);
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -18,8 +18,9 @@ const AuthBox = () => {
   };
 
   useEffect(() => {
-    setActiveTab(pathType === "/register" ? 1 : 0);
-  }, []);
+    setActiveTab(pathType === "register" ? 1 : 0);
+    console.log(pathType)
+  }, [pathType]);
 
   const tabs = [
     {
