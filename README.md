@@ -16,5 +16,7 @@
     - Brands
     - Events
     - Stores
- 
 
+### Preferred Tech Stack
+- Frontend (ReactJS with MUI)
+- Backend (TBD)
