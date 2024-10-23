@@ -85,9 +85,9 @@ export const theme = createTheme({
       contrastText: "#FFFFFF",
     },
     secondary: {
-      main: "#E2E2E2",
-      light: "#E2E2E2",
-      dark: "#E2E2E2",
+      main: "#e3e9e7",
+      light: "#e3e9e7",
+      dark: "#e3e9e7",
       contrastText: "#FFFFFF",
     },
     success: {
@@ -123,12 +123,13 @@ export const theme = createTheme({
     button: {
       secondary: "#99A1A4"
     },
-    transparent: "transparent"
+    transparent: "transparent",
+    border: {
+      primary: '1px solid #D1DBD7',
+      borderColor: ["#D1DBD780"],
+    },
+  },
 
-  },
-  border: {
-    primary: '1px solid #D1DBD7',
-  },
   typography: {
     fontFamily: `"Segoe UI", "sans-serif"`,
     body1: {
