@@ -5,5 +5,10 @@ import facebook from "./Facbook-logo.svg";
 import apple from "./Apple-logo.svg";
 import user from "./user.svg";
 import eye from "./eye.svg";
+import search from "./search-icon.svg"
+import addIcon from "./add-icon.svg"
+import chatIcon from "./chats-icon.svg"
+import bellIcon from "./bell-icon.svg"
+import userProfile from "./user-icon.svg"
 
-export { react, logo, google, facebook, apple, user, eye };
+export { react, logo, google, facebook, apple, user, eye, search, addIcon, chatIcon, bellIcon, userProfile };

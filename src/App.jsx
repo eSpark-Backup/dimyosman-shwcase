@@ -6,7 +6,7 @@ function App() {
 
   return (
     <>
-      <Header />
+      <Header isLogin={true} />
       <Routes>
         <Route path='/' element={<Navigate to={"/auth?type=login"} />} />
         <Route path='/auth' element={<AuthBox />} />

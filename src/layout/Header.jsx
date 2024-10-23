@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { Button } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
-import { logo, user } from "../assets";
+import { logo, user, userProfile } from "../assets";
+import { BadgeComp, SearchBar } from "../components";
+import { addIcon, chatIcon, bellIcon } from "../assets";
 
-const Header = () => {
+const Header = ({ isLogin }) => {
   const [isOpen, setIsOpen] = useState(false);
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -23,29 +25,49 @@ const Header = () => {
           <div className="logo">
             <img src={logo} alt="Website Logo" />
           </div>
-          <ul className={`${isOpen ? "nav-links active" : "nav-links"}`}>
-            <li onClick={() => setIsOpen(false)}>News</li>
-            <hr className="nav-items-breaker" />
-            <li onClick={() => setIsOpen(false)}>About</li>
-            <hr className="nav-items-breaker" />
-            <li onClick={() => setIsOpen(false)}>Help</li>
-            <Button className="user-btn1">
-              <img src={user} alt="User" />
-            </Button>
-          </ul>
+          {isLogin
+            &&
+            <div className="search-bar">
+              <div className="search-box">
+                <SearchBar name={"query"} placeholder={"Search..."} />
+              </div>
+            </div>
+          }
+          {
+            isLogin ?
+              <ul className={`${isOpen ? "nav-links2 active" : "nav-links2"}`}>
+                <li>
+                  <BadgeComp imageSrc={addIcon} bg={"transparent"} />
+                </li>
+                <li>
+                  <BadgeComp imageSrc={chatIcon} bg={"#FF0000"} />
+                </li>
+                <li>
+                  <BadgeComp imageSrc={bellIcon} bg={"#FF0000"} />
+                </li>
+                <img src={userProfile} alt="User" style={{ cursor: "pointer" }} />
+              </ul>
+              :
+              <ul className={`${isOpen ? "nav-links active" : "nav-links"}`}>
+                <li onClick={() => setIsOpen(false)}>News</li>
+                <hr className="nav-items-breaker" />
+                <li onClick={() => setIsOpen(false)}>About</li>
+                <hr className="nav-items-breaker" />
+                <li onClick={() => setIsOpen(false)}>Help</li>
+                <Button className="user-btn1">
+                  <img src={user} alt="User" />
+                </Button>
+              </ul>
+          }
+
           <div className="icon" onClick={toggleMenu}>
-            <Button>
+            {!isLogin && <Button>
               <img src={user} alt="User" />
-            </Button>
+            </Button>}
             {isOpen ? <CloseOutlinedIcon /> : <MenuIcon />}
           </div>
         </nav>
-      </div>
-      <section>
-        <div className="container">
-          <div className="content"></div>
-        </div>
-      </section>
+      </div >
     </>
   );
 };
