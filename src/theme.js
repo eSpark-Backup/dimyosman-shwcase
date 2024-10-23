@@ -1,4 +1,4 @@
-import { colors, createTheme } from "@mui/material";
+import { createTheme } from "@mui/material";
 export const theme = createTheme({
   breakpoints: {
     values: {
