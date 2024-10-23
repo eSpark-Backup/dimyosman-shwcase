@@ -1,3 +1,5 @@
 import Input from "./input";
+import SearchBar from "./SearchBar";
+import BadgeComp from "./Badge";
 
-export { Input };
+export { Input, SearchBar, BadgeComp };

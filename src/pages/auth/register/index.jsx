@@ -29,6 +29,9 @@ const Register = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        "&:hover": {
+            backgroundColor: "#F8F8F8"
+        }
     };
     const HandleSubmit = (values) => {
         console.log(values)
@@ -152,9 +155,9 @@ const Register = () => {
                     By signing, you are agreeing with our
                 </Typography>
                 <Typography variant="h6">
-                    <span style={{ textDecoration: "underline" }}>Terms of Use </span>
+                    <span style={{ textDecoration: "underline", cursor: "pointer" }}>Terms of Use </span>
                     and
-                    <span style={{ textDecoration: "underline" }}> Privacy Policy</span>
+                    <span style={{ textDecoration: "underline", cursor: "pointer" }}> Privacy Policy</span>
                 </Typography>
             </Box>
             <Box
@@ -193,7 +196,7 @@ const Register = () => {
             </Box>
             <Typography variant="h6">
                 Already have an account? {" "}
-                <Link to={"/register"}>
+                <Link to={"/auth?type=login"}>
                     <span
                         style={{
                             textDecoration: "underline",

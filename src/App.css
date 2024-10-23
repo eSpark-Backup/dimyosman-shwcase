@@ -79,14 +79,20 @@ body::-webkit-scrollbar {
   padding: 1rem;
 } */
 
-.header .nav-links {
+.header .nav-links,
+.header .nav-links2 {
   display: flex;
   column-gap: 50px;
   padding-right: 40px;
   align-items: center;
 }
 
-.header .nav-links li {
+.header .nav-links2 {
+  column-gap: 20px;
+}
+
+.header .nav-links li,
+.header .nav-links2 li {
   list-style: none;
   margin: 0 0.5rem;
   color: #00141C;
@@ -107,6 +113,17 @@ body::-webkit-scrollbar {
   display: none;
 }
 
+.search-bar {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.search-box {
+  width: 90%;
+}
+
 /* Header */
 
 
@@ -118,19 +135,17 @@ body::-webkit-scrollbar {
 }
 
 @media screen and (max-width:768px) {
-  .content h2 {
-    font-size: 4rem;
-    text-align: center;
-  }
 
   .icon {
     display: flex;
     align-items: center;
     column-gap: 20px;
-    padding-right: 20px;
+    padding-right: 10px;
+    margin-left: 30px;
   }
 
-  .header .nav-links {
+  .header .nav-links,
+  .header .nav-links2 {
     flex-direction: column;
     justify-content: space-evenly;
     position: absolute;
@@ -148,13 +163,15 @@ body::-webkit-scrollbar {
 
   .header nav .logo {
     padding: 1.5rem 0rem;
+    width: 130px;
   }
 
   .header nav .logo img {
-    width: 60%;
+    width: 100%;
   }
 
-  .nav-links.active {
+  .nav-links.active,
+  .nav-links2.active {
     top: 120%;
     transition: all 0.5s ease-in-out;
   }
@@ -164,21 +181,49 @@ body::-webkit-scrollbar {
     width: 90%;
   }
 
-  .user-btn1{
+  .user-btn1 {
     display: none !important;
   }
 
-  .header .nav-links li{
+  .header .nav-links li {
     width: 100%;
     text-align: center;
+  }
+
+  .header .nav-links2 li {
+    justify-content: center;
+    align-items: center;
   }
 }
 
 
+@media screen and (min-width:769px) and (max-width:950px) {
+  .header .nav-links2 {
+    column-gap: 20px;
+    padding-right: 20px;
+  }
+}
+
+@media screen and (max-width:550px) {
+  .search-bar {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+}
 
 @media screen and (min-width:551px) and (max-width:768px) {
   .auth-box {
     width: 85vw;
+  }
+
+  .search-bar {
+    justify-content: flex-start;
   }
 }
 

@@ -11,8 +11,8 @@ export const registerSchema = Yup.object({
     conPassword: Yup.string()
         .oneOf([Yup.ref('password')], 'Passwords must match')
         .required('Confirm password is required'),
-    fName: Yup.string().required("First Name is required"),
-    lName: Yup.string().required("First Name is required")
+    fName: Yup.string().required("First name is required"),
+    lName: Yup.string().required("First name is required")
 });
 
 export const loginSchema = Yup.object({

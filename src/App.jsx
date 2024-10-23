@@ -1,4 +1,6 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import './App.css'
+import { useEffect, useState } from 'react'
 import { Header, AuthBox, DashboardLayout } from "./layout";
 import {
   Activity,
@@ -10,12 +12,25 @@ import {
   Settings,
   Space,
 } from "./pages";
-import "./App.css";
 
 function App() {
+
+  const [isLogin, setIsLogin] = useState(false);
+  const token = window.localStorage.getItem("token");
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (token) {
+      setIsLogin(true);
+    }
+    else {
+      setIsLogin(false);
+    }
+  }, [token, navigate])
+
   return (
     <>
-      <Header />
+      <Header isLogin={isLogin} />
       <Routes>
         <Route path="/" element={<Navigate to={"/auth?type=login"} />} />
         <Route path="/auth" element={<AuthBox />} />

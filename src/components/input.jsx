@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Box, IconButton, InputAdornment, TextField, Typography } from "@mui/material";
 import { eye } from "../assets";
+import RemoveRedEyeSharpIcon from '@mui/icons-material/RemoveRedEyeSharp';
 
 const Input = ({ onInputChange, name, label, type, placeholder, value, onBlur, error, helperText }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,14 +29,14 @@ const Input = ({ onInputChange, name, label, type, placeholder, value, onBlur, e
         InputProps={
           type === "password"
             ? {
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={handleClickShowPassword} edge="end">
-                      <img src={eye} alt="eye" />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={handleClickShowPassword} edge="end">
+                    {!showPassword ? <RemoveRedEyeSharpIcon style={{ color: "#ACB4B5", fontSize: "22px" }} /> : <img src={eye} alt="eye" />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }
             : {}
         }
       />
