@@ -1,10 +1,12 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography, useTheme } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getSmallSidebar, sidebarRoutes } from "../constant";
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const theme = useTheme()
+  console.log(theme.border)
 
   return (
     <Stack
@@ -16,7 +18,7 @@ const Sidebar = () => {
         left: "16px",
         top: "80px",
         backgroundColor: (theme) => theme.palette.secondary.contrastText,
-        border: (theme) => `1px solid ${theme.palette.borderColor[0]}`,
+        border: (theme) => `1px solid ${theme.palette.border.borderColor[0]}`,
         borderRadius: "5px",
         "&:hover > div > p": {
           display: "block",
