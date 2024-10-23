@@ -6,7 +6,6 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const theme = useTheme()
-  console.log(theme.border)
 
   return (
     <Stack
