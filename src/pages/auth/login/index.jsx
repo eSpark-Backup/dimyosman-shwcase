@@ -14,6 +14,7 @@ const Login = () => {
         },
         validationSchema: loginSchema,
         onSubmit: (values) => {
+            window.localStorage.setItem("token", "token");
             console.log("Form Submitted", values);
         },
     });
@@ -27,6 +28,9 @@ const Login = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        "&:hover": {
+            backgroundColor: "#F8F8F8"
+        }
     };
 
     return (
@@ -81,9 +85,9 @@ const Login = () => {
                     By logging, you are agreeing with our
                 </Typography>
                 <Typography variant="h6">
-                    <span style={{ textDecoration: "underline" }}>Terms of Use </span>
+                    <span style={{ textDecoration: "underline", cursor: "pointer" }}>Terms of Use </span>
                     and
-                    <span style={{ textDecoration: "underline" }}> Privacy Policy</span>
+                    <span style={{ textDecoration: "underline", cursor: "pointer" }}> Privacy Policy</span>
                 </Typography>
             </Box>
             <Box
@@ -122,7 +126,7 @@ const Login = () => {
             </Box>
             <Typography variant="h6">
                 Don’t have an account?{" "}
-                <Link to={"/register"}>
+                <Link to={"/auth?type=register"}>
                     <span
                         style={{
                             textDecoration: "underline",

@@ -1,13 +1,14 @@
-import { Badge, Box } from '@mui/material';
+import { Badge, Box, useTheme } from '@mui/material';
 import React from 'react';
 import MailIcon from '@mui/icons-material/Mail';
 import { addIcon } from '../assets';
 
 const BadgeComp = ({ imageSrc, bg }) => {
+    const theme = useTheme();
     return (
         <Box
             sx={{
-                backgroundColor: "#99A1A4",
+                backgroundColor: theme.palette.button.secondary,
                 width: "32px",
                 height: "32px",
                 justifyContent: "center",

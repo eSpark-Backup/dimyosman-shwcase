@@ -113,12 +113,21 @@ export const theme = createTheme({
       light: "#E3464B",
       dark: "#CA2C32",
       contrastText: "#FFFFFF",
+      danger: "#FF0000"
     },
     text: {
       primary: "#9E9EA4",
       secondary: "#9E9EA4",
       disabled: "#9E9EA4",
     },
+    button: {
+      secondary: "#99A1A4"
+    },
+    transparent: "transparent"
+
+  },
+  border: {
+    primary: '1px solid #D1DBD7',
   },
   typography: {
     fontFamily: `"Segoe UI", "sans-serif"`,

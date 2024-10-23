@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button } from "@mui/material";
+import { Button, useTheme } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import { logo, user, userProfile } from "../assets";
@@ -7,6 +7,7 @@ import { BadgeComp, SearchBar } from "../components";
 import { addIcon, chatIcon, bellIcon } from "../assets";
 
 const Header = ({ isLogin }) => {
+  const theme = useTheme()
   const [isOpen, setIsOpen] = useState(false);
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -37,13 +38,13 @@ const Header = ({ isLogin }) => {
             isLogin ?
               <ul className={`${isOpen ? "nav-links2 active" : "nav-links2"}`}>
                 <li>
-                  <BadgeComp imageSrc={addIcon} bg={"transparent"} />
+                  <BadgeComp imageSrc={addIcon} bg={theme.palette.transparent} />
                 </li>
                 <li>
-                  <BadgeComp imageSrc={chatIcon} bg={"#FF0000"} />
+                  <BadgeComp imageSrc={chatIcon} bg={theme.palette.error.danger} />
                 </li>
                 <li>
-                  <BadgeComp imageSrc={bellIcon} bg={"#FF0000"} />
+                  <BadgeComp imageSrc={bellIcon} bg={theme.palette.error.danger} />
                 </li>
                 <img src={userProfile} alt="User" style={{ cursor: "pointer" }} />
               </ul>

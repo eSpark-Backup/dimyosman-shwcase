@@ -1,8 +1,10 @@
-import { Box, IconButton, InputAdornment, TextField, Typography } from '@mui/material'
+import { Box, IconButton, InputAdornment, TextField, Typography, useTheme } from '@mui/material'
 import React from 'react'
 import { search } from '../assets'
 
 const SearchBar = ({ label, name, placeholder, onInputChange, value, helperText, error, onBlur }) => {
+    const theme = useTheme();
+    console.log(theme.palette)
     return (
         <Box sx={{ display: "flex", flexDirection: "column", rowGap: "8px" }}>
             {label && (
@@ -33,13 +35,10 @@ const SearchBar = ({ label, name, placeholder, onInputChange, value, helperText,
                             </InputAdornment>
                         ),
                         sx: {
-                            "&&::placeholder": {
-                                color: "red"
-                            },
                             "&.MuiOutlinedInput-root": {
-                                border: "1px solid rgb(209, 219, 215, 0.5)",
-                                backgroundColor: "white",
-                                color: "#00141C",
+                                border: theme?.border?.primary,
+                                backgroundColor: theme.palette.primary.contrastText,
+                                color: theme.palette.primary.main,
                                 fontWeight: "500",
                                 fontSize: "16px"
                             }
