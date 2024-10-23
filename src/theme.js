@@ -85,9 +85,9 @@ export const theme = createTheme({
       contrastText: "#FFFFFF",
     },
     secondary: {
-      main: "#E2E2E2",
-      light: "#E2E2E2",
-      dark: "#E2E2E2",
+      main: "#e3e9e7",
+      light: "#e3e9e7",
+      dark: "#e3e9e7",
       contrastText: "#FFFFFF",
     },
     success: {
@@ -119,6 +119,7 @@ export const theme = createTheme({
       secondary: "#9E9EA4",
       disabled: "#9E9EA4",
     },
+    borderColor: ["#D1DBD780"],
   },
   typography: {
     fontFamily: `"Segoe UI", "sans-serif"`,
