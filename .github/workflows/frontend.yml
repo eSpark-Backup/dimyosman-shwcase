@@ -1,4 +1,4 @@
-name: SHWCASE Frontend CICD
+name: SHWCASE Frontend Live CICD
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
 
     - name: Deploy Docker Container     
       run: |
-        docker stop shwcase-stg-fe
-        docker rm shwcase-stg-fe
-        docker build . -t shwcase-stg-frontend:latest
-        docker run -d -p 3021:8081 --name shwcase-stg-fe shwcase-stg-frontend:latest
+        docker stop shwcase-fe
+        docker rm shwcase-fe
+        docker build . -t shwcase-frontend:latest
+        docker run -d -p 3022:8081 --name shwcase-fe shwcase-frontend:latest
