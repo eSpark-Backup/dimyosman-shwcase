@@ -26,6 +26,16 @@ import profileHover from "./profile-hover.png";
 import calendarHover from "./calendar-hover.png";
 import messageHover from "./message-hover.png";
 import settingsHover from "./settings-hover.png";
+import activityLogo from "./activity-logo.svg"
+import flag from "./flag.svg"
+import activityMain from "./activity-main.svg"
+import miniMap from "./micro-map.svg"
+import like from "./like.svg"
+import comment from "./comment.svg"
+import share from "./share.svg"
+import brandIcon from "./brand.svg"
+import spaceIcon from "./space.svg"
+import calender from "./calender.svg"
 
 
 export {
@@ -56,7 +66,15 @@ export {
   addIcon,
   chatIcon,
   bellIcon,
-  userProfile
-
-  
+  userProfile,
+  activityLogo,
+  flag,
+  activityMain,
+  miniMap,
+  like,
+  comment,
+  share,
+  brandIcon,
+  spaceIcon,
+  calender
 };
