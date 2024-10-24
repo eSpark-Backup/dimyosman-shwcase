@@ -39,7 +39,7 @@ const Login = () => {
         <>
             <Box
                 sx={{
-                    width: { xs: "90%", sm: "85%", md: "70%" },
+                    width: { xs: "90%", sm: "85%", md: "80%" },
                     display: "flex",
                     flexDirection: "column",
                     rowGap: "16px",
