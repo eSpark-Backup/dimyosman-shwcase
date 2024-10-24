@@ -15,9 +15,10 @@ export const theme = createTheme({
         root: {
           color: "#00141C",
           background: "#f6f8f7",
-          borderRadius: "3px",
           fontSize: "16px",
           fontWeight: "600",
+          height: "10px",
+          minHeight: "31px",
           "&.Mui-selected": {
             background: "#D1DBD7",
           },
@@ -38,6 +39,10 @@ export const theme = createTheme({
           color: "white",
           fontSize: "20px",
           fontWeight: "500",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          lineHeight: "0px",
           transition: "background-color 0.5s ease-in-out",
           "&:hover": {
             backgroundColor: "#00141C",
@@ -49,8 +54,8 @@ export const theme = createTheme({
       styleOverrides: {
         input: {
           "&::placeholder": {
-            color: "#9E9EA4",
-            fontWeight: "500",
+            color: "#00141C",
+            fontWeight: "300",
             opacity: 1,
           },
         },
@@ -60,7 +65,7 @@ export const theme = createTheme({
           height: "43px",
           width: "100%",
           outline: "none",
-          padding: " 0px 15px",
+          padding: " 0px 5px",
           fontSize: "16px",
           color: "#00141C",
           fontWeight: 100,

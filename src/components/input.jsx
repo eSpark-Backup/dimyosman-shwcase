@@ -1,17 +1,18 @@
 import { useState } from "react";
-import { Box, IconButton, InputAdornment, TextField, Typography } from "@mui/material";
+import { Box, IconButton, InputAdornment, TextField, Typography, useTheme } from "@mui/material";
 import { eye } from "../assets";
 import RemoveRedEyeSharpIcon from '@mui/icons-material/RemoveRedEyeSharp';
 
 const Input = ({ onInputChange, name, label, type, placeholder, value, onBlur, error, helperText }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const theme = useTheme()
 
   const handleClickShowPassword = () => setShowPassword((prev) => !prev);
   return (
     <Box sx={{ display: "flex", flexDirection: "column", rowGap: "8px" }}>
       {label && (
         <Typography
-          sx={{ fontStyle: "italic", textAlign: "left", fontWeight: 300 }}
+          sx={{ fontStyle: "italic", textAlign: "left", fontWeight: 300, color:theme.palette.primary.main }}
           variant="h6"
         >
           {label}
@@ -31,7 +32,7 @@ const Input = ({ onInputChange, name, label, type, placeholder, value, onBlur, e
             ? {
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton onClick={handleClickShowPassword} edge="end">
+                  <IconButton onClick={handleClickShowPassword} edge="end" sx={{ marginRight: "0px" }}>
                     {!showPassword ? <RemoveRedEyeSharpIcon style={{ color: "#ACB4B5", fontSize: "22px" }} /> : <img src={eye} alt="eye" />}
                   </IconButton>
                 </InputAdornment>

@@ -5,8 +5,10 @@ import { Input } from "../../../components";
 import { google, facebook, apple } from "../../../assets";
 import { useFormik } from "formik";
 import { loginSchema } from "../../../validation/validation";
+import { useTheme } from "@emotion/react";
 
 const Login = () => {
+    const theme = useTheme();
     const formik = useFormik({
         initialValues: {
             email: "",
@@ -69,22 +71,22 @@ const Login = () => {
                 />
                 <Typography
                     sx={{
-                        color: "Forgot Password?",
                         fontSize: "12px",
                         fontWeight: "500",
                         textDecoration: "underline",
                         cursor: "pointer",
+                        color: theme.palette.primary.main
                     }}
                 >
                     Forgot Password?
                 </Typography>
-                <Button type="submit">Log In</Button>
+                <Button type="submit" sx={{textTransform:"none"}}>Log In</Button>
             </Box>
             <Box sx={{ display: "flex", flexDirection: "column", rowGap: "12px" }}>
-                <Typography variant="h6">
+                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
                     By logging, you are agreeing with our
                 </Typography>
-                <Typography variant="h6">
+                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
                     <span style={{ textDecoration: "underline", cursor: "pointer" }}>Terms of Use </span>
                     and
                     <span style={{ textDecoration: "underline", cursor: "pointer" }}> Privacy Policy</span>
@@ -98,7 +100,7 @@ const Login = () => {
                     width: "100%",
                 }}
             >
-                <Typography variant="h6">Or connect via</Typography>
+                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>Or connect via</Typography>
                 <Box
                     sx={{
                         display: "flex",
@@ -124,7 +126,7 @@ const Login = () => {
                     </Button>
                 </Box>
             </Box>
-            <Typography variant="h6">
+            <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
                 Don’t have an account?{" "}
                 <Link to={"/auth?type=register"}>
                     <span

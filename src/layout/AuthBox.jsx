@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Tab, Tabs, Typography } from "@mui/material";
+import { Box, Tab, Tabs, Typography, useTheme } from "@mui/material";
 import { Login, Register } from "../pages";
 import { useQuery } from "../utils";
 import { logo } from "../assets";
 
 const AuthBox = () => {
+  const theme = useTheme();
   const query = useQuery();
   const pathType = query.get("type");
   const navigate = useNavigate();
@@ -44,8 +45,8 @@ const AuthBox = () => {
           onChange={handleChange}
           indicatorColor="transparent"
         >
-          <Tab label="LOGIN" sx={{ width: "120px" }} />
-          <Tab label="SIGNUP" sx={{ width: "120px" }} />
+          <Tab label="LOGIN" sx={{ width: "100px", borderTopLeftRadius: "3px", borderBottomLeftRadius: "3px" }} />
+          <Tab label="SIGNUP" sx={{ width: "100px", borderTopRightRadius: "3px", borderBottomRightRadius: "3px" }} />
         </Tabs>
         <Box
           sx={{
@@ -56,8 +57,8 @@ const AuthBox = () => {
             alignItems: "center",
           }}
         >
-          <Typography variant="h2">{tabs[activeTab].title}</Typography>
-          <Typography variant="h4">{tabs[activeTab].subTitle}</Typography>
+          <Typography variant="h2" sx={{ color: theme.palette.primary.main }}>{tabs[activeTab].title}</Typography>
+          <Typography variant="h4" sx={{ color: theme.palette.primary.main }}>{tabs[activeTab].subTitle}</Typography>
         </Box>
         <Box
           sx={{
