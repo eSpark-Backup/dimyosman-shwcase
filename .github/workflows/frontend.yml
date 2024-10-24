@@ -2,7 +2,7 @@ name: SHWCASE Frontend CICD
 
 on:
   push:
-    branches: [ "fe" ]
+    branches: [ "fe-stg" ]
 
 
 jobs:
