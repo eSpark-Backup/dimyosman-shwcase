@@ -55,14 +55,14 @@ const Header = ({ isLogin }) => {
                 <li onClick={() => setIsOpen(false)}>About</li>
                 <hr className="nav-items-breaker" />
                 <li onClick={() => setIsOpen(false)}>Help</li>
-                <Button className="user-btn1">
+                <Button className="user-btn1" sx={{ minWidth: "32px", height: "32px" }}>
                   <img src={user} alt="User" />
                 </Button>
               </ul>
           }
 
           <div className="icon" onClick={toggleMenu}>
-            {!isLogin && <Button>
+            {!isLogin && <Button sx={{ minWidth: "32px", height: "32px" }}>
               <img src={user} alt="User" />
             </Button>}
             {isOpen ? <CloseOutlinedIcon /> : <MenuIcon />}

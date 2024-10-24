@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Box, Button, Stack, Typography } from '@mui/material'
+import { Box, Button, Stack, Typography, useTheme } from '@mui/material'
 import { Input } from "../../../components";
 import { Link } from 'react-router-dom'
 import { google, facebook, apple } from "../../../assets";
@@ -7,6 +7,7 @@ import { useFormik } from "formik";
 import { registerSchema } from '../../../validation/validation';
 
 const Register = () => {
+    const theme = useTheme();
     const formik = useFormik({
         initialValues: {
             fName: "",
@@ -55,6 +56,7 @@ const Register = () => {
                         alignItems: "flex-start",
                         flexDirection: { xs: "column", md: "row" },
                         width: "100%",
+                        rowGap: "16px"
                     }}
                 >
                     <Box
@@ -111,6 +113,7 @@ const Register = () => {
                         alignItems: "flex-start",
                         flexDirection: { xs: "column", md: "row" },
                         width: "100%",
+                        rowGap: "16px"
                     }}
                 >
                     <Box
@@ -151,10 +154,10 @@ const Register = () => {
                 <Button type='submit'>Sign Up</Button>
             </Box>
             <Box sx={{ display: "flex", flexDirection: "column", rowGap: "12px" }}>
-                <Typography variant="h6">
+                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
                     By signing, you are agreeing with our
                 </Typography>
-                <Typography variant="h6">
+                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
                     <span style={{ textDecoration: "underline", cursor: "pointer" }}>Terms of Use </span>
                     and
                     <span style={{ textDecoration: "underline", cursor: "pointer" }}> Privacy Policy</span>
@@ -168,7 +171,7 @@ const Register = () => {
                     width: "100%",
                 }}
             >
-                <Typography variant="h6">Or connect via</Typography>
+                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>Or connect via</Typography>
                 <Box
                     sx={{
                         display: "flex",
@@ -194,7 +197,7 @@ const Register = () => {
                     </Button>
                 </Box>
             </Box>
-            <Typography variant="h6">
+            <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
                 Already have an account? {" "}
                 <Link to={"/auth?type=login"}>
                     <span
