@@ -15,6 +15,12 @@ import {
   calendarHover,
   messageHover,
   settingsHover,
+  arrow,
+  wifi,
+  accessibility,
+  sun,
+  storage,
+  security,
 } from "../assets";
 
 export const sidebarRoutes = [
@@ -72,3 +78,31 @@ export const getSmallSidebar = (currentLink) => {
   const smallSidebarLink = ["/message", "/profile"];
   return smallSidebarLink.includes(currentLink);
 };
+
+
+export const spaceFeatures = [
+  {
+    icon: arrow,
+    description: "Flexible Layout"
+  },
+  {
+    icon: wifi,
+    description: "WI-FI"
+  },
+  {
+    icon: accessibility,
+    description: "Accessible Location"
+  },
+  {
+    icon: sun,
+    description: "Natural Lighting"
+  },
+  {
+    icon: storage,
+    description: "Compact Storage Area"
+  },
+  {
+    icon: security,
+    description: "On-Site Security"
+  },
+]

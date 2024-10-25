@@ -36,7 +36,7 @@ const SearchBar = ({ label, name, placeholder, onInputChange, value, helperText,
                         ),
                         sx: {
                             "&.MuiOutlinedInput-root": {
-                                border: theme?.border?.primary,
+                                border: theme.palette.border.primary,
                                 backgroundColor: theme.palette.primary.contrastText,
                                 color: theme.palette.primary.main,
                                 fontWeight: "500",

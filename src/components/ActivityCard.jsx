@@ -1,12 +1,16 @@
 import React from 'react'
-import { Box, Button, Divider, Grid, Paper, styled, Typography, useTheme } from "@mui/material";
-import { activityLogo, brand, brandIcon, calender, comment, event, flag, like, miniMap, share, space, spaceIcon } from "../assets/index.js";
+import { Box, Button, Divider, Grid, Typography, useTheme } from "@mui/material";
+import { brandIcon, calender, comment, flag, like, miniMap, share, spaceIcon } from "../assets/index.js";
 
-const ActivityCard = ({ userName, userImage, mainImage, activity, activityName, activityMaker, content, activityImage, activityLocation, activityLocation2, activityAddress, value, deadline }) => {
+const ActivityCard = ({ userName, userImage, mainImage, activity, activityName, activityMaker, content, activityImage, activityLocation, activityLocation2, activityAddress, value, deadline, features }) => {
     const theme = useTheme()
     return (
-        <Grid container spacing={2}>
-            <Grid item xs={12} lg={8} sx={{ pb: "10px" }}>
+        <Grid container gap={{ xs: 4, md: 10 }}>
+            <Grid item xs={12} lg={8} sx={{
+                pb: "10px",
+                maxHeight: "calc(100vh - 100px)",
+                overflowY: "auto"
+            }}>
                 <Box
                     sx={{
                         background: theme.palette.primary.contrastText,
@@ -44,7 +48,7 @@ const ActivityCard = ({ userName, userImage, mainImage, activity, activityName, 
                                     position: "relative"
                                 }}
                             >
-                                <img src={mainImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                <img src={userImage} alt="User Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                                 <Box
                                     sx={{
                                         background: activity === "event" ? "rgb(148, 185, 134)" : activity === "brand" ? "rgb(196, 119, 127)" : "rgb(120, 150, 195)",
@@ -72,7 +76,7 @@ const ActivityCard = ({ userName, userImage, mainImage, activity, activityName, 
                             >
                                 <Typography
                                     sx={{
-                                        color: "#00141C",
+                                        color: theme.palette.primary.main,
                                         fontWeight: "700",
                                         textAlign: "left",
                                         fontSize: { xs: "12px", lg: "16px" }
@@ -83,7 +87,7 @@ const ActivityCard = ({ userName, userImage, mainImage, activity, activityName, 
                                 </Typography>
                                 <Typography
                                     sx={{
-                                        color: "#00141C",
+                                        color: theme.palette.primary.main,
                                         fontWeight: "500",
                                         textAlign: "left",
                                         fontSize: { xs: "10px", lg: "16px" }
@@ -142,7 +146,7 @@ const ActivityCard = ({ userName, userImage, mainImage, activity, activityName, 
                                         position: "relative"
                                     }}
                                 >
-                                    <img src={mainImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                    <img src={activityImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                                     <Box
                                         sx={{
                                             background: activity === "event" ? "rgb(148, 185, 134)" : activity === "brand" ? "rgb(196, 119, 127)" : "rgb(120, 150, 195)",
@@ -198,15 +202,6 @@ const ActivityCard = ({ userName, userImage, mainImage, activity, activityName, 
                                     rowGap: { xs: "30px", md: "20px" }
                                 }}
                             >
-                                {/* <Typography variant="h5" sx={{ textAlign: "left" }}>
-                                    A limited-time clothing pop-up store featuring EcoLux Designs' latest collection of eco-friendly luxury fashion.
-                                </Typography>
-                                <Typography variant="h5" sx={{ textAlign: "left" }}>
-                                    Shoppers can explore exclusive, high-end pieces crafted from organic and recycled materials, combining sustainability with modern style.
-                                </Typography>
-                                <Typography variant="h5" sx={{ textAlign: "left" }}>
-                                    The event will also include workshops on sustainable fashion and personal styling sessions.
-                                </Typography> */}
                                 {content?.map((item, index) => (
                                     <Typography variant="h5" sx={{ textAlign: "left" }} key={index}>
                                         {item}
@@ -214,6 +209,63 @@ const ActivityCard = ({ userName, userImage, mainImage, activity, activityName, 
                                 ))}
 
                             </Box>
+                            {
+                                activity === "space"
+                                &&
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        rowGap: "15px"
+                                    }}
+                                >
+                                    <Typography
+                                        sx={{
+                                            color: theme.palette.primary.dark,
+                                            fontWeight: "600",
+                                            textAlign: "left"
+                                        }}
+                                        variant='h6'
+                                    >
+                                        Ammenities & Features:
+                                    </Typography>
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            flexWrap: "wrap",
+                                            justifyContent: "space-between",
+                                            rowGap: "15px",
+                                            flexDirection: { xs: "column", md: "row" }
+                                        }}
+                                    >
+                                        {features?.map((item, index) => (
+                                            <Box
+                                                sx={{
+                                                    display: "flex",
+                                                    columnGap: "5px",
+                                                    width: { xs: "100%", md: "33%" }
+                                                }}
+                                                key={index}
+                                            >
+                                                <img src={item?.icon} alt="Icon" style={{ width: "16px", height: "16px" }} />
+                                                <Typography
+                                                    sx={{
+                                                        textAlign: "left",
+                                                        fontWeight: "500",
+                                                        fontSize: { xs: "12px", sm: "11px", xl: "12px" }
+                                                    }}
+                                                    variant='h6'
+                                                >
+                                                    {item?.description}
+
+                                                </Typography>
+                                            </Box>
+                                        ))}
+
+                                    </Box>
+
+                                </Box>
+                            }
 
                         </Box>
                         {
@@ -231,7 +283,7 @@ const ActivityCard = ({ userName, userImage, mainImage, activity, activityName, 
                                     variant="h6"
                                     style={{
                                         fontWeight: "600",
-                                        color: "#000000",
+                                        color: theme.palette.primary.dark,
                                         textAlign: "left"
                                     }}
                                 >
@@ -241,28 +293,32 @@ const ActivityCard = ({ userName, userImage, mainImage, activity, activityName, 
                                     variant="h5"
                                     style={{
                                         fontWeight: "600",
-                                        color: "#000000",
+                                        color: theme.palette.primary.dark,
                                         textAlign: "left"
                                     }}
                                 >
                                     {activityLocation}
                                 </Typography>
-                                <Typography
-                                    variant="h6"
-                                    style={{
-                                        fontWeight: "300",
-                                        color: "#00141C",
-                                        textAlign: "left"
-                                    }}
-                                >
-                                    {activityLocation2}
-                                </Typography>
+                                {
+                                    activityLocation2
+                                    &&
+                                    <Typography
+                                        variant="h6"
+                                        style={{
+                                            fontWeight: "300",
+                                            color: theme.palette.primary.main,
+                                            textAlign: "left"
+                                        }}
+                                    >
+                                        {activityLocation2}
+                                    </Typography>
+                                }
                                 <img src={miniMap} alt="" />
                                 <Typography
                                     variant="h6"
                                     style={{
                                         fontWeight: "400",
-                                        color: "#00141C",
+                                        color: theme.palette.primary.main,
                                         textAlign: "left"
                                     }}
                                 >
@@ -273,7 +329,7 @@ const ActivityCard = ({ userName, userImage, mainImage, activity, activityName, 
                                     variant="h6"
                                     style={{
                                         fontWeight: "600",
-                                        color: "#000000",
+                                        color: theme.palette.primary.dark,
                                         textAlign: "left"
                                     }}
                                 >
@@ -283,7 +339,7 @@ const ActivityCard = ({ userName, userImage, mainImage, activity, activityName, 
                                     variant="h1"
                                     style={{
                                         fontWeight: "600",
-                                        color: "#000000",
+                                        color: theme.palette.primary.dark,
                                         textAlign: "left",
                                         lineHeight: "140%"
                                     }}
@@ -294,7 +350,7 @@ const ActivityCard = ({ userName, userImage, mainImage, activity, activityName, 
                                     variant="h6"
                                     style={{
                                         fontWeight: "300",
-                                        color: "#00141C",
+                                        color: theme.palette.primary.main,
                                         textAlign: "left"
                                     }}
                                 >
@@ -327,7 +383,7 @@ const ActivityCard = ({ userName, userImage, mainImage, activity, activityName, 
                         </Box>
                         <Typography
                             sx={{
-                                color: "#00141C",
+                                color: theme.palette.primary.main,
                                 textAlign: "left"
                             }}
                             variant="h5"
@@ -341,7 +397,7 @@ const ActivityCard = ({ userName, userImage, mainImage, activity, activityName, 
                                 height: "31px",
                                 fontSize: "16px",
                                 fontWeight: "700",
-                                color: "#00141C",
+                                color: theme.palette.primary.main,
                                 display: "flex",
                                 columnGap: "5px",
                                 ":hover": {
@@ -360,13 +416,35 @@ const ActivityCard = ({ userName, userImage, mainImage, activity, activityName, 
                                         :
                                         <>
                                             <img src={calender} alt='Calender Icon' />
+                                            Inquire
                                         </>
                             }
                         </Button>
                     </Box>
                 </Box>
             </Grid>
-            <Grid item xs={12} lg={4}>
+            <Grid item xs={12} lg={3}
+                sx={{
+                    height: "70vh",
+                    overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between"
+                }}>
+                <Box
+                    sx={{
+                        background: "white",
+                        height: "49%",
+                        width: "100%"
+                    }}
+                ></Box>
+                <Box
+                    sx={{
+                        background: "white",
+                        height: "49%",
+                        width: "100%"
+                    }}
+                ></Box>
             </Grid>
         </Grid >
     )

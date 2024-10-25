@@ -1,11 +1,11 @@
-import { activityMain } from "../../../assets";
+import { activityMain, eventActivityImage, eventUserImage } from "../../../assets";
 import { ActivityCard } from "../../../components";
 
 const Activity = () => {
   return (
     <>
       <ActivityCard
-        activity={"space"}
+        activity={"event"}
         mainImage={activityMain}
         userName={"EcoLux Designs"}
         activityName={"Ecolux Chic Pop-Up"}
@@ -20,6 +20,8 @@ const Activity = () => {
         activityAddress={"123 Williamsburg Ave, Brooklyn, NY 11211"}
         value={"28.02.2025."}
         deadline={"until 15.4.2025."}
+        userImage={eventUserImage}
+        activityImage={eventActivityImage}
       />
     </>
   );

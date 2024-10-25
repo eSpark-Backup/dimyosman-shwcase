@@ -36,6 +36,18 @@ import share from "./share.svg"
 import brandIcon from "./brand.svg"
 import spaceIcon from "./space.svg"
 import calender from "./calender.svg"
+import eventUserImage from "./event-user-image.svg"
+import brandUserImage from "./brand-user-image.svg"
+import spaceUserImage from "./space-user-image.svg"
+import eventActivityImage from "./event-activity-image.svg"
+import brandActivityImage from "./brand-activity-image.svg"
+import spaceActivityImage from "./space-activity-image.svg"
+import arrow from "./arrow.svg"
+import wifi from "./wifi.svg"
+import accessibility from "./accessibility.svg"
+import sun from "./sun.svg"
+import storage from "./storage.svg"
+import security from "./security.svg"
 
 
 export {
@@ -76,5 +88,17 @@ export {
   share,
   brandIcon,
   spaceIcon,
-  calender
+  calender,
+  eventUserImage,
+  spaceUserImage,
+  brandUserImage,
+  eventActivityImage,
+  brandActivityImage,
+  spaceActivityImage,
+  arrow,
+  wifi,
+  accessibility,
+  sun,
+  security,
+  storage
 };

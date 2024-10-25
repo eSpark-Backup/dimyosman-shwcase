@@ -45,8 +45,8 @@ const AuthBox = () => {
           onChange={handleChange}
           indicatorColor="transparent"
         >
-          <Tab label="LOGIN" sx={{ width: "100px", borderTopLeftRadius: "3px", borderBottomLeftRadius: "3px" }} />
-          <Tab label="SIGNUP" sx={{ width: "100px", borderTopRightRadius: "3px", borderBottomRightRadius: "3px" }} />
+          <Tab label="Login" sx={{ width: "100px", borderTopLeftRadius: "3px", borderBottomLeftRadius: "3px", textTransform: "none" }} />
+          <Tab label="Signup" sx={{ width: "100px", borderTopRightRadius: "3px", borderBottomRightRadius: "3px", textTransform: "none" }} />
         </Tabs>
         <Box
           sx={{
