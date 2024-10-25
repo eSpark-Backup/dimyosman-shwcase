@@ -26,6 +26,36 @@ import profileHover from "./profile-hover.png";
 import calendarHover from "./calendar-hover.png";
 import messageHover from "./message-hover.png";
 import settingsHover from "./settings-hover.png";
+import activityLogo from "./activity-logo.svg"
+import flag from "./flag.svg"
+import eventMain from "./activity-main.svg"
+import eventMain2 from "./activity-main-2.svg"
+import eventMain3 from "./activity-main-3.svg"
+import miniMap from "./micro-map.svg"
+import like from "./like.svg"
+import comment from "./comment.svg"
+import share from "./share.svg"
+import brandIcon from "./brand.svg"
+import spaceIcon from "./space.svg"
+import calender from "./calender.svg"
+import eventUserImage from "./event-user-image.svg"
+import brandUserImage from "./brand-user-image.svg"
+import spaceUserImage from "./space-user-image.svg"
+import eventActivityImage from "./event-activity-image.svg"
+import brandActivityImage from "./brand-activity-image.svg"
+import spaceActivityImage from "./space-activity-image.svg"
+import arrow from "./arrow.svg"
+import wifi from "./wifi.svg"
+import accessibility from "./accessibility.svg"
+import sun from "./sun.svg"
+import storage from "./storage.svg"
+import security from "./security.svg"
+import spaceMain from "./space-main.svg"
+import spaceMain2 from "./space-main2.svg"
+import spaceMain3 from "./space-main3.svg"
+import brandMain from "./brandMain.svg"
+import accountIcon from "./account.svg"
+import miniMap2 from "./micro-map2.svg"
 
 
 export {
@@ -56,7 +86,35 @@ export {
   addIcon,
   chatIcon,
   bellIcon,
-  userProfile
-
-  
+  userProfile,
+  activityLogo,
+  flag,
+  eventMain,
+  miniMap,
+  like,
+  comment,
+  share,
+  brandIcon,
+  spaceIcon,
+  calender,
+  eventUserImage,
+  spaceUserImage,
+  brandUserImage,
+  eventActivityImage,
+  brandActivityImage,
+  spaceActivityImage,
+  arrow,
+  wifi,
+  accessibility,
+  sun,
+  security,
+  storage,
+  spaceMain,
+  brandMain,
+  accountIcon,
+  miniMap2,
+  eventMain3,
+  eventMain2,
+  spaceMain2,
+  spaceMain3
 };
