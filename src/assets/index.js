@@ -29,6 +29,8 @@ import settingsHover from "./settings-hover.png";
 import activityLogo from "./activity-logo.svg"
 import flag from "./flag.svg"
 import eventMain from "./activity-main.svg"
+import eventMain2 from "./activity-main-2.svg"
+import eventMain3 from "./activity-main-3.svg"
 import miniMap from "./micro-map.svg"
 import like from "./like.svg"
 import comment from "./comment.svg"
@@ -49,6 +51,8 @@ import sun from "./sun.svg"
 import storage from "./storage.svg"
 import security from "./security.svg"
 import spaceMain from "./space-main.svg"
+import spaceMain2 from "./space-main2.svg"
+import spaceMain3 from "./space-main3.svg"
 import brandMain from "./brandMain.svg"
 import accountIcon from "./account.svg"
 import miniMap2 from "./micro-map2.svg"
@@ -108,5 +112,9 @@ export {
   spaceMain,
   brandMain,
   accountIcon,
-  miniMap2
+  miniMap2,
+  eventMain3,
+  eventMain2,
+  spaceMain2,
+  spaceMain3
 };

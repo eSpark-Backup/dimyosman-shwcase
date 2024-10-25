@@ -1,8 +1,9 @@
 import React from 'react'
 import { Box, Button, Divider, Typography, useTheme } from "@mui/material";
-import { accountIcon, brandIcon, calender, comment, flag, like, miniMap, miniMap2, share, spaceIcon } from "../assets/index.js";
+import { accountIcon, brandIcon, brandMain, calender, comment, eventMain, eventMain2, eventMain3, flag, like, miniMap, miniMap2, share, spaceIcon, spaceMain } from "../assets/index.js";
+import DynamicPaginationSwiper from './Slider.jsx';
 
-const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, activityName, activityMaker, content, activityImage, activityLocation, activityLocation2, activityAddress, value, deadline, features }) => {
+const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, activityName, activityMaker, content, activityImage, activityLocation, activityLocation2, activityAddress, value, deadline, features,slides }) => {
     const theme = useTheme()
     return (
         <Box
@@ -107,7 +108,20 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                 </Box>
 
             </Box>
-            <img src={mainImage} alt="Activity" style={{ width: "100%" }} />
+            {
+                slides?.length !== 1
+                    ?
+
+                    <Box
+                        sx={{
+                            width: "100%"
+                        }}
+                    > <DynamicPaginationSwiper slides={slides} />
+
+                    </Box>
+                    :
+                    <img src={slides[0]} alt="Activity" style={{ width: "100%" }} />
+            }
             <Box
                 sx={{
                     display: "flex",
