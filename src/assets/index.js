@@ -28,7 +28,7 @@ import messageHover from "./message-hover.png";
 import settingsHover from "./settings-hover.png";
 import activityLogo from "./activity-logo.svg"
 import flag from "./flag.svg"
-import activityMain from "./activity-main.svg"
+import eventMain from "./activity-main.svg"
 import miniMap from "./micro-map.svg"
 import like from "./like.svg"
 import comment from "./comment.svg"
@@ -48,6 +48,10 @@ import accessibility from "./accessibility.svg"
 import sun from "./sun.svg"
 import storage from "./storage.svg"
 import security from "./security.svg"
+import spaceMain from "./space-main.svg"
+import brandMain from "./brandMain.svg"
+import accountIcon from "./account.svg"
+import miniMap2 from "./micro-map2.svg"
 
 
 export {
@@ -81,7 +85,7 @@ export {
   userProfile,
   activityLogo,
   flag,
-  activityMain,
+  eventMain,
   miniMap,
   like,
   comment,
@@ -100,5 +104,9 @@ export {
   accessibility,
   sun,
   security,
-  storage
+  storage,
+  spaceMain,
+  brandMain,
+  accountIcon,
+  miniMap2
 };
