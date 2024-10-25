@@ -13,6 +13,7 @@ const Sidebar = () => {
       alignItems="center"
       gap={1}
       sx={{
+        zIndex: 999,
         position: "fixed",
         left: "16px",
         top: "80px",
@@ -57,7 +58,7 @@ const Sidebar = () => {
             ></Box>
             <Typography
               sx={{
-                width: "196px",
+                width: "228px",
                 display: getSmallSidebar(pathname)
                   ? "none"
                   : { xs: "none", md: "block" },

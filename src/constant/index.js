@@ -35,6 +35,11 @@ import {
   brandMain,
   brandActivityImage,
 } from "../assets";
+import {
+  followingBrandColumns,
+  likedBrandColumns,
+  myBrandColumns,
+} from "../columns/brand";
 
 export const sidebarRoutes = [
   {
@@ -175,4 +180,164 @@ export const activityItems = [
     userRole: "account",
     slides: [brandMain],
   },
-]
+];
+
+export const myBrandData = [
+  {
+    id: 1,
+    type: "brand",
+    brandName: "Urban Pop-up Pavilion",
+    brandImg: spaceUserImage,
+    brandCategory: "Real Estate",
+    events: 1234,
+    followers: 12345,
+    status: "Published",
+    colHeader1: "Table cell",
+    colHeader2: "Table cell",
+    colHeader3: "Table cell",
+  },
+  {
+    id: 2,
+    type: "brand",
+    brandName: "Brand Name 22",
+    brandImg: null,
+    brandCategory: "Brand Category 1",
+    events: 1234,
+    followers: 12345,
+    status: "Published",
+    colHeader1: "Table cell",
+    colHeader2: "Table cell",
+    colHeader3: "Table cell",
+  },
+  {
+    id: 3,
+    type: "brand",
+    brandName: "Brand Name 23",
+    brandImg: null,
+    brandCategory: "Brand Category 2",
+    events: 1234,
+    followers: 12345,
+    status: "Draft",
+    colHeader1: "Table cell",
+    colHeader2: "Table cell",
+    colHeader3: "Table cell",
+  },
+  {
+    id: 4,
+    type: "brand",
+    brandName: "Brand Name 24",
+    brandImg: null,
+    brandCategory: "Brand Category 3",
+    events: 1234,
+    followers: 12345,
+    status: "Archived",
+    colHeader1: "Table cell",
+    colHeader2: "Table cell",
+    colHeader3: "Table cell",
+  },
+];
+
+export const followingBrandData = [
+  {
+    id: 1,
+    type: "brand",
+    brandName: "Urban Pop-up Pavilion",
+    brandImg: spaceUserImage,
+    brandCategory: "Real Estate",
+    events: 1234,
+    followers: 12345,
+    followDate: "dd.mm.yyyy.",
+  },
+  {
+    id: 2,
+    type: "brand",
+    brandName: "Brand Name 22",
+    brandImg: null,
+    brandCategory: "Brand Category 1",
+    events: 1234,
+    followers: 12345,
+    followDate: "dd.mm.yyyy.",
+  },
+  {
+    id: 3,
+    type: "brand",
+    brandName: "Brand Name 23",
+    brandImg: null,
+    brandCategory: "Brand Category 2",
+    events: 1234,
+    followers: 12345,
+    followDate: "dd.mm.yyyy.",
+  },
+  {
+    id: 4,
+    type: "brand",
+    brandName: "Brand Name 24",
+    brandImg: null,
+    brandCategory: "Brand Category 3",
+    events: 1234,
+    followers: 12345,
+    followDate: "dd.mm.yyyy.",
+  },
+];
+
+export const likedBrandData = [
+  {
+    id: 1,
+    type: "brand",
+    brandName: "Urban Pop-up Pavilion",
+    brandImg: spaceUserImage,
+    brandCategory: "Real Estate",
+    events: 1234,
+    followers: 12345,
+    savedDate: "dd.mm.yyyy.",
+  },
+  {
+    id: 2,
+    type: "brand",
+    brandName: "Brand Name 22",
+    brandImg: null,
+    brandCategory: "Brand Category 1",
+    events: 1234,
+    followers: 12345,
+    savedDate: "dd.mm.yyyy.",
+  },
+  {
+    id: 3,
+    type: "brand",
+    brandName: "Brand Name 23",
+    brandImg: null,
+    brandCategory: "Brand Category 2",
+    events: 1234,
+    followers: 12345,
+    savedDate: "dd.mm.yyyy.",
+  },
+  {
+    id: 4,
+    type: "brand",
+    brandName: "Brand Name 24",
+    brandImg: null,
+    brandCategory: "Brand Category 3",
+    events: 1234,
+    followers: 12345,
+    savedDate: "dd.mm.yyyy.",
+  },
+];
+
+export const brandTableData = (gotoDetail, handleAction) => [
+  {
+    data: myBrandData,
+    column: myBrandColumns(gotoDetail, (item) => handleAction(item, "edit")),
+  },
+  {
+    data: followingBrandData,
+    column: followingBrandColumns(gotoDetail, (item) =>
+      handleAction(item, "unfollow")
+    ),
+  },
+  {
+    data: likedBrandData,
+    column: likedBrandColumns(gotoDetail, (item) =>
+      handleAction(item, "remove")
+    ),
+  },
+];

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
 import { Input } from "../../../components";
 import { google, facebook, apple } from "../../../assets";
@@ -9,6 +9,7 @@ import { useTheme } from "@emotion/react";
 
 const Login = () => {
     const theme = useTheme();
+    const navigate = useNavigate();
     const formik = useFormik({
         initialValues: {
             email: "",
@@ -17,6 +18,7 @@ const Login = () => {
         validationSchema: loginSchema,
         onSubmit: (values) => {
             window.localStorage.setItem("token", "token");
+            navigate("/activity")
             console.log("Form Submitted", values);
         },
     });
