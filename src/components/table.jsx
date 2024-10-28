@@ -11,8 +11,14 @@ import {
 } from "@mui/material";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import { getValue } from "../utils";
+import { useRef, useState } from "react";
 
 export const DynamicTable = ({ data, columns, isLoading, ...rest }) => {
+  const tableRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
   const extendedColumns = columns?.map((column) => {
     return { ...column, key: column.key.split(".") };
   });
@@ -31,9 +37,35 @@ export const DynamicTable = ({ data, columns, isLoading, ...rest }) => {
     );
   }
 
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setStartX(e.pageX - tableRef.current.offsetLeft);
+    setScrollLeft(tableRef.current.scrollLeft);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - tableRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    tableRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
   return (
     <>
-      <TableContainer {...rest} className="table">
+      <TableContainer
+        {...rest}
+        className="table"
+        ref={tableRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
         <PerfectScrollbar>
           <MUITable sx={{ minWidth: 650, borderCollapse: "separate" }}>
             <TableHead>
