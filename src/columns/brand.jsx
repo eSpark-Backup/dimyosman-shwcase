@@ -45,7 +45,7 @@ const myBrandColumns = (gotoDetail, handleAction) => {
                 alt="brand-icon"
               />
             </Box>
-            <Typography variant="h5" sx={{ cursor: "pointer" }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, cursor: "pointer" }}>
               {item?.brandName}
             </Typography>
           </Stack>
@@ -72,13 +72,29 @@ const myBrandColumns = (gotoDetail, handleAction) => {
       key: "colHeader3",
     },
     {
+      name: "Col Header",
+      key: "colHeader4",
+    },
+    {
+      name: "Col Header",
+      key: "colHeader5",
+    },
+    {
+      name: "Col Header",
+      key: "colHeader6",
+    },
+    {
+      name: "Col Header",
+      key: "colHeader7",
+    },
+    {
       name: "Action",
       key: "action",
       component: (item) => {
         return (
           <Typography
             onClick={() => handleAction(item)}
-            sx={{ fontSize: "14px", fontWeight: 500, cursor: "pointer" }}
+            sx={{ fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
           >
             Edit
           </Typography>
@@ -132,7 +148,7 @@ const followingBrandColumns = (gotoDetail, handleAction) => {
                 alt="brand-icon"
               />
             </Box>
-            <Typography variant="h5" sx={{ cursor: "pointer" }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, cursor: "pointer" }}>
               {item?.brandName}
             </Typography>
           </Stack>
@@ -153,7 +169,7 @@ const followingBrandColumns = (gotoDetail, handleAction) => {
         return (
           <Typography
             onClick={() => handleAction(item)}
-            sx={{ fontSize: "14px", fontWeight: 500, cursor: "pointer" }}
+            sx={{ fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
           >
             Unfollow
           </Typography>
@@ -207,7 +223,7 @@ const likedBrandColumns = (gotoDetail, handleAction) => {
                 alt="brand-icon"
               />
             </Box>
-            <Typography variant="h5" sx={{ cursor: "pointer" }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, cursor: "pointer" }}>
               {item?.brandName}
             </Typography>
           </Stack>
@@ -228,7 +244,7 @@ const likedBrandColumns = (gotoDetail, handleAction) => {
         return (
           <Typography
             onClick={() => handleAction(item)}
-            sx={{ fontSize: "14px", fontWeight: 500, cursor: "pointer" }}
+            sx={{ fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
           >
             Remove
           </Typography>

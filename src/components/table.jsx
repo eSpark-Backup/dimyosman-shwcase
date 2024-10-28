@@ -46,7 +46,7 @@ export const DynamicTable = ({ data, columns, isLoading, ...rest }) => {
                       minWidth: column.minWidth || "initial",
                       position:
                         index === 0 || index === extendedColumns.length - 1
-                          ? { xs: "static", md: "sticky" }
+                          ? { xs: "static", lg: "sticky" }
                           : "static",
                       left: index === 0 ? 0 : undefined,
                       right:
@@ -92,7 +92,7 @@ export const DynamicTable = ({ data, columns, isLoading, ...rest }) => {
                         sx={{
                           position:
                             index === 0 || index === extendedColumns.length - 1
-                              ? { xs: "static", md: "sticky" }
+                              ? { xs: "static", lg: "sticky" }
                               : "static",
                           left: index === 0 ? 0 : undefined,
                           right:
@@ -110,7 +110,7 @@ export const DynamicTable = ({ data, columns, isLoading, ...rest }) => {
                               ? "300px"
                               : index === extendedColumns.length - 1
                               ? "100px"
-                              : "150px",
+                              : "160px",
                           zIndex:
                             index === 0 || index === extendedColumns.length - 1
                               ? 2

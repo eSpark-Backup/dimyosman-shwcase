@@ -4,9 +4,9 @@ import { addIcon, like } from "../assets";
 const FilterationTabs = ({ activeTab, handleChange, handleAdd }) => {
   return (
     <Stack
-      direction={{ xs: "column", lg: "row" }}
+      direction={{ xs: "column", md: "row" }}
       justifyContent="space-between"
-      alignItems={{ xs: "flex-start", lg: "center" }}
+      alignItems={{ xs: "flex-start", md: "center" }}
       gap={2}
       marginBottom={2}
     >
@@ -55,6 +55,7 @@ const FilterationTabs = ({ activeTab, handleChange, handleAdd }) => {
           width: { xs: "100%", sm: "142px" },
           height: "31px",
           textTransform: "capitalize",
+          borderRadius: "3px",
           "&:hover": {
             background: (theme) => theme.palette.button.secondary,
             color: (theme) => theme.palette.primary.main,
