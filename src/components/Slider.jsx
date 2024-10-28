@@ -5,7 +5,6 @@ import 'swiper/css/navigation';
 import { Pagination } from 'swiper/modules';
 
 const DynamicPaginationSwiper = ({ slides }) => {
-    console.log(slides)
     return (
         <Swiper
             pagination={{

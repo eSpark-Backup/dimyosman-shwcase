@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import './App.css'
 import { useEffect, useState } from 'react'
 import { Header, AuthBox, DashboardLayout } from "./layout";
@@ -15,24 +15,30 @@ import {
 
 function App() {
 
-  // const [isLogin, setIsLogin] = useState(false);
-  // const token = window.localStorage.getItem("token");
-  // const navigate = useNavigate()
+  const [isLogin, setIsLogin] = useState(false);
+  const { pathname } = useLocation()
+  console.log(pathname)
+  const token = window.localStorage.getItem("token");
+  const navigate = useNavigate()
 
-  // useEffect(() => {
-  //   if (token) {
-  //     setIsLogin(true);
-  //     navigate("/activity")
-  //   }
-  //   else {
-  //     setIsLogin(false);
-  //     navigate("/auth?type=login")
-  //   }
-  // }, [token])
+  useEffect(() => {
+    if (token) {
+      if (pathname !== "/auth") {
+        setIsLogin(true)
+      }
+      else {
+        setIsLogin(false)
+      }
+    }
+    else {
+      setIsLogin(false);
+      // navigate("/auth?type=login")
+    }
+  }, [token, pathname])
 
   return (
     <>
-      <Header isLogin={true} />
+      <Header isLogin={isLogin} />
       <Routes>
         <Route path="/" element={<Navigate to={"/auth?type=login"} />} />
         <Route path="/auth" element={<AuthBox />} />
