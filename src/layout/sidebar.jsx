@@ -13,6 +13,7 @@ const Sidebar = () => {
       alignItems="center"
       gap={1}
       sx={{
+        zIndex: 999,
         position: "fixed",
         left: "16px",
         top: "80px",

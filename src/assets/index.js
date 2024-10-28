@@ -58,7 +58,8 @@ import accountIcon from "./account.svg"
 import miniMap2 from "./micro-map2.svg"
 import logoIcon from "./logo-icon.svg"
 import logoText from "./logo-text.svg"
-
+import brandIconlight from "./brand-icon.png";
+import brandBadge from "./brand-badge.png";
 
 export {
   react,
@@ -120,5 +121,7 @@ export {
   spaceMain2,
   spaceMain3,
   logoIcon,
-  logoText
+  logoText,
+  brandIconlight,
+  brandBadge,
 };

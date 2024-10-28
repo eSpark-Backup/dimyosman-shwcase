@@ -35,6 +35,11 @@ import {
   brandMain,
   brandActivityImage,
 } from "../assets";
+import {
+  followingBrandColumns,
+  likedBrandColumns,
+  myBrandColumns,
+} from "../columns/brand";
 
 export const sidebarRoutes = [
   {
@@ -175,4 +180,180 @@ export const activityItems = [
     userRole: "account",
     slides: [brandMain],
   },
-]
+];
+
+export const myBrandData = [
+  {
+    id: 1,
+    type: "brand",
+    brandName: "EcoLux Designs",
+    brandImg: eventUserImage,
+    brandCategory: "Sustainable Fashion",
+    events: 1234,
+    followers: 12345,
+    status: "Published",
+    colHeader1: "Table cell",
+    colHeader2: "Table cell",
+    colHeader3: "Table cell",
+    colHeader4: "Table cell",
+    colHeader5: "Table cell",
+    colHeader6: "Table cell",
+    colHeader7: "Table cell",
+  },
+  {
+    id: 2,
+    type: "brand",
+    brandName: "EcoLux Designs",
+    brandImg: null,
+    brandCategory: "Sustainable Fashion",
+    events: 1234,
+    followers: 12345,
+    status: "Published",
+    colHeader1: "Table cell",
+    colHeader2: "Table cell",
+    colHeader3: "Table cell",
+    colHeader4: "Table cell",
+    colHeader5: "Table cell",
+    colHeader6: "Table cell",
+    colHeader7: "Table cell",
+  },
+  {
+    id: 3,
+    type: "brand",
+    brandName: "EcoLux Designs",
+    brandImg: null,
+    brandCategory: "Sustainable Fashion",
+    events: 1234,
+    followers: 12345,
+    status: "Draft",
+    colHeader1: "Table cell",
+    colHeader2: "Table cell",
+    colHeader3: "Table cell",
+    colHeader4: "Table cell",
+    colHeader5: "Table cell",
+    colHeader6: "Table cell",
+    colHeader7: "Table cell",
+  },
+  {
+    id: 4,
+    type: "brand",
+    brandName: "EcoLux Designs",
+    brandImg: null,
+    brandCategory: "Sustainable Fashion",
+    events: 1234,
+    followers: 12345,
+    status: "Archived",
+    colHeader1: "Table cell",
+    colHeader2: "Table cell",
+    colHeader3: "Table cell",
+    colHeader4: "Table cell",
+    colHeader5: "Table cell",
+    colHeader6: "Table cell",
+    colHeader7: "Table cell",
+  },
+];
+
+export const followingBrandData = [
+  {
+    id: 1,
+    type: "brand",
+    brandName: "Brand Name 4",
+    brandImg: null,
+    brandCategory: "Sustainable Fashion",
+    events: 1234,
+    followers: 2456,
+    followDate: "dd.mm.yyyy.",
+  },
+  {
+    id: 2,
+    type: "brand",
+    brandName: "Brand Name 5",
+    brandImg: null,
+    brandCategory: "Sustainable Fashion",
+    events: 1234,
+    followers: "---",
+    followDate: "dd.mm.yyyy.",
+  },
+  {
+    id: 3,
+    type: "brand",
+    brandName: "Brand Name 6",
+    brandImg: null,
+    brandCategory: "Sustainable Fashion",
+    events: 1234,
+    followers: "---",
+    followDate: "dd.mm.yyyy.",
+  },
+  {
+    id: 4,
+    type: "brand",
+    brandName: "Brand Name 7",
+    brandImg: null,
+    brandCategory: "Sustainable Fashion",
+    events: 1234,
+    followers: 46582,
+    followDate: "dd.mm.yyyy.",
+  },
+];
+
+export const likedBrandData = [
+  {
+    id: 1,
+    type: "brand",
+    brandName: "Brand Name 8",
+    brandImg: null,
+    brandCategory: "Sustainable Fashion",
+    events: 1234,
+    followers: 2456,
+    savedDate: "dd.mm.yyyy.",
+  },
+  {
+    id: 2,
+    type: "brand",
+    brandName: "Brand Name 9",
+    brandImg: null,
+    brandCategory: "Sustainable Fashion",
+    events: 1234,
+    followers: "---",
+    savedDate: "dd.mm.yyyy.",
+  },
+  {
+    id: 3,
+    type: "brand",
+    brandName: "Brand Name 10",
+    brandImg: null,
+    brandCategory: "Sustainable Fashion",
+    events: 1234,
+    followers: "---",
+    savedDate: "dd.mm.yyyy.",
+  },
+  {
+    id: 4,
+    type: "brand",
+    brandName: "Brand Name 11",
+    brandImg: null,
+    brandCategory: "Sustainable Fashion",
+    events: 1234,
+    followers: 46582,
+    savedDate: "dd.mm.yyyy.",
+  },
+];
+
+export const brandTableData = (gotoDetail, handleAction) => [
+  {
+    data: myBrandData,
+    column: myBrandColumns(gotoDetail, (item) => handleAction(item, "edit")),
+  },
+  {
+    data: followingBrandData,
+    column: followingBrandColumns(gotoDetail, (item) =>
+      handleAction(item, "unfollow")
+    ),
+  },
+  {
+    data: likedBrandData,
+    column: likedBrandColumns(gotoDetail, (item) =>
+      handleAction(item, "remove")
+    ),
+  },
+];
