@@ -22,7 +22,7 @@ body {
   background-color: #F2F3F4;
 }
 
-body::-webkit-scrollbar {
+*::-webkit-scrollbar {
   display: none;
 }
 
@@ -33,10 +33,11 @@ body::-webkit-scrollbar {
 
 input:-webkit-autofill,
 input:-webkit-autofill:focus {
-    transition: background-color 600000s 0s, color 600000s 0s;
+  transition: background-color 600000s 0s, color 600000s 0s;
 }
+
 input[data-autocompleted] {
-    background-color: transparent !important;
+  background-color: transparent !important;
 }
 
 /* Auth Page */
@@ -83,9 +84,12 @@ input[data-autocompleted] {
   height: 100%;
 }
 
-/* .header nav .logo {
-  padding: 1rem;
-} */
+.header nav .logo {
+  display: flex;
+  column-gap: 10px;
+  padding: 0 1.4rem;
+  align-items: center;
+}
 
 .header .nav-links,
 .header .nav-links2 {
@@ -134,6 +138,65 @@ input[data-autocompleted] {
 
 /* Header */
 
+/* Slider */
+/* .swiper-pagination-bullet {
+  width: 10px;
+  height: 10px;
+  background-color: rgba(255, 255, 255, 0.5);
+  opacity: 1;
+  transition: width 0.3s ease;
+}
+
+.swiper-pagination-bullet-active {
+  width: 30px;
+  height: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50px;
+} */
+.swiper {
+  width: 100%;
+  /* Full width */
+  height: 400px;
+  /* Set a height */
+}
+
+.slide-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.swiper-pagination {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  position: absolute !important;
+  bottom: 12px !important;
+  width: 90px !important;
+  z-index: 999 !important;
+  right: 0px;
+}
+
+.swiper-pagination-bullet {
+  width: 8px;
+  height: 8px;
+  background: #d1dbd7d7;
+  margin: 0 5px;
+  cursor: pointer;
+  border-radius: 99px;
+}
+
+.swiper-pagination-bullet-active {
+  width: 24px;
+  height: 8px;
+  background-color: #D1DBD7 !important;
+  border-radius: 99px;
+}
+
+
+
+/* Slider */
+
 
 /* Media Query Starts */
 @media screen and (max-width:550px) {
@@ -170,8 +233,8 @@ input[data-autocompleted] {
   }
 
   .header nav .logo {
-    padding: 1.5rem 0rem;
-    width: 130px;
+    padding: 1.5rem 1.4rem;
+    width: 180px;
   }
 
   .header nav .logo img {

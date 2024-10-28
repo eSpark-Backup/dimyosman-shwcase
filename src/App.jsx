@@ -15,22 +15,24 @@ import {
 
 function App() {
 
-  const [isLogin, setIsLogin] = useState(false);
-  const token = window.localStorage.getItem("token");
-  const navigate = useNavigate()
+  // const [isLogin, setIsLogin] = useState(false);
+  // const token = window.localStorage.getItem("token");
+  // const navigate = useNavigate()
 
-  useEffect(() => {
-    if (token) {
-      setIsLogin(true);
-    }
-    else {
-      setIsLogin(false);
-    }
-  }, [token, navigate])
+  // useEffect(() => {
+  //   if (token) {
+  //     setIsLogin(true);
+  //     navigate("/activity")
+  //   }
+  //   else {
+  //     setIsLogin(false);
+  //     navigate("/auth?type=login")
+  //   }
+  // }, [token])
 
   return (
     <>
-      <Header isLogin={false} />
+      <Header isLogin={true} />
       <Routes>
         <Route path="/" element={<Navigate to={"/auth?type=login"} />} />
         <Route path="/auth" element={<AuthBox />} />

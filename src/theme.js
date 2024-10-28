@@ -3,13 +3,20 @@ export const theme = createTheme({
   breakpoints: {
     values: {
       xs: 0,
-      sm: 600,
-      md: 768,
-      lg: 1280,
-      xl: 1920,
+      sm: 601,
+      md: 769,
+      lg: 1281,
+      xl: 1921,
     },
   },
   components: {
+    MuiTabs: {
+      styleOverrides: {
+        root: {
+          borderRadius: "3px",
+        },
+      },
+    },
     MuiTab: {
       styleOverrides: {
         root: {
@@ -19,6 +26,7 @@ export const theme = createTheme({
           fontWeight: "600",
           height: "10px",
           minHeight: "31px",
+          textTransform: "capitalize",
           "&.Mui-selected": {
             background: "#D1DBD7",
           },
@@ -80,6 +88,60 @@ export const theme = createTheme({
         },
       },
     },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          boxShadow: "none",
+          borderRadius: "5px",
+          padding: "16px",
+          border: "1px solid #D1DBD7",
+        },
+      },
+    },
+    MuiTableContainer: {
+      styleOverrides: {
+        root: {
+          border: "1px solid #D1DBD7",
+          borderRadius: "3px",
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
+          msOverflowStyle: "none",
+          scrollbarWidth: "none",
+        },
+      },
+    },
+    MuiTableHead: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "#f6f8f7",
+          ".MuiTableCell-root": {
+            color: "#00141C",
+          },
+          borderBottom: "none",
+          "& .MuiTableCell-root": {
+            borderBottom: "none",
+            fontSize: "12px",
+            fontWeight: 400,
+            lineHeight: 1,
+            letterSpacing: 0.5,
+            textTransform: "initial",
+            color: "#00141C",
+          },
+        },
+      },
+    },
+    MuiTableBody: {
+      styleOverrides: {
+        root: {
+          "& .MuiTableCell-root": {
+            borderBottom: "none",
+            color: "#00141C",
+            fontSize: "14px",
+          },
+        },
+      },
+    },
   },
 
   palette: {
@@ -126,7 +188,7 @@ export const theme = createTheme({
       disabled: "#9E9EA4",
     },
     button: {
-      secondary: "#99A1A4"
+      secondary: "#edf1ef"
     },
     transparent: "transparent",
     border: {

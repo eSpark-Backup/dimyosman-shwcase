@@ -25,10 +25,10 @@ const DashboardLayout = () => {
           maxHeight: "calc(100vh - 80px)",
           padding:
             getSmallSidebar(pathname) && pathname === "/message"
-              ? "0 0 0 72px"
+              ? "0 0 0 105px"
               : getSmallSidebar(pathname)
               ? "0"
-              : { xs: "0 0 0 72px", md: "0 0 0 284px" },
+              : { xs: "0 0 0 105px", md: "0 0 0 320px" },
           "::-webkit-scrollbar": { display: "none" },
           maxWidth:
             getSmallSidebar(pathname) && pathname !== "/message"
