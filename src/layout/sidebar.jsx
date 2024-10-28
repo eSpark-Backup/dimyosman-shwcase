@@ -19,6 +19,7 @@ const Sidebar = () => {
         backgroundColor: (theme) => theme.palette.secondary.contrastText,
         border: (theme) => `1px solid ${theme.palette.border.borderColor[0]}`,
         borderRadius: "5px",
+        padding: "15px 16px",
         "&:hover > div > p": {
           display: "block",
         },
@@ -39,6 +40,7 @@ const Sidebar = () => {
               padding: 2,
               width: "100%",
               transition: "all 0.5s ease",
+              backgroundColor: item?.title.toLowerCase().includes(pathname.slice(1)) ? theme.palette.secondary.main : "transparent",
               "&:hover": {
                 backgroundColor: (theme) => theme.palette.secondary.main,
               },
@@ -49,15 +51,17 @@ const Sidebar = () => {
           >
             <Box
               sx={{
-                backgroundImage: `url(${item.icon})`,
+                backgroundImage: item?.title.toLowerCase().includes(pathname.slice(1)) ? `url(${item.hoverIcon})` : `url(${item.icon})`,
                 width: "24px",
                 height: "24px",
               }}
               className="sidebar-img"
-            ></Box>
+            >
+            </Box>
             <Typography
               sx={{
                 width: "196px",
+                color:theme.palette.primary.main,
                 display: getSmallSidebar(pathname)
                   ? "none"
                   : { xs: "none", md: "block" },

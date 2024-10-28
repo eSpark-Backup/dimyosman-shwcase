@@ -3,7 +3,7 @@ import { Box, Button, Divider, Typography, useTheme } from "@mui/material";
 import { accountIcon, brandIcon, brandMain, calender, comment, eventMain, eventMain2, eventMain3, flag, like, miniMap, miniMap2, share, spaceIcon, spaceMain } from "../assets/index.js";
 import DynamicPaginationSwiper from './Slider.jsx';
 
-const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, activityName, activityMaker, content, activityImage, activityLocation, activityLocation2, activityAddress, value, deadline, features,slides }) => {
+const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, activityName, activityMaker, content, activityImage, activityLocation, activityLocation2, activityAddress, value, deadline, features, slides }) => {
     const theme = useTheme()
     return (
         <Box
@@ -43,7 +43,15 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                             position: "relative"
                         }}
                     >
-                        <img src={userImage} alt="User Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        <Box
+                            sx={{
+                                borderRadius: "5px",
+                                border: "1px solid rgb(209, 219, 215, 0.4)",
+                                height: "62px"
+                            }}
+                        >
+                            <img src={userImage} alt="User Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        </Box>
                         <Box
                             sx={{
                                 background: userRole === "event" ? "rgb(148, 185, 134)" : userRole === "brand" ? "rgb(196, 119, 127)" : userRole === "space" ? "rgb(120, 150, 195)" : theme.palette.primary.main,
@@ -72,7 +80,7 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                         <Typography
                             sx={{
                                 color: theme.palette.primary.main,
-                                fontWeight: "700",
+                                fontWeight: "600",
                                 textAlign: "left",
                                 fontSize: { xs: "12px", lg: "16px" }
                             }}
@@ -83,7 +91,7 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                         <Typography
                             sx={{
                                 color: theme.palette.primary.main,
-                                fontWeight: "500",
+                                fontWeight: "400",
                                 textAlign: "left",
                                 fontSize: { xs: "10px", lg: "16px" }
                             }}
@@ -211,7 +219,7 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                         }}
                     >
                         {content?.map((item, index) => (
-                            <Typography variant="h5" sx={{ textAlign: "left", fontSize: { xs: "13px", md: "16px" } }} key={index}>
+                            <Typography variant="h5" sx={{ textAlign: "left", fontSize: { xs: "13px", md: "16px" }, color: theme.palette.primary.main, fontWeight: "400" }} key={index}>
                                 {item}
                             </Typography>
                         ))}
@@ -259,7 +267,7 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                                         <Typography
                                             sx={{
                                                 textAlign: "left",
-                                                fontWeight: "500",
+                                                fontWeight: "400",
                                                 fontSize: { xs: "12px", sm: "11px", xl: "12px" }
                                             }}
                                             variant='h6'
@@ -307,20 +315,17 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                         >
                             {activityLocation}
                         </Typography>
-                        {
-                            activityLocation2
-                            &&
-                            <Typography
-                                variant="h6"
-                                style={{
-                                    fontWeight: "300",
-                                    color: theme.palette.primary.main,
-                                    textAlign: "left"
-                                }}
-                            >
-                                {activityLocation2}
-                            </Typography>
-                        }
+
+                        <Typography
+                            variant="h6"
+                            style={{
+                                fontWeight: "300",
+                                color: theme.palette.primary.main,
+                                textAlign: "left"
+                            }}
+                        >
+                            {activityLocation2}
+                        </Typography>
                         <img src={activity === "event" ? miniMap : miniMap2} alt="" />
                         <Typography
                             variant="h6"
@@ -337,7 +342,7 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                             variant="h6"
                             style={{
                                 fontWeight: "600",
-                                color: theme.palette.primary.dark,
+                                color: theme.palette.primary.main,
                                 textAlign: "left"
                             }}
                         >
@@ -347,7 +352,7 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                             variant="h1"
                             style={{
                                 fontWeight: "600",
-                                color: theme.palette.primary.dark,
+                                color: theme.palette.primary.main,
                                 textAlign: "left",
                                 lineHeight: "140%"
                             }}
@@ -408,6 +413,7 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                         color: theme.palette.primary.main,
                         display: "flex",
                         columnGap: "5px",
+                        textTransform: "none",
                         ":hover": {
                             backgroundColor: "rgb(209, 219, 215, 0.4)"
                         }

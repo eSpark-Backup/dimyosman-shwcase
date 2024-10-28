@@ -144,9 +144,9 @@ export const activityItems = [
   },
   {
     activity: "space",
-    userName: "EcoLux Designs",
-    activityName: "Ecolux Chic Pop-Up",
-    activityMaker: "Sustainable Fashion",
+    userName: "Urban Pop-Up Pavilion",
+    activityName: "Urban Pop-Up Studio 3B",
+    activityMaker: "Urban Pop-Up Pavilion",
     content: [
       "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
       "With natural lighting, flexible space, Wi-Fi, and security services, it’s perfect for brands looking to host a smaller, impactful event.",

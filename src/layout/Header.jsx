@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button, useTheme } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
-import { logo, user, userProfile } from "../assets";
+import { logo, logoIcon, logoText, user, userProfile } from "../assets";
 import { BadgeComp, SearchBar } from "../components";
 import { addIcon, chatIcon, bellIcon } from "../assets";
 
@@ -24,7 +24,8 @@ const Header = ({ isLogin }) => {
       <div className="header">
         <nav>
           <div className="logo">
-            <img src={logo} alt="Website Logo" />
+            <img src={logoIcon} alt="Icon" />
+            <img src={logoText} alt="Icon" style={{ height: "22px" }} />
           </div>
           {isLogin
             &&
