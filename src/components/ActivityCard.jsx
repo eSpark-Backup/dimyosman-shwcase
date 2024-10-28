@@ -22,8 +22,8 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                     justifyContent: "space-between",
                     alignItems: { xs: "flex-start", md: "center" },
                     padding: { xs: "0px 8px", md: "0px 20px" },
-                    flexDirection: { xs: "column", md: "row" },
-                    rowGap: "10px"
+                    flexDirection: { xs: "column", sm: "row" },
+                    rowGap: "10px",
                 }}
             >
                 <Box
@@ -31,8 +31,8 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                         width: { xs: "100%", md: "80%" },
                         display: "flex",
                         columnGap: "10px",
-                        alignItems: { xs: "flex-start", md: "center" },
-                        flexDirection: { xs: "column", md: "row" },
+                        alignItems: { xs: "flex-start", sm: "center" },
+                        flexDirection: { xs: "column", sm: "row" },
                         rowGap: "10px",
                     }}
                 >
