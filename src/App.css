@@ -84,9 +84,12 @@ input[data-autocompleted] {
   height: 100%;
 }
 
-/* .header nav .logo {
-  padding: 1rem;
-} */
+.header nav .logo {
+  display: flex;
+  column-gap: 10px;
+  padding: 0 1.4rem;
+  align-items: center;
+}
 
 .header .nav-links,
 .header .nav-links2 {
@@ -230,8 +233,8 @@ input[data-autocompleted] {
   }
 
   .header nav .logo {
-    padding: 1.5rem 0rem;
-    width: 130px;
+    padding: 1.5rem 1.4rem;
+    width: 180px;
   }
 
   .header nav .logo img {

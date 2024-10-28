@@ -6,13 +6,13 @@ const Activity = () => {
   return (
     <>
 
-      <Grid container sx={{ display: 'flex', justifyContent: "space-between" }} spacing={{ xs: 1, lg: 0 }}>
+      <Grid container sx={{ display: 'flex', justifyContent: "space-between" }}>
         <Grid
           item
           xs={12}
           lg={8}
           sx={{
-            pb: "10px",
+            // pb: "10px",
             maxHeight: "calc(100vh - 100px)",
             overflowY: "auto",
             display: "flex",
@@ -33,6 +33,7 @@ const Activity = () => {
               activityMaker={item?.activityMaker}
               content={item?.content}
               activityLocation={item?.activityLocation}
+              activityLocation2={item?.activityLocation2}
               activityAddress={item?.activityAddress}
               value={item?.value}
               deadline={item?.deadline}
@@ -49,22 +50,24 @@ const Activity = () => {
           sx={{
             height: "70vh",
             overflow: "hidden",
-            display: "flex",
+            display: { xs: "none", lg: "flex" },
             flexDirection: "column",
-            justifyContent: "space-between"
+            justifyContent: "space-between",
           }}>
           <Box
             sx={{
               background: "white",
               height: "49%",
-              width: "100%"
+              width: "100%",
+              borderRadius: "5px"
             }}
           ></Box>
           <Box
             sx={{
               background: "white",
               height: "49%",
-              width: "100%"
+              width: "100%",
+              borderRadius: "5px"
             }}
           ></Box>
         </Grid>
