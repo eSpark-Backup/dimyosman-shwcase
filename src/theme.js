@@ -122,7 +122,7 @@ export const theme = createTheme({
           "& .MuiTableCell-root": {
             borderBottom: "none",
             fontSize: "12px",
-            fontWeight: 500,
+            fontWeight: 400,
             lineHeight: 1,
             letterSpacing: 0.5,
             textTransform: "initial",
@@ -188,7 +188,7 @@ export const theme = createTheme({
       disabled: "#9E9EA4",
     },
     button: {
-      secondary: "#D1DBD7"
+      secondary: "#edf1ef"
     },
     transparent: "transparent",
     border: {
