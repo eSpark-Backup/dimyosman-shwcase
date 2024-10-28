@@ -56,7 +56,8 @@ import spaceMain3 from "./space-main3.svg"
 import brandMain from "./brandMain.svg"
 import accountIcon from "./account.svg"
 import miniMap2 from "./micro-map2.svg"
-
+import brandIconlight from "./brand-icon.png";
+import brandBadge from "./brand-badge.png";
 
 export {
   react,
@@ -116,5 +117,7 @@ export {
   eventMain3,
   eventMain2,
   spaceMain2,
-  spaceMain3
+  spaceMain3,
+  brandIconlight,
+  brandBadge,
 };

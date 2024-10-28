@@ -22,15 +22,17 @@ function App() {
   useEffect(() => {
     if (token) {
       setIsLogin(true);
+      navigate("/activity")
     }
     else {
       setIsLogin(false);
+      navigate("/auth?type=login")
     }
-  }, [token, navigate])
+  }, [token])
 
   return (
     <>
-      <Header isLogin={false} />
+      <Header isLogin={isLogin} />
       <Routes>
         <Route path="/" element={<Navigate to={"/auth?type=login"} />} />
         <Route path="/auth" element={<AuthBox />} />
