@@ -1,7 +1,7 @@
 import { Button, Stack, Tab, Tabs } from "@mui/material";
-import { addIcon, like } from "../assets";
+import { addIcon } from "../assets";
 
-const FilterationTabs = ({ activeTab, handleChange, handleAdd }) => {
+const FilterationTabs = ({ tabs, activeTab, handleChange, handleAdd }) => {
   return (
     <Stack
       direction={{ xs: "column", md: "row" }}
@@ -25,13 +25,20 @@ const FilterationTabs = ({ activeTab, handleChange, handleAdd }) => {
         onChange={handleChange}
         indicatorColor="transparent"
       >
-        <Tab label="My Brands" />
-        <Tab label="Following Brands" />
-        <Tab
-          icon={<img width={20} height={18} src={like} alt="like-icon" />}
-          iconPosition="start"
-          label="Saved Brands"
-        />
+        {tabs.map((tab, index) => {
+          return (
+            <Tab
+              key={index}
+              icon={
+                tab?.icon && (
+                  <img width={20} height={18} src={tab?.icon} alt="like-icon" />
+                )
+              }
+              iconPosition="start"
+              label={tab.label}
+            />
+          );
+        })}
       </Tabs>
       <Button
         onClick={handleAdd}

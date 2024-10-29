@@ -60,6 +60,8 @@ import logoIcon from "./logo-icon.svg"
 import logoText from "./logo-text.svg"
 import brandIconlight from "./brand-icon.png";
 import brandBadge from "./brand-badge.png";
+import eventIconLight from "./event-icon.png";
+import eventBadge from "./event-badge.png";
 
 export {
   react,
@@ -124,4 +126,6 @@ export {
   logoText,
   brandIconlight,
   brandBadge,
+  eventIconLight,
+  eventBadge,
 };
