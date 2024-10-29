@@ -4,7 +4,6 @@ import { search } from '../assets'
 
 const SearchBar = ({ label, name, placeholder, onInputChange, value, helperText, error, onBlur }) => {
     const theme = useTheme();
-    console.log(theme.palette)
     return (
         <Box sx={{ display: "flex", flexDirection: "column", rowGap: "8px" }}>
             {label && (

@@ -197,6 +197,17 @@ input[data-autocompleted] {
 
 /* Slider */
 
+/* Text Editor */
+.ql-toolbar.ql-snow+.ql-container.ql-snow {
+  border-top: 1px dashed rgb(0, 20, 28, 0.2) !important;
+}
+
+.ql-container.ql-snow {
+  border: 1px dashed rgb(0, 20, 28, 0.2)  !important;
+}
+
+/* Text Editor */
+
 
 /* Media Query Starts */
 @media screen and (max-width:550px) {

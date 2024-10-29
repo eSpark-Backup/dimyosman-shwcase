@@ -8,6 +8,7 @@ import Profile from "./dashboard/profile";
 import Calendar from "./dashboard/calendar";
 import Message from "./dashboard/message";
 import Settings from "./dashboard/settings";
+import NewBrand from "./dashboard/new-brand";
 
 export {
   Login,
@@ -20,4 +21,5 @@ export {
   Calendar,
   Message,
   Settings,
+  NewBrand
 };

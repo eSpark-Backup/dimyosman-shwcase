@@ -60,6 +60,16 @@ import logoIcon from "./logo-icon.svg"
 import logoText from "./logo-text.svg"
 import brandIconlight from "./brand-icon.png";
 import brandBadge from "./brand-badge.png";
+import activeItemIcon from './activeItemIcon.svg'
+import notActiveIcon from "./notActiveItemIcon.svg"
+import add from "./addIcon.svg"
+import subtract from "./subtractIcon.svg"
+import uploadIcon from "./upload-icon.svg"
+import close from "./close.svg"
+import checkedIcon from "./checkedIcon.svg"
+import uncheckedIcon from "./uncheckedIcon.svg"
+import locationIcon from "./locationIcon.svg"
+import modalMap from "./modalMap.svg"
 
 export {
   react,
@@ -124,4 +134,14 @@ export {
   logoText,
   brandIconlight,
   brandBadge,
+  activeItemIcon,
+  notActiveIcon,
+  add,
+  subtract,
+  uploadIcon,
+  close,
+  checkedIcon,
+  uncheckedIcon,
+  locationIcon,
+  modalMap
 };

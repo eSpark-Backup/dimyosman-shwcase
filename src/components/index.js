@@ -5,6 +5,7 @@ import ActivityCard from "./ActivityCard";
 import DynamicPaginationSwiper from "./Slider";
 import { DynamicTable } from "./table";
 import FilterationTabs from "./filterationTabs";
+import CheckBox from "./CheckBox";
 
 export {
   Input,
@@ -14,4 +15,5 @@ export {
   DynamicPaginationSwiper,
   DynamicTable,
   FilterationTabs,
+  CheckBox
 };
