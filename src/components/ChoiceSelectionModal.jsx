@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Typography, Checkbox, Button } from '@mui/material';
 import SearchBar from './SearchBar';
+import { useTheme } from '@emotion/react';
 
 const ChoiceSelectionModal = ({
     categories,
@@ -12,6 +13,7 @@ const ChoiceSelectionModal = ({
     placeholder = "Search...",
     handleClose
 }) => {
+    const theme = useTheme();
     const [searchValue, setSearchValue] = useState("");
     const [selectedItems, setSelectedItems] = useState(categories);
 
@@ -67,10 +69,10 @@ const ChoiceSelectionModal = ({
                 ))}
             </Box>
 
-            <Typography sx={{ fontSize: "14px", color: "#00141C", fontStyle: "italic" }}>
+            <Typography sx={{ fontSize: "14px", color: theme.palette.primary.main, fontStyle: "italic" }}>
                 {minSelections}min - {maxSelections}max.
             </Typography>
-            <Typography sx={{ fontSize: "14px", color: "#00141C", fontStyle: "italic" }}>
+            <Typography sx={{ fontSize: "14px", color: theme.palette.primary.main, fontStyle: "italic" }}>
                 {description}
             </Typography>
 
@@ -82,7 +84,7 @@ const ChoiceSelectionModal = ({
                         background: "rgba(209, 219, 215, 0.4)",
                         fontSize: "16px",
                         fontWeight: "700",
-                        color: "#00141C",
+                        color: theme.palette.primary.main,
                         "&:hover": { backgroundColor: "rgba(209, 219, 215, 0.4)" }
                     }}
                     onClick={handleSelectClick}

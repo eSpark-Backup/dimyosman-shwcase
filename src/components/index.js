@@ -10,6 +10,7 @@ import FullWidthImgInput from "./FullWidthImgInput";
 import ImgInputWithCategories from "./ImgInputWithCategories";
 import ChoiceSelectionModal from "./ChoiceSelectionModal";
 import InputWithMap from "./InputWithMap";
+import MapModal from "./MapModal";
 
 export {
   Input,
@@ -23,5 +24,6 @@ export {
   FullWidthImgInput,
   ImgInputWithCategories,
   ChoiceSelectionModal,
-  InputWithMap
+  InputWithMap,
+  MapModal
 };

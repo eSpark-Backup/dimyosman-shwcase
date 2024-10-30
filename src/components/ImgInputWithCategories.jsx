@@ -1,9 +1,10 @@
-import { Box, Checkbox, Typography } from '@mui/material'
+import { Box, Checkbox, Typography, useTheme } from '@mui/material'
 import React from 'react'
 import { add, subtract, uploadIcon } from '../assets'
 import Input from './input'
 
 const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal, onChange, inputlabel, categoryLabel, categories, handleModalOpen, description }) => {
+    const theme = useTheme();
     return (
         <Box
             sx={{
@@ -44,7 +45,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                             sx={{
                                 fontSize: '14px',
                                 fontWeight: "300",
-                                color: "#00141C",
+                                color: theme.palette.primary.main,
                                 fontStyle: "italic"
                             }}
                         >
@@ -72,7 +73,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                         }}
                     >
                         <Typography
-                            sx={{ fontStyle: "italic", textAlign: "left", fontWeight: 300, color: "#00141C" }}
+                            sx={{ fontStyle: "italic", textAlign: "left", fontWeight: 300, color: theme.palette.primary.main }}
                             variant="h6"
                         >
                             {categoryLabel}
@@ -98,7 +99,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                                     categories?.map((cat) => (
                                         <Box key={cat.name} display="flex" alignItems="center" marginRight={2} columnGap={0}>
                                             <Checkbox checked={cat?.selected} readOnly />
-                                            <Typography sx={{ fontSize: "20px", fontWeight: "300", color: "#00141C" }}>{cat?.name}</Typography>
+                                            <Typography sx={{ fontSize: "20px", fontWeight: "300", color: theme.palette.primary.main }}>{cat?.name}</Typography>
                                         </Box>
                                     ))
                                 ) : (
@@ -118,7 +119,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                                 <img src={subtract} alt="Subtract Icon" style={{ cursor: "pointer" }} onClick={handleModalOpen} />
                             </Box>
                         </Box>
-                        <Typography sx={{ fontSize: "14px", color: "#00141C", fontStyle: "italic" }}>
+                        <Typography sx={{ fontSize: "14px", color: theme.palette.primary.main, fontStyle: "italic" }}>
                             {description}
                         </Typography>
                     </Box>

@@ -70,6 +70,7 @@ import checkedIcon from "./checkedIcon.svg"
 import uncheckedIcon from "./uncheckedIcon.svg"
 import locationIcon from "./locationIcon.svg"
 import modalMap from "./modalMap.svg"
+import addGrey from "./add-grey.svg"
 
 export {
   react,
@@ -143,5 +144,6 @@ export {
   checkedIcon,
   uncheckedIcon,
   locationIcon,
-  modalMap
+  modalMap,
+  addGrey
 };

@@ -1,9 +1,10 @@
-import { Box, Typography } from '@mui/material'
+import { Box, Typography, useTheme } from '@mui/material'
 import React from 'react'
 import { miniMap } from '../assets'
 import Input from './input'
 
-const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick }) => {
+const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapDescription }) => {
+  const theme = useTheme();
   return (
     <Box
       sx={{
@@ -27,7 +28,7 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick }) =>
           }}
 
         >
-          <Typography variant='h3' sx={{ textAlign: "left", color: "#00141C", fontWeight: "600" }}>{inputLabel}</Typography>
+          <Typography variant='h3' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "600" }}>{inputLabel}</Typography>
           <Input value={inputValue} onInputChange={(e) => setInputValue(e.target.value)} multiline={true} sx={{ height: "auto", fontWeight: "400", py: "10px", px: "10px" }} />
         </Box>
       </Box>
@@ -50,11 +51,13 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick }) =>
         <img src={miniMap} alt="Map" onClick={handleClick} style={{ cursor: "pointer" }} />
         <Typography
           sx={{
-            textAlign: "left"
+            textAlign: "left",
+            fontWeight: "300",
+            fontStyle: "italic"
           }}
           variant='h6'
         >
-          Select location
+          {mapDescription}
         </Typography>
       </Box>
     </Box>

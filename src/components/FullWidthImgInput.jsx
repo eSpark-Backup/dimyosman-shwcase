@@ -1,8 +1,9 @@
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, Typography, useTheme } from '@mui/material'
 import React from 'react'
 import { activeItemIcon, add, notActiveIcon, subtract, uploadIcon } from '../assets'
 
 const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon }) => {
+    const theme = useTheme()
     return (
         <Box
             sx={{
@@ -106,7 +107,7 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon }) =
                     sx={{
                         fontSize: '14px',
                         fontWeight: "300",
-                        color: "#00141C",
+                        color: theme.palette.primary.main,
                         fontStyle: "italic"
                     }}
                 >

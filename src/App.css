@@ -214,7 +214,7 @@ input[data-autocompleted] {
 }
 
 .ql-toolbar.ql-snow .ql-formats {
-  margin-right: 15px;
+  margin-right: 0px !important;
   display: flex;
   column-gap: 25px;
 }

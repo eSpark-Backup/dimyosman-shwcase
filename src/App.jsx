@@ -6,6 +6,7 @@ import {
   Activity,
   Brand,
   Calendar,
+  EditBrand,
   Event,
   Message,
   NewBrand,
@@ -54,6 +55,7 @@ function App() {
           <Route path="/message" element={<Message />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/new-brand" element={<NewBrand />} />
+          <Route path="/:brand-name/edit" element={<EditBrand />} />
         </Route>
       </Routes>
     </>

@@ -28,7 +28,6 @@ const Input = ({ onInputChange, name, label, type, placeholder, value, onBlur, e
         error={error}
         onBlur={onBlur}
         multiline={multiline}
-        minRows={multiline ? 4 : 1}
         sx={{
           "& .MuiOutlinedInput-root": {
             ...sx, // Apply sx styles to the OutlinedInput root

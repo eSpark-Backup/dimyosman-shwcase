@@ -1,18 +1,19 @@
-import { Box, Button, IconButton, InputAdornment, Typography } from '@mui/material'
+import { Box, Typography, useTheme } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
-import { brandIcon, locationIcon, modalMap } from '../../../assets'
-import Input from '../../../components/input'
+import { brandIcon } from '../../../assets'
 import ReusableModal from '../../../components/Modal'
-import { ChoiceSelectionModal, FullWidthImgInput, ImgInputWithCategories, InputWithMap } from '../../../components'
+import { ChoiceSelectionModal, FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal } from '../../../components'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
 
 
 const NewBrand = () => {
+    const theme = useTheme();
     const mainImageRef = useRef(null)
     const profileImageRef = useRef(null)
     const [brandName, setBrandName] = useState("NEW BRAND")
     const [brandOverview, setBrandOverview] = useState("Add a brief brand overview that highlights the core aspects of the brand.\n\nClearly explain the brand’s mission, what makes it unique, and why it stands out in the market. Mention key products or services, emphasizing any unique selling points or values the brand embodies (e.g., sustainability, luxury, innovation).\n \nKeep it concise and informative, focusing on the brand’s identity and what customers can expect. \n\nThis description will be used as an excerpt.")
+    const [address, setAddress] = useState("")
 
     const HandleMainFileInputClick = () => {
         mainImageRef.current.click();
@@ -95,7 +96,7 @@ const NewBrand = () => {
             });
         }
     }, [isEditorVisible]);
-    
+
     return (
         <Box
             sx={{
@@ -157,7 +158,7 @@ const NewBrand = () => {
                             }}
                             onClick={() => setIsEditorVisible(true)}
                         >
-                            <Typography variant="body1" color="#00141C">
+                            <Typography variant="body1" color={theme.palette.primary.main}>
                                 {brandTitle.replace(/<[^>]*>/g, '')}
                             </Typography>
                         </Box>
@@ -185,53 +186,7 @@ const NewBrand = () => {
                 </Box>
             </Box>
             <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-                <Input type={"text"} placeholder={"Type Address..."} endAdornment={<InputAdornment position="end">
-                    <IconButton>
-                        <img src={locationIcon} alt="" />
-                    </IconButton>
-                </InputAdornment>} />
-                <img src={modalMap} alt='Modal Map' />
-
-                <Box
-                    sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        rowGap: "3px"
-                    }}
-                >
-                    <Typography
-                        variant='h5'
-                        sx={{
-                            textAlign: "left",
-                            color: "#00141C",
-                            fontWeight: "600"
-                        }}
-                    >
-                        <span style={{ fontWeight: "300" }}>Selected Address: </span>
-                        123 Williamsburg Ave, Brooklyn, NY 11211
-                    </Typography>
-                    <Input type={"text"} placeholder={"Additional instructions like entrances, flores..."} />
-
-                </Box>
-
-                <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                    <Button
-                        sx={{
-                            height: "31px",
-                            width: "92px",
-                            background: "rgba(209, 219, 215, 0.4)",
-                            fontSize: "16px",
-                            fontWeight: "700",
-                            color: "#00141C",
-                            "&:hover": {
-                                backgroundColor: "rgba(209, 219, 215, 0.4)"
-                            }
-                        }}
-                        onClick={() => setMapModal(false)}
-                    >
-                        Select
-                    </Button>
-                </Box>
+                <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} />
             </ReusableModal>
         </Box>
     )
