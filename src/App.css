@@ -203,7 +203,20 @@ input[data-autocompleted] {
 }
 
 .ql-container.ql-snow {
-  border: 1px dashed rgb(0, 20, 28, 0.2)  !important;
+  border: 1px dashed rgb(0, 20, 28, 0.2) !important;
+}
+
+
+.ql-toolbar.ql-snow {
+  padding: 8px !important;
+  display: flex !important;
+  column-gap: 0px !important;
+}
+
+.ql-toolbar.ql-snow .ql-formats {
+  margin-right: 15px;
+  display: flex;
+  column-gap: 25px;
 }
 
 /* Text Editor */

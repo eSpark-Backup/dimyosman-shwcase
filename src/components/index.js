@@ -6,6 +6,10 @@ import DynamicPaginationSwiper from "./Slider";
 import { DynamicTable } from "./table";
 import FilterationTabs from "./filterationTabs";
 import CheckBox from "./CheckBox";
+import FullWidthImgInput from "./FullWidthImgInput";
+import ImgInputWithCategories from "./ImgInputWithCategories";
+import ChoiceSelectionModal from "./ChoiceSelectionModal";
+import InputWithMap from "./InputWithMap";
 
 export {
   Input,
@@ -15,5 +19,9 @@ export {
   DynamicPaginationSwiper,
   DynamicTable,
   FilterationTabs,
-  CheckBox
+  CheckBox,
+  FullWidthImgInput,
+  ImgInputWithCategories,
+  ChoiceSelectionModal,
+  InputWithMap
 };
