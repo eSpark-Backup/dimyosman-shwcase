@@ -2,7 +2,7 @@ import { Box, Typography, useTheme } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import { brandIcon } from '../../../assets'
 import ReusableModal from '../../../components/Modal'
-import { ChoiceSelectionModal, FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal } from '../../../components'
+import { ChoiceSelectionModal, FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs } from '../../../components'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
 
@@ -97,6 +97,10 @@ const NewBrand = () => {
         }
     }, [isEditorVisible]);
 
+    const tabs = [
+        { label: "Details", component: <></> },
+      ];
+
     return (
         <Box
             sx={{
@@ -128,7 +132,7 @@ const NewBrand = () => {
                     onSelect={setCategories}
                 />
             </ReusableModal>
-
+            <OutlinedTabs tabs={tabs} />
             <Box
                 sx={{
                     width: "100%",
