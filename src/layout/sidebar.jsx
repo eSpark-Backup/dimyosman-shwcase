@@ -5,6 +5,7 @@ import { getSmallSidebar, sidebarRoutes } from "../constant";
 const Sidebar = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const currentPath = `/${pathname.split("/")[1]}`;
   const theme = useTheme()
 
   return (
@@ -41,7 +42,7 @@ const Sidebar = () => {
               padding: 2,
               width: "100%",
               transition: "all 0.5s ease",
-              backgroundColor: item?.title.toLowerCase().includes(pathname.slice(1)) ? theme.palette.secondary.main : "transparent",
+              backgroundColor: item?.link === currentPath ? theme.palette.secondary.main : "transparent",
               "&:hover": {
                 backgroundColor: (theme) => theme.palette.secondary.main,
               },
@@ -52,7 +53,7 @@ const Sidebar = () => {
           >
             <Box
               sx={{
-                backgroundImage: item?.title.toLowerCase().includes(pathname.slice(1)) ? `url(${item.hoverIcon})` : `url(${item.icon})`,
+                backgroundImage: item?.link === currentPath ? `url(${item.hoverIcon})` : `url(${item.icon})`,
                 width: "24px",
                 height: "24px",
               }}
