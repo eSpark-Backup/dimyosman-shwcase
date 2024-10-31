@@ -7,8 +7,12 @@ const OutlinedTabs = ({ tabs }) => {
   const [renderedComponent, setRenderedComponent] = useState(null);
 
   useEffect(() => {
-    if (selectedTab && selectedTab.component) {
-      setRenderedComponent(<selectedTab.component {...selectedTab.props} />);
+    if (typeof tabs[0].component === "function") {
+      if (selectedTab && selectedTab.component) {
+        setRenderedComponent(<selectedTab.component {...selectedTab.props} />);
+      }
+    } else {
+      setRenderedComponent(selectedTab.component);
     }
   }, [selectedTab]);
 
