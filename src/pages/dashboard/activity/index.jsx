@@ -24,6 +24,7 @@ const Activity = () => {
           {activityItems.map((item, index) => (
             <ActivityCard
               key={index}
+              id={item?.id}
               activity={item?.activity}
               userName={item?.userName}
               userImage={item?.userImage}

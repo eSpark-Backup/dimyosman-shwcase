@@ -11,6 +11,8 @@ import ImgInputWithCategories from "./ImgInputWithCategories";
 import ChoiceSelectionModal from "./ChoiceSelectionModal";
 import InputWithMap from "./InputWithMap";
 import MapModal from "./MapModal";
+import OutlinedTabs from "./outlinedTabs";
+import BESProfile from "./BESprofiles/BESprofile";
 
 export {
   Input,
@@ -25,5 +27,7 @@ export {
   ImgInputWithCategories,
   ChoiceSelectionModal,
   InputWithMap,
-  MapModal
+  MapModal,
+  OutlinedTabs,
+  BESProfile,
 };

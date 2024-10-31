@@ -71,6 +71,11 @@ import uncheckedIcon from "./uncheckedIcon.svg"
 import locationIcon from "./locationIcon.svg"
 import modalMap from "./modalMap.svg"
 import addGrey from "./add-grey.svg"
+import eventBadge from "./event-badge.png";
+import spaceBadge from "./space-badge.png";
+import profileBadge from "./profile-badge.png";
+import star from "./star.svg";
+import reviewer from "./reviewer.png";
 
 export {
   react,
@@ -145,5 +150,10 @@ export {
   uncheckedIcon,
   locationIcon,
   modalMap,
-  addGrey
+  addGrey,
+  eventBadge,
+  spaceBadge,
+  profileBadge,
+  star,
+  reviewer,
 };

@@ -5,6 +5,7 @@ import { Header, AuthBox, DashboardLayout } from "./layout";
 import {
   Activity,
   Brand,
+  BrandDetails,
   Calendar,
   EditBrand,
   Event,
@@ -48,6 +49,7 @@ function App() {
         <Route element={<DashboardLayout />}>
           <Route path="/activity" element={<Activity />} />
           <Route path="/brand" element={<Brand />} />
+          <Route path="/brand/:id" element={<BrandDetails />} />
           <Route path="/event" element={<Event />} />
           <Route path="/space" element={<Space />} />
           <Route path="/profile" element={<Profile />} />

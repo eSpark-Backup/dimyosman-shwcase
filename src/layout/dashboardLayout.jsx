@@ -13,7 +13,7 @@ const DashboardLayout = () => {
           getSmallSidebar(pathname) && pathname !== "/message"
             ? "flex"
             : "block",
-        justifyContent: "center",
+        justifyContent: { xs: "flex-end", md: "center" },
         alignItems: "flex-start",
       }}
     >
@@ -33,8 +33,8 @@ const DashboardLayout = () => {
           maxWidth:
             getSmallSidebar(pathname) && pathname !== "/message"
               ? {
-                  xs: "200px",
-                  md: "600px",
+                  xs: "calc(100% - 111px)",
+                  md: "80%",
                   lg: "1080px",
                   xl: "1440px",
                 }
