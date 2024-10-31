@@ -54,6 +54,9 @@ import spaceMain from "./space-main.svg"
 import spaceMain2 from "./space-main2.svg"
 import spaceMain3 from "./space-main3.svg"
 import brandMain from "./brandMain.svg"
+import brandMain2 from "./brand-main2.png";
+import spaceProfile from "./space-profile.png";
+import eventMainImage from "./event-main-image.png";
 import accountIcon from "./account.svg"
 import miniMap2 from "./micro-map2.svg"
 import logoIcon from "./logo-icon.svg"
@@ -119,6 +122,9 @@ export {
   storage,
   spaceMain,
   brandMain,
+  brandMain2,
+  spaceProfile,
+  eventMainImage,
   accountIcon,
   miniMap2,
   eventMain3,

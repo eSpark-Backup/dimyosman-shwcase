@@ -63,10 +63,10 @@ const BESProfile = () => {
         marginBottom: 2,
         ".swiper": {
           borderRadius: "5px 5px 0 0",
-          height: "300px !important",
+          height: myProfile.type === "brand" ? "300px !important" : "500px !important",
         },
         ".slide-content": {
-          height: "300px !important",
+          height: myProfile.type === "brand" ? "300px !important" : "500px !important",
         },
       }}
     >
