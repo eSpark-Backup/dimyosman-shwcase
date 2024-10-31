@@ -549,3 +549,68 @@ export const profiles = [
     ],
   },
 ];
+
+
+
+export const events = [
+  {
+    eventimage: eventMain,
+    eventName: "Ecolux Chic Pop-Up",
+    eventCategory: "Sustainable Fashion",
+    eventMessage:
+      "A limited-time clothing pop-up store featuring EcoLux Designs' latest collection of eco-friendly luxury fashion",
+    by: "EcoLux Designs",
+    startingDate: "28.02.2025.",
+    rsvp: 234566,
+  },
+  {
+    eventimage: eventMain,
+    eventName: "Ecolux Chic Pop-Up",
+    eventCategory: "Sustainable Fashion",
+    eventMessage:
+      "A limited-time clothing pop-up store featuring EcoLux Designs' latest collection of eco-friendly luxury fashion",
+    by: "EcoLux Designs",
+    startingDate: "28.02.2025.",
+    rsvp: 234566,
+  },
+  {
+    eventimage: eventMain,
+    eventName: "Ecolux Chic Pop-Up",
+    eventCategory: "Sustainable Fashion",
+    eventMessage:
+      "A limited-time clothing pop-up store featuring EcoLux Designs' latest collection of eco-friendly luxury fashion",
+    by: "EcoLux Designs",
+    startingDate: "28.02.2025.",
+    rsvp: 234566,
+  },
+  {
+    eventimage: eventMain,
+    eventName: "Ecolux Chic Pop-Up",
+    eventCategory: "Sustainable Fashion",
+    eventMessage:
+      "A limited-time clothing pop-up store featuring EcoLux Designs' latest collection of eco-friendly luxury fashion",
+    by: "EcoLux Designs",
+    startingDate: "28.02.2025.",
+    rsvp: 234566,
+  },
+  {
+    eventimage: eventMain,
+    eventName: "Ecolux Chic Pop-Up",
+    eventCategory: "Sustainable Fashion",
+    eventMessage:
+      "A limited-time clothing pop-up store featuring EcoLux Designs' latest collection of eco-friendly luxury fashion",
+    by: "EcoLux Designs",
+    startingDate: "28.02.2025.",
+    rsvp: 234566,
+  },
+  {
+    eventimage: eventMain,
+    eventName: "Ecolux Chic Pop-Up",
+    eventCategory: "Sustainable Fashion",
+    eventMessage:
+      "A limited-time clothing pop-up store featuring EcoLux Designs' latest collection of eco-friendly luxury fashion",
+    by: "EcoLux Designs",
+    startingDate: "28.02.2025.",
+    rsvp: 234566,
+  },
+]
