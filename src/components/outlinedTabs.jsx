@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { Box, Stack, Typography } from "@mui/material";
 
-const OutlinedTabs = ({ tabs }) => {
+const OutlinedTabs = ({ tabs, onTabChange }) => {
   const [selectedTab, setSelectedTab] = useState(tabs[0]);
-
   const [renderedComponent, setRenderedComponent] = useState(null);
 
   useEffect(() => {
@@ -14,7 +13,11 @@ const OutlinedTabs = ({ tabs }) => {
     } else {
       setRenderedComponent(selectedTab.component);
     }
-  }, [selectedTab]);
+
+    if (onTabChange) {
+      onTabChange(selectedTab);
+    }
+  }, [selectedTab, onTabChange]);
 
   return (
     <Box>

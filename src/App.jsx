@@ -7,8 +7,10 @@ import {
   Brand,
   BrandDetails,
   Calendar,
+  EditBrand,
   Event,
   Message,
+  NewBrand,
   Profile,
   Settings,
   Space,
@@ -18,7 +20,6 @@ function App() {
 
   const [isLogin, setIsLogin] = useState(false);
   const { pathname } = useLocation()
-  console.log(pathname)
   const token = window.localStorage.getItem("token");
   const navigate = useNavigate()
 
@@ -55,6 +56,8 @@ function App() {
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/message" element={<Message />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/new-brand" element={<NewBrand />} />
+          <Route path="/brand/:brand-id/edit" element={<EditBrand />} />
         </Route>
       </Routes>
     </>
