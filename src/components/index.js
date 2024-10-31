@@ -5,6 +5,8 @@ import ActivityCard from "./ActivityCard";
 import DynamicPaginationSwiper from "./Slider";
 import { DynamicTable } from "./table";
 import FilterationTabs from "./filterationTabs";
+import OutlinedTabs from "./outlinedTabs";
+import BESProfile from "./BESprofiles/BESprofile";
 
 export {
   Input,
@@ -14,4 +16,6 @@ export {
   DynamicPaginationSwiper,
   DynamicTable,
   FilterationTabs,
+  OutlinedTabs,
+  BESProfile,
 };
