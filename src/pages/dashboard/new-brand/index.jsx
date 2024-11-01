@@ -112,7 +112,7 @@ const NewBrand = () => {
                 pb: "40px"
             }}
         >
-            <FullWidthImgInput HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={brandIcon} />
+            <FullWidthImgInput activity={"brand"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={brandIcon} />
             <ImgInputWithCategories
                 handleImgClick={HandleProfileFileInputClick}
                 imgRef={profileImageRef}
@@ -124,6 +124,7 @@ const NewBrand = () => {
                 categories={selectedCategories}
                 handleModalOpen={handleModalOpen}
                 description={"1 min - 5 max. Checkbox on the categories will display them publicly. All added Brand categories are inherited by Events and Spaces, allowing them for individual selection."}
+                activity={"brand"}
             />
             <ReusableModal open={modalOpen} handleClose={handleModalClose} heading={"Select Brand Categories"}>
                 <ChoiceSelectionModal
@@ -143,7 +144,7 @@ const NewBrand = () => {
                     rowGap: "32px",
                 }}
             >
-                <InputWithMap inputLabel={"Brand Overview:"} inputValue={brandOverview} setInputValue={setBrandOverview} handleClick={() => setMapModal(true)} />
+                <InputWithMap inputLabel={"Brand Overview:"} inputValue={brandOverview} setInputValue={setBrandOverview} handleClick={() => setMapModal(true)} activity={"brand"} />
                 <Box
                     sx={{
                         width: "98%",

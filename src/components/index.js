@@ -14,6 +14,7 @@ import MapModal from "./MapModal";
 import OutlinedTabs from "./outlinedTabs";
 import BESProfile from "./BESprofiles/BESprofile";
 import EventCard from "./EventCard";
+import Dropdown from "./Dropdown";
 
 export {
   Input,
@@ -31,5 +32,6 @@ export {
   MapModal,
   OutlinedTabs,
   BESProfile,
-  EventCard
+  EventCard,
+  Dropdown
 };

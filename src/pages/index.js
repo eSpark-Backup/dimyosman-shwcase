@@ -11,6 +11,7 @@ import Message from "./dashboard/message";
 import Settings from "./dashboard/settings";
 import NewBrand from "./dashboard/new-brand";
 import EditBrand from "./dashboard/edit-brand";
+import NewEvent from "./dashboard/new-event";
 
 export {
   Login,
@@ -25,5 +26,6 @@ export {
   Message,
   Settings,
   NewBrand,
-  EditBrand
+  EditBrand,
+  NewEvent
 };

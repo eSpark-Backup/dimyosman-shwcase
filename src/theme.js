@@ -88,6 +88,36 @@ export const theme = createTheme({
         },
       },
     },
+    MuiSelect: {
+      styleOverrides: {
+        root: {
+          border: "1px dashed #D1DBD7",
+          borderRadius: "3px",
+          backgroundColor: "rgba(209, 219, 215, 0.2)",
+          height: "auto",
+          width: "100%",
+          padding: "0px 5px",
+          fontSize: "20px",
+          cursor: "pointer",
+          color: "#00141C",
+          fontWeight: 100,
+          "& .MuiOutlinedInput-notchedOutline": {
+            border: "none",
+          },
+          "&.Mui-disabled": {
+            backgroundColor: "rgba(209, 219, 215, 0.2)",
+            border: "1px dashed #D1DBD7",
+            cursor: "pointer",
+          },
+        },
+        icon: {
+          color: "#00141C",
+          "&.Mui-disabled": {
+            color: "#00141C",
+          },
+        },
+      },
+    },
     MuiPaper: {
       styleOverrides: {
         root: {

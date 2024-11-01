@@ -2,12 +2,12 @@ import { Box, Button, Typography, useTheme } from '@mui/material'
 import React from 'react'
 import { activeItemIcon, add, notActiveIcon, subtract, uploadIcon } from '../assets'
 
-const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon }) => {
+const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, activity }) => {
     const theme = useTheme()
     return (
         <Box
             sx={{
-                height: "300px",
+                height: activity === "brand" ? "300px" : "500px",
                 border: "1px dashed rgb(0, 20, 28, 0.4)",
                 backgroundColor: "rgb(209, 219, 215, 0.2)",
                 position: "relative",
@@ -18,7 +18,7 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon }) =
         >
             <Box
                 sx={{
-                    background: "rgb(196, 119, 127, 0.2)",
+                    background: activity === "brand" ? "rgb(196, 119, 127, 0.2)" : activity === "event" ? "rgb(148, 185, 134, 0.3)" : "",
                     width: "48px",
                     height: "48px",
                     position: "absolute",
