@@ -2,10 +2,11 @@ import React from 'react'
 import { eventBadge } from '../assets'
 import { Box, Button, Typography, useTheme } from '@mui/material'
 
-const EventCard = ({ event, showBtn }) => {
+const EventCard = ({ onClick, event, showBtn }) => {
     const theme = useTheme()
     return (
         <Box
+            onClick={onClick ? onClick : () => {}}
             sx={{
                 width: "100%",
                 borderRadius: "5px",
@@ -16,7 +17,8 @@ const EventCard = ({ event, showBtn }) => {
                 flexDirection: "column",
                 justifyContent: "center",
                 alignItems: "center",
-                pb: "10px"
+                pb: "10px",
+                cursor: onClick ? "pointer" : "default",
             }}
         >
             <img
