@@ -13,6 +13,7 @@ import InputWithMap from "./InputWithMap";
 import MapModal from "./MapModal";
 import OutlinedTabs from "./outlinedTabs";
 import BESProfile from "./BESprofiles/BESprofile";
+import EventCard from "./EventCard";
 
 export {
   Input,
@@ -30,4 +31,5 @@ export {
   MapModal,
   OutlinedTabs,
   BESProfile,
+  EventCard
 };
