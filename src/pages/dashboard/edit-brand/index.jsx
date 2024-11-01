@@ -1,8 +1,8 @@
 import { Box, Button, Stack, Typography, useTheme } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
-import { addGrey, brandIcon, eventBadge } from '../../../assets'
+import { addGrey, brandIcon } from '../../../assets'
 import ReusableModal from '../../../components/Modal'
-import { ChoiceSelectionModal, FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs } from '../../../components'
+import { ChoiceSelectionModal, EventCard, FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs } from '../../../components'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
 import { events } from '../../../constant'
@@ -230,47 +230,10 @@ const EditBrand = () => {
                   return (
                     <Box
                       sx={{
-                        width: { xs: "95%", md: "328px" },
-                        borderRadius: "5px",
-                        border: "1px solid #e8ebed",
-                        position: "relative",
-                        height: "100%",
+                        width: { xs: "100%", md: "328px" }
                       }}
-                      key={ind}
                     >
-                      <img
-                        style={{ borderRadius: "5px 5px 0 0 " }}
-                        width="100%"
-                        height="100%"
-                        src={event?.eventimage}
-                        alt="event-img"
-                      />
-                      <img
-                        style={{ position: "absolute", top: 0, right: 0, zIndex: 2 }}
-                        src={eventBadge}
-                        alt="event-badge"
-                      />
-                      <Box padding={2}>
-                        <Typography textAlign="left" fontSize={20} fontWeight={600}>
-                          {event?.eventName}
-                        </Typography>
-                        <Typography textAlign="left" fontWeight={300} variant="h5">
-                          {event?.eventCategory}
-                        </Typography>
-                        <Typography textAlign="left" fontWeight={400} variant="h6">
-                          {event?.eventMessage}
-                        </Typography>
-                        <Typography fontWeight={300} variant="h6" textAlign="left">
-                          By: <span style={{ fontWeight: 600 }}>{event?.by}</span>
-                        </Typography>
-                        <Typography fontWeight={300} variant="h2" textAlign="left">
-                          Starting:{" "}
-                          <span style={{ fontWeight: 600 }}>{event?.startingDate}</span>
-                        </Typography>
-                        <Typography fontWeight={300} variant="h6" textAlign="left">
-                          RSVP: <span style={{ fontWeight: 600 }}>{event?.rsvp}</span>
-                        </Typography>
-                      </Box>
+                      <EventCard event={event} key={ind} showBtn={true} />
                     </Box>
                   );
                 })}
@@ -284,43 +247,7 @@ const EditBrand = () => {
                   width: "98%",
                 }}
               >
-                {/* {
-                  !isEditorVisible &&
-                  <Box
-                    sx={{
-                      border: "1px dashed rgb(0, 20, 28, 0.2)",
-                      borderRadius: "3px",
-                      minHeight: "60px",
-                      p: "10px",
-                      backgroundColor: "rgb(209, 219, 215, 0.2)",
-                      cursor: "text"
-                    }}
-                    onClick={() => setIsEditorVisible(true)}
-                  >
-                    <Typography variant="body1" color={theme.palette.primary.main}>
-                      {brandTitle.replace(/<[^>]*>/g, '')}
-                    </Typography>
-                  </Box>
-                }
 
-                {
-                  isEditorVisible &&
-                  <Box
-                    ref={editorRef}
-                    sx={{
-                      position: 'absolute',
-                      top: '10px',
-                      left: '0px',
-                      border: "1px dashed rgb(0, 20, 28, 0.2)",
-                      borderRadius: "3px",
-                      p: "10px",
-                      backgroundColor: "rgb(209, 219, 215, 0.2)",
-                      cursor: "text"
-                    }}
-                    tabIndex={0}
-                  >
-                  </Box>
-                } */}
                 {
                   !isEditorVisible &&
                   <Box
@@ -346,9 +273,6 @@ const EditBrand = () => {
                   <Box
                     ref={editorRef}
                     sx={{
-                      position: 'absolute',
-                      top: '10px',
-                      left: '0px',
                       border: "1px dashed rgb(0, 20, 28, 0.2)",
                       borderRadius: "3px",
                       p: "10px",

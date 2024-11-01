@@ -1,6 +1,7 @@
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { addIcon, eventBadge } from "../../assets";
 import { useState } from "react";
+import EventCard from "../EventCard";
 
 const Events = ({ events }) => {
   const filterEvents = ["All", "Upcoming", "Past"];
@@ -86,47 +87,10 @@ const Events = ({ events }) => {
           return (
             <Box
               sx={{
-                width: "328px",
-                borderRadius: "5px",
-                border: "1px solid #e8ebed",
-                position: "relative",
-                height: "100%",
+                width: "328px"
               }}
-              key={ind}
             >
-              <img
-                style={{ borderRadius: "5px 5px 0 0 " }}
-                width="100%"
-                height="100%"
-                src={event?.eventimage}
-                alt="event-img"
-              />
-              <img
-                style={{ position: "absolute", top: 0, right: 0, zIndex: 2 }}
-                src={eventBadge}
-                alt="event-badge"
-              />
-              <Box padding={2}>
-                <Typography textAlign="left" fontSize={20} fontWeight={600}>
-                  {event?.eventName}
-                </Typography>
-                <Typography textAlign="left" fontWeight={300} variant="h5">
-                  {event?.eventCategory}
-                </Typography>
-                <Typography textAlign="left" fontWeight={400} variant="h6">
-                  {event?.eventMessage}
-                </Typography>
-                <Typography fontWeight={300} variant="h6" textAlign="left">
-                  By: <span style={{ fontWeight: 600 }}>{event?.by}</span>
-                </Typography>
-                <Typography fontWeight={300} variant="h2" textAlign="left">
-                  Starting:{" "}
-                  <span style={{ fontWeight: 600 }}>{event?.startingDate}</span>
-                </Typography>
-                <Typography fontWeight={300} variant="h6" textAlign="left">
-                  RSVP: <span style={{ fontWeight: 600 }}>{event?.rsvp}</span>
-                </Typography>
-              </Box>
+              <EventCard event={event} key={ind} />
             </Box>
           );
         })}
