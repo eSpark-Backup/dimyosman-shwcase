@@ -99,7 +99,7 @@ const NewBrand = () => {
 
     const tabs = [
         { label: "Details", component: <></> },
-      ];
+    ];
 
     return (
         <Box
@@ -163,9 +163,11 @@ const NewBrand = () => {
                             }}
                             onClick={() => setIsEditorVisible(true)}
                         >
-                            <Typography variant="body1" color={theme.palette.primary.main}>
-                                {brandTitle.replace(/<[^>]*>/g, '')}
-                            </Typography>
+                            <Typography
+                                variant="body1"
+                                color={theme.palette.primary.main}
+                                dangerouslySetInnerHTML={{ __html: brandTitle }}
+                            />
                         </Box>
                     }
 

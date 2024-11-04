@@ -8,6 +8,7 @@ import {
   BrandDetails,
   Calendar,
   EditBrand,
+  EditEvent,
   Event,
   Message,
   NewBrand,
@@ -60,6 +61,7 @@ function App() {
           <Route path="/new-brand" element={<NewBrand />} />
           <Route path="/brand/:brand-id/edit" element={<EditBrand />} />
           <Route path="/new-event" element={<NewEvent />} />
+          <Route path='/event/:event-id/edit' element={<EditEvent />} />
         </Route>
       </Routes>
     </>

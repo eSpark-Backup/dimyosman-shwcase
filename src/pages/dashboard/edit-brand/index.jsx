@@ -118,7 +118,7 @@ const EditBrand = () => {
     { label: "Details", component: <></> },
     { label: "Events", component: <></> },
   ];
-   const handleTabChange = (tab) => {
+  const handleTabChange = (tab) => {
     setActiveTab(tab);
     if (tab === 'Editor') {
       setIsEditorVisible(true);
@@ -146,7 +146,7 @@ const EditBrand = () => {
         categoryLabel={"brand category:"}
         categories={selectedCategories}
         handleModalOpen={handleModalOpen}
-        description={"1 min - 2 max. Checkbox on the categories will display them publicly."}
+        description={"Checkbox on the categories will display them publicly. All selected Brand categories are inherited by Events and Spaces, allowing them for individual selection."}
         activity={"brand"}
       />
       <ReusableModal open={modalOpen} handleClose={handleModalClose} heading={"Select Brand Categories"}>
@@ -263,9 +263,11 @@ const EditBrand = () => {
                     }}
                     onClick={() => setIsEditorVisible(true)}
                   >
-                    <Typography variant="body1" color={theme.palette.primary.main}>
-                      {brandTitle.replace(/<[^>]*>/g, '')}
-                    </Typography>
+                    <Typography
+                      variant="body1"
+                      color={theme.palette.primary.main}
+                      dangerouslySetInnerHTML={{ __html: brandTitle }}
+                    />
                   </Box>
                 }
 

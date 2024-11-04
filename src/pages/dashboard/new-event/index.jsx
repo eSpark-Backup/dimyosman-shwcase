@@ -117,6 +117,7 @@ const NewEvent = () => {
                 description={"1 min - 2 max. Checkbox on the categories will display them publicly."}
                 HandleCategoryChange={CategoryChangeHandler}
                 activity={"event"}
+                showDropDown={true}
             />
 
             <OutlinedTabs tabs={tabs} />
@@ -150,9 +151,11 @@ const NewEvent = () => {
                             }}
                             onClick={() => setIsEditorVisible(true)}
                         >
-                            <Typography variant="body1" color={theme.palette.primary.main}>
-                                {eventTitle.replace(/<[^>]*>/g, '')}
-                            </Typography>
+                            <Typography
+                                variant="body1"
+                                color={theme.palette.primary.main}
+                                dangerouslySetInnerHTML={{ __html: eventTitle }}
+                            />
                         </Box>
                     }
 

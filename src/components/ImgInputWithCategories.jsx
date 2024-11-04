@@ -3,8 +3,9 @@ import React, { useState } from 'react'
 import { add, subtract, uploadIcon } from '../assets'
 import Input from './input'
 import Dropdown from './Dropdown'
+import CheckBox from './CheckBox'
 
-const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal, onChange, inputlabel, categoryLabel, categories, handleModalOpen, description, activity, HandleCategoryChange }) => {
+const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal, onChange, inputlabel, categoryLabel, categories, handleModalOpen, description, activity, HandleCategoryChange, showDropDown }) => {
     const theme = useTheme();
     const [selectedValue, setSelectedValue] = useState("");
 
@@ -72,7 +73,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                 >
                     <Input label={inputlabel} type={"text"} value={inputVal} onInputChange={onChange} sx={{ fontSize: "32px", fontWeight: "600", height: "54px" }} />
                     {
-                        activity === "event"
+                        activity === "event" && showDropDown
                         &&
                         <Box
                             sx={{
@@ -106,7 +107,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                                 border: "1px dashed rgb(0, 20, 28, 0.4)",
                                 backgroundColor: "rgb(209, 219, 215, 0.2)",
                                 position: "relative",
-                                p: "10px 15px",
+                                p: "10px 0px",
                                 overflowY: "auto"
                             }}
                         >
@@ -115,12 +116,14 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                                     width: "95%",
                                     display: "flex",
                                     flexWrap: "wrap",
+                                    px: "20px",
+                                    py: "5px"
                                 }}
                             >
                                 {categories?.length > 0 ? (
                                     categories?.map((cat, index) => (
-                                        <Box key={cat.name} display="flex" alignItems="center" marginRight={2} columnGap={0}>
-                                            <Checkbox checked={cat?.selected} readOnly={activity === "brand" ? true : false} onChange={() => HandleCategoryChange(index)} />
+                                        <Box key={cat.name} display="flex" alignItems="center" marginRight={2} columnGap={1}>
+                                            <CheckBox checked={cat?.selected} readOnly={activity === "brand" ? true : false} onChange={() => HandleCategoryChange(index)} />
                                             <Typography sx={{ fontSize: "20px", fontWeight: "300", color: theme.palette.primary.main }}>{cat?.name}</Typography>
                                         </Box>
                                     ))

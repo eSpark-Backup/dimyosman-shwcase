@@ -1346,3 +1346,57 @@ export const events = [
     rsvp: 234566,
   },
 ]
+
+
+
+export const eventReviews = [
+  {
+    reviewerPRofile: reviewer,
+    reviewerName: "Sophia Ramirez",
+    profileName: "EcoLux Chic Pop-Up",
+    rating: 5,
+    message: `"The EcoLux Chic Pop-Up was an incredible experience! The
+      collection was stunning - luxurious, yet sustainable, with such
+      attention to detail in every piece. I loved learning about the
+      eco-friendly materials used and how each item was crafted with
+      sustainability in mind. The workshops were a great touch, and I
+      came away with a ton of knowledge on how to build a more
+      conscious wardrobe. Plus, the personal styling session was so
+      helpful! Overall, this event exceeded my expectations in every
+      way. Highly recommend!"`,
+    approved: false,
+  },
+  {
+    reviewerPRofile: reviewer,
+    reviewerName: "Sophia Ramirez",
+    profileName: "EcoLux Chic Pop-Up",
+    rating: 5,
+    message: `"The EcoLux Chic Pop-Up was an incredible experience! The
+      collection was stunning - luxurious, yet sustainable, with such
+      attention to detail in every piece. I loved learning about the
+      eco-friendly materials used and how each item was crafted with
+      sustainability in mind. The workshops were a great touch, and I
+      came away with a ton of knowledge on how to build a more
+      conscious wardrobe. Plus, the personal styling session was so
+      helpful! Overall, this event exceeded my expectations in every
+      way. Highly recommend!"`,
+    approved: false,
+
+  },
+  {
+    reviewerPRofile: reviewer,
+    reviewerName: "Sophia Ramirez",
+    profileName: "EcoLux Chic Pop-Up",
+    rating: 5,
+    message: `"The EcoLux Chic Pop-Up was an incredible experience! The
+      collection was stunning - luxurious, yet sustainable, with such
+      attention to detail in every piece. I loved learning about the
+      eco-friendly materials used and how each item was crafted with
+      sustainability in mind. The workshops were a great touch, and I
+      came away with a ton of knowledge on how to build a more
+      conscious wardrobe. Plus, the personal styling session was so
+      helpful! Overall, this event exceeded my expectations in every
+      way. Highly recommend!"`,
+    approved: false,
+  },
+]
