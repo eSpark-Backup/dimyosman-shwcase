@@ -18,9 +18,12 @@ export function getValue(item, keys) {
 }
 
 export const formatDate = (date) => {
+  if (!(date instanceof Date)) return ""; // Check if the input is a valid Date object
+
   const day = String(date.getDate()).padStart(2, '0');
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const year = date.getFullYear();
 
   return `${day}.${month}.${year}`;
 }
+

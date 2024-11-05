@@ -132,7 +132,7 @@ const NewEvent = () => {
                     rowGap: "32px",
                 }}
             >
-                <InputWithMap inputLabel={"Event Overview:"} inputValue={eventOverview} setInputValue={setEventOverview} mapDescription={"Address line will be filled automatically."} activity={"event"} eventName={"Space name"} eventAddress={"Brand name"} />
+                <InputWithMap inputLabel={"Event Overview:"} inputValue={eventOverview} setInputValue={setEventOverview} mapDescription={"Address line will be filled automatically."} activity={"event"} eventName={"Space name"} eventAddress={"Brand name"} defaultDate={"dd.mm.yyyy."} />
                 <Box
                     sx={{
                         width: "98%",

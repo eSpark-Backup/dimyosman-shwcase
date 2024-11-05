@@ -1286,6 +1286,7 @@ export const profiles = [
 
 export const events = [
   {
+    id: 1,
     eventimage: eventMain,
     eventName: "Ecolux Chic Pop-Up",
     eventCategory: "Sustainable Fashion",
@@ -1296,6 +1297,7 @@ export const events = [
     rsvp: 234566,
   },
   {
+    id: 2,
     eventimage: eventMain,
     eventName: "Ecolux Chic Pop-Up",
     eventCategory: "Sustainable Fashion",
@@ -1306,6 +1308,7 @@ export const events = [
     rsvp: 234566,
   },
   {
+    id: 3,
     eventimage: eventMain,
     eventName: "Ecolux Chic Pop-Up",
     eventCategory: "Sustainable Fashion",
@@ -1316,6 +1319,7 @@ export const events = [
     rsvp: 234566,
   },
   {
+    id: 4,
     eventimage: eventMain,
     eventName: "Ecolux Chic Pop-Up",
     eventCategory: "Sustainable Fashion",
@@ -1326,6 +1330,7 @@ export const events = [
     rsvp: 234566,
   },
   {
+    id: 5,
     eventimage: eventMain,
     eventName: "Ecolux Chic Pop-Up",
     eventCategory: "Sustainable Fashion",
@@ -1336,6 +1341,7 @@ export const events = [
     rsvp: 234566,
   },
   {
+    id: 6,
     eventimage: eventMain,
     eventName: "Ecolux Chic Pop-Up",
     eventCategory: "Sustainable Fashion",

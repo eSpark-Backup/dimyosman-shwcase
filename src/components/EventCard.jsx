@@ -1,9 +1,11 @@
 import React from 'react'
 import { eventBadge } from '../assets'
 import { Box, Button, Typography, useTheme } from '@mui/material'
+import { Link, useNavigate } from 'react-router-dom'
 
 const EventCard = ({ event, showBtn }) => {
     const theme = useTheme()
+    const navigate = useNavigate()
     return (
         <Box
             sx={{
@@ -53,20 +55,23 @@ const EventCard = ({ event, showBtn }) => {
                 </Typography>
 
             </Box>
-            {showBtn && <Button
-                sx={{
-                    width: "90%",
-                    backgroundColor: "rgb(209, 219, 215, 0.4)",
-                    fontSize: "16px",
-                    fontWeight: "700",
-                    color: theme.palette.primary.main,
-                    "&:hover": {
-                        backgroundColor: "rgb(209, 219, 215, 0.4)"
-                    }
-                }}
-            >
-                RSVP
-            </Button>}
+            {showBtn &&
+                <Button
+                    sx={{
+                        width: "90%",
+                        backgroundColor: "rgb(209, 219, 215, 0.4)",
+                        fontSize: "16px",
+                        fontWeight: "700",
+                        color: theme.palette.primary.main,
+                        "&:hover": {
+                            backgroundColor: "rgb(209, 219, 215, 0.4)"
+                        }
+                    }}
+                    onClick={() => navigate(`/event/${event?.id}/edit`)}
+                >
+                    RSVP
+                </Button>
+            }
         </Box>
     )
 }

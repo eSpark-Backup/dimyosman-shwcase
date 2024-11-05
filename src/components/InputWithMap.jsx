@@ -1,21 +1,48 @@
-import { Box, Divider, Typography, useTheme } from '@mui/material'
-import React, { useState } from 'react'
-import { arrowDown, miniMap } from '../assets'
-import Input from './input'
-import DatePicker from 'react-date-picker'
+import { Box, Divider, Typography, useTheme } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { arrowDown, miniMap } from '../assets';
+import Input from './input';
+import DatePicker from 'react-date-picker';
 import 'react-date-picker/dist/DatePicker.css';
 import 'react-calendar/dist/Calendar.css';
-import { formatDate } from '../utils'
+import { formatDate } from '../utils';
 
-const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapDescription, activity, eventName, eventAddress }) => {
+const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapDescription, activity, eventName, eventAddress, defaultDate }) => {
   const theme = useTheme();
   const [openDatePicker, setOpenDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date('2025-02-28'));
+  const [selectedDate, setSelectedDate] = useState(defaultDate);
+
+  useEffect(() => {
+    if (defaultDate) {
+      if (defaultDate === "dd.mm.yyyy.") {
+        setSelectedDate(defaultDate);
+      } else {
+        const parsedDate = parseDateString(defaultDate);
+        if (parsedDate) {
+          setSelectedDate(formatDate(parsedDate));
+        } else {
+          console.error("Invalid date format");
+        }
+      }
+    }
+  }, [defaultDate]);
+
+  const parseDateString = (dateString) => {
+    const parts = dateString.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+    if (parts) {
+      const day = parseInt(parts[1], 10);
+      const month = parseInt(parts[2], 10) - 1;
+      const year = parseInt(parts[3], 10);
+      return new Date(year, month, day);
+    }
+    return null;
+  };
 
   const handleDateChange = (date) => {
-    console.log(formatDate(date));
-    setSelectedDate(date);
-    setOpenDatePicker(false); // Close date picker after selecting a date
+    if (date) {
+      setSelectedDate(formatDate(date));
+      setOpenDatePicker(false);
+    }
   };
 
   return (
@@ -83,9 +110,7 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
               }}
             >
               <Typography variant='h1' sx={{ color: theme.palette.primary.main, textAlign: "left" }}>
-                {
-                  formatDate(selectedDate)
-                }
+                {selectedDate}
               </Typography>
               <Typography variant='h6' sx={{ textAlign: "left", color: theme.palette.primary.main }}>
                 until 15.4.2025.
@@ -106,7 +131,7 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
               >
                 <DatePicker
                   onChange={handleDateChange}
-                  value={selectedDate}
+                  value={parseDateString(selectedDate)} // Ensure you pass a Date object
                   onCalendarClose={() => setOpenDatePicker(false)}
                 />
               </Box>

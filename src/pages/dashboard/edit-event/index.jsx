@@ -167,7 +167,7 @@ const EditEvent = () => {
                     activeTab?.label === "Details"
                         ?
                         <>
-                            <InputWithMap inputLabel={"Event Overview:"} inputValue={eventOverview} setInputValue={setEventOverview} mapDescription={"123 Williamsburg Ave, Brooklyn, NY 11211"} activity={"event"} eventName={"Urban Pop-Up Studio 3B"} eventAddress={"Urban Pop-Up Pavilion"} />
+                            <InputWithMap inputLabel={"Event Overview:"} inputValue={eventOverview} setInputValue={setEventOverview} mapDescription={"123 Williamsburg Ave, Brooklyn, NY 11211"} activity={"event"} eventName={"Urban Pop-Up Studio 3B"} eventAddress={"Urban Pop-Up Pavilion"} defaultDate={"28.02.2025."} />
 
                             <Box
                                 sx={{

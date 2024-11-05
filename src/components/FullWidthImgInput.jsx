@@ -1,9 +1,11 @@
 import { Box, Button, Typography, useTheme } from '@mui/material'
 import React from 'react'
 import { activeItemIcon, add, notActiveIcon, subtract, uploadIcon } from '../assets'
+import { useNavigate } from 'react-router-dom'
 
 const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, activity }) => {
     const theme = useTheme()
+    const naivgate = useNavigate()
     return (
         <Box
             sx={{
@@ -52,6 +54,7 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, act
                         width: "143px",
                         height: "31px"
                     }}
+                    onClick={() => naivgate(`/${activity}`)}
                 >
                     Save as Draft
 
@@ -73,6 +76,7 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, act
                         width: "102px",
                         height: "31px"
                     }}
+                    onClick={() => naivgate(`/${activity}`)}
                 >
                     Archive
 
