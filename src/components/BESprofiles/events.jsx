@@ -1,9 +1,11 @@
+import { useNavigate } from "react-router-dom";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { addIcon, eventBadge } from "../../assets";
 import { useState } from "react";
 import EventCard from "../EventCard";
 
 const Events = ({ events }) => {
+  const navigate = useNavigate();
   const filterEvents = ["All", "Upcoming", "Past"];
   const [activeFilter, setActiveFilter] = useState("All");
   return (
@@ -90,7 +92,7 @@ const Events = ({ events }) => {
                 width: "328px"
               }}
             >
-              <EventCard event={event} key={ind} />
+              <EventCard onClick={() => navigate(`/event/${event?.eventId}`)} event={event} key={ind} />
             </Box>
           );
         })}

@@ -24,7 +24,14 @@ const Activity = () => {
           {activityItems.map((item, index) => (
             <ActivityCard
               key={index}
-              id={item?.id}
+              id={item?.profileId}
+              activityId={
+                item?.activity === "event"
+                  ? item?.eventId
+                  : item?.activity === "space"
+                  ? item?.spaceId
+                  : item?.brandId
+              }
               activity={item?.activity}
               userName={item?.userName}
               userImage={item?.userImage}
@@ -35,6 +42,7 @@ const Activity = () => {
               content={item?.content}
               activityLocation={item?.activityLocation}
               activityLocation2={item?.activityLocation2}
+              activityLocationId={item?.activityLocationId}
               activityAddress={item?.activityAddress}
               value={item?.value}
               deadline={item?.deadline}
@@ -74,7 +82,7 @@ const Activity = () => {
         </Grid>
       </Grid>
 
-
+      
     </>
   );
 };

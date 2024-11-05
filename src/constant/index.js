@@ -133,8 +133,9 @@ export const spaceFeatures = [
 
 export const activityItems = [
   {
-    id: 1,
+    profileId: 1,
     activity: "event",
+    eventId: 3,
     userName: "EcoLux Designs",
     activityName: "Ecolux Chic Pop-Up",
     activityMaker: "Sustainable Fashion",
@@ -145,16 +146,19 @@ export const activityItems = [
     ],
     activityLocation: "Urban Pop-Up Studio 3B",
     activityLocation2: "Urban Pop-Up Pavilion",
+    activityLocationId: 6,
     activityAddress: "123 Williamsburg Ave, Brooklyn, NY 11211",
     value: "28.02.2025.",
     deadline: "until 15.4.2025.",
     userImage: eventUserImage,
     activityImage: eventActivityImage,
-    userRole: "event",
+    userRole: "brand",
     slides: [eventMain, eventMain2, eventMain3],
   },
   {
+    profileId: 2,
     activity: "space",
+    spaceId: 6,
     userName: "Urban Pop-Up Pavilion",
     activityName: "Urban Pop-Up Studio 3B",
     activityMaker: "Urban Pop-Up Pavilion",
@@ -174,16 +178,17 @@ export const activityItems = [
   },
   {
     activity: "brand", // Adjusted for the new item
+    brandId: 1,
     userName: "Emily Thompson",
     userImage: brandUserImage,
     mainImage: brandMain,
-    activityImage: brandActivityImage,
+    activityImage: eventUserImage,
     activityName: "EcoLux Designs",
     activityMaker: "Sustainable Fashion",
     content: [
       "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials."
     ],
-    userRole: "account",
+    userRole: "profile",
     slides: [brandMain],
   },
 ];
@@ -434,6 +439,7 @@ export const profiles = [
         props: {
           events: [
             {
+              eventId: 3,
               eventimage: eventMain,
               eventName: "Ecolux Chic Pop-Up",
               eventCategory: "Sustainable Fashion",
@@ -444,6 +450,7 @@ export const profiles = [
               rsvp: 234566,
             },
             {
+              eventId: 3,
               eventimage: eventMain,
               eventName: "Ecolux Chic Pop-Up",
               eventCategory: "Sustainable Fashion",
@@ -454,6 +461,7 @@ export const profiles = [
               rsvp: 234566,
             },
             {
+              eventId: 3,
               eventimage: eventMain,
               eventName: "Ecolux Chic Pop-Up",
               eventCategory: "Sustainable Fashion",
@@ -464,6 +472,7 @@ export const profiles = [
               rsvp: 234566,
             },
             {
+              eventId: 3,
               eventimage: eventMain,
               eventName: "Ecolux Chic Pop-Up",
               eventCategory: "Sustainable Fashion",
@@ -474,6 +483,7 @@ export const profiles = [
               rsvp: 234566,
             },
             {
+              eventId: 3,
               eventimage: eventMain,
               eventName: "Ecolux Chic Pop-Up",
               eventCategory: "Sustainable Fashion",
@@ -484,6 +494,7 @@ export const profiles = [
               rsvp: 234566,
             },
             {
+              eventId: 3,
               eventimage: eventMain,
               eventName: "Ecolux Chic Pop-Up",
               eventCategory: "Sustainable Fashion",

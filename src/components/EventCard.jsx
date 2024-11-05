@@ -3,11 +3,12 @@ import { eventBadge } from '../assets'
 import { Box, Button, Typography, useTheme } from '@mui/material'
 import { Link, useNavigate } from 'react-router-dom'
 
-const EventCard = ({ event, showBtn }) => {
+const EventCard = ({ onClick, event, showBtn }) => {
     const theme = useTheme()
     const navigate = useNavigate()
     return (
         <Box
+            onClick={onClick ? onClick : () => {}}
             sx={{
                 width: "100%",
                 borderRadius: "5px",
@@ -18,7 +19,8 @@ const EventCard = ({ event, showBtn }) => {
                 flexDirection: "column",
                 justifyContent: "center",
                 alignItems: "center",
-                pb: "10px"
+                pb: "10px",
+                cursor: onClick ? "pointer" : "default",
             }}
         >
             <img
