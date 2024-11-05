@@ -80,6 +80,7 @@ import profileBadge from "./profile-badge.png";
 import star from "./star.svg";
 import reviewer from "./reviewer.png";
 import arrowDown from "./arrow_down.svg"
+import profileBanner from "./profile-banner.svg"
 
 export {
   react,
@@ -163,5 +164,6 @@ export {
   profileBadge,
   star,
   reviewer,
-  arrowDown
+  arrowDown,
+  profileBanner
 };

@@ -15,6 +15,10 @@ import OutlinedTabs from "./outlinedTabs";
 import BESProfile from "./BESprofiles/BESprofile";
 import EventCard from "./EventCard";
 import Dropdown from "./Dropdown";
+import ProfileCard from "./ProfileCard";
+import ProfileAboutSection from "./ProfileAboutSection";
+import BrandCard from "./BrandCard";
+import ProfileEvents from "./ProfileEvents";
 
 export {
   Input,
@@ -33,5 +37,9 @@ export {
   OutlinedTabs,
   BESProfile,
   EventCard,
-  Dropdown
+  Dropdown,
+  ProfileCard,
+  ProfileAboutSection,
+  BrandCard,
+  ProfileEvents
 };

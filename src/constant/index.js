@@ -98,7 +98,7 @@ export const sidebarRoutes = [
 
 export const getSmallSidebar = (currentLink) => {
   const id = currentLink.split("/")[2];
-  const smallSidebarLink = ["/message", "/profile", `/brand/${id}`];
+  const smallSidebarLink = ["/message", `/brand/${id}`];
   return smallSidebarLink.includes(currentLink);
 };
 
@@ -419,4 +419,122 @@ export const reviews = [
       way. Highly recommend!"`,
     approved: false,
   },
+  {
+    eventimage: eventMain,
+    eventName: "Ecolux Chic Pop-Up",
+    eventCategory: "Sustainable Fashion",
+    eventMessage:
+      "A limited-time clothing pop-up store featuring EcoLux Designs' latest collection of eco-friendly luxury fashion",
+    by: "EcoLux Designs",
+    startingDate: "28.02.2025.",
+    rsvp: 234566,
+  },
+  {
+    eventimage: eventMain,
+    eventName: "Ecolux Chic Pop-Up",
+    eventCategory: "Sustainable Fashion",
+    eventMessage:
+      "A limited-time clothing pop-up store featuring EcoLux Designs' latest collection of eco-friendly luxury fashion",
+    by: "EcoLux Designs",
+    startingDate: "28.02.2025.",
+    rsvp: 234566,
+  },
+  {
+    eventimage: eventMain,
+    eventName: "Ecolux Chic Pop-Up",
+    eventCategory: "Sustainable Fashion",
+    eventMessage:
+      "A limited-time clothing pop-up store featuring EcoLux Designs' latest collection of eco-friendly luxury fashion",
+    by: "EcoLux Designs",
+    startingDate: "28.02.2025.",
+    rsvp: 234566,
+  },
+  {
+    eventimage: eventMain,
+    eventName: "Ecolux Chic Pop-Up",
+    eventCategory: "Sustainable Fashion",
+    eventMessage:
+      "A limited-time clothing pop-up store featuring EcoLux Designs' latest collection of eco-friendly luxury fashion",
+    by: "EcoLux Designs",
+    startingDate: "28.02.2025.",
+    rsvp: 234566,
+  },
+]
+
+
+export const profileStats = [
+  {
+    name: "Brands:",
+    value: 1234
+  },
+  {
+    name: "Events:",
+    value: 1234
+  },
+  {
+    name: "Spaces:",
+    value: 1234
+  },
+  {
+    name: "Member since:",
+    value: "mm.yyyy."
+  }
+]
+
+
+
+export const profileAboutSection = [
+  {
+    type: "heading",
+    content: "A Passion for Sustainable Fashion"
+  },
+  {
+    type: "paragraph",
+    content: "Hi, I'm Emily Thompson, founder and designer at EcoLux Designs. For as long as I can remember, I've been passionate about creating beautiful clothing that doesn't come at the expense of our planet. My goal has always been to merge the world of luxury fashion with sustainable practices, offering high-end pieces that not only look incredible but are also made with care for the environment."
+  },
+  {
+    type: "breaker"
+  },
+  {
+    type: "paragraph",
+    content: "At EcoLux Designs, I work with organic fabrics and recycled materials to ensure every garment is as eco-friendly as it is stylish. I believe that fashion can be both timeless and responsible, and my collections reflect that balance. From the design process to production, I’m committed to reducing waste and promoting ethical practices in every step."
+  },
+  {
+    type: "image",
+    content: brandMain
+  },
+  {
+    type: "heading",
+    content: "Leading the Movement Toward Eco-Conscious Fashion"
+  },
+  {
+    type: "paragraph",
+    content: "Sustainability isn’t just a trend for me—it’s at the core of everything I do. My hope is to inspire others to make more conscious choices in their wardrobes while still enjoying the luxury and elegance that fashion can bring. I love collaborating with like-minded individuals and brands, and I’m always exploring new ways to push the boundaries of what sustainable fashion can achieve."
+  }
+]
+
+
+export const brandCardContent = [
+  {
+    profileImage: eventUserImage,
+    brandName: "EcoLux Designs",
+    brandCategory: "Sustainable Fashion",
+    description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+    brandImage: brandMain
+  },
+  {
+    profileImage: eventUserImage,
+    brandName: "EcoLux Designs",
+    brandCategory: "Sustainable Fashion",
+    description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+    brandImage: brandMain
+  },
+  {
+    profileImage: eventUserImage,
+    brandName: "EcoLux Designs",
+    brandCategory: "Sustainable Fashion",
+    description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+    brandImage: brandMain
+  },
+
 ]
