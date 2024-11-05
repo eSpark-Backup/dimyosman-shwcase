@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, Typography, Checkbox, Button } from '@mui/material';
 import SearchBar from './SearchBar';
 import { useTheme } from '@emotion/react';
+import CheckBox from './CheckBox';
 
 const ChoiceSelectionModal = ({
     categories,
@@ -51,7 +52,7 @@ const ChoiceSelectionModal = ({
                     display: "flex",
                     flexDirection: "column",
                     rowGap: "16px",
-                    padding: "0px",
+                    padding: "15px",
                     border: "1px solid rgba(209, 219, 215, 0.5)",
                     borderRadius: "5px",
                     maxHeight: "345px",
@@ -59,8 +60,8 @@ const ChoiceSelectionModal = ({
                 }}
             >
                 {filteredItems.map((cat, index) => (
-                    <Box key={cat.name} display="flex" alignItems="center" marginBottom={1}>
-                        <Checkbox
+                    <Box key={cat.name} display="flex" alignItems="center" marginBottom={1} columnGap={1}>
+                        <CheckBox
                             checked={cat.selected}
                             onChange={() => handleCheckboxChange(index)}
                         />

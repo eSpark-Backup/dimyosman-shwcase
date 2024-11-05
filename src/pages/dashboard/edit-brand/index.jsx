@@ -118,7 +118,7 @@ const EditBrand = () => {
     { label: "Details", component: <></> },
     { label: "Events", component: <></> },
   ];
-   const handleTabChange = (tab) => {
+  const handleTabChange = (tab) => {
     setActiveTab(tab);
     if (tab === 'Editor') {
       setIsEditorVisible(true);
@@ -135,7 +135,7 @@ const EditBrand = () => {
         pb: "40px"
       }}
     >
-      <FullWidthImgInput HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={brandIcon} />
+      <FullWidthImgInput activity={"brand"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={brandIcon} />
       <ImgInputWithCategories
         handleImgClick={HandleProfileFileInputClick}
         imgRef={profileImageRef}
@@ -146,7 +146,8 @@ const EditBrand = () => {
         categoryLabel={"brand category:"}
         categories={selectedCategories}
         handleModalOpen={handleModalOpen}
-        description={"1 min - 2 max. Checkbox on the categories will display them publicly."}
+        description={"Checkbox on the categories will display them publicly. All selected Brand categories are inherited by Events and Spaces, allowing them for individual selection."}
+        activity={"brand"}
       />
       <ReusableModal open={modalOpen} handleClose={handleModalClose} heading={"Select Brand Categories"}>
         <ChoiceSelectionModal
@@ -241,7 +242,7 @@ const EditBrand = () => {
             </Box>
             :
             <>
-              <InputWithMap inputLabel={"Brand Overview:"} inputValue={brandOverview} setInputValue={setBrandOverview} handleClick={() => setMapModal(true)} mapDescription={"Click on the map to select Address."} />
+              <InputWithMap inputLabel={"Brand Overview:"} inputValue={brandOverview} setInputValue={setBrandOverview} handleClick={() => setMapModal(true)} mapDescription={"Click on the map to select Address."} activity={"brand"} />
               <Box
                 sx={{
                   width: "98%",
@@ -262,9 +263,11 @@ const EditBrand = () => {
                     }}
                     onClick={() => setIsEditorVisible(true)}
                   >
-                    <Typography variant="body1" color={theme.palette.primary.main}>
-                      {brandTitle.replace(/<[^>]*>/g, '')}
-                    </Typography>
+                    <Typography
+                      variant="body1"
+                      color={theme.palette.primary.main}
+                      dangerouslySetInnerHTML={{ __html: brandTitle }}
+                    />
                   </Box>
                 }
 
