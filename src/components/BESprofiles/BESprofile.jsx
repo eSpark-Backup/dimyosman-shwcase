@@ -186,7 +186,14 @@ const BESProfile = ({ type, data }) => {
                         }
                         key={ind}
                         variant="h6"
-                        sx={{ fontWeight: 200, textTransform: "capitalize" }}
+                        sx={{
+                          cursor:
+                            myProfile?.by && key === "by"
+                              ? "pointer"
+                              : "default",
+                          fontWeight: 200,
+                          textTransform: "capitalize",
+                        }}
                       >
                         {key}:{" "}
                         <span style={{ fontWeight: 600, textTransform: "none" }}>
