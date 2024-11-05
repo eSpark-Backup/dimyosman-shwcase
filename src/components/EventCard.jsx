@@ -1,7 +1,6 @@
-import React from 'react'
 import { eventBadge } from '../assets'
 import { Box, Button, Typography, useTheme } from '@mui/material'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 const EventCard = ({ onClick, event, showBtn }) => {
     const theme = useTheme()
@@ -27,7 +26,7 @@ const EventCard = ({ onClick, event, showBtn }) => {
                 style={{ borderRadius: "5px 5px 0 0 " }}
                 width="100%"
                 height="100%"
-                src={event?.eventimage}
+                src={event?.slides[0]}
                 alt="event-img"
             />
             <img
@@ -37,23 +36,23 @@ const EventCard = ({ onClick, event, showBtn }) => {
             />
             <Box padding={2} sx={{ display: "flex", flexDirection: "column", rowGap: "5px" }}>
                 <Typography textAlign="left" fontSize={20} fontWeight={600}>
-                    {event?.eventName}
+                    {event?.profileName}
                 </Typography>
                 <Typography textAlign="left" fontWeight={300} variant="h5">
-                    {event?.eventCategory}
+                    {event?.category}
                 </Typography>
                 <Typography textAlign="left" fontWeight={400} variant="h6">
-                    {event?.eventMessage}
+                    {event?.tabs[0]?.props?.details?.overview[0]}
                 </Typography>
                 <Typography fontWeight={300} variant="h6" textAlign="left">
-                    By: <span style={{ fontWeight: 600 }}>{event?.by}</span>
+                    By: <span style={{ fontWeight: 600 }}>{event?.details?.by}</span>
                 </Typography>
                 <Typography fontWeight={300} variant="h2" textAlign="left">
                     Starting:{" "}
-                    <span style={{ fontWeight: 600 }}>{event?.startingDate}</span>
+                    <span style={{ fontWeight: 600 }}>{event?.details?.starting}</span>
                 </Typography>
                 <Typography fontWeight={300} variant="h6" textAlign="left">
-                    RSVP: <span style={{ fontWeight: 600 }}>{event?.rsvp}</span>
+                    RSVP: <span style={{ fontWeight: 600 }}>{event?.details?.RSVP}</span>
                 </Typography>
 
             </Box>

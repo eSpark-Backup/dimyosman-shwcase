@@ -5,7 +5,7 @@ import { flag } from '../../../assets'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
 import Reviews from '../../../components/BESprofiles/reviews'
-import { eventReviews } from '../../../constant'
+import { reviews as eventReviews } from '../../../constant'
 
 const EditEvent = () => {
     const theme = useTheme()

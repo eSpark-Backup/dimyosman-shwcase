@@ -1,9 +1,9 @@
-import React, { useState } from "react";
 import { Box, Stack, Typography, useTheme } from "@mui/material";
 import { profileBadge, star } from "../../assets";
 import CheckBox from "../CheckBox";
+import { reviews } from "../../constant";
 
-const Reviews = ({ reviews, showApproveBox, onApproveChange }) => {
+const Reviews = ({ showApproveBox, onApproveChange }) => {
   const theme = useTheme();
 
   const handleCheckboxChange = (ind) => (event) => {

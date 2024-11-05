@@ -1,13 +1,14 @@
 import { Box, Button, Stack, Typography, useTheme } from '@mui/material'
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { addGrey, brandIcon } from '../../../assets'
 import ReusableModal from '../../../components/Modal'
 import { ChoiceSelectionModal, EventCard, FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs } from '../../../components'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
-import { events } from '../../../constant'
+import { useSelector } from 'react-redux'
 
 const EditBrand = () => {
+  const { events } = useSelector(state => state.event)
   const theme = useTheme()
   const mainImageRef = useRef(null)
   const profileImageRef = useRef(null)
@@ -56,7 +57,6 @@ const EditBrand = () => {
 
   const handleModalOpen = () => {
     setModalOpen(true);
-    setSelectedInModal(categories.map(cat => ({ ...cat })));
   };
 
   const handleModalClose = () => {

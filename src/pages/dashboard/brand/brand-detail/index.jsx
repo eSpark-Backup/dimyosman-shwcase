@@ -1,7 +1,9 @@
+import { useSelector } from "react-redux";
 import { BESProfile } from "../../../../components";
 
 const BrandDetails = () => {
-  return <BESProfile />
+  const { brands } = useSelector((state) => state.brand);
+  return <BESProfile type="brand" data={brands} />;
 };
 
 export default BrandDetails;

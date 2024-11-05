@@ -1,13 +1,16 @@
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { Box, Button, Stack, Typography } from "@mui/material";
-import { addIcon, eventBadge } from "../../assets";
+import { addIcon } from "../../assets";
 import { useState } from "react";
 import EventCard from "../EventCard";
 
-const Events = ({ events }) => {
+const Events = ({ myProfile, addNewEvent }) => {
   const navigate = useNavigate();
   const filterEvents = ["All", "Upcoming", "Past"];
   const [activeFilter, setActiveFilter] = useState("All");
+  const { events } = useSelector((state) => state?.event);
+  const myEvents = events.filter((event) => event.owned && event.by === myProfile.id);
   return (
     <Box>
       <Stack
@@ -46,6 +49,7 @@ const Events = ({ events }) => {
           </Stack>
         </Stack>
         <Button
+          onClick={addNewEvent}
           startIcon={
             <img
               style={{
@@ -85,14 +89,14 @@ const Events = ({ events }) => {
         rowGap={4}
         columnGap={2}
       >
-        {events.map((event, ind) => {
+        {myEvents.map((event, ind) => {
           return (
             <Box
               sx={{
                 width: "328px"
               }}
             >
-              <EventCard onClick={() => navigate(`/event/${event?.eventId}`)} event={event} key={ind} />
+              <EventCard onClick={() => navigate(`/event/${event?.id}`)} event={event} key={ind} />
             </Box>
           );
         })}

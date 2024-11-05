@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Box, Button, Modal, Stack, Typography } from "@mui/material";
-import { profiles } from "../../constant";
 import DynamicPaginationSwiper from "../Slider";
 import OutlinedTabs from "../outlinedTabs";
 import Details from "./details";
@@ -12,14 +11,14 @@ import Spaces from "./spaces";
 import Teenacy from "./teenacy";
 import { brandBadge, eventBadge, spaceBadge, star } from "../../assets";
 
-const BESProfile = () => {
+const BESProfile = ({ type, data }) => {
   const [openSliderModal, setOpenSliderModal] = useState(false);
   const handleCloseModal = () => setOpenSliderModal(false);
   const navigate = useNavigate();
   const { id } = useParams();
 
   const editProfile = () => {
-    navigate(`/brand/${id}/edit`);
+    navigate(`/${type}/${id}/edit`);
   };
 
   const addNewEvent = () => {
@@ -51,7 +50,7 @@ const BESProfile = () => {
     }));
   };
 
-  const filteredProfile = profiles.find((profile) => profile.id === Number(id));
+  const filteredProfile = data.find((profile) => profile.id === Number(id));
   const myProfile = {
     ...filteredProfile,
     tabs: mapTabsToComponents(filteredProfile, filteredProfile.tabs),
@@ -174,6 +173,17 @@ const BESProfile = () => {
                 {Object.entries(myProfile?.details).map(([key, values], ind) => {
                     return (
                       <Typography
+                        onClick={
+                          myProfile?.by && key === "by"
+                            ? () => {
+                                navigate(
+                                  `/${type === "brand" ? "profile" : "brand"}/${
+                                    myProfile?.by
+                                  }`
+                                );
+                              }
+                            : () => {}
+                        }
                         key={ind}
                         variant="h6"
                         sx={{ fontWeight: 200, textTransform: "capitalize" }}
