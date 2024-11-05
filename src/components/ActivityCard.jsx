@@ -2,9 +2,11 @@ import React from 'react'
 import { Box, Button, Divider, Typography, useTheme } from "@mui/material";
 import { accountIcon, brandIcon, brandMain, calender, comment, eventMain, eventMain2, eventMain3, flag, like, miniMap, miniMap2, share, spaceIcon, spaceMain } from "../assets/index.js";
 import DynamicPaginationSwiper from './Slider.jsx';
+import { useNavigate } from 'react-router-dom';
 
-const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, activityName, activityMaker, content, activityImage, activityLocation, activityLocation2, activityAddress, value, deadline, features, slides }) => {
+const ActivityCard = ({ id, userName, userRole, userImage, mainImage, activity, activityName, activityMaker, content, activityImage, activityLocation, activityLocation2, activityAddress, value, deadline, features, slides }) => {
     const theme = useTheme()
+    const navigate = useNavigate();
     return (
         <Box
             sx={{
@@ -17,7 +19,9 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
             }}
         >
             <Box
+                onClick={() => navigate(`/brand/${id}`)}
                 sx={{
+                    cursor: "pointer",
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: { xs: "flex-start", md: "center" },

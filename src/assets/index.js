@@ -54,12 +54,32 @@ import spaceMain from "./space-main.svg"
 import spaceMain2 from "./space-main2.svg"
 import spaceMain3 from "./space-main3.svg"
 import brandMain from "./brandMain.svg"
+import brandMain2 from "./brand-main2.png";
+import spaceProfile from "./space-profile.png";
+import eventMainImage from "./event-main-image.png";
 import accountIcon from "./account.svg"
 import miniMap2 from "./micro-map2.svg"
 import logoIcon from "./logo-icon.svg"
 import logoText from "./logo-text.svg"
 import brandIconlight from "./brand-icon.png";
 import brandBadge from "./brand-badge.png";
+import activeItemIcon from './activeItemIcon.svg'
+import notActiveIcon from "./notActiveItemIcon.svg"
+import add from "./addIcon.svg"
+import subtract from "./subtractIcon.svg"
+import uploadIcon from "./upload-icon.svg"
+import close from "./close.svg"
+import checkedIcon from "./checkedIcon.svg"
+import uncheckedIcon from "./uncheckedIcon.svg"
+import locationIcon from "./locationIcon.svg"
+import modalMap from "./modalMap.svg"
+import addGrey from "./add-grey.svg"
+import eventBadge from "./event-badge.png";
+import spaceBadge from "./space-badge.png";
+import profileBadge from "./profile-badge.png";
+import star from "./star.svg";
+import reviewer from "./reviewer.png";
+import arrowDown from "./arrow_down.svg"
 
 export {
   react,
@@ -114,6 +134,9 @@ export {
   storage,
   spaceMain,
   brandMain,
+  brandMain2,
+  spaceProfile,
+  eventMainImage,
   accountIcon,
   miniMap2,
   eventMain3,
@@ -124,4 +147,21 @@ export {
   logoText,
   brandIconlight,
   brandBadge,
+  activeItemIcon,
+  notActiveIcon,
+  add,
+  subtract,
+  uploadIcon,
+  close,
+  checkedIcon,
+  uncheckedIcon,
+  locationIcon,
+  modalMap,
+  addGrey,
+  eventBadge,
+  spaceBadge,
+  profileBadge,
+  star,
+  reviewer,
+  arrowDown
 };
