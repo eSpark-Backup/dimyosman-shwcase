@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { BrandCard, OutlinedTabs, ProfileAboutSection, ProfileCard, ProfileEvents } from "../../../components";
+import { BrandCard, OutlinedTabs, ProfileAboutSection, ProfileCard, ProfileEvents, ProfileSpaces } from "../../../components";
 import { profileContent } from "../../../constant";
 import { useState } from "react";
 import { useSelector } from "react-redux";
@@ -18,7 +18,11 @@ const Profile = () => {
     },
     {
       label: profileData[0].tabs[2],
-      component: <ProfileEvents filter1={"All"} filter2={"Upcoming"} filter3={"Past"} cardsData={profileData[0].events && events} />
+      component: <ProfileEvents filter1={"All"} filter2={"Upcoming"} filter3={"Past"} cardsData={events} />
+    },
+    {
+      label: profileData[0].tabs[3],
+      component: <ProfileSpaces cardsData={profileData[0].spaceSection} filter1={"All"} filter2={"Upcoming"} filter3={"Past"} />
     },
 
   ]

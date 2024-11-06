@@ -19,6 +19,8 @@ import ProfileCard from "./ProfileCard";
 import ProfileAboutSection from "./ProfileAboutSection";
 import BrandCard from "./BrandCard";
 import ProfileEvents from "./ProfileEvents";
+import ProfileSpaces from "./ProfileSpaces";
+import SpaceCard from "./SpaceCard";
 
 export {
   Input,
@@ -41,5 +43,7 @@ export {
   ProfileCard,
   ProfileAboutSection,
   BrandCard,
-  ProfileEvents
+  ProfileEvents,
+  ProfileSpaces,
+  SpaceCard
 };

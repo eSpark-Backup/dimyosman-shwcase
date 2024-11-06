@@ -84,6 +84,8 @@ import profileBanner from "./profile-banner.svg"
 import profileBanner2 from "./profile-banner2.svg"
 import profileImage2 from "./profileImage2.svg"
 import brandCardImage from "./brandCardImage.svg"
+import spaceImage from "./space-image.svg"
+import profileAbout from "./profileAbout.svg"
 
 export {
   react,
@@ -171,5 +173,7 @@ export {
   profileBanner,
   profileBanner2,
   profileImage2,
-  brandCardImage
+  brandCardImage,
+  spaceImage,
+  profileAbout
 };

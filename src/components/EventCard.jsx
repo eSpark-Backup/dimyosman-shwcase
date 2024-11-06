@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 const EventCard = ({ onClick, event, showBtn, btnText }) => {
     const theme = useTheme()
     const navigate = useNavigate()
+    console.log(event)
     return (
         <Box
             onClick={onClick ? onClick : () => {}}
