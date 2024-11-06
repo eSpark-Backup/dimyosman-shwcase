@@ -1,19 +1,27 @@
 import { Box, Button, Typography, useTheme } from '@mui/material'
 import React from 'react'
-import { accountIcon, brandIcon, brandUserImage, flag, profileBanner, spaceIcon, user } from '../assets'
+import { accountIcon, brandIcon, flag, spaceIcon, uploadIcon, user } from '../assets'
 import { profileStats } from '../constant'
+import { useLocation, useNavigate } from 'react-router-dom'
 
-const ProfileCard = ({ userRole = "account" }) => {
+const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, handleProfileChange, profileImgRef, handleMainImgChange, mainImgRef, handleMainImgClick, coverImg, userProfileImg, userName }) => {
     const theme = useTheme()
+    const location = useLocation()
+    const navigate = useNavigate();
     return (
         <Box
             sx={{
                 position: "relative",
-                minHeight: "300px",
-                objectFit: "cover"
+                minHeight: isEdit ? { xs: "400px", lg: "180px" } : "300px",
+                flex: 1,
+                backgroundImage: !isEdit && `url(${coverImg})`,
+                backgroundPosition: !isEdit && "center",
+                backgroundSize: !isEdit && "cover",
+                backgroundRepeat: !isEdit && "no-repeat",
+                backgroundColor: isEdit && "rgb(209, 219, 215, 0.2)",
+                border: isEdit && "1px dashed rgb(0, 20, 28, 0.4)"
             }}
         >
-            <img src={profileBanner} alt="Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             <Button
                 sx={{
                     backgroundColor: "rgb(0, 20, 28, 0.2)",
@@ -36,12 +44,12 @@ const ProfileCard = ({ userRole = "account" }) => {
             </Button>
             <Button
                 sx={{
-                    backgroundColor: "#4d5b60",
+                    backgroundColor: isEdit ? "rgb(0, 20, 28, 0.9)" : "#4d5b60",
                     height: "31px",
-                    minWidth: "77px",
+                    minWidth: isEdit ? "103px" : "77px",
                     position: "absolute",
                     top: "10px",
-                    right: "20px",
+                    right: { xs: "0px", lg: "20px" },
                     borderRadius: "5px",
                     display: "flex",
                     justifyContent: "center",
@@ -50,18 +58,21 @@ const ProfileCard = ({ userRole = "account" }) => {
                     fontWeight: "600",
                     color: "white",
                     ":hover": {
-                        backgroundColor: "#4d5b60"
+                        backgroundColor: isEdit ? "rgb(0, 20, 28, 0.9)" : "#4d5b60"
                     }
                 }}
+                onClick={() => isEdit ? navigate(`/profile/${location?.pathname.split("/").at(-1)}`) : navigate(`/profile/edit/${location?.pathname.split("/").at(-1)}`)}
             >
-                Edit
+                {
+                    isEdit ? "Publish" : "Edit"
+                }
 
             </Button>
             <Box
                 sx={{
                     position: "absolute",
-                    width: { xs: "90%", md: "65%", xl: "35%" },
-                    top: "0px",
+                    width: { xs: "90%", md: "70%", xl: "35%" },
+                    top: { xs: "50%", md: "0px" },
                     left: "50%",
                     transform: "translate(-50%, -50%)"
                 }}
@@ -69,7 +80,7 @@ const ProfileCard = ({ userRole = "account" }) => {
                 <Box
                     sx={{
                         backgroundColor: "white",
-                        padding: "10px 50px",
+                        padding: { xs: "10px 10px", lg: "10px 50px" },
                         display: "flex",
                         flexDirection: "column",
                         rowGap: "3px",
@@ -78,31 +89,74 @@ const ProfileCard = ({ userRole = "account" }) => {
                         borderRadius: "5px"
                     }}
                 >
-                    <Box
-                        sx={{
-                            width: "96px",
-                            height: "96px",
-                            position: "relative"
-                        }}
-                    >
-                        <img src={brandUserImage} alt="User Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        <Box
-                            sx={{
-                                background: userRole === "event" ? "rgb(148, 185, 134)" : userRole === "brand" ? "rgb(196, 119, 127)" : userRole === "space" ? "rgb(120, 150, 195)" : theme.palette.primary.main,
-                                width: "16px",
-                                height: "16px",
-                                position: "absolute",
-                                bottom: "0px",
-                                right: "0px",
-                                borderRadius: "5px",
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center"
-                            }}
-                        >
-                            <img src={userRole === "event" ? flag : userRole === "brand" ? brandIcon : userRole === "space" ? spaceIcon : accountIcon} alt="Icon" style={{ width: "12px", height: "10px" }} />
-                        </Box>
-                    </Box>
+                    {
+                        isEdit
+                            ?
+                            <Box
+                                sx={{
+                                    height: "96px",
+                                    width: "96px",
+                                    border: "1px dashed rgb(0, 20, 28, 0.4)",
+                                    backgroundColor: "rgb(209, 219, 215, 0.2)",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    pt: "15px"
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        rowGap: "0px",
+                                        cursor: "pointer"
+                                    }}
+                                    onClick={handleProfileImgClick}
+                                >
+                                    <Typography
+                                        sx={{
+                                            fontSize: '14px',
+                                            fontWeight: "300",
+                                            color: theme.palette.primary.main,
+                                            fontStyle: "italic"
+                                        }}
+                                    >
+                                        upload image:
+                                    </Typography>
+                                    <img src={uploadIcon} alt="Icon" />
+                                    <input type="file" style={{ display: "none" }}
+                                        ref={profileImgRef} onChange={handleProfileChange}
+                                    />
+                                </Box>
+
+                            </Box>
+                            :
+                            <Box
+                                sx={{
+                                    width: "96px",
+                                    height: "96px",
+                                    position: "relative"
+                                }}
+                            >
+                                <img src={userProfileImg} alt="User Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                <Box
+                                    sx={{
+                                        background: userRole === "event" ? "rgb(148, 185, 134)" : userRole === "brand" ? "rgb(196, 119, 127)" : userRole === "space" ? "rgb(120, 150, 195)" : theme.palette.primary.main,
+                                        width: "16px",
+                                        height: "16px",
+                                        position: "absolute",
+                                        bottom: "0px",
+                                        right: "0px",
+                                        borderRadius: "5px",
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center"
+                                    }}
+                                >
+                                    <img src={userRole === "event" ? flag : userRole === "brand" ? brandIcon : userRole === "space" ? spaceIcon : accountIcon} alt="Icon" style={{ width: "12px", height: "10px" }} />
+                                </Box>
+                            </Box>
+                    }
                     <Typography
                         sx={{
                             color: theme.palette.primary.main,
@@ -110,7 +164,7 @@ const ProfileCard = ({ userRole = "account" }) => {
                         }}
                         variant='h1'
                     >
-                        Emily Thompson
+                        {userName}
 
                     </Typography>
                     <Box
@@ -118,7 +172,8 @@ const ProfileCard = ({ userRole = "account" }) => {
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
-                            width: "100%"
+                            width: "100%",
+                            flexWrap: "wrap"
                         }}
                     >
                         {
@@ -153,6 +208,42 @@ const ProfileCard = ({ userRole = "account" }) => {
 
                 </Box>
             </Box>
+            {
+                isEdit
+                &&
+                <Box
+                    sx={{
+                        position: "absolute",
+                        bottom: 0,
+                        right: "20px",
+                    }}
+                >
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            rowGap: "0px",
+                            cursor: "pointer"
+                        }}
+                        onClick={handleMainImgClick}
+                    >
+                        <Typography
+                            sx={{
+                                fontSize: '14px',
+                                fontWeight: "300",
+                                color: theme.palette.primary.main,
+                                fontStyle: "italic"
+                            }}
+                        >
+                            upload image:
+                        </Typography>
+                        <img src={uploadIcon} alt="Icon" />
+                        <input type="file" style={{ display: "none" }}
+                            ref={mainImgRef} onChange={handleMainImgChange}
+                        />
+                    </Box>
+                </Box>
+            }
 
         </Box>
     )

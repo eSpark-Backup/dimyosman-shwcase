@@ -1,38 +1,42 @@
-import { Box, Stack, Typography, useTheme } from "@mui/material";
-import { BrandCard, EventCard, OutlinedTabs, ProfileAboutSection, ProfileCard, ProfileEvents } from "../../../components";
-import { brandCardContent, profileAboutSection } from "../../../constant";
-import { useSelector } from "react-redux";
+import { Box } from "@mui/material";
+import { BrandCard, OutlinedTabs, ProfileAboutSection, ProfileCard, ProfileEvents } from "../../../components";
+import { profileContent } from "../../../constant";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
 const Profile = () => {
-  const theme = useTheme()
-  const [selectedChoice, setSelectedChoice] = useState(1)
+  const [profileData, setProfileData] = useState(profileContent)
+  const { events } = useSelector((state) => state.event);
   const profileTabs = [
     {
-      label: "About",
-      component: <ProfileAboutSection content={profileAboutSection} />
+      label: profileData[0].tabs[0],
+      component: <ProfileAboutSection content={profileData[0].aboutSection} />
     },
     {
-      label: "Brands",
-      component: <BrandCard items={brandCardContent} />
+      label: profileData[0].tabs[1],
+      component: <BrandCard items={profileData[0].brandSection} filter1={"All"} filter2={"Published"} filter3={"Draft"} />
     },
     {
-      label: "Events",
-      component: <ProfileEvents />
+      label: profileData[0].tabs[2],
+      component: <ProfileEvents filter1={"All"} filter2={"Upcoming"} filter3={"Past"} cardsData={profileData[0].events && events} />
     },
 
   ]
   return (
     <Box
       sx={{
-        marginTop: "120px",
+        marginTop: { xs: "0px", md: "90px" },
         display: "flex",
         rowGap: "20px",
         flexDirection: "column",
         backgroundColor: "white"
       }}
     >
-      <ProfileCard />
+      <ProfileCard
+        coverImg={profileData[0].bannerImage}
+        userProfileImg={profileData[0].userImage}
+        userName={profileData[0]?.name}
+      />
       <OutlinedTabs tabs={profileTabs} />
     </Box>
   );

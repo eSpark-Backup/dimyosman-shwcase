@@ -1,32 +1,26 @@
-import { Box, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Button, Stack, Typography, useTheme } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import EventCard from './EventCard';
+import { addGrey } from '../assets';
 
-const ProfileEvents = () => {
+const ProfileEvents = ({ filter1, filter2, filter3, cardsData }) => {
     const theme = useTheme();
-    const { events } = useSelector((state) => state.event);
-    const [selected, setSelected] = useState(0);
-
-    useEffect(() => {
-        console.log("Selected state updated:", selected);
-    }, [selected]);
+    const [selectedChoice, setSelectedChoice] = useState(0);
 
     return (
         <Box
             sx={{
-                width: "98%",
                 display: "flex",
                 flexDirection: "column",
-                rowGap: "20px"
+                rowGap: "20px",
+                mt: "50px"
             }}
         >
             <Box
                 sx={{
-                    width: "95%",
                     display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
+                    justifyContent: "space-between",
                     flexWrap: "wrap",
                     rowGap: "10px"
                 }}
@@ -35,39 +29,35 @@ const ProfileEvents = () => {
                     sx={{
                         display: "flex",
                         columnGap: "16px",
-                        flexDirection: "row",
+                        flexDirection: { xs: "column", sm: "row" },
                         rowGap: "2px"
                     }}
                 >
                     <Typography variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "400" }}>Show:</Typography>
-                    <Box onClick={() => setSelected(0)}>
-                        <Typography
-
-                            variant='h5'
-                            sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selected === 0 ? "600" : "400", cursor: "pointer" }}
-                        >
-                            All
-                        </Typography>
-                    </Box>
-                    <Box onClick={() => setSelected(1)}>
-                        <Typography
-
-                            variant='h5'
-                            sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selected === 1 ? "600" : "400", cursor: "pointer" }}
-                        >
-                            Upcoming
-                        </Typography>
-                    </Box>
-                    <Box onClick={() => setSelected(2)}>
-                        <Typography
-
-                            variant='h5'
-                            sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selected === 2 ? "600" : "400", cursor: "pointer" }}
-                        >
-                            Past
-                        </Typography>
-                    </Box>
+                    <Typography onClick={() => setSelectedChoice(0)} variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 0 ? "600" : "400", cursor: "pointer" }}>{filter1}</Typography>
+                    <Typography onClick={() => setSelectedChoice(1)} variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 1 ? "600" : "400", cursor: "pointer" }}>{filter2}</Typography>
+                    <Typography onClick={() => setSelectedChoice(2)} variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 2 ? "600" : "400", cursor: "pointer" }}>{filter3}</Typography>
                 </Box>
+                <Button
+                    sx={{
+                        backgroundColor: "rgb(209, 219, 215, 0.4)",
+                        height: "31px",
+                        width: "142px",
+                        color: theme.palette.primary.main,
+                        fontWeight: "600",
+                        fontSize: "16px",
+                        display: "flex",
+                        columnGap: "6px",
+                        alignItems: "center",
+                        "&:hover": {
+                            backgroundColor: "rgb(209, 219, 215, 0.4)",
+                        }
+                    }}
+                >
+                    <img src={addGrey} alt="" />
+                    Add New
+                </Button>
+
             </Box>
             <Stack
                 marginTop={2}
@@ -78,9 +68,9 @@ const ProfileEvents = () => {
                 rowGap={4}
                 columnGap={0}
             >
-                {events.map((event, ind) => (
+                {cardsData.map((event, ind) => (
                     <Box key={ind} sx={{ width: { xs: "100%", md: "328px" } }}>
-                        <EventCard event={event} showBtn={true} />
+                        <EventCard event={event} showBtn={true} btnText={"Edit"} />
                     </Box>
                 ))}
             </Stack>

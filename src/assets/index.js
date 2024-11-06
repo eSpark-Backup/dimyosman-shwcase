@@ -81,6 +81,9 @@ import star from "./star.svg";
 import reviewer from "./reviewer.png";
 import arrowDown from "./arrow_down.svg"
 import profileBanner from "./profile-banner.svg"
+import profileBanner2 from "./profile-banner2.svg"
+import profileImage2 from "./profileImage2.svg"
+import brandCardImage from "./brandCardImage.svg"
 
 export {
   react,
@@ -165,5 +168,8 @@ export {
   star,
   reviewer,
   arrowDown,
-  profileBanner
+  profileBanner,
+  profileBanner2,
+  profileImage2,
+  brandCardImage
 };

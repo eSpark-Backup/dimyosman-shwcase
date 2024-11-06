@@ -234,7 +234,7 @@ const EditBrand = () => {
                         width: { xs: "100%", md: "328px" }
                       }}
                     >
-                      <EventCard event={event} key={ind} showBtn={true} />
+                      <EventCard event={event} key={ind} showBtn={true} btnText={"RSVP"} />
                     </Box>
                   );
                 })}

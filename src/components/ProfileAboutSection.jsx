@@ -1,10 +1,10 @@
-import { Typography, useTheme } from '@mui/material'
+import { Box, Typography, useTheme } from '@mui/material'
 import React from 'react'
 
 const ProfileAboutSection = ({ content }) => {
     const theme = useTheme()
     return (
-        <div>
+        <Box sx={{ mt: "50px" }}>
             {
                 content?.map((item, index) => {
                     return (
@@ -47,7 +47,7 @@ const ProfileAboutSection = ({ content }) => {
                     )
                 })
             }
-        </div>
+        </Box>
     )
 }
 

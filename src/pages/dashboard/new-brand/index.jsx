@@ -82,10 +82,11 @@ const NewBrand = () => {
                 theme: 'snow',
                 modules: {
                     toolbar: [
-                        ['bold', 'italic', 'strike'],
                         [{ 'header': 3 }],
-                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        ['bold', 'italic', 'strike'],
                         [{ 'align': [] }],
+                        [{ 'list': 'ordered' }],
+                        ['image', 'link'],
                     ],
                 },
             });

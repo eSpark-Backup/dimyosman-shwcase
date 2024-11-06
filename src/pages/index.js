@@ -13,6 +13,7 @@ import NewBrand from "./dashboard/new-brand";
 import EditBrand from "./dashboard/edit-brand";
 import NewEvent from "./dashboard/new-event";
 import EditEvent from "./dashboard/edit-event";
+import EditProfile from "./dashboard/edit-profile";
 
 export {
   Login,
@@ -29,5 +30,6 @@ export {
   NewBrand,
   EditBrand,
   NewEvent,
-  EditEvent
+  EditEvent,
+  EditProfile
 };

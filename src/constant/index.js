@@ -38,6 +38,10 @@ import {
   brandMain2,
   spaceProfile,
   eventMainImage,
+  profileBanner,
+  profileBanner2,
+  profileImage2,
+  brandCardImage,
 } from "../assets";
 import {
   followingBrandColumns,
@@ -537,4 +541,129 @@ export const brandCardContent = [
     brandImage: brandMain
   },
 
+]
+
+
+export const profileContent = [
+  {
+    name: "Emily Thompson",
+    bannerImage: profileBanner,
+    userImage: brandUserImage,
+    tabs: ["About", "Brands", "Events"],
+    aboutSection: [
+      {
+        type: "heading",
+        content: "A Passion for Sustainable Fashion"
+      },
+      {
+        type: "paragraph",
+        content: "Hi, I'm Emily Thompson, founder and designer at EcoLux Designs. For as long as I can remember, I've been passionate about creating beautiful clothing that doesn't come at the expense of our planet. My goal has always been to merge the world of luxury fashion with sustainable practices, offering high-end pieces that not only look incredible but are also made with care for the environment."
+      },
+      {
+        type: "breaker"
+      },
+      {
+        type: "paragraph",
+        content: "At EcoLux Designs, I work with organic fabrics and recycled materials to ensure every garment is as eco-friendly as it is stylish. I believe that fashion can be both timeless and responsible, and my collections reflect that balance. From the design process to production, I’m committed to reducing waste and promoting ethical practices in every step."
+      },
+      {
+        type: "image",
+        content: brandMain
+      },
+      {
+        type: "heading",
+        content: "Leading the Movement Toward Eco-Conscious Fashion"
+      },
+      {
+        type: "paragraph",
+        content: "Sustainability isn’t just a trend for me—it’s at the core of everything I do. My hope is to inspire others to make more conscious choices in their wardrobes while still enjoying the luxury and elegance that fashion can bring. I love collaborating with like-minded individuals and brands, and I’m always exploring new ways to push the boundaries of what sustainable fashion can achieve."
+      }
+    ],
+    brandSection: [
+      {
+        profileImage: eventUserImage,
+        brandName: "EcoLux Designs",
+        brandCategory: "Sustainable Fashion",
+        description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+        brandImage: brandMain
+      },
+      {
+        profileImage: eventUserImage,
+        brandName: "EcoLux Designs",
+        brandCategory: "Sustainable Fashion",
+        description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+        brandImage: brandMain
+      },
+      {
+        profileImage: eventUserImage,
+        brandName: "EcoLux Designs",
+        brandCategory: "Sustainable Fashion",
+        description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+        brandImage: brandMain
+      },
+
+    ],
+    events: true
+  },
+  {
+    name: "Michael Harrison",
+    bannerImage: profileBanner2,
+    userImage: profileImage2,
+    tabs: ["About", "Brands", "Spaces"],
+    aboutSection: [
+      {
+        type: "heading",
+        content: "Creating Spaces for Innovation and Community"
+      },
+      {
+        type: "paragraph",
+        content: "Hi, I’m Michael Harrison, founder of Urban Pop-Up Pavilion. My passion lies in transforming spaces into platforms for creativity, innovation, and community connection. I’ve always believed that a great space can do more than just house events—it can inspire new ideas, bring people together, and offer unique experiences."
+      },
+      {
+        type: "breaker"
+      },
+      {
+        type: "paragraph",
+        content: "With Urban Pop-Up Pavilion, I wanted to create a versatile venue that could adapt to a wide range of uses, from retail pop-ups to art installations and beyond. Located in the heart of Brooklyn, our space is designed to be both functional and flexible, providing the perfect backdrop for brands, artists, and event organizers to bring their visions to life."
+      },
+      {
+        type: "image",
+        content: brandMain
+      },
+      {
+        type: "heading",
+        content: "Leading the Movement Toward Eco-Conscious Fashion"
+      },
+      {
+        type: "paragraph",
+        content: "Sustainability isn’t just a trend for me—it’s at the core of everything I do. My hope is to inspire others to make more conscious choices in their wardrobes while still enjoying the luxury and elegance that fashion can bring. I love collaborating with like-minded individuals and brands, and I’m always exploring new ways to push the boundaries of what sustainable fashion can achieve."
+      }
+    ],
+    brandSection: [
+      {
+        profileImage: eventUserImage,
+        brandName: "Urban Pop-Up Pavilion",
+        brandCategory: "Real Estate",
+        description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials. ",
+        brandImage: brandCardImage
+      },
+      {
+        profileImage: eventUserImage,
+        brandName: "Urban Pop-Up Pavilion",
+        brandCategory: "Real Estate",
+        description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+        brandImage: brandCardImage
+      },
+      {
+        profileImage: eventUserImage,
+        brandName: "Urban Pop-Up Pavilion",
+        brandCategory: "Real Estate",
+        description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+        brandImage: brandCardImage
+      },
+
+    ],
+    spaces: true,
+    spaceContent:[]
+  }
 ]
