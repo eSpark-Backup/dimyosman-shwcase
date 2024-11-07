@@ -44,6 +44,12 @@ import {
   brandCardImage,
   spaceImage,
   profileAbout,
+  fbIcon,
+  telegramIcon,
+  twitterIcon,
+  whatsAppIcon,
+  emailIcon,
+  shareIcon,
 } from "../assets";
 import {
   followingBrandColumns,
@@ -770,5 +776,33 @@ export const profileContent = [
         spacePic: spaceImage
       },
     ]
+  },
+]
+
+
+export const socialShareOptions = [
+  {
+    name: "Facebook",
+    icon: fbIcon,
+  },
+  {
+    name: "Telegram",
+    icon: telegramIcon,
+  },
+  {
+    name: "Twitter",
+    icon: twitterIcon,
+  },
+  {
+    name: "Whatsapp",
+    icon: whatsAppIcon,
+  },
+  {
+    name: "E-mail",
+    icon: emailIcon,
+  },
+  {
+    name: "More",
+    icon: shareIcon,
   },
 ]

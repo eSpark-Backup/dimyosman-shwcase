@@ -86,6 +86,15 @@ import profileImage2 from "./profileImage2.svg"
 import brandCardImage from "./brandCardImage.svg"
 import spaceImage from "./space-image.svg"
 import profileAbout from "./profileAbout.svg"
+import fbIcon from "./fbIcon.svg"
+import telegramIcon from "./telegramIcon.svg"
+import twitterIcon from "./twitterIcon.svg"
+import whatsAppIcon from "./whatsappIcon.svg"
+import emailIcon from "./emailIcon.svg"
+import shareIcon from "./shareIcon.svg"
+import copyIcon from "./copyIcon.svg"
+import shareNotHovered from "./shareNotHovered.svg"
+import shareHovered from "./sharehovered.svg"
 
 export {
   react,
@@ -175,5 +184,14 @@ export {
   profileImage2,
   brandCardImage,
   spaceImage,
-  profileAbout
+  profileAbout,
+  shareIcon,
+  emailIcon,
+  whatsAppIcon,
+  twitterIcon,
+  telegramIcon,
+  fbIcon,
+  copyIcon,
+  shareHovered,
+  shareNotHovered
 };

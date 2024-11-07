@@ -80,8 +80,9 @@ const SpaceCard = ({ onClick, spaces, showBtn }) => {
                         }
                     }}
                 >
-                    <img src={calender} alt='Calender Icon' />
-                    Inquire
+                    {/* <img src={calender} alt='Calender Icon' />
+                    Inquire */}
+                    Edit
                 </Button>
             }
         </Box>
