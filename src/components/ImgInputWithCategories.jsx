@@ -97,7 +97,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                         }}
                     >
                         <Typography
-                            sx={{ fontStyle: "italic", textAlign: "left", fontWeight: 300, color: theme.palette.primary.main }}
+                            sx={{ fontSize: "14px", fontStyle: "italic", textAlign: "left", fontWeight: 300, color: theme.palette.primary.main }}
                             variant="h6"
                         >
                             {categoryLabel}

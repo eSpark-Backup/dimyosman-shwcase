@@ -70,7 +70,7 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
         </Typography>
 
         {activity === "event" && (
-          <Box sx={{ width: "100%", height: "60px", border: "1px dashed rgba(0, 20, 28, 0.4)", borderRadius: "3px", display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "rgba(209, 219, 215, 0.2)", px: "10px" }}>
+          <Box sx={{ width: "100%", height: "60px", border: "1px dashed rgba(0, 20, 28, 0.4)", borderRadius: "3px", display: "flex", justifyContent: "center", gap: 1, alignItems: "flex-start", backgroundColor: "rgba(209, 219, 215, 0.2)", px: "10px", py: "5px" }}>
             <Box sx={{ display: "flex", flexDirection: "column", rowGap: "5px" }}>
               <Typography variant='h5' sx={{ textAlign: "left", fontWeight: "600", color: theme.palette.primary.dark }}>
                 {eventName}
@@ -79,7 +79,7 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
                 {eventAddress}
               </Typography>
             </Box>
-            <img src={arrowDown} alt="Down Arrow" />
+            <img style={{marginTop: "7px"}} src={arrowDown} alt="Down Arrow" />
           </Box>
         )}
 
@@ -90,8 +90,8 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
 
         {activity === "event" && (
           <Box sx={{ position: "relative" }}>
-            <Divider />
-            <Typography variant='h6' sx={{ textAlign: "left" }}>
+            <Divider sx={{ marginY: 2 }} />
+            <Typography variant='h6' sx={{ textAlign: "left", marginBottom: "10px" }}>
               Starting from:
             </Typography>
 

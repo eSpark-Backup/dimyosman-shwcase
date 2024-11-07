@@ -3,7 +3,7 @@ import { Box, IconButton, InputAdornment, TextField, Typography, useTheme } from
 import { eye } from "../assets";
 import RemoveRedEyeSharpIcon from '@mui/icons-material/RemoveRedEyeSharp';
 
-const Input = ({ onInputChange, name, label, type, placeholder, value, onBlur, error, helperText, sx, multiline, endAdornment }) => {
+const Input = ({ login, onInputChange, name, label, type, placeholder, value, onBlur, error, helperText, sx, multiline, endAdornment }) => {
   const [showPassword, setShowPassword] = useState(false);
   const theme = useTheme()
 
@@ -12,7 +12,7 @@ const Input = ({ onInputChange, name, label, type, placeholder, value, onBlur, e
     <Box sx={{ display: "flex", flexDirection: "column", rowGap: "8px" }}>
       {label && (
         <Typography
-          sx={{ fontStyle: "italic", textAlign: "left", fontWeight: 300, color: theme.palette.primary.main }}
+          sx={{ fontSize: login ? "12px" : "14px", fontStyle: "italic", textAlign: "left", fontWeight: 300, color: theme.palette.primary.main }}
           variant="h6"
         >
           {label}

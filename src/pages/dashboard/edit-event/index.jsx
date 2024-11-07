@@ -131,7 +131,7 @@ const EditEvent = () => {
                 rowGap: "32px",
                 backgroundColor: "white",
                 borderRadius: "5px",
-                pb: "40px"
+                pb: 2,
             }}
         >
             <FullWidthImgInput activity={"event"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={flag} />
