@@ -48,7 +48,7 @@ const Reviews = ({ showApproveBox, onApproveChange }) => {
                   alt="profile-badge"
                 />
               </Box>
-              <Typography fontWeight={300} variant="h5">
+              <Typography fontWeight={400} variant="h5">
                 <span style={{ fontWeight: 600 }}>
                   {review?.reviewerName}
                 </span>{" "}
@@ -62,7 +62,7 @@ const Reviews = ({ showApproveBox, onApproveChange }) => {
               alignItems="center"
               gap={1}
             >
-              <Typography variant="h2" fontWeight={600}>
+              <Typography variant="h2" fontSize={24} fontWeight={600}>
                 {review?.rating?.toFixed(1)}
               </Typography>
               <Stack
@@ -87,7 +87,7 @@ const Reviews = ({ showApproveBox, onApproveChange }) => {
             sx={{ marginTop: "10px", color: theme.palette.primary.main }}
             textAlign="left"
             variant="h5"
-            fontWeight={300}
+            fontWeight={350}
           >
             {review?.message}
           </Typography>
