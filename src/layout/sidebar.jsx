@@ -5,7 +5,9 @@ import { getSmallSidebar, sidebarRoutes } from "../constant";
 const Sidebar = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const currentPath = `/${pathname.split("/")[1]}`;
+  const splittedPath = `/${pathname.split("/")[1]}`;
+  const splittedSubPath = splittedPath.split("-");
+  const currentPath = splittedSubPath.length > 1 ? `/${splittedSubPath[1]}` : splittedSubPath[0]
   const theme = useTheme()
 
   return (
