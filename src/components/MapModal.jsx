@@ -7,7 +7,7 @@ const MapModal = ({ value, setValue, addressLine, address, handleClose, buttonVa
     const theme = useTheme()
     return (
         <>
-            <Input value={value} type={"text"} placeholder={"Type Address..."} onInputChange={(e) => setValue(e.target.value)} endAdornment={<InputAdornment position="end">
+            <Input sx={{ border: "1px solid #D1DBD7 !important" }} value={value} type={"text"} placeholder={"Type Address..."} onInputChange={(e) => setValue(e.target.value)} endAdornment={<InputAdornment position="end">
                 <IconButton>
                     <img src={locationIcon} alt="" />
                 </IconButton>

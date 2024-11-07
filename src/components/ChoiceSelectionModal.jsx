@@ -85,6 +85,7 @@ const ChoiceSelectionModal = ({
                         background: "rgba(209, 219, 215, 0.4)",
                         fontSize: "16px",
                         fontWeight: "700",
+                        textTransform: "none",
                         color: theme.palette.primary.main,
                         "&:hover": { backgroundColor: "rgba(209, 219, 215, 0.4)" }
                     }}

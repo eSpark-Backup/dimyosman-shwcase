@@ -31,6 +31,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                     sx={{
                         height: "96px",
                         width: "96px",
+                        borderRadius: "5px",
                         border: "1px dashed rgb(0, 20, 28, 0.4)",
                         backgroundColor: "rgb(209, 219, 215, 0.2)",
                         display: "flex",
@@ -104,6 +105,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                         <Box
                             sx={{
                                 height: "112px",
+                                borderRadius: "3px",
                                 border: "1px dashed rgb(0, 20, 28, 0.4)",
                                 backgroundColor: "rgb(209, 219, 215, 0.2)",
                                 position: "relative",
@@ -148,7 +150,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                                 </Box>
                             }
                         </Box>
-                        <Typography sx={{ fontSize: "14px", color: theme.palette.primary.main, fontStyle: "italic" }}>
+                        <Typography sx={{ fontWeight: 300, fontSize: "14px", color: theme.palette.primary.main, fontStyle: "italic" }}>
                             {description}
                         </Typography>
                     </Box>

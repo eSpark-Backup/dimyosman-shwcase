@@ -1,6 +1,6 @@
 import { Box, Button, Stack, Typography, useTheme } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
-import { addGrey, brandIcon } from '../../../assets'
+import { addGrey, brandIcon, brandMain } from '../../../assets'
 import ReusableModal from '../../../components/Modal'
 import { ChoiceSelectionModal, EventCard, FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs } from '../../../components'
 import Quill from 'quill'
@@ -69,7 +69,7 @@ const EditBrand = () => {
   const [selectedChoice, setSelectedChoice] = useState(0)
   const [activeTab, setActiveTab] = useState("Details");
 
-  const defaultTemplate = `<h2><strong>EcoLux Designs: Where Luxury Meets Sustainability</strong></h2><p>In an industry where trends come and go, EcoLux Designs stands out by creating fashion with a purpose. As a trailblazer in the world of sustainable luxury, this brand is redefining high-end fashion by merging style with eco-friendly practices. Every piece in the EcoLux collection is crafted with the utmost care, using organic fabrics, recycled materials, and responsible manufacturing processes.</p><img src="" alt="EcoLux Designs Image" style="width:100%; height:auto; margin: 10px 0;"/><p>From elegant dresses to timeless accessories, EcoLux Designs offers a wide range of high-end fashion pieces that not only look good but also do good for the planet. The brand’s commitment to sustainability goes beyond just the materials—they focus on ethical production and long-lasting designs, ensuring that each item has minimal environmental impact and maximum longevity in your wardrobe.</p><br/><h2>Leading the Movement Toward Eco-Conscious Fashion</h2><p>What makes EcoLux Designs truly special is the balance it strikes between luxury and sustainability. The designs are contemporary, chic, and versatile, proving that eco-conscious fashion doesn’t have to compromise on style. Whether you’re attending a gala or simply updating your everyday wardrobe, EcoLux Designs has something that will elevate your look while aligning with your values.</p><br/><p>As more consumers seek out brands that reflect their commitment to the environment, EcoLux Designs is at the forefront of this movement—proving that fashion can be both luxurious and sustainable. By investing in quality over quantity, this brand is making a statement that fashion should enhance the world, not harm it.</p>`;
+  const defaultTemplate = `<h2><strong>EcoLux Designs: Where Luxury Meets Sustainability</strong></h2><p>In an industry where trends come and go, EcoLux Designs stands out by creating fashion with a purpose. As a trailblazer in the world of sustainable luxury, this brand is redefining high-end fashion by merging style with eco-friendly practices. Every piece in the EcoLux collection is crafted with the utmost care, using organic fabrics, recycled materials, and responsible manufacturing processes.</p></br><p>From elegant dresses to timeless accessories, EcoLux Designs offers a wide range of high-end fashion pieces that not only look good but also do good for the planet. The brand’s commitment to sustainability goes beyond just the materials—they focus on ethical production and long-lasting designs, ensuring that each item has minimal environmental impact and maximum longevity in your wardrobe.</p><img src=${brandMain} alt="EcoLux Designs Image" style="width:100%; height:auto; margin: 10px 0;"/><br/><h2>Leading the Movement Toward Eco-Conscious Fashion</h2><p>What makes EcoLux Designs truly special is the balance it strikes between luxury and sustainability. The designs are contemporary, chic, and versatile, proving that eco-conscious fashion doesn’t have to compromise on style. Whether you’re attending a gala or simply updating your everyday wardrobe, EcoLux Designs has something that will elevate your look while aligning with your values.</p><br/><p>As more consumers seek out brands that reflect their commitment to the environment, EcoLux Designs is at the forefront of this movement—proving that fashion can be both luxurious and sustainable. By investing in quality over quantity, this brand is making a statement that fashion should enhance the world, not harm it.</p>`;
 
   const [brandTitle, setBrandTitle] = useState(defaultTemplate);
   const [isEditorVisible, setIsEditorVisible] = useState(false);
@@ -149,7 +149,7 @@ const EditBrand = () => {
         description={"Checkbox on the categories will display them publicly. All selected Brand categories are inherited by Events and Spaces, allowing them for individual selection."}
         activity={"brand"}
       />
-      <ReusableModal open={modalOpen} handleClose={handleModalClose} heading={"Select Brand Categories"}>
+      <ReusableModal cat open={modalOpen} handleClose={handleModalClose} heading={"Select Brand Categories"}>
         <ChoiceSelectionModal
           categories={categories}
           handleClose={handleModalClose}
@@ -210,7 +210,11 @@ const EditBrand = () => {
                     fontSize: "16px",
                     display: "flex",
                     columnGap: "6px",
-                    alignItems: "center"
+                    alignItems: "center",
+                    ":hover": {
+                      backgroundColor: "rgb(209, 219, 215, 0.4)",
+                      color: theme.palette.primary.main,
+                    }
                   }}
                 >
                   <img src={addGrey} alt="" />
@@ -234,7 +238,7 @@ const EditBrand = () => {
                         width: { xs: "100%", md: "328px" }
                       }}
                     >
-                      <EventCard event={event} key={ind} showBtn={true} />
+                      <EventCard edit event={event} key={ind} showBtn={true} />
                     </Box>
                   );
                 })}

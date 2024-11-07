@@ -68,9 +68,9 @@ const NewBrand = () => {
     // Default template with bold and line breaks
     const defaultTemplate = `<h2><strong>Brand Blog Post Title</strong></h2>
         <p><strong>Product or Service Offerings:</strong> Describe the brand’s main products or services. Focus on what makes these offerings unique, whether it’s quality, design, or innovation. Be sure to explain how these products or services meet customer needs and why they stand out compared to competitors. Including images of products or services can enhance this section.</p>
-        <p><strong>Customer Experience & Engagement:</strong> If the brand offers personalized customer experiences, loyalty programs, or community engagement initiatives, explain how these efforts benefit customers. Highlight any opportunities for interaction, such as special events, collaborations, or partnerships. Keep the focus on the value added for the brand’s audience.</p>
-        <p><strong>Brand Presence & Identity:</strong> Briefly describe the brand’s presence in the market, including its history or any notable achievements. Discuss how the brand’s identity aligns with current trends or consumer values, like sustainability or luxury. Including images or visuals that represent the brand’s aesthetics can help set the tone.</p>
-        <p><strong>Conclusion:</strong> Wrap up with a call to action, encouraging readers to explore the brand’s offerings, visit the website, or follow on social media for updates. Reiterate what makes the brand special and why it should be a go-to choice for consumers.</p>`;
+        </br><p><strong>Customer Experience & Engagement:</strong> If the brand offers personalized customer experiences, loyalty programs, or community engagement initiatives, explain how these efforts benefit customers. Highlight any opportunities for interaction, such as special events, collaborations, or partnerships. Keep the focus on the value added for the brand’s audience.</p>
+        </br><p><strong>Brand Presence & Identity:</strong> Briefly describe the brand’s presence in the market, including its history or any notable achievements. Discuss how the brand’s identity aligns with current trends or consumer values, like sustainability or luxury. Including images or visuals that represent the brand’s aesthetics can help set the tone.</p>
+        </br><p><strong>Conclusion:</strong> Wrap up with a call to action, encouraging readers to explore the brand’s offerings, visit the website, or follow on social media for updates. Reiterate what makes the brand special and why it should be a go-to choice for consumers.</p>`;
     const [brandTitle, setBrandTitle] = useState(defaultTemplate);
     const [isEditorVisible, setIsEditorVisible] = useState(false);
     const editorRef = useRef(null);
@@ -176,9 +176,6 @@ const NewBrand = () => {
                         <Box
                             ref={editorRef}
                             sx={{
-                                position: 'absolute',
-                                top: '10px',
-                                left: '0px',
                                 border: "1px dashed rgb(0, 20, 28, 0.2)",
                                 borderRadius: "3px",
                                 p: "10px",

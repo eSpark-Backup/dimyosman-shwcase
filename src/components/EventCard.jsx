@@ -2,7 +2,7 @@ import { eventBadge } from '../assets'
 import { Box, Button, Typography, useTheme } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 
-const EventCard = ({ onClick, event, showBtn }) => {
+const EventCard = ({ edit, onClick, event, showBtn }) => {
     const theme = useTheme()
     const navigate = useNavigate()
     return (
@@ -64,13 +64,14 @@ const EventCard = ({ onClick, event, showBtn }) => {
                         fontSize: "16px",
                         fontWeight: "700",
                         color: theme.palette.primary.main,
+                        textTransform: "none",
                         "&:hover": {
                             backgroundColor: "rgb(209, 219, 215, 0.4)"
                         }
                     }}
                     onClick={() => navigate(`/event/${event?.id}/edit`)}
                 >
-                    RSVP
+                    {edit ? "Edit" : "RSVP"}
                 </Button>
             }
         </Box>
