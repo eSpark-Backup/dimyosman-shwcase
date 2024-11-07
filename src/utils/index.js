@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 export function useQuery() {
@@ -25,5 +26,21 @@ export const formatDate = (date) => {
   const year = date.getFullYear();
 
   return `${day}.${month}.${year}`;
+}
+
+export function useClickOutside(ref, onClickOutside) {
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (ref.current && !ref.current.contains(event.target)) {
+        onClickOutside();
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [ref, onClickOutside]);
 }
 
