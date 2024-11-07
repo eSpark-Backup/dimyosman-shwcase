@@ -32,13 +32,12 @@ const InputWithMap = ({
       if (edit) {
         var splitedDate = selectedDate.split("-");
         const formattedDate = `${splitedDate[2]}.${splitedDate[1]}.${splitedDate[0]}`;
-        console.log(formattedDate);
         setDateToShow(formattedDate);
       } else {
         setDateToShow(selectedDate);
       }
     } else {
-      setDateToShow(selectedDate.format("DD.MM.YYYY"));
+      setDateToShow(selectedDate?.format("DD.MM.YYYY"));
     }
   }, [selectedDate]);
 
