@@ -1,13 +1,14 @@
 import { Box, Divider, Typography, useTheme } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { arrowDown, miniMap } from '../assets';
+import React, { act, useEffect, useState } from 'react';
+import { add, arrowDown, miniMap, subtract } from '../assets';
 import Input from './input';
 import DatePicker from 'react-date-picker';
 import 'react-date-picker/dist/DatePicker.css';
 import 'react-calendar/dist/Calendar.css';
 import { formatDate } from '../utils';
+import CheckBox from './CheckBox';
 
-const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapDescription, activity, eventName, eventAddress, defaultDate }) => {
+const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapDescription, activity, eventName, eventAddress, defaultDate, mapInstruction, categories, HandleCategoryChange, handleModalOpen }) => {
   const theme = useTheme();
   const [openDatePicker, setOpenDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(defaultDate);
@@ -55,44 +56,111 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
         flexDirection: { xs: "column", md: "row" },
       }}
     >
-      <Box sx={{ width: { xs: "100%", md: "65%" } }}>
+      <Box sx={{ width: { xs: "100%", md: "65%" }, display: "flex", flexDirection: "column", rowGap: "20px" }}>
         <Box sx={{ display: "flex", flexDirection: "column", rowGap: "3px" }}>
           <Typography variant='h3' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "600" }}>
             {inputLabel}
           </Typography>
           <Input value={inputValue} onInputChange={(e) => setInputValue(e.target.value)} multiline={true} sx={{ height: "auto", fontWeight: "400", py: "10px", px: "10px" }} />
         </Box>
+        {
+          activity === "space" &&
+          <Box
+            sx={{
+              height: "112px",
+              border: "1px dashed rgb(0, 20, 28, 0.4)",
+              backgroundColor: "rgb(209, 219, 215, 0.2)",
+              position: "relative",
+              p: "10px 0px",
+              overflowY: "auto"
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                flexWrap: "wrap",
+                px: "20px",
+                py: "5px",
+                rowGap: '15px'
+              }}
+            >
+              {categories?.filter(cat => cat.selected).length > 0 ? (
+                categories
+                  ?.filter(cat => cat.selected)
+                  .map((cat, index) => (
+                    <Box key={cat.name} display="flex" alignItems="center" marginRight={2} columnGap={1.5} sx={{ width: { xs: "100%", sm: "45%", lg: "30%" } }}>
+                      <CheckBox checked={cat.selected} onChange={() => HandleCategoryChange(index)} />
+                      <Box sx={{ display: "flex", columnGap: "8px" }}>
+                        <img src={cat.icon} alt="" />
+                        <Typography sx={{ fontSize: "12px", fontWeight: "300", color: theme.palette.primary.main }}>{cat.name}</Typography>
+                      </Box>
+                    </Box>
+                  ))
+              ) : (
+                <Typography>No categories selected.</Typography>
+              )}
+
+            </Box>
+            <Box
+              sx={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                display: "flex",
+                columnGap: "10px"
+              }}
+            >
+              <img src={add} alt="Add Icon" style={{ cursor: "pointer" }} onClick={handleModalOpen} />
+            </Box>
+
+          </Box>
+        }
       </Box>
+
 
       <Box sx={{ width: { xs: "100%", md: "25%" }, display: "flex", flexDirection: "column", rowGap: "10px" }}>
         <Typography variant='h6' sx={{ textAlign: "left" }}>
-          {activity === "brand" ? "Headquarters at:" : "Hosted at:"}
+          {activity === "brand" ? "Headquarters at:" : activity === "event" ? "Hosted at:" : "Located at:"}
         </Typography>
 
-        {activity === "event" && (
+        {(activity === "event" || activity === "space") && (
           <Box sx={{ width: "100%", height: "60px", border: "1px dashed rgba(0, 20, 28, 0.4)", borderRadius: "3px", display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "rgba(209, 219, 215, 0.2)", px: "10px" }}>
-            <Box sx={{ display: "flex", flexDirection: "column", rowGap: "5px" }}>
+            <Box sx={{ display: "flex", flexDirection: "column", rowGap: "5px", alignItems: activity === "space" && "center" }}>
               <Typography variant='h5' sx={{ textAlign: "left", fontWeight: "600", color: theme.palette.primary.dark }}>
                 {eventName}
               </Typography>
-              <Typography variant='h6' sx={{ textAlign: "left", fontWeight: "300", color: theme.palette.primary.main }}>
-                {eventAddress}
-              </Typography>
+              {
+                eventAddress && <Typography variant='h6' sx={{ textAlign: "left", fontWeight: "300", color: theme.palette.primary.main }}>
+                  {eventAddress}
+                </Typography>
+              }
             </Box>
             <img src={arrowDown} alt="Down Arrow" />
           </Box>
         )}
-
+        {(activity === "space" || activity === "brand") &&
+          <Typography
+            sx={{
+              fontSize: "14px",
+              fontWeight: "300",
+              fontStyle: "italic",
+              color: theme.palette.primary.main
+            }}
+          >
+            {mapInstruction}
+          </Typography>
+        }
         <img src={miniMap} alt="Map" onClick={handleClick} style={{ cursor: "pointer" }} />
         <Typography variant='h6' sx={{ textAlign: "left", fontWeight: "300", fontStyle: "italic" }}>
           {mapDescription}
         </Typography>
 
-        {activity === "event" && (
-          <Box sx={{ position: "relative" }}>
+        {(activity === "event" || activity === "space") && (
+          <Box sx={{ position: "relative", display: "flex", flexDirection: "column", rowGap: "5px" }}>
             <Divider />
             <Typography variant='h6' sx={{ textAlign: "left" }}>
-              Starting from:
+              {activity === "event" ? "Starting from:" : "Lease from"}
             </Typography>
 
             <Box
@@ -109,11 +177,11 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
                 cursor: "pointer",
               }}
             >
-              <Typography variant='h1' sx={{ color: theme.palette.primary.main, textAlign: "left" }}>
+              <Typography variant='h1' sx={{ color: theme.palette.primary.main, textAlign: "left", fontSize: { xs: "24px", lg: "32px" } }}>
                 {selectedDate}
               </Typography>
               <Typography variant='h6' sx={{ textAlign: "left", color: theme.palette.primary.main }}>
-                until 15.4.2025.
+                {activity === "event" ? "until 15.4.2025." : "minimum lease: X days"}
               </Typography>
             </Box>
 

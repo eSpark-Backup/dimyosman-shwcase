@@ -14,6 +14,7 @@ import {
   Message,
   NewBrand,
   NewEvent,
+  NewSpace,
   Profile,
   Settings,
   Space,
@@ -64,6 +65,7 @@ function App() {
           <Route path="/brand/:brand-id/edit" element={<EditBrand />} />
           <Route path="/new-event" element={<NewEvent />} />
           <Route path='/event/:event-id/edit' element={<EditEvent />} />
+          <Route path="/new-space" element={<NewSpace />} />
         </Route>
       </Routes>
     </>
