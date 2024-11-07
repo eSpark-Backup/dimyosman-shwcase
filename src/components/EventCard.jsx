@@ -45,9 +45,9 @@ const EventCard = ({ onClick, event, showBtn }) => {
                     {event?.tabs[0]?.props?.details?.overview[0]}
                 </Typography>
                 <Typography fontWeight={300} variant="h6" textAlign="left">
-                    By: <span style={{ fontWeight: 600 }}>{event?.details?.by}</span>
+                    By: <span style={{ fontWeight: 400 }}>{event?.details?.by}</span>
                 </Typography>
-                <Typography fontWeight={300} variant="h2" textAlign="left">
+                <Typography fontWeight={300} fontSize={24} variant="h2" textAlign="left">
                     Starting:{" "}
                     <span style={{ fontWeight: 600 }}>{event?.details?.starting}</span>
                 </Typography>
