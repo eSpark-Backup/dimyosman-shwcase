@@ -77,7 +77,7 @@ const InputWithMap = ({
         flexDirection: { xs: "column", md: "row" },
       }}
     >
-      <Box sx={{ width: { xs: "100%", md: "65%" } }}>
+      <Box sx={{ width: { xs: "100%", md: "70%" } }}>
         <Box sx={{ display: "flex", flexDirection: "column", rowGap: "3px" }}>
           <Typography
             variant="h3"
