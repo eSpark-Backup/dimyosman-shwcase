@@ -114,7 +114,7 @@ const InputWithMap = ({
           <Box
             sx={{
               width: "100%",
-              height: "60px",
+              minHeight: "60px",
               border: "1px dashed rgba(0, 20, 28, 0.4)",
               borderRadius: "3px",
               display: "flex",
