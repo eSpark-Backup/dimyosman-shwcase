@@ -1,7 +1,7 @@
 import { Box, Typography, useTheme } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import { accessibility, arrow, security, spaceIcon, storage, sun, wifi } from '../../../assets';
-import { ChoiceSelectionModal, FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs } from '../../../components';
+import { ChoiceSelectionModal, FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs, PriceModal } from '../../../components';
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
 import ReusableModal from '../../../components/Modal';
@@ -21,11 +21,11 @@ const NewSpace = () => {
     ]);
     const [feature, setfeatures] = useState([
         { name: 'Flexible Layout', selected: true, icon: arrow, },
-        { name: 'Wifi', selected: false, icon: wifi },
+        { name: 'Wifi', selected: true, icon: wifi },
         { name: 'Accessible Location', selected: false, icon: accessibility },
         { name: 'Natural Lighting', selected: false, icon: sun },
         { name: 'Compact Storage Area', selected: false, icon: storage },
-        { name: 'On-Site Security', selected: false, icon: security },
+        { name: 'On-Site Security', selected: true, icon: security },
     ]);
     const [spaceOverview, setSpaceOverview] = useState("Add a brief overview of the space, highlighting its size, location, and key features.\n\nExplain what makes the space ideal for events, pop-ups, or other uses, focusing on its flexibility and amenities. Be sure to mention any standout aspects, such as design, accessibility, or additional services provided (e.g., security, Wi-Fi).\n\nKeep the description informative yet concise, ensuring it appeals to potential users by focusing on what they will benefit from. You can also include a brief note on the atmosphere or style of the space.")
     const [isEditorVisible, setIsEditorVisible] = useState(false);
@@ -37,6 +37,7 @@ const NewSpace = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [openMapModal, setMapModal] = useState(false);
     const [address, setAddress] = useState("")
+    const [priceModal, setPriceModal] = useState(false)
 
 
 
@@ -151,11 +152,13 @@ const NewSpace = () => {
                     rowGap: "32px",
                 }}
             >
-                <InputWithMap inputLabel={"Space Overview:"} inputValue={spaceOverview} setInputValue={setSpaceOverview} mapInstruction={"Click on the map to change/adjust."} mapDescription={"Brand Address is displayed automatically"} activity={"space"} eventName={"Select your Brand"} defaultDate={"dd.mm.yyyy."}
+                <InputWithMap inputLabel={"Space Overview:"} inputValue={spaceOverview} setInputValue={setSpaceOverview} mapInstruction={"Click on the map to change/adjust."} mapDescription={"Brand Address is displayed automatically"} activity={"space"} eventName={"Select your Brand"}
+                    defaultPrice={"$xxx/day"}
                     handleModalOpen={handleModalOpen}
                     handleClick={() => setMapModal(true)}
                     categories={feature}
                     HandleCategoryChange={CategoryChangeHandler2}
+                    HandlePriceModal={() => setPriceModal(true)}
                 />
                 <Box
                     sx={{
@@ -201,7 +204,7 @@ const NewSpace = () => {
 
                 </Box>
             </Box>
-            <ReusableModal open={modalOpen} handleClose={handleModalClose} heading={"Select Brand Categories"}>
+            <ReusableModal open={modalOpen} handleClose={handleModalClose} heading={"Select Amenities and Features"}>
                 <ChoiceSelectionModal
                     categories={feature}
                     handleClose={handleModalClose}
@@ -212,6 +215,9 @@ const NewSpace = () => {
             </ReusableModal>
             <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
                 <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} />
+            </ReusableModal>
+            <ReusableModal open={priceModal} handleClose={() => setPriceModal(false)} heading={"Pricing and terms"}>
+                <PriceModal />
             </ReusableModal>
         </Box>
     )

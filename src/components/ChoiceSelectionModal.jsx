@@ -44,7 +44,7 @@ const ChoiceSelectionModal = ({
         : selectedItems;
 
     return (
-        <Box sx={{ padding: "0px", display: "flex", flexDirection: "column", rowGap:"10px" }}>
+        <Box sx={{ padding: "0px", display: "flex", flexDirection: "column", rowGap: "10px" }}>
             <SearchBar placeholder={placeholder} value={searchValue} onInputChange={(e) => setSearchValue(e.target.value)} />
 
             <Box
@@ -70,9 +70,12 @@ const ChoiceSelectionModal = ({
                 ))}
             </Box>
 
-            <Typography sx={{ fontSize: "14px", color: theme.palette.primary.main, fontStyle: "italic" }}>
-                {minSelections}min - {maxSelections}max.
-            </Typography>
+            {
+                maxSelections !== Infinity &&
+                <Typography sx={{ fontSize: "14px", color: theme.palette.primary.main, fontStyle: "italic" }}>
+                    {minSelections}min - {maxSelections}max.
+                </Typography>
+            }
             <Typography sx={{ fontSize: "14px", color: theme.palette.primary.main, fontStyle: "italic" }}>
                 {description}
             </Typography>

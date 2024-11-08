@@ -8,10 +8,10 @@ import 'react-calendar/dist/Calendar.css';
 import { formatDate } from '../utils';
 import CheckBox from './CheckBox';
 
-const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapDescription, activity, eventName, eventAddress, defaultDate, mapInstruction, categories, HandleCategoryChange, handleModalOpen }) => {
+const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapDescription, activity, eventName, eventAddress, defaultDate, mapInstruction, categories, HandleCategoryChange, handleModalOpen, defaultPrice, HandlePriceModal }) => {
   const theme = useTheme();
   const [openDatePicker, setOpenDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(defaultDate);
+  const [selectedDate, setSelectedDate] = useState(defaultDate && defaultDate);
 
   useEffect(() => {
     if (defaultDate) {
@@ -164,7 +164,7 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
             </Typography>
 
             <Box
-              onClick={() => setOpenDatePicker(!openDatePicker)}
+              onClick={() => activity === "event" ? setOpenDatePicker(!openDatePicker) : HandlePriceModal()}
               sx={{
                 width: "100%",
                 border: "1px dashed rgba(0, 20, 28, 0.4)",
@@ -178,9 +178,9 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
               }}
             >
               <Typography variant='h1' sx={{ color: theme.palette.primary.main, textAlign: "left", fontSize: { xs: "24px", lg: "32px" } }}>
-                {selectedDate}
+                {selectedDate ? selectedDate : defaultPrice}
               </Typography>
-              <Typography variant='h6' sx={{ textAlign: "left", color: theme.palette.primary.main }}>
+              <Typography variant='h6' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "300" }}>
                 {activity === "event" ? "until 15.4.2025." : "minimum lease: X days"}
               </Typography>
             </Box>

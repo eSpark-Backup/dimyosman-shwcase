@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { OutlinedTabs, ProfileCard } from "../../../components";
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
+import { brandMain } from '../../../assets';
 
 
 const EditProfile = () => {
@@ -12,6 +13,7 @@ const EditProfile = () => {
     const [isEditorVisible, setIsEditorVisible] = useState(false);
 
     const defaultTemplate = `<h2><strong>A Passion for Sustainable Fashion</strong></h2><p>Hi, I'm Emily Thompson, founder and designer at EcoLux Designs. For as long as I can remember, I've been passionate about creating beautiful clothing that doesn't come at the expense of our planet. My goal has always been to merge the world of luxury fashion with sustainable practices, offering high-end pieces that not only look incredible but are also made with care for the environment.</p><p>At EcoLux Designs, I work with organic fabrics and recycled materials to ensure every garment is as eco-friendly as it is stylish. I believe that fashion can be both timeless and responsible, and my collections reflect that balance. From the design process to production, I’m committed to reducing waste and promoting ethical practices in every step.</p>
+    <img src=${brandMain} style="width:100%" height:auto margin:10px 0px;"/>
     <p>At EcoLux Designs, I work with organic fabrics and recycled materials to ensure every garment is as eco-friendly as it is stylish. I believe that fashion can be both timeless and responsible, and my collections reflect that balance. From the design process to production, I’m committed to reducing waste and promoting ethical practices in every step.</p><h2><strong>Leading the Movement Toward Eco-Conscious Fashion</strong></h2><p>Sustainability isn’t just a trend for me—it’s at the core of everything I do. My hope is to inspire others to make more conscious choices in their wardrobes while still enjoying the luxury and elegance that fashion can bring. I love collaborating with like-minded individuals and brands, and I’m always exploring new ways to push the boundaries of what sustainable fashion can achieve.</p>
     `;
     const [brandTitle, setBrandTitle] = useState(defaultTemplate);
