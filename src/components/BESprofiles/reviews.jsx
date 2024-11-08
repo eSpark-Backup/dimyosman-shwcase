@@ -1,25 +1,24 @@
 import { Box, Stack, Typography, useTheme } from "@mui/material";
 import { profileBadge, star } from "../../assets";
 import CheckBox from "../CheckBox";
-import { reviews } from "../../constant";
+import { reviews as allReviews } from "../../constant";
 
-const Reviews = ({ showApproveBox, onApproveChange }) => {
+const Reviews = ({ reviews, showApproveBox, onApproveChange }) => {
   const theme = useTheme();
-
+  const myReviews = (reviews && reviews.length > 0) ? reviews : allReviews
   const handleCheckboxChange = (ind) => (event) => {
     const isChecked = event.target.checked;
     onApproveChange(ind, isChecked);
   };
-
+  
   return (
     <Stack
-      paddingY={2}
       direction="column"
       justifyContent="center"
       alignItems="center"
       gap={4}
     >
-      {reviews.map((review, ind) => (
+      {myReviews.map((review, ind) => (
         <Box key={ind + 1}>
           <Stack
             direction="row"

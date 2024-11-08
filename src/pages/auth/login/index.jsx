@@ -50,6 +50,7 @@ const Login = () => {
                 onSubmit={formik.handleSubmit}
             >
                 <Input
+                    login
                     label={"email"}
                     name={"email"}
                     type={"email"}
@@ -61,6 +62,7 @@ const Login = () => {
                     placeholder={"Type Your Email"}
                 />
                 <Input
+                    login
                     label={"password"}
                     name={"password"}
                     type="password"
