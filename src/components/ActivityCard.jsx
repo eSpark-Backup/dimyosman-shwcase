@@ -2,9 +2,11 @@ import React from 'react'
 import { Box, Button, Divider, Typography, useTheme } from "@mui/material";
 import { accountIcon, brandIcon, brandMain, calender, comment, eventMain, eventMain2, eventMain3, flag, like, miniMap, miniMap2, share, spaceIcon, spaceMain } from "../assets/index.js";
 import DynamicPaginationSwiper from './Slider.jsx';
+import { useNavigate } from 'react-router-dom';
 
-const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, activityName, activityMaker, content, activityImage, activityLocation, activityLocation2, activityAddress, value, deadline, features, slides }) => {
+const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage, activity, activityLocationId, activityName, activityMaker, content, activityImage, activityLocation, activityLocation2, activityAddress, value, deadline, features, slides }) => {
     const theme = useTheme()
+    const navigate = useNavigate();
     return (
         <Box
             sx={{
@@ -37,7 +39,9 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                     }}
                 >
                     <Box
+                        onClick={id ? () => navigate(`/${userRole}/${id}`) : ()=>{}}
                         sx={{
+                            cursor: "pointer",
                             width: "64px",
                             height: "64px",
                             position: "relative"
@@ -102,7 +106,9 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                     </Box>
                 </Box>
                 <Box
+                    onClick={activityId ? () => navigate(`/${activity}/${activityId}`) : ()=>{}}
                     sx={{
+                        cursor: "pointer",
                         background: activity === "event" ? "rgba(148, 185, 134, 0.3)" : activity === "brand" ? "rgba(196, 119, 127, 0.2)" : "rgba(120, 150, 195, 0.3)",
                         width: "48px",
                         height: "48px",
@@ -116,6 +122,8 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                 </Box>
 
             </Box>
+            <Box sx={{ cursor: "pointer" }} 
+            >
             {
                 slides?.length !== 1
                     ?
@@ -124,12 +132,13 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                         sx={{
                             width: "100%"
                         }}
-                    > <DynamicPaginationSwiper slides={slides} />
+                    > <DynamicPaginationSwiper onClick={activityId ? () => navigate(`/${activity}/${activityId}`) : ()=>{}} slides={slides} />
 
                     </Box>
                     :
-                    <img src={slides[0]} alt="Activity" style={{ width: "100%" }} />
+                    <img onClick={activityId ? () => navigate(`/${activity}/${activityId}`) : ()=>{}} src={slides[0]} alt="Activity" style={{ width: "100%" }} />
             }
+            </Box>
             <Box
                 sx={{
                     display: "flex",
@@ -148,7 +157,9 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                     }}
                 >
                     <Box
+                        onClick={activityId ? () => navigate(`/${activity}/${activityId}`) : ()=>{}}
                         sx={{
+                            cursor: "pointer",
                             display: "flex",
                             columnGap: "15px",
                             alignItems: { xs: "flex-start", sm: "center" },
@@ -306,8 +317,10 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
                             {activity === "event" ? "Hosted" : "Located"} at:
                         </Typography>
                         <Typography
+                            onClick={(activity !== "space" && activityLocationId) ? () => navigate(`/space/${activityLocationId}`) : () => {}}
                             variant="h5"
                             style={{
+                                cursor: (activity !== "space" && activityLocationId) ? "pointer" : "default",
                                 fontWeight: "600",
                                 color: theme.palette.primary.dark,
                                 textAlign: "left"
@@ -395,7 +408,9 @@ const ActivityCard = ({ userName, userRole, userImage, mainImage, activity, acti
 
                 </Box>
                 <Typography
+                    onClick={activityId ? () => navigate(`/${activity}/${activityId}`) : () => {}}
                     sx={{
+                        cursor: "pointer",
                         color: theme.palette.primary.main,
                         textAlign: "left"
                     }}

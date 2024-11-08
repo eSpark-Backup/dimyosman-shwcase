@@ -34,6 +34,10 @@ import {
   brandUserImage,
   brandMain,
   brandActivityImage,
+  reviewer,
+  brandMain2,
+  spaceProfile,
+  eventMainImage,
 } from "../assets";
 import {
   followingBrandColumns,
@@ -93,7 +97,8 @@ export const sidebarRoutes = [
 ];
 
 export const getSmallSidebar = (currentLink) => {
-  const smallSidebarLink = ["/message", "/profile"];
+  const id = currentLink.split("/")[2];
+  const smallSidebarLink = ["/message", "/profile", `/brand/${id}`, `/brand/${id}/edit`, "/new-brand", `/event/${id}`, `/event/${id}/edit`, "/new-event"];
   return smallSidebarLink.includes(currentLink);
 };
 
@@ -128,7 +133,9 @@ export const spaceFeatures = [
 
 export const activityItems = [
   {
+    profileId: 1,
     activity: "event",
+    eventId: 3,
     userName: "EcoLux Designs",
     activityName: "Ecolux Chic Pop-Up",
     activityMaker: "Sustainable Fashion",
@@ -139,16 +146,19 @@ export const activityItems = [
     ],
     activityLocation: "Urban Pop-Up Studio 3B",
     activityLocation2: "Urban Pop-Up Pavilion",
+    activityLocationId: 6,
     activityAddress: "123 Williamsburg Ave, Brooklyn, NY 11211",
     value: "28.02.2025.",
     deadline: "until 15.4.2025.",
     userImage: eventUserImage,
     activityImage: eventActivityImage,
-    userRole: "event",
+    userRole: "brand",
     slides: [eventMain, eventMain2, eventMain3],
   },
   {
+    profileId: 2,
     activity: "space",
+    spaceId: 6,
     userName: "Urban Pop-Up Pavilion",
     activityName: "Urban Pop-Up Studio 3B",
     activityMaker: "Urban Pop-Up Pavilion",
@@ -168,16 +178,17 @@ export const activityItems = [
   },
   {
     activity: "brand", // Adjusted for the new item
+    brandId: 1,
     userName: "Emily Thompson",
     userImage: brandUserImage,
     mainImage: brandMain,
-    activityImage: brandActivityImage,
+    activityImage: eventUserImage,
     activityName: "EcoLux Designs",
     activityMaker: "Sustainable Fashion",
     content: [
       "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials."
     ],
-    userRole: "account",
+    userRole: "profile",
     slides: [brandMain],
   },
 ];
@@ -357,3 +368,55 @@ export const brandTableData = (gotoDetail, handleAction) => [
     ),
   },
 ];
+
+export const reviews = [
+  {
+    reviewerPRofile: reviewer,
+    reviewerName: "Sophia Ramirez",
+    profileName: "EcoLux Chic Pop-Up",
+    rating: 5,
+    message: `"The EcoLux Chic Pop-Up was an incredible experience! The
+      collection was stunning - luxurious, yet sustainable, with such
+      attention to detail in every piece. I loved learning about the
+      eco-friendly materials used and how each item was crafted with
+      sustainability in mind. The workshops were a great touch, and I
+      came away with a ton of knowledge on how to build a more
+      conscious wardrobe. Plus, the personal styling session was so
+      helpful! Overall, this event exceeded my expectations in every
+      way. Highly recommend!"`,
+    approved: false,
+  },
+  {
+    reviewerPRofile: reviewer,
+    reviewerName: "Sophia Ramirez",
+    profileName: "EcoLux Chic Pop-Up",
+    rating: 5,
+    message: `"The EcoLux Chic Pop-Up was an incredible experience! The
+      collection was stunning - luxurious, yet sustainable, with such
+      attention to detail in every piece. I loved learning about the
+      eco-friendly materials used and how each item was crafted with
+      sustainability in mind. The workshops were a great touch, and I
+      came away with a ton of knowledge on how to build a more
+      conscious wardrobe. Plus, the personal styling session was so
+      helpful! Overall, this event exceeded my expectations in every
+      way. Highly recommend!"`,
+    approved: false,
+
+  },
+  {
+    reviewerPRofile: reviewer,
+    reviewerName: "Sophia Ramirez",
+    profileName: "EcoLux Chic Pop-Up",
+    rating: 5,
+    message: `"The EcoLux Chic Pop-Up was an incredible experience! The
+      collection was stunning - luxurious, yet sustainable, with such
+      attention to detail in every piece. I loved learning about the
+      eco-friendly materials used and how each item was crafted with
+      sustainability in mind. The workshops were a great touch, and I
+      came away with a ton of knowledge on how to build a more
+      conscious wardrobe. Plus, the personal styling session was so
+      helpful! Overall, this event exceeded my expectations in every
+      way. Highly recommend!"`,
+    approved: false,
+  },
+]

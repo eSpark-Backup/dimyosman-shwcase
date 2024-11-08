@@ -3,7 +3,7 @@ import { Box, IconButton, InputAdornment, TextField, Typography, useTheme } from
 import { eye } from "../assets";
 import RemoveRedEyeSharpIcon from '@mui/icons-material/RemoveRedEyeSharp';
 
-const Input = ({ onInputChange, name, label, type, placeholder, value, onBlur, error, helperText }) => {
+const Input = ({ login, onInputChange, name, label, type, placeholder, value, onBlur, error, helperText, sx, multiline, endAdornment }) => {
   const [showPassword, setShowPassword] = useState(false);
   const theme = useTheme()
 
@@ -12,7 +12,7 @@ const Input = ({ onInputChange, name, label, type, placeholder, value, onBlur, e
     <Box sx={{ display: "flex", flexDirection: "column", rowGap: "8px" }}>
       {label && (
         <Typography
-          sx={{ fontStyle: "italic", textAlign: "left", fontWeight: 300, color:theme.palette.primary.main }}
+          sx={{ fontSize: login ? "12px" : "14px", fontStyle: "italic", textAlign: "left", fontWeight: 300, color: theme.palette.primary.main }}
           variant="h6"
         >
           {label}
@@ -27,19 +27,27 @@ const Input = ({ onInputChange, name, label, type, placeholder, value, onBlur, e
         helperText={helperText}
         error={error}
         onBlur={onBlur}
-        InputProps={
-          type === "password"
-            ? {
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={handleClickShowPassword} edge="end" sx={{ marginRight: "0px" }}>
-                    {!showPassword ? <RemoveRedEyeSharpIcon style={{ color: "#ACB4B5", fontSize: "22px" }} /> : <img src={eye} alt="eye" />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }
-            : {}
-        }
+        multiline={multiline}
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            ...sx, // Apply sx styles to the OutlinedInput root
+          },
+        }}
+        InputProps={{
+          endAdornment: endAdornment || (
+            type === "password" ? (
+              <InputAdornment position="end">
+                <IconButton onClick={handleClickShowPassword} edge="end" sx={{ marginRight: "0px" }}>
+                  {!showPassword ? (
+                    <RemoveRedEyeSharpIcon style={{ color: "#ACB4B5", fontSize: "22px" }} />
+                  ) : (
+                    <img src={eye} alt="eye" />
+                  )}
+                </IconButton>
+              </InputAdornment>
+            ) : null
+          ),
+        }}
       />
     </Box>
   );

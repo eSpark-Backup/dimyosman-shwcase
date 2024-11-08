@@ -4,7 +4,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import { Pagination } from 'swiper/modules';
 
-const DynamicPaginationSwiper = ({ slides }) => {
+const DynamicPaginationSwiper = ({ onClick, slides }) => {
     return (
         <Swiper
             pagination={{
@@ -13,12 +13,13 @@ const DynamicPaginationSwiper = ({ slides }) => {
             }}
             modules={[Pagination]}
             className="mySwiper"
-            style={{ width: "100%" }}
+            style={{ width: "100%", cursor: onClick ? "pointer" : "default" }}
         >
             {slides.map((slideImage, index) => (
                 <SwiperSlide key={index}>
                     <div className="slide-content" style={{ width: "100%", height: "700px" }}>
                         <img
+                            onClick={onClick && onClick}
                             src={slideImage}
                             alt={`Slide ${index + 1}`}
                             style={{

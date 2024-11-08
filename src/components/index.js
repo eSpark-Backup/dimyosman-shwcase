@@ -5,6 +5,16 @@ import ActivityCard from "./ActivityCard";
 import DynamicPaginationSwiper from "./Slider";
 import { DynamicTable } from "./table";
 import FilterationTabs from "./filterationTabs";
+import CheckBox from "./CheckBox";
+import FullWidthImgInput from "./FullWidthImgInput";
+import ImgInputWithCategories from "./ImgInputWithCategories";
+import ChoiceSelectionModal from "./ChoiceSelectionModal";
+import InputWithMap from "./InputWithMap";
+import MapModal from "./MapModal";
+import OutlinedTabs from "./outlinedTabs";
+import BESProfile from "./BESprofiles/BESprofile";
+import EventCard from "./EventCard";
+import Dropdown from "./Dropdown";
 
 export {
   Input,
@@ -14,4 +24,14 @@ export {
   DynamicPaginationSwiper,
   DynamicTable,
   FilterationTabs,
+  CheckBox,
+  FullWidthImgInput,
+  ImgInputWithCategories,
+  ChoiceSelectionModal,
+  InputWithMap,
+  MapModal,
+  OutlinedTabs,
+  BESProfile,
+  EventCard,
+  Dropdown
 };

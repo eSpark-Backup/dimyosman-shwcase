@@ -8,7 +8,7 @@ const BadgeComp = ({ imageSrc, bg }) => {
     return (
         <Box
             sx={{
-                backgroundColor: theme.palette.button.secondary,
+                backgroundColor: "rgb(0, 20, 28, 0.4)",
                 width: "32px",
                 height: "32px",
                 justifyContent: "center",
