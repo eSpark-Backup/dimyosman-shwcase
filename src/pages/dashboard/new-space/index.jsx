@@ -13,19 +13,19 @@ const NewSpace = () => {
     const profileImageRef = useRef(null)
     const [spaceName, setSpaceName] = useState("New Space")
     const [categories, setCategories] = useState([
-        { name: 'Sustainable Fashion', selected: true },
-        { name: 'Real Estate', selected: false },
-        { name: 'Technology', selected: false },
-        { name: 'Health & Wellness', selected: false },
-        { name: 'Education', selected: false },
+        { name: 'Sustainable Fashion', selected: true, id: 1 },
+        { name: 'Real Estate', selected: false, id: 2 },
+        { name: 'Technology', selected: false, id: 3 },
+        { name: 'Health & Wellness', selected: false, id: 4 },
+        { name: 'Education', selected: false, id: 5 },
     ]);
     const [feature, setfeatures] = useState([
-        { name: 'Flexible Layout', selected: true, icon: arrow, },
-        { name: 'Wifi', selected: true, icon: wifi },
-        { name: 'Accessible Location', selected: false, icon: accessibility },
-        { name: 'Natural Lighting', selected: false, icon: sun },
-        { name: 'Compact Storage Area', selected: false, icon: storage },
-        { name: 'On-Site Security', selected: true, icon: security },
+        { name: 'Flexible Layout', selected: true, icon: arrow, id: 1 },
+        { name: 'Wifi', selected: true, icon: wifi, id: 2 },
+        { name: 'Accessible Location', selected: false, icon: accessibility, id: 3 },
+        { name: 'Natural Lighting', selected: false, icon: sun, id: 4 },
+        { name: 'Compact Storage Area', selected: false, icon: storage, id: 5 },
+        { name: 'On-Site Security', selected: true, icon: security, id: 6 },
     ]);
     const [spaceOverview, setSpaceOverview] = useState("Add a brief overview of the space, highlighting its size, location, and key features.\n\nExplain what makes the space ideal for events, pop-ups, or other uses, focusing on its flexibility and amenities. Be sure to mention any standout aspects, such as design, accessibility, or additional services provided (e.g., security, Wi-Fi).\n\nKeep the description informative yet concise, ensuring it appeals to potential users by focusing on what they will benefit from. You can also include a brief note on the atmosphere or style of the space.")
     const [isEditorVisible, setIsEditorVisible] = useState(false);
@@ -60,18 +60,17 @@ const NewSpace = () => {
     const CategoryChangeHandler = (index) => {
         const categoriesSelected = categories.filter((cat) => cat.selected).length;
 
-        if (categories[index].selected && categoriesSelected === 1) {
+        if (categories.find((cat) => cat.id === index).selected && categoriesSelected === 1) {
             alert("Atleast one category should be selected");
-            console.log("ehllo")
             return;
         }
-        if (!categories[index].selected && categoriesSelected >= 2) {
+        if (!categories.find((cat) => cat.id === index).selected && categoriesSelected >= 2) {
             alert("You can select 2 categories at max.");
             return;
         }
 
         const newCategories = categories.map((cat, i) =>
-            i === index ? { ...cat, selected: !cat.selected } : cat
+            cat?.id === index ? { ...cat, selected: !cat.selected } : cat
         )
         setCategories(newCategories);
     }
@@ -112,7 +111,7 @@ const NewSpace = () => {
 
     const CategoryChangeHandler2 = (index) => {
         const newFeatures = feature?.map((item, i) =>
-            i === index ? { ...item, selected: !item?.selected } : item
+            item?.id === index ? { ...item, selected: !item?.selected } : item
         )
         setfeatures(newFeatures);
     }
@@ -217,7 +216,7 @@ const NewSpace = () => {
                 <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} />
             </ReusableModal>
             <ReusableModal open={priceModal} handleClose={() => setPriceModal(false)} heading={"Pricing and terms"}>
-                <PriceModal />
+                <PriceModal handleClose={() => setPriceModal(false)} />
             </ReusableModal>
         </Box>
     )

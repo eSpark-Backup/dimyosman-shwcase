@@ -2,7 +2,7 @@ import { Box, Button, useTheme } from '@mui/material';
 import React, { useState } from 'react';
 import { PriceColumns } from '../columns/price';
 
-const PriceModal = () => {
+const PriceModal = ({handleClose}) => {
     const theme = useTheme();
     const [items, setItems] = useState([
         { id: 1, price: "$200", term: "Day", minimum: "7", select: true },
@@ -86,6 +86,7 @@ const PriceModal = () => {
                         color: theme.palette.primary.main,
                         "&:hover": { backgroundColor: "rgba(209, 219, 215, 0.4)" }
                     }}
+                    onClick={handleClose}
                 >
                     Select
                 </Button>

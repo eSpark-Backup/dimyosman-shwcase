@@ -2,10 +2,12 @@ import { Box, Button, Stack, Typography, useTheme } from '@mui/material'
 import React, { useState } from 'react'
 import SpaceCard from './SpaceCard';
 import { addGrey } from '../assets';
+import { useNavigate } from 'react-router-dom';
 
 const ProfileSpaces = ({ filter1, filter2, filter3, cardsData }) => {
     const [selectedChoice, setSelectedChoice] = useState(0)
     const theme = useTheme();
+    const navigate = useNavigate()
     return (
         cardsData?.length > 0 && <Box
             sx={{
@@ -51,6 +53,7 @@ const ProfileSpaces = ({ filter1, filter2, filter3, cardsData }) => {
                             backgroundColor: "rgb(209, 219, 215, 0.4)",
                         }
                     }}
+                    onClick={()=>navigate("/new-space")}
                 >
                     <img src={addGrey} alt="" />
                     Add New

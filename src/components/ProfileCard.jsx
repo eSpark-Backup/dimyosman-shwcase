@@ -31,7 +31,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                     border: isEdit && "1px dashed rgb(0, 20, 28, 0.4)",
                     cursor: "pointer"
                 }}
-                onClick={() => setShowImageModal(true)}
+                onClick={() => !isEdit && setShowImageModal(true)}
             >
                 <Button
                     sx={{
