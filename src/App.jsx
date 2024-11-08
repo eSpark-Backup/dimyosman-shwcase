@@ -54,7 +54,7 @@ function App() {
           <Route path="/brand" element={<Brand />} />
           <Route path="/brand/:id" element={<BrandDetails />} />
           <Route path="/event" element={<Event />} />
-          {/* <Route path="/event/:id" element={<EventDetails />} /> */}
+          <Route path="/event/:id" element={<EventDetails />} />
           <Route path="/space" element={<Space />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/calendar" element={<Calendar />} />
