@@ -106,7 +106,7 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                     </Box>
                 </Box>
                 <Box
-                    // onClick={activityId ? () => navigate(`/${activity}/${activityId}`) : ()=>{}}
+                    onClick={(activity === "brand" && activityId) ? () => navigate(`/${activity}/${activityId}`) : ()=>{}}
                     sx={{
                         cursor: "pointer",
                         background: activity === "event" ? "rgba(148, 185, 134, 0.3)" : activity === "brand" ? "rgba(196, 119, 127, 0.2)" : "rgba(120, 150, 195, 0.3)",
@@ -133,13 +133,13 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                             width: "100%"
                         }}
                     > <DynamicPaginationSwiper
-                    //  onClick={activityId ? () => navigate(`/${activity}/${activityId}`) : ()=>{}} 
+                     onClick={(activity === "brand" && activityId) ? () => navigate(`/${activity}/${activityId}`) : ()=>{}} 
                      slides={slides} />
 
                     </Box>
                     :
                     <img
-                    //  onClick={activityId ? () => navigate(`/${activity}/${activityId}`) : ()=>{}} 
+                     onClick={(activity === "brand" && activityId) ? () => navigate(`/${activity}/${activityId}`) : ()=>{}} 
                      src={slides[0]} alt="Activity" style={{ width: "100%" }} />
             }
             </Box>
@@ -161,7 +161,7 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                     }}
                 >
                     <Box
-                        // onClick={activityId ? () => navigate(`/${activity}/${activityId}`) : ()=>{}}
+                        onClick={(activity === "brand" && activityId) ? () => navigate(`/${activity}/${activityId}`) : ()=>{}}
                         sx={{
                             cursor: "pointer",
                             display: "flex",
@@ -412,7 +412,7 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
 
                 </Box>
                 <Typography
-                    // onClick={activityId ? () => navigate(`/${activity}/${activityId}`) : () => {}}
+                    onClick={(activity === "brand" && activityId) ? () => navigate(`/${activity}/${activityId}`) : () => {}}
                     sx={{
                         cursor: "pointer",
                         color: theme.palette.primary.main,
