@@ -6,6 +6,7 @@ import BrandDetails from "./dashboard/brand/brand-detail";
 import Event from "./dashboard/event";
 import EventDetails from "./dashboard/event/event-detail";
 import Space from "./dashboard/space";
+import SpaceDetails from "./dashboard/space/space-detail";
 import Profile from "./dashboard/profile";
 import Calendar from "./dashboard/calendar";
 import Message from "./dashboard/message";
@@ -24,6 +25,7 @@ export {
   Event,
   EventDetails,
   Space,
+  SpaceDetails,
   Profile,
   Calendar,
   Message,
