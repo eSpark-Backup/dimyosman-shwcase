@@ -31,6 +31,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                     sx={{
                         height: "96px",
                         width: "96px",
+                        borderRadius: "5px",
                         border: "1px dashed rgb(0, 20, 28, 0.4)",
                         backgroundColor: "rgb(209, 219, 215, 0.2)",
                         display: "flex",
@@ -96,7 +97,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                         }}
                     >
                         <Typography
-                            sx={{ fontStyle: "italic", textAlign: "left", fontWeight: 300, color: theme.palette.primary.main }}
+                            sx={{ fontSize: "14px", fontStyle: "italic", textAlign: "left", fontWeight: 300, color: theme.palette.primary.main }}
                             variant="h6"
                         >
                             {categoryLabel}
@@ -104,6 +105,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                         <Box
                             sx={{
                                 height: "112px",
+                                borderRadius: "3px",
                                 border: "1px dashed rgb(0, 20, 28, 0.4)",
                                 backgroundColor: "rgb(209, 219, 215, 0.2)",
                                 position: "relative",
@@ -124,7 +126,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                                 {categories?.length > 0 ? (
                                     categories?.map((cat, index) => (
                                         <Box key={cat.name} display="flex" alignItems="center" marginRight={2} columnGap={1} sx={{ width: { xs: "100%", sm: "45%", lg: "23%" } }}>
-                                            <CheckBox checked={cat?.selected} readOnly={activity === "brand" ? true : false} onChange={() => HandleCategoryChange(index)} />
+                                            <CheckBox checked={cat?.selected} readOnly={activity === "brand" ? true : false} onChange={() => HandleCategoryChange(cat?.id)} />
                                             <Typography sx={{ fontSize: "20px", fontWeight: "300", color: theme.palette.primary.main }}>{cat?.name}</Typography>
                                         </Box>
                                     ))
@@ -149,7 +151,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                                 </Box>
                             }
                         </Box>
-                        <Typography sx={{ fontSize: "14px", color: theme.palette.primary.main, fontStyle: "italic" }}>
+                        <Typography sx={{ fontWeight: 300, fontSize: "14px", color: theme.palette.primary.main, fontStyle: "italic" }}>
                             {description}
                         </Typography>
                     </Box>

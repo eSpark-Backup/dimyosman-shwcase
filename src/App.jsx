@@ -11,6 +11,7 @@ import {
   EditEvent,
   EditProfile,
   Event,
+  EventDetails,
   Message,
   NewBrand,
   NewEvent,
@@ -55,6 +56,7 @@ function App() {
           <Route path="/brand" element={<Brand />} />
           <Route path="/brand/:id" element={<BrandDetails />} />
           <Route path="/event" element={<Event />} />
+          {/* <Route path="/event/:id" element={<EventDetails />} /> */}
           <Route path="/space" element={<Space />} />
           <Route path="/profile/:id" element={<Profile />} />
           <Route path="/profile/edit/:id" element={<EditProfile />} />

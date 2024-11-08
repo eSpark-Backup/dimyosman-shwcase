@@ -10,6 +10,7 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, act
         <Box
             sx={{
                 height: activity === "brand" ? "300px" : "500px",
+                borderRadius: "5px 5px 0 0",
                 border: "1px dashed rgb(0, 20, 28, 0.4)",
                 backgroundColor: "rgb(209, 219, 215, 0.2)",
                 position: "relative",

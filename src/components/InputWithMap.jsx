@@ -1,5 +1,5 @@
 import { Box, Divider, Typography, useTheme } from '@mui/material';
-import React, { act, useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { add, arrowDown, miniMap, subtract } from '../assets';
 import Input from './input';
 import DatePicker from 'react-date-picker';
@@ -7,45 +7,60 @@ import 'react-date-picker/dist/DatePicker.css';
 import 'react-calendar/dist/Calendar.css';
 import { formatDate } from '../utils';
 import CheckBox from './CheckBox';
+import { useClickOutside } from '../utils';
+import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
 
-const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapDescription, activity, eventName, eventAddress, defaultDate, mapInstruction, categories, HandleCategoryChange, handleModalOpen, defaultPrice, HandlePriceModal }) => {
+const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapDescription, activity, eventName, eventAddress, defaultDate, mapInstruction, categories, HandleCategoryChange, handleModalOpen, defaultPrice, HandlePriceModal, edit }) => {
   const theme = useTheme();
+  const datePickerRef = useRef(null);
   const [openDatePicker, setOpenDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(defaultDate && defaultDate);
+  const [dateToShow, setDateToShow] = useState("");
+
+  useClickOutside(datePickerRef, () => setOpenDatePicker(false));
 
   useEffect(() => {
-    if (defaultDate) {
-      if (defaultDate === "dd.mm.yyyy.") {
-        setSelectedDate(defaultDate);
+    if (typeof selectedDate === "string") {
+      if (edit) {
+        var splitedDate = selectedDate.split("-");
+        const formattedDate = `${splitedDate[2]}.${splitedDate[1]}.${splitedDate[0]}`;
+        setDateToShow(formattedDate);
       } else {
-        const parsedDate = parseDateString(defaultDate);
-        if (parsedDate) {
-          setSelectedDate(formatDate(parsedDate));
-        } else {
-          console.error("Invalid date format");
-        }
+        setDateToShow(selectedDate);
       }
+    } else {
+      setDateToShow(selectedDate?.format("DD.MM.YYYY"));
     }
-  }, [defaultDate]);
+  }, [selectedDate]);
 
-  const parseDateString = (dateString) => {
-    const parts = dateString.match(/(\d{2})\.(\d{2})\.(\d{4})/);
-    if (parts) {
-      const day = parseInt(parts[1], 10);
-      const month = parseInt(parts[2], 10) - 1;
-      const year = parseInt(parts[3], 10);
-      return new Date(year, month, day);
-    }
-    return null;
+  const datePickerStyle = {
+    borderRadius: "5px",
+    border: "1px solid #D1DBD7 !important",
+    ".Mui-selected": {
+      color: "#00141C !important",
+      backgroundColor: "#e3e9e7 !important",
+    },
+    ".Mui-selected:hover": {
+      color: "#00141C !important",
+      backgroundColor: "#e3e9e7 !important",
+    },
+    ".MuiPickersLayout-toolbar": {
+      display: "none",
+    },
+    ".MuiDialogActions-root>:not(style)~:not(style)": {
+      fontWeight: 700,
+    },
+    button: {
+      background: "transparent",
+      color: (theme) => theme.palette.primary.main,
+      fontSize: "12px",
+      ":hover": {
+        background: "transparent",
+      },
+    },
   };
-
-  const handleDateChange = (date) => {
-    if (date) {
-      setSelectedDate(formatDate(date));
-      setOpenDatePicker(false);
-    }
-  };
-
   return (
     <Box
       sx={{
@@ -58,10 +73,22 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
     >
       <Box sx={{ width: { xs: "100%", md: "65%" }, display: "flex", flexDirection: "column", rowGap: "20px" }}>
         <Box sx={{ display: "flex", flexDirection: "column", rowGap: "3px" }}>
-          <Typography variant='h3' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "600" }}>
+          <Typography
+            variant="h3"
+            sx={{
+              textAlign: "left",
+              color: theme.palette.primary.main,
+              fontWeight: "600",
+            }}
+          >
             {inputLabel}
           </Typography>
-          <Input value={inputValue} onInputChange={(e) => setInputValue(e.target.value)} multiline={true} sx={{ height: "auto", fontWeight: "400", py: "10px", px: "10px" }} />
+          <Input
+            value={inputValue}
+            onInputChange={(e) => setInputValue(e.target.value)}
+            multiline={true}
+            sx={{ height: "auto", fontWeight: "400", py: "10px", px: "10px" }}
+          />
         </Box>
         {
           activity === "space" &&
@@ -90,7 +117,7 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
                   ?.filter(cat => cat.selected)
                   .map((cat, index) => (
                     <Box key={cat.name} display="flex" alignItems="center" marginRight={2} columnGap={1.5} sx={{ width: { xs: "100%", sm: "45%", lg: "30%" } }}>
-                      <CheckBox checked={cat.selected} onChange={() => HandleCategoryChange(index)} />
+                      <CheckBox checked={cat.selected} onChange={() => HandleCategoryChange(cat?.id)} />
                       <Box sx={{ display: "flex", columnGap: "8px" }}>
                         <img src={cat.icon} alt="" />
                         <Typography sx={{ fontSize: "12px", fontWeight: "300", color: theme.palette.primary.main }}>{cat.name}</Typography>
@@ -136,7 +163,11 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
                 </Typography>
               }
             </Box>
-            <img src={arrowDown} alt="Down Arrow" />
+            <img
+              style={{ marginTop: "7px" }}
+              src={arrowDown}
+              alt="Down Arrow"
+            />
           </Box>
         )}
         {(activity === "space" || activity === "brand") &&
@@ -157,7 +188,7 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
         </Typography>
 
         {(activity === "event" || activity === "space") && (
-          <Box sx={{ position: "relative", display: "flex", flexDirection: "column", rowGap: "5px" }}>
+          <Box sx={{ position: "relative", display: "flex", flexDirection: "column", rowGap: "10px" }}>
             <Divider />
             <Typography variant='h6' sx={{ textAlign: "left" }}>
               {activity === "event" ? "Starting from:" : "Lease from"}
@@ -177,19 +208,27 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
                 cursor: "pointer",
               }}
             >
-              <Typography variant='h1' sx={{ color: theme.palette.primary.main, textAlign: "left", fontSize: { xs: "24px", lg: "32px" } }}>
-                {selectedDate ? selectedDate : defaultPrice}
+              <Typography
+                variant="h1"
+                sx={{ color: theme.palette.primary.main, textAlign: "left" }}
+              >
+                {defaultDate ? dateToShow + "." : defaultPrice}
               </Typography>
-              <Typography variant='h6' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "300" }}>
-                {activity === "event" ? "until 15.4.2025." : "minimum lease: X days"}
+              <Typography
+                variant="h6"
+                sx={{ textAlign: "left", color: theme.palette.primary.main }}
+              >
+                until 15.4.2025.
               </Typography>
             </Box>
 
             {openDatePicker && (
               <Box
+                ref={datePickerRef}
                 sx={{
                   position: "absolute",
-                  top: "100%",
+                  top: "-380px",
+                  right: "0px",
                   zIndex: 10,
                   mt: 1,
                   backgroundColor: "white",
@@ -197,11 +236,14 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
                   borderRadius: 1,
                 }}
               >
-                <DatePicker
-                  onChange={handleDateChange}
-                  value={parseDateString(selectedDate)} // Ensure you pass a Date object
-                  onCalendarClose={() => setOpenDatePicker(false)}
-                />
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <StaticDatePicker
+                    sx={datePickerStyle}
+                    onClose={() => setOpenDatePicker(false)}
+                    onChange={(date) => setSelectedDate(date)}
+                    defaultValue={dayjs(selectedDate) || dayjs()}
+                  />
+                </LocalizationProvider>
               </Box>
             )}
           </Box>
@@ -209,6 +251,6 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
       </Box>
     </Box>
   );
-}
+};
 
 export default InputWithMap;

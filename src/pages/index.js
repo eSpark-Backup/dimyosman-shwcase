@@ -4,6 +4,7 @@ import Activity from "./dashboard/activity";
 import Brand from "./dashboard/brand";
 import BrandDetails from "./dashboard/brand/brand-detail";
 import Event from "./dashboard/event";
+import EventDetails from "./dashboard/event/event-detail";
 import Space from "./dashboard/space";
 import Profile from "./dashboard/profile";
 import Calendar from "./dashboard/calendar";
@@ -23,6 +24,7 @@ export {
   Brand,
   BrandDetails,
   Event,
+  EventDetails,
   Space,
   Profile,
   Calendar,

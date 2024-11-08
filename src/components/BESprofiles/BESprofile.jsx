@@ -92,6 +92,7 @@ const BESProfile = ({ type, data }) => {
                 top: "8px",
                 right: "16px",
                 zIndex: 9,
+                textTransform: "capitalize",
               }}
             >
               Edit
@@ -155,12 +156,20 @@ const BESProfile = ({ type, data }) => {
             >
               <Typography
                 textAlign="left"
-                sx={{ lineHeight: "100%" }}
+                sx={{
+                  lineHeight: "100%",
+                  fontWeight: 600,
+                }}
                 variant="h1"
               >
                 {myProfile?.profileName}
               </Typography>
-              <Typography sx={{ fontSize: "20px", fontWeight: 200 }}>
+              <Typography
+                sx={{
+                  fontSize: "20px",
+                  fontWeight: 300,
+                }}
+              >
                 {myProfile?.category}
               </Typography>
               <Stack
@@ -186,7 +195,14 @@ const BESProfile = ({ type, data }) => {
                         }
                         key={ind}
                         variant="h6"
-                        sx={{ fontWeight: 200, textTransform: "capitalize" }}
+                        sx={{
+                          cursor:
+                            myProfile?.by && key === "by"
+                              ? "pointer"
+                              : "default",
+                          fontWeight: 200,
+                          textTransform: "capitalize",
+                        }}
                       >
                         {key}:{" "}
                         <span style={{ fontWeight: 600, textTransform: "none" }}>
@@ -205,7 +221,13 @@ const BESProfile = ({ type, data }) => {
             gap="10px"
             alignSelf="flex-end"
           >
-            <Typography sx={{ lineHeight: "100%" }} variant="h1">
+            <Typography
+              sx={{
+                lineHeight: "100%",
+                fontWeight: 600,
+              }}
+              variant="h1"
+            >
               {myProfile?.rating.toFixed(1)}
             </Typography>
             <Stack
@@ -226,7 +248,13 @@ const BESProfile = ({ type, data }) => {
                 );
               })}
             </Stack>
-            <Typography sx={{ textAlign: "right", fontWeight: 200 }} variant="h6">
+            <Typography
+              sx={{
+                textAlign: "right",
+                fontWeight: 300,
+              }}
+              variant="h6"
+            >
               {myProfile?.ratingBased}
             </Typography>
           </Stack>

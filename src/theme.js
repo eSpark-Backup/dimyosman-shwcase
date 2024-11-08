@@ -37,6 +37,11 @@ export const theme = createTheme({
       defaultProps: {
         color: "primary",
       },
+      styleOverrides: {
+        root: {
+          color: "#00141C",
+        },
+      },
     },
     MuiButton: {
       styleOverrides: {

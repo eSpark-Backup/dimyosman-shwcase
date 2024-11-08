@@ -20,7 +20,7 @@ const ChoiceSelectionModal = ({
 
     const handleCheckboxChange = (index) => {
         const updatedSelection = selectedItems.map((cat, i) =>
-            i === index ? { ...cat, selected: !cat.selected } : cat
+            cat?.id === index ? { ...cat, selected: !cat.selected } : cat
         );
         setSelectedItems(updatedSelection);
     };
@@ -28,7 +28,7 @@ const ChoiceSelectionModal = ({
     const handleSelectClick = () => {
         const selectedCategories = selectedItems.filter(cat => cat.selected);
         if (selectedCategories.length < minSelections) {
-            alert(`Please select at least ${minSelections} category(ies)`);
+            alert(`Please select at least ${minSelections} category`);
             return;
         }
         if (selectedCategories.length > maxSelections) {
@@ -63,7 +63,7 @@ const ChoiceSelectionModal = ({
                     <Box key={cat.name} display="flex" alignItems="center" marginBottom={1} columnGap={1}>
                         <CheckBox
                             checked={cat.selected}
-                            onChange={() => handleCheckboxChange(index)}
+                            onChange={() => handleCheckboxChange(cat?.id)}
                         />
                         <Typography>{cat.name}</Typography>
                     </Box>
@@ -88,6 +88,7 @@ const ChoiceSelectionModal = ({
                         background: "rgba(209, 219, 215, 0.4)",
                         fontSize: "16px",
                         fontWeight: "700",
+                        textTransform: "none",
                         color: theme.palette.primary.main,
                         "&:hover": { backgroundColor: "rgba(209, 219, 215, 0.4)" }
                     }}

@@ -1,25 +1,24 @@
 import { Box, Stack, Typography, useTheme } from "@mui/material";
 import { profileBadge, star } from "../../assets";
 import CheckBox from "../CheckBox";
-import { reviews } from "../../constant";
+import { reviews as allReviews } from "../../constant";
 
-const Reviews = ({ showApproveBox, onApproveChange }) => {
+const Reviews = ({ reviews, showApproveBox, onApproveChange }) => {
   const theme = useTheme();
-
+  const myReviews = (reviews && reviews.length > 0) ? reviews : allReviews
   const handleCheckboxChange = (ind) => (event) => {
     const isChecked = event.target.checked;
     onApproveChange(ind, isChecked);
   };
-
+  
   return (
     <Stack
-      paddingY={2}
       direction="column"
       justifyContent="center"
       alignItems="center"
       gap={4}
     >
-      {reviews.map((review, ind) => (
+      {myReviews.map((review, ind) => (
         <Box key={ind + 1}>
           <Stack
             direction="row"
@@ -48,7 +47,7 @@ const Reviews = ({ showApproveBox, onApproveChange }) => {
                   alt="profile-badge"
                 />
               </Box>
-              <Typography fontWeight={300} variant="h5">
+              <Typography fontWeight={400} variant="h5">
                 <span style={{ fontWeight: 600 }}>
                   {review?.reviewerName}
                 </span>{" "}
@@ -62,7 +61,7 @@ const Reviews = ({ showApproveBox, onApproveChange }) => {
               alignItems="center"
               gap={1}
             >
-              <Typography variant="h2" fontWeight={600}>
+              <Typography variant="h2" fontSize={24} fontWeight={600}>
                 {review?.rating?.toFixed(1)}
               </Typography>
               <Stack
@@ -87,7 +86,7 @@ const Reviews = ({ showApproveBox, onApproveChange }) => {
             sx={{ marginTop: "10px", color: theme.palette.primary.main }}
             textAlign="left"
             variant="h5"
-            fontWeight={300}
+            fontWeight={350}
           >
             {review?.message}
           </Typography>

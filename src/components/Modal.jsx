@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal as MuiModal, Box, Typography, useTheme } from '@mui/material';
 import { close } from '../assets';
 
-const ReusableModal = ({ open, handleClose, children, heading, hideHeader }) => {
+const ReusableModal = ({ open, handleClose, children, heading, hideHeader, cat }) => {
     const theme = useTheme();
     return (
         <MuiModal
