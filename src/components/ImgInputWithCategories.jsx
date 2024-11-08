@@ -124,8 +124,8 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                             >
                                 {categories?.length > 0 ? (
                                     categories?.map((cat, index) => (
-                                        <Box key={cat.name} display="flex" alignItems="center" marginRight={2} columnGap={1}>
-                                            <CheckBox checked={cat?.selected} readOnly={activity === "brand" ? true : false} onChange={() => HandleCategoryChange(index)} />
+                                        <Box key={index} display="flex" alignItems="center" marginRight={2} columnGap={1}>
+                                            <CheckBox checked={cat?.selected} onChange={() => HandleCategoryChange(cat?.id)} />
                                             <Typography sx={{ fontSize: "20px", fontWeight: "300", color: theme.palette.primary.main }}>{cat?.name}</Typography>
                                         </Box>
                                     ))

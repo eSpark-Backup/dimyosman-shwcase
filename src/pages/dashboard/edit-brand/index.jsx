@@ -38,21 +38,21 @@ const EditBrand = () => {
   };
 
   const [categories, setCategories] = useState([
-    { name: 'Sustainable Fashion', selected: true },
-    { name: 'Real Estate', selected: true },
-    { name: 'Technology', selected: false },
-    { name: 'Health & Wellness', selected: false },
-    { name: 'Education', selected: false },
-    { name: 'Finance', selected: false },
-    { name: 'Travel', selected: false },
-    { name: 'Food & Beverage', selected: false },
-    { name: 'Art & Design', selected: false },
-    { name: 'Sports', selected: false },
-    { name: 'Entertainment', selected: false },
-    { name: 'Automotive', selected: false },
-    { name: 'Gaming', selected: false },
-    { name: 'Lifestyle', selected: false },
-    { name: 'Science & Technology', selected: false },
+    { id: 1, name: 'Sustainable Fashion', selected: true },
+    { id: 2, name: 'Real Estate', selected: true },
+    { id: 3, name: 'Technology', selected: false },
+    { id: 4, name: 'Health & Wellness', selected: false },
+    { id: 5, name: 'Education', selected: false },
+    { id: 6, name: 'Finance', selected: false },
+    { id: 7, name: 'Travel', selected: false },
+    { id: 8, name: 'Food & Beverage', selected: false },
+    { id: 9, name: 'Art & Design', selected: false },
+    { id: 10, name: 'Sports', selected: false },
+    { id: 11, name: 'Entertainment', selected: false },
+    { id: 12, name: 'Automotive', selected: false },
+    { id: 13, name: 'Gaming', selected: false },
+    { id: 14, name: 'Lifestyle', selected: false },
+    { id: 15, name: 'Science & Technology', selected: false },
   ]);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -127,6 +127,24 @@ const EditBrand = () => {
       setIsEditorVisible(true);
     }
   };
+
+  const CategoryChangeHandler = (index) => {
+    const categoriesSelected = categories.filter((cat) => cat.selected).length;
+
+    if (categories.find((cat) => cat.id === index).selected && categoriesSelected === 1) {
+      alert("Atleast one category should be selected");
+      return;
+    }
+    if (!categories.find((cat) => cat.id === index).selected && categoriesSelected >= 2) {
+      alert("You can select 2 categories at max.");
+      return;
+    }
+
+    const newCategories = categories.map((cat, i) =>
+      cat?.id === index ? { ...cat, selected: !cat.selected } : cat
+    )
+    setCategories(newCategories);
+  }
   return (
     <Box
       sx={{
@@ -151,6 +169,7 @@ const EditBrand = () => {
         handleModalOpen={handleModalOpen}
         description={"Checkbox on the categories will display them publicly. All selected Brand categories are inherited by Events and Spaces, allowing them for individual selection."}
         activity={"brand"}
+        HandleCategoryChange={CategoryChangeHandler}
       />
       <ReusableModal cat open={modalOpen} handleClose={handleModalClose} heading={"Select Brand Categories"}>
         <ChoiceSelectionModal
