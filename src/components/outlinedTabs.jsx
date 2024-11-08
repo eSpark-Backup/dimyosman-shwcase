@@ -48,7 +48,7 @@ const OutlinedTabs = ({ tabs, onTabChange }) => {
               onClick={() => setSelectedTab(tab)}
               key={tab.label}
             >
-              <Typography variant="h5">{tab.label}</Typography>
+              <Typography fontWeight={600} variant="h5">{tab.label}</Typography>
             </Box>
           );
         })}

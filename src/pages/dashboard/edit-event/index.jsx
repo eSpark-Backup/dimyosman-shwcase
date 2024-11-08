@@ -14,11 +14,11 @@ const EditEvent = () => {
     const profileImageRef = useRef(null)
     const [eventName, setEventName] = useState("Ecolux Chic Pop-Up")
     const [categories, setCategories] = useState([
-        { name: 'Sustainable Fashion', selected: true },
-        { name: 'Real Estate', selected: false },
-        { name: 'Technology', selected: false },
-        { name: 'Health & Wellness', selected: false },
-        { name: 'Education', selected: false },
+        { name: 'Sustainable Fashion', selected: true, id: 1 },
+        { name: 'Real Estate', selected: false, id: 2 },
+        { name: 'Technology', selected: false, id: 3 },
+        { name: 'Health & Wellness', selected: false, id: 4 },
+        { name: 'Education', selected: false, id: 5 },
     ]);
     const [activeTab, setActiveTab] = useState("Details");
 
@@ -55,20 +55,21 @@ const EditEvent = () => {
     };
 
     const CategoryChangeHandler = (index) => {
+        console.log(index)
         const categoriesSelected = categories?.filter((item) => item?.selected).length;
 
-        if (categoriesSelected === 1 && categories[index].selected) {
+        if (categoriesSelected === 1 && categories.find((cat) => cat.id === index).selected) {
             alert("Atleast one category should be selected");
             return;
         }
 
-        else if (!categories[index].selected && categoriesSelected >= 2) {
+        else if (!categories.find((cat) => cat.id === index).selected && categoriesSelected >= 2) {
             alert("You can select 2 categories at max.")
             return;
         }
 
         const updatedCategories = categories.map((item, i) =>
-            i === index ? { ...item, selected: !item?.selected } : item
+            item?.id === index ? { ...item, selected: !item?.selected } : item
         )
         setCategories(updatedCategories);
     }
@@ -131,7 +132,8 @@ const EditEvent = () => {
                 rowGap: "32px",
                 backgroundColor: "white",
                 borderRadius: "5px",
-                pb: "40px"
+                pb: 2,
+                mb: 2,
             }}
         >
             <FullWidthImgInput activity={"event"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={flag} />
@@ -167,7 +169,7 @@ const EditEvent = () => {
                     activeTab?.label === "Details"
                         ?
                         <>
-                            <InputWithMap inputLabel={"Event Overview:"} inputValue={eventOverview} setInputValue={setEventOverview} mapDescription={"123 Williamsburg Ave, Brooklyn, NY 11211"} activity={"event"} eventName={"Urban Pop-Up Studio 3B"} eventAddress={"Urban Pop-Up Pavilion"} defaultDate={"28.02.2025."} />
+                            <InputWithMap edit inputLabel={"Event Overview:"} inputValue={eventOverview} setInputValue={setEventOverview} mapDescription={"123 Williamsburg Ave, Brooklyn, NY 11211"} activity={"event"} eventName={"Urban Pop-Up Studio 3B"} eventAddress={"Urban Pop-Up Pavilion"} defaultDate={"2025-02-28"} />
 
                             <Box
                                 sx={{

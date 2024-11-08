@@ -13,11 +13,11 @@ const NewEvent = () => {
     const profileImageRef = useRef(null)
     const [eventName, setEventName] = useState("New Event")
     const [categories, setCategories] = useState([
-        { name: 'Sustainable Fashion', selected: true },
-        { name: 'Real Estate', selected: false },
-        { name: 'Technology', selected: false },
-        { name: 'Health & Wellness', selected: false },
-        { name: 'Education', selected: false },
+        { name: 'Sustainable Fashion', selected: true, id: 1 },
+        { name: 'Real Estate', selected: false, id: 2 },
+        { name: 'Technology', selected: false, id: 3 },
+        { name: 'Health & Wellness', selected: false, id: 4 },
+        { name: 'Education', selected: false, id: 5 },
     ]);
     const [eventOverview, setEventOverview] = useState("Add a brief event overview that highlights the key aspects of the event.\n\nMake sure to clearly explain the purpose, what attendees can expect, and why it's valuable to them. Keep it informative, mentioning any special features like workshops, activities, or unique selling points of the products or services offered.\n\nAim to engage the reader by focusing on the most important details, while ensuring the description stays concise and easy to understand.\n\nThis description will be used as an excerpt.")
     const [isEditorVisible, setIsEditorVisible] = useState(false);
@@ -52,17 +52,17 @@ const NewEvent = () => {
     const CategoryChangeHandler = (index) => {
         const categoriesSelected = categories.filter((cat) => cat.selected).length;
 
-        if (categories[index].selected && categoriesSelected === 1) {
+        if (categories.find((cat) => cat.id === index).selected && categoriesSelected === 1) {
             alert("Atleast one category should be selected");
             return;
         }
-        if (!categories[index].selected && categoriesSelected >= 2) {
+        if (!categories.find((cat) => cat.id === index).selected && categoriesSelected >= 2) {
             alert("You can select 2 categories at max.");
             return;
         }
 
         const newCategories = categories.map((cat, i) =>
-            i === index ? { ...cat, selected: !cat.selected } : cat
+            cat?.id === index ? { ...cat, selected: !cat.selected } : cat
         )
         setCategories(newCategories);
     }
@@ -101,7 +101,7 @@ const NewEvent = () => {
                 rowGap: "32px",
                 backgroundColor: "white",
                 borderRadius: "5px",
-                pb: "40px"
+                pb: 2
             }}
         >
             <FullWidthImgInput activity={"event"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={flag} />
@@ -133,7 +133,7 @@ const NewEvent = () => {
                     rowGap: "32px",
                 }}
             >
-                <InputWithMap inputLabel={"Event Overview:"} inputValue={eventOverview} setInputValue={setEventOverview} mapDescription={"Address line will be filled automatically."} activity={"event"} eventName={"Space name"} eventAddress={"Brand name"} defaultDate={"dd.mm.yyyy."} />
+                <InputWithMap inputLabel={"Event Overview:"} inputValue={eventOverview} setInputValue={setEventOverview} mapDescription={"Address line will be filled automatically."} activity={"event"} eventName={"Space name"} eventAddress={"Brand name"} defaultDate={"dd.mm.yyyy"} />
                 <Box
                     sx={{
                         width: "98%",

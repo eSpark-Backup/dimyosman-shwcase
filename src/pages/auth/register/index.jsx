@@ -65,6 +65,7 @@ const Register = () => {
                         }}
                     >
                         <Input
+                            login
                             label={"first name"}
                             name={"fName"}
                             type={"text"}
@@ -82,6 +83,7 @@ const Register = () => {
                         }}
                     >
                         <Input
+                            login
                             label={"last name"}
                             name={"lName"}
                             type={"text"}
@@ -96,6 +98,7 @@ const Register = () => {
 
                 </Box>
                 <Input
+                    login
                     label={"email"}
                     name={"email"}
                     type={"email"}
@@ -122,6 +125,7 @@ const Register = () => {
                         }}
                     >
                         <Input
+                            login
                             label={"choose password"}
                             name={"password"}
                             type={"password"}
@@ -139,6 +143,7 @@ const Register = () => {
                         }}
                     >
                         <Input
+                            login
                             label={"repeat password"}
                             name={"conPassword"}
                             type={"password"}

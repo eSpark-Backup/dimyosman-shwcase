@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal as MuiModal, Box, Typography, useTheme } from '@mui/material';
 import { close } from '../assets';
 
-const ReusableModal = ({ open, handleClose, children, heading }) => {
+const ReusableModal = ({ cat, open, handleClose, children, heading }) => {
     const theme = useTheme();
     return (
         <MuiModal
@@ -16,7 +16,7 @@ const ReusableModal = ({ open, handleClose, children, heading }) => {
         >
             <Box
                 sx={{
-                    width: { xs: "95vw", sm: "60vw", md: "50vw", lg: "40vw", xl: "30vw" },
+                    width: cat ? { xs: "90vw", sm: "500px" } : { xs: "95vw", sm: "60vw", md: "50vw", lg: "40vw", xl: "30vw" },
                     backgroundColor: theme.palette.primary.contrastText,
                     borderRadius: "5px",
                     padding: "10px 20px",

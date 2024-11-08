@@ -13,7 +13,11 @@ const Details = ({ details, myProfile }) => {
         <Box>
           <Typography
             variant="h3"
-            sx={{ textAlign: "left", textTransform: "capitalize" }}
+            sx={{
+              textAlign: "left",
+              fontWeight: 600,
+              textTransform: "capitalize",
+            }}
           >
             {myProfile.type} Overview:
           </Typography>
@@ -247,14 +251,14 @@ const Details = ({ details, myProfile }) => {
       </Stack>
       {details?.expectedPoint && (
         <Box>
-          <Typography variant="h3" sx={{ textAlign: "left" }}>
+          <Typography variant="h3" sx={{ textAlign: "left", fontWeight: 600 }}>
             {details?.expectedPoint?.title}
           </Typography>
           {details?.expectedPoint?.points?.map((point) => (
             <Typography
               key={point}
               variant="h5"
-              sx={{ textAlign: "left", marginTop: 1, fontWeight: 400 }}
+              sx={{ textAlign: "left", marginTop: 2, fontWeight: 400 }}
             >
               {point}
             </Typography>
@@ -294,7 +298,10 @@ const Details = ({ details, myProfile }) => {
       )}
       {details?.otherPoints && (
         <Box>
-          <Typography variant="h3" sx={{ fontSize: "20px", textAlign: "left" }}>
+          <Typography
+            variant="h3"
+            sx={{ fontSize: "20px", textAlign: "left", fontWeight: 600 }}
+          >
             {details?.otherPoints?.title}
           </Typography>
           {details?.otherPoints?.points?.map((point) => (
@@ -323,7 +330,10 @@ const Details = ({ details, myProfile }) => {
       )}
       {details?.otherPoints2 && (
         <Box>
-          <Typography variant="h3" sx={{ fontSize: "20px", textAlign: "left" }}>
+          <Typography
+            variant="h3"
+            sx={{ fontSize: "20px", textAlign: "left", fontWeight: 600 }}
+          >
             {details?.otherPoints2?.title}
           </Typography>
           {details?.otherPoints2?.points?.map((point) => (
@@ -341,7 +351,7 @@ const Details = ({ details, myProfile }) => {
         direction="row"
         justifyContent="space-between"
         alignItems="flex-end"
-        paddingY={2}
+        paddingTop={2}
         gap={1}
       >
         <Stack

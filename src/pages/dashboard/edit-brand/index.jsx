@@ -1,14 +1,17 @@
 import { Box, Button, Stack, Typography, useTheme } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
-import { addGrey, brandIcon } from '../../../assets'
+import { addGrey, brandIcon, brandMain } from '../../../assets'
 import ReusableModal from '../../../components/Modal'
 import { ChoiceSelectionModal, EventCard, FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs } from '../../../components'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 
 const EditBrand = () => {
+  const navigate = useNavigate();
   const { events } = useSelector(state => state.event)
+  const myEvents = events.filter((event) => event.owned);
   const theme = useTheme()
   const mainImageRef = useRef(null)
   const profileImageRef = useRef(null)
@@ -35,21 +38,21 @@ const EditBrand = () => {
   };
 
   const [categories, setCategories] = useState([
-    { name: 'Sustainable Fashion', selected: true },
-    { name: 'Real Estate', selected: true },
-    { name: 'Technology', selected: false },
-    { name: 'Health & Wellness', selected: false },
-    { name: 'Education', selected: false },
-    { name: 'Finance', selected: false },
-    { name: 'Travel', selected: false },
-    { name: 'Food & Beverage', selected: false },
-    { name: 'Art & Design', selected: false },
-    { name: 'Sports', selected: false },
-    { name: 'Entertainment', selected: false },
-    { name: 'Automotive', selected: false },
-    { name: 'Gaming', selected: false },
-    { name: 'Lifestyle', selected: false },
-    { name: 'Science & Technology', selected: false },
+    { id: 1, name: 'Sustainable Fashion', selected: true },
+    { id: 2, name: 'Real Estate', selected: true },
+    { id: 3, name: 'Technology', selected: false },
+    { id: 4, name: 'Health & Wellness', selected: false },
+    { id: 5, name: 'Education', selected: false },
+    { id: 6, name: 'Finance', selected: false },
+    { id: 7, name: 'Travel', selected: false },
+    { id: 8, name: 'Food & Beverage', selected: false },
+    { id: 9, name: 'Art & Design', selected: false },
+    { id: 10, name: 'Sports', selected: false },
+    { id: 11, name: 'Entertainment', selected: false },
+    { id: 12, name: 'Automotive', selected: false },
+    { id: 13, name: 'Gaming', selected: false },
+    { id: 14, name: 'Lifestyle', selected: false },
+    { id: 15, name: 'Science & Technology', selected: false },
   ]);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -69,7 +72,7 @@ const EditBrand = () => {
   const [selectedChoice, setSelectedChoice] = useState(0)
   const [activeTab, setActiveTab] = useState("Details");
 
-  const defaultTemplate = `<h2><strong>EcoLux Designs: Where Luxury Meets Sustainability</strong></h2><p>In an industry where trends come and go, EcoLux Designs stands out by creating fashion with a purpose. As a trailblazer in the world of sustainable luxury, this brand is redefining high-end fashion by merging style with eco-friendly practices. Every piece in the EcoLux collection is crafted with the utmost care, using organic fabrics, recycled materials, and responsible manufacturing processes.</p><img src="" alt="EcoLux Designs Image" style="width:100%; height:auto; margin: 10px 0;"/><p>From elegant dresses to timeless accessories, EcoLux Designs offers a wide range of high-end fashion pieces that not only look good but also do good for the planet. The brand’s commitment to sustainability goes beyond just the materials—they focus on ethical production and long-lasting designs, ensuring that each item has minimal environmental impact and maximum longevity in your wardrobe.</p><br/><h2>Leading the Movement Toward Eco-Conscious Fashion</h2><p>What makes EcoLux Designs truly special is the balance it strikes between luxury and sustainability. The designs are contemporary, chic, and versatile, proving that eco-conscious fashion doesn’t have to compromise on style. Whether you’re attending a gala or simply updating your everyday wardrobe, EcoLux Designs has something that will elevate your look while aligning with your values.</p><br/><p>As more consumers seek out brands that reflect their commitment to the environment, EcoLux Designs is at the forefront of this movement—proving that fashion can be both luxurious and sustainable. By investing in quality over quantity, this brand is making a statement that fashion should enhance the world, not harm it.</p>`;
+  const defaultTemplate = `<h2><strong>EcoLux Designs: Where Luxury Meets Sustainability</strong></h2><p>In an industry where trends come and go, EcoLux Designs stands out by creating fashion with a purpose. As a trailblazer in the world of sustainable luxury, this brand is redefining high-end fashion by merging style with eco-friendly practices. Every piece in the EcoLux collection is crafted with the utmost care, using organic fabrics, recycled materials, and responsible manufacturing processes.</p></br><p>From elegant dresses to timeless accessories, EcoLux Designs offers a wide range of high-end fashion pieces that not only look good but also do good for the planet. The brand’s commitment to sustainability goes beyond just the materials—they focus on ethical production and long-lasting designs, ensuring that each item has minimal environmental impact and maximum longevity in your wardrobe.</p><img src=${brandMain} alt="EcoLux Designs Image" style="width:100%; height:auto; margin: 10px 0;"/><br/><h2 style="font-size: 20px; font-weight: 600">Leading the Movement Toward Eco-Conscious Fashion</h2><p>What makes EcoLux Designs truly special is the balance it strikes between luxury and sustainability. The designs are contemporary, chic, and versatile, proving that eco-conscious fashion doesn’t have to compromise on style. Whether you’re attending a gala or simply updating your everyday wardrobe, EcoLux Designs has something that will elevate your look while aligning with your values.</p><br/><p>As more consumers seek out brands that reflect their commitment to the environment, EcoLux Designs is at the forefront of this movement—proving that fashion can be both luxurious and sustainable. By investing in quality over quantity, this brand is making a statement that fashion should enhance the world, not harm it.</p>`;
 
   const [brandTitle, setBrandTitle] = useState(defaultTemplate);
   const [isEditorVisible, setIsEditorVisible] = useState(false);
@@ -124,6 +127,24 @@ const EditBrand = () => {
       setIsEditorVisible(true);
     }
   };
+
+  const CategoryChangeHandler = (index) => {
+    const categoriesSelected = categories.filter((cat) => cat.selected).length;
+
+    if (categories.find((cat) => cat.id === index).selected && categoriesSelected === 1) {
+      alert("Atleast one category should be selected");
+      return;
+    }
+    if (!categories.find((cat) => cat.id === index).selected && categoriesSelected >= 2) {
+      alert("You can select 2 categories at max.");
+      return;
+    }
+
+    const newCategories = categories.map((cat, i) =>
+      cat?.id === index ? { ...cat, selected: !cat.selected } : cat
+    )
+    setCategories(newCategories);
+  }
   return (
     <Box
       sx={{
@@ -132,7 +153,7 @@ const EditBrand = () => {
         rowGap: "32px",
         backgroundColor: "white",
         borderRadius: "5px",
-        pb: "40px"
+        pb: 2,
       }}
     >
       <FullWidthImgInput activity={"brand"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={brandIcon} />
@@ -148,8 +169,9 @@ const EditBrand = () => {
         handleModalOpen={handleModalOpen}
         description={"Checkbox on the categories will display them publicly. All selected Brand categories are inherited by Events and Spaces, allowing them for individual selection."}
         activity={"brand"}
+        HandleCategoryChange={CategoryChangeHandler}
       />
-      <ReusableModal open={modalOpen} handleClose={handleModalClose} heading={"Select Brand Categories"}>
+      <ReusableModal cat open={modalOpen} handleClose={handleModalClose} heading={"Select Brand Categories"}>
         <ChoiceSelectionModal
           categories={categories}
           handleClose={handleModalClose}
@@ -201,6 +223,7 @@ const EditBrand = () => {
                   <Typography onClick={() => setSelectedChoice(2)} variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 2 ? "600" : "400", cursor: "pointer" }}>Past</Typography>
                 </Box>
                 <Button
+                  onClick={() => navigate("/new-event")}
                   sx={{
                     backgroundColor: "rgb(209, 219, 215, 0.4)",
                     height: "31px",
@@ -210,7 +233,11 @@ const EditBrand = () => {
                     fontSize: "16px",
                     display: "flex",
                     columnGap: "6px",
-                    alignItems: "center"
+                    alignItems: "center",
+                    ":hover": {
+                      backgroundColor: "rgb(209, 219, 215, 0.4)",
+                      color: theme.palette.primary.main,
+                    }
                   }}
                 >
                   <img src={addGrey} alt="" />
@@ -227,14 +254,14 @@ const EditBrand = () => {
                 rowGap={4}
                 columnGap={0}
               >
-                {events.map((event, ind) => {
+                {myEvents.map((event, ind) => {
                   return (
                     <Box
                       sx={{
                         width: { xs: "100%", md: "328px" }
                       }}
                     >
-                      <EventCard event={event} key={ind} showBtn={true} btnText={"RSVP"} />
+                      <EventCard edit event={event} key={ind} showBtn={true} />
                     </Box>
                   );
                 })}

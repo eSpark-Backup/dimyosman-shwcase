@@ -2,7 +2,7 @@ import { eventBadge } from '../assets'
 import { Box, Button, Typography, useTheme } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 
-const EventCard = ({ onClick, event, showBtn, btnText }) => {
+const EventCard = ({ edit, onClick, event, showBtn }) => {
     const theme = useTheme()
     const navigate = useNavigate()
     return (
@@ -45,9 +45,9 @@ const EventCard = ({ onClick, event, showBtn, btnText }) => {
                     {event?.tabs[0]?.props?.details?.overview[0]}
                 </Typography>
                 <Typography fontWeight={300} variant="h6" textAlign="left">
-                    By: <span style={{ fontWeight: 600 }}>{event?.details?.by}</span>
+                    By: <span style={{ fontWeight: 400 }}>{event?.details?.by}</span>
                 </Typography>
-                <Typography fontWeight={300} variant="h2" textAlign="left">
+                <Typography fontWeight={300} fontSize={24} variant="h2" textAlign="left">
                     Starting:{" "}
                     <span style={{ fontWeight: 600 }}>{event?.details?.starting}</span>
                 </Typography>
@@ -64,13 +64,14 @@ const EventCard = ({ onClick, event, showBtn, btnText }) => {
                         fontSize: "16px",
                         fontWeight: "700",
                         color: theme.palette.primary.main,
+                        textTransform: "none",
                         "&:hover": {
                             backgroundColor: "rgb(209, 219, 215, 0.4)"
                         }
                     }}
                     onClick={() => navigate(`/event/${event?.id}/edit`)}
                 >
-                    {btnText}
+                    {edit ? "Edit" : "RSVP"}
                 </Button>
             }
         </Box>

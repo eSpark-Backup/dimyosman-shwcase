@@ -38,7 +38,7 @@ const Events = ({ myProfile, addNewEvent }) => {
               return (
                 <Typography
                   variant="h5"
-                  sx={{ fontWeight: filter === activeFilter ? 600 : 300 }}
+                  sx={{ fontWeight: filter === activeFilter ? 600 : 300, cursor: "pointer" }}
                   onClick={() => setActiveFilter(filter)}
                   key={filter}
                 >
