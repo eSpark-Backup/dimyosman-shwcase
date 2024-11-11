@@ -96,7 +96,7 @@ const EditBrand = () => {
         theme: 'snow',
         modules: {
           toolbar: [
-            [{ 'header': 3 }],
+            [{ 'header': [2, 3, 4, 5, 6, false] }],
             ['bold', 'italic', 'strike'],
             [{ 'align': [] }],
             [{ 'list': 'ordered' }],
@@ -153,10 +153,11 @@ const EditBrand = () => {
         rowGap: "32px",
         backgroundColor: "white",
         borderRadius: "5px",
+        position: "relative",
         pb: 2,
       }}
     >
-      <FullWidthImgInput activity={"brand"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={brandIcon} />
+      <FullWidthImgInput activity={"brand"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={brandIcon} editImage={brandMain} />
       <ImgInputWithCategories
         handleImgClick={HandleProfileFileInputClick}
         imgRef={profileImageRef}
