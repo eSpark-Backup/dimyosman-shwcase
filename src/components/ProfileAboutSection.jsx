@@ -2,6 +2,7 @@ import { Box, Button, Typography, useTheme } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import { close, copyIcon, fbIcon, shareHovered, shareNotHovered } from '../assets'
 import { socialShareOptions } from '../constant'
+import { useClickOutside } from '../utils'
 
 const ProfileAboutSection = ({ content }) => {
     const theme = useTheme()
@@ -9,17 +10,8 @@ const ProfileAboutSection = ({ content }) => {
     const shareBoxRef = useRef(null);
     const [isIconHovered, setIsIconHovered] = useState(false)
 
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (shareBoxRef.current && !shareBoxRef.current.contains(event.target)) {
-                setShowShareBox(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
+  useClickOutside(shareBoxRef, () => setShowShareBox(false));
+
     return (
         <Box sx={{ my: "50px" }}>
             {

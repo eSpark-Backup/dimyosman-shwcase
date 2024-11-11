@@ -72,7 +72,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                             backgroundColor: isEdit ? "rgb(0, 20, 28, 0.9)" : "#4d5b60"
                         }
                     }}
-                    onClick={() => isEdit ? navigate(`/profile/${location?.pathname.split("/").at(-1)}`) : navigate(`/profile/edit/${location?.pathname.split("/").at(-1)}`)}
+                    onClick={() => isEdit ? navigate(`/profile/${location?.pathname.split("/").at(-1)}`) : navigate(`/profile/${location?.pathname.split("/").at(-1)}/edit`)}
                 >
                     {
                         isEdit ? "Publish" : "Edit"

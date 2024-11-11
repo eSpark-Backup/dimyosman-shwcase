@@ -59,7 +59,7 @@ function App() {
           {/* <Route path="/event/:id" element={<EventDetails />} /> */}
           <Route path="/space" element={<Space />} />
           <Route path="/profile/:id" element={<Profile />} />
-          <Route path="/profile/edit/:id" element={<EditProfile />} />
+          <Route path="/profile/:id/edit" element={<EditProfile />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/message" element={<Message />} />
           <Route path="/settings" element={<Settings />} />
