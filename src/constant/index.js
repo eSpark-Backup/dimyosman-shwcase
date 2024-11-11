@@ -98,7 +98,7 @@ export const sidebarRoutes = [
 
 export const getSmallSidebar = (currentLink) => {
   const id = currentLink.split("/")[2];
-  const smallSidebarLink = ["/message", "/profile", `/brand/${id}`, `/brand/${id}/edit`, "/new-brand", `/event/${id}`, `/event/${id}/edit`, "/new-event"];
+  const smallSidebarLink = ["/message", "/profile", `/brand/${id}`, `/brand/${id}/edit`, "/new-brand", `/event/${id}`, `/event/${id}/edit`, "/new-event", `/space/${id}`];
   return smallSidebarLink.includes(currentLink);
 };
 
