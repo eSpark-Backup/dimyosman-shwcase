@@ -97,7 +97,7 @@ const Events = ({ myProfile, addNewEvent }) => {
               }}
             >
               <EventCard
-              //  onClick={() => navigate(`/event/${event?.id}`)} 
+               onClick={() => navigate(`/event/${event?.id}`)} 
                event={event} key={ind} />
             </Box>
           );
