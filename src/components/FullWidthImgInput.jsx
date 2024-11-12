@@ -21,7 +21,7 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, act
         >
             <Box
                 sx={{
-                    background: activity === "brand" ? "rgb(196, 119, 127, 0.2)" : activity === "event" ? "rgb(148, 185, 134, 0.3)" : "",
+                    background: activity === "brand" ? "rgb(196, 119, 127, 0.2)" : activity === "event" ? "rgb(148, 185, 134, 0.3)" : "rgba(120, 150, 195, 0.3)",
                     width: "48px",
                     height: "48px",
                     position: "absolute",
@@ -54,7 +54,7 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, act
                         fontSize: "16px",
                         width: "143px",
                         height: "31px",
-                        textTransform: "none",
+                        textTransform: "none"
                     }}
                     onClick={() => naivgate(`/${activity}`)}
                 >
@@ -67,7 +67,7 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, act
                         width: "103px",
                         height: "31px",
                         backgroundColor: "rgb(0, 20, 28, 0.9)",
-                        textTransform: "none",
+                        textTransform: "none"
                     }}
                 >
                     Publish
@@ -78,7 +78,7 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, act
                         fontSize: "16px",
                         width: "102px",
                         height: "31px",
-                        textTransform: "none",
+                        textTransform: "none"
                     }}
                     onClick={() => naivgate(`/${activity}`)}
                 >

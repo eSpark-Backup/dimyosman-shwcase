@@ -3,10 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import EventCard from './EventCard';
 import { addGrey } from '../assets';
+import { useNavigate } from 'react-router-dom';
 
 const ProfileEvents = ({ filter1, filter2, filter3, cardsData }) => {
     const theme = useTheme();
     const [selectedChoice, setSelectedChoice] = useState(0);
+    const navigate = useNavigate()
 
     return (
         <Box
@@ -53,6 +55,7 @@ const ProfileEvents = ({ filter1, filter2, filter3, cardsData }) => {
                             backgroundColor: "rgb(209, 219, 215, 0.4)",
                         }
                     }}
+                    onClick={() => navigate("/new-event")}
                 >
                     <img src={addGrey} alt="" />
                     Add New

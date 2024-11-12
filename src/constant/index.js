@@ -42,6 +42,14 @@ import {
   profileBanner2,
   profileImage2,
   brandCardImage,
+  spaceImage,
+  profileAbout,
+  fbIcon,
+  telegramIcon,
+  twitterIcon,
+  whatsAppIcon,
+  emailIcon,
+  shareIcon,
 } from "../assets";
 import {
   followingBrandColumns,
@@ -102,7 +110,7 @@ export const sidebarRoutes = [
 
 export const getSmallSidebar = (currentLink) => {
   const id = currentLink.split("/")[2];
-  const smallSidebarLink = ["/message", "/profile", `/brand/${id}`, `/brand/${id}/edit`, "/new-brand", `/event/${id}`, `/event/${id}/edit`, "/new-event"];
+  const smallSidebarLink = ["/message", "/profile", `/brand/${id}`, `/brand/${id}/edit`, "/new-brand", `/event/${id}`, `/event/${id}/edit`, "/new-event","/new-space",`/profile/${id}`, `/profile/${id}/edit`];
   return smallSidebarLink.includes(currentLink);
 };
 
@@ -549,7 +557,7 @@ export const profileContent = [
     name: "Emily Thompson",
     bannerImage: profileBanner,
     userImage: brandUserImage,
-    tabs: ["About", "Brands", "Events"],
+    tabs: ["About", "Brands", "Events", "Spaces"],
     aboutSection: [
       {
         type: "heading",
@@ -581,6 +589,7 @@ export const profileContent = [
     ],
     brandSection: [
       {
+        id: 1,
         profileImage: eventUserImage,
         brandName: "EcoLux Designs",
         brandCategory: "Sustainable Fashion",
@@ -588,6 +597,7 @@ export const profileContent = [
         brandImage: brandMain
       },
       {
+        id: 2,
         profileImage: eventUserImage,
         brandName: "EcoLux Designs",
         brandCategory: "Sustainable Fashion",
@@ -595,6 +605,7 @@ export const profileContent = [
         brandImage: brandMain
       },
       {
+        id: 3,
         profileImage: eventUserImage,
         brandName: "EcoLux Designs",
         brandCategory: "Sustainable Fashion",
@@ -603,13 +614,62 @@ export const profileContent = [
       },
 
     ],
-    events: true
+    spaceSection: [
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+    ]
   },
   {
     name: "Michael Harrison",
     bannerImage: profileBanner2,
     userImage: profileImage2,
-    tabs: ["About", "Brands", "Spaces"],
+    tabs: ["About", "Brands", "Events", "Spaces"],
     aboutSection: [
       {
         type: "heading",
@@ -628,7 +688,7 @@ export const profileContent = [
       },
       {
         type: "image",
-        content: brandMain
+        content: profileAbout
       },
       {
         type: "heading",
@@ -641,13 +701,7 @@ export const profileContent = [
     ],
     brandSection: [
       {
-        profileImage: eventUserImage,
-        brandName: "Urban Pop-Up Pavilion",
-        brandCategory: "Real Estate",
-        description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials. ",
-        brandImage: brandCardImage
-      },
-      {
+        id: 1,
         profileImage: eventUserImage,
         brandName: "Urban Pop-Up Pavilion",
         brandCategory: "Real Estate",
@@ -655,6 +709,15 @@ export const profileContent = [
         brandImage: brandCardImage
       },
       {
+        id: 2,
+        profileImage: eventUserImage,
+        brandName: "Urban Pop-Up Pavilion",
+        brandCategory: "Real Estate",
+        description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+        brandImage: brandCardImage
+      },
+      {
+        id: 3,
         profileImage: eventUserImage,
         brandName: "Urban Pop-Up Pavilion",
         brandCategory: "Real Estate",
@@ -663,7 +726,83 @@ export const profileContent = [
       },
 
     ],
-    spaces: true,
-    spaceContent:[]
-  }
+    spaceSection: [
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+    ]
+  },
+]
+
+
+export const socialShareOptions = [
+  {
+    name: "Facebook",
+    icon: fbIcon,
+  },
+  {
+    name: "Telegram",
+    icon: telegramIcon,
+  },
+  {
+    name: "Twitter",
+    icon: twitterIcon,
+  },
+  {
+    name: "Whatsapp",
+    icon: whatsAppIcon,
+  },
+  {
+    name: "E-mail",
+    icon: emailIcon,
+  },
+  {
+    name: "More",
+    icon: shareIcon,
+  },
 ]

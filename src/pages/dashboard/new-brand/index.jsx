@@ -164,7 +164,7 @@ const NewBrand = () => {
                     rowGap: "32px",
                 }}
             >
-                <InputWithMap inputLabel={"Brand Overview:"} inputValue={brandOverview} setInputValue={setBrandOverview} handleClick={() => setMapModal(true)} activity={"brand"} />
+                <InputWithMap inputLabel={"Brand Overview:"} inputValue={brandOverview} setInputValue={setBrandOverview} handleClick={() => setMapModal(true)} activity={"brand"} mapDescription={"123 Williamsburg Ave, Brooklyn, NY 11211"} mapInstruction={"Click on the map to select Address."} />
                 <Box
                     sx={{
                         width: "98%",

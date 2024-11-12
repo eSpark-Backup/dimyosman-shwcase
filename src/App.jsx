@@ -15,6 +15,7 @@ import {
   Message,
   NewBrand,
   NewEvent,
+  NewSpace,
   Profile,
   Settings,
   Space,
@@ -58,7 +59,7 @@ function App() {
           {/* <Route path="/event/:id" element={<EventDetails />} /> */}
           <Route path="/space" element={<Space />} />
           <Route path="/profile/:id" element={<Profile />} />
-          <Route path="/profile/edit/:id" element={<EditProfile />} />
+          <Route path="/profile/:id/edit" element={<EditProfile />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/message" element={<Message />} />
           <Route path="/settings" element={<Settings />} />
@@ -66,6 +67,7 @@ function App() {
           <Route path="/brand/:brand-id/edit" element={<EditBrand />} />
           <Route path="/new-event" element={<NewEvent />} />
           <Route path='/event/:event-id/edit' element={<EditEvent />} />
+          <Route path="/new-space" element={<NewSpace />} />
         </Route>
       </Routes>
     </>

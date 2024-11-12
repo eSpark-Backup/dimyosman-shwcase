@@ -1,10 +1,12 @@
 import { Box, Button, Typography, useTheme } from '@mui/material'
 import React, { useState } from 'react'
 import { addGrey, brandIcon, brandMain, brandUserImage, comment, eventUserImage, like, share } from '../assets'
+import { useNavigate } from 'react-router-dom'
 
 const BrandCard = ({ items, filter1, filter2, filter3 }) => {
     const theme = useTheme()
     const [selectedChoice, setSelectedChoice] = useState(0);
+    const navigate = useNavigate()
     return (
         <Box sx={{ mt: "50px" }}>
             <Box
@@ -43,6 +45,7 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                             backgroundColor: "rgb(209, 219, 215, 0.4)",
                         }
                     }}
+                    onClick={() => navigate("/new-brand")}
                 >
                     <img src={addGrey} alt="" />
                     Add New
@@ -206,6 +209,7 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                                                     backgroundColor: "rgb(209, 219, 215, 0.4)"
                                                 }
                                             }}
+                                            onClick={() => navigate(`/brand/${item?.id}/edit`)}
                                         >
                                             Edit
                                         </Button>
