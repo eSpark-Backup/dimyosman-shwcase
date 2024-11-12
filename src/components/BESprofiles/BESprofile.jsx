@@ -111,6 +111,7 @@ const BESProfile = ({ type, data }) => {
           alignItems="center"
         >
           <Stack
+            component="section"
             direction="row"
             justifyContent="center"
             alignItems={{ xs: "flex-start", md: "center" }}
@@ -150,6 +151,7 @@ const BESProfile = ({ type, data }) => {
               />
             </Box>
             <Stack
+              component="header"
               direction="column"
               justifyContent="center"
               alignItems="flex-start"
@@ -173,6 +175,7 @@ const BESProfile = ({ type, data }) => {
                 {myProfile?.category}
               </Typography>
               <Stack
+                component="section"
                 direction="row"
                 justifyContent="flex-start"
                 alignItems="center"
@@ -215,6 +218,7 @@ const BESProfile = ({ type, data }) => {
             </Stack>
           </Stack>
           <Stack
+            component="section"
             direction="column"
             justifyContent="center"
             alignItems="flex-end"
@@ -225,8 +229,9 @@ const BESProfile = ({ type, data }) => {
               sx={{
                 lineHeight: "100%",
                 fontWeight: 600,
+                fontSize: "32px",
               }}
-              variant="h1"
+              variant="h2"
             >
               {myProfile?.rating.toFixed(1)}
             </Typography>
@@ -248,15 +253,19 @@ const BESProfile = ({ type, data }) => {
                 );
               })}
             </Stack>
-            <Typography
-              sx={{
+
+            <address
+              style={{
                 textAlign: "right",
                 fontWeight: 300,
+                fontSize: "12px",
+                fontStyle: "normal",
+                fontFamily: `"Segoe UI", "sans-serif"`,
               }}
-              variant="h6"
+              aria-label="Headquarters of EcoLux Designs"
             >
               {myProfile?.ratingBased}
-            </Typography>
+            </address>
           </Stack>
         </Stack>
         <OutlinedTabs tabs={myProfile?.tabs} />
@@ -269,6 +278,10 @@ const BESProfile = ({ type, data }) => {
             left: "50%",
             transform: "translate(-50%, -50%)",
             width: "65%",
+            ".swiper": {
+              height: "auto !important",
+              maxHeight: "80vh",
+            },
             ":focus-visible": {
               outline: "none !important",
             },
