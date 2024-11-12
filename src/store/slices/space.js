@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
   spaceActivityImage,
-  spaceMain,
+  spaceModal1,
   spaceMain2,
   spaceMain3,
 } from "../../assets";
@@ -14,7 +14,7 @@ const initialState = {
       by: 2,
       type: "space",
       owned: true,
-      slides: [spaceMain, spaceMain2, spaceMain3],
+      slides: [spaceModal1, spaceMain2, spaceMain3],
       profilePic: spaceActivityImage,
       profileName: "Urban Pop-Up Studio 3B",
       category: "Real Estate",
@@ -224,7 +224,7 @@ const initialState = {
       by: 2,
       type: "space",
       owned: false,
-      slides: [spaceMain, spaceMain2, spaceMain3],
+      slides: [spaceModal1, spaceMain2, spaceMain3],
       profilePic: spaceActivityImage,
       profileName: "Urban Pop-Up Studio 3B",
       category: "Real Estate",

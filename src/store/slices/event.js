@@ -1,10 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
   eventActivityImage,
-  eventMain,
   eventMain2,
   eventMain3,
   eventMainImage,
+  eventMainModal1,
 } from "../../assets";
 
 const initialState = {
@@ -14,7 +14,7 @@ const initialState = {
       by: 1,
       type: "event",
       owned: true,
-      slides: [eventMain, eventMain2, eventMain3],
+      slides: [eventMainModal1, eventMain2, eventMain3],
       profilePic: eventActivityImage,
       profileName: "Ecolux Chic Pop-Up",
       category: "Sustainable Fashion",
@@ -75,7 +75,7 @@ const initialState = {
       id: 4,
       type: "event",
       owned: false,
-      slides: [eventMain, eventMain2, eventMain3],
+      slides: [eventMainModal1, eventMain2, eventMain3],
       profilePic: eventActivityImage,
       profileName: "Ecolux Chic Pop-Up",
       category: "Sustainable Fashion",
