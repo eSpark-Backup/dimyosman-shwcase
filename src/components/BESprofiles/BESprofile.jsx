@@ -80,23 +80,32 @@ const BESProfile = ({ type, data }) => {
           }}
         >
           {myProfile?.owned && (
-            <Button
-              onClick={editProfile}
+            <Box
               sx={{
-                padding: "10px 24px",
-                fontSize: "16px",
-                fontWeight: 600,
-                width: "77px",
-                height: "31px",
-                position: "absolute",
-                top: "8px",
-                right: "16px",
-                zIndex: 9,
-                textTransform: "capitalize",
+                position: "fixed",
+                top: "90px",
+                zIndex: 2,
               }}
+              className="buttons-box"
             >
-              Edit
-            </Button>
+              <Button
+                onClick={editProfile}
+                sx={{
+                  padding: "10px 24px",
+                  fontSize: "16px",
+                  fontWeight: 600,
+                  width: "77px",
+                  height: "31px",
+                  position: "absolute",
+                  top: "0px",
+                  right: "0px",
+                  zIndex: 9,
+                  textTransform: "capitalize",
+                }}
+              >
+                Edit
+              </Button>
+            </Box>
           )}
           <DynamicPaginationSwiper
             onClick={() => setOpenSliderModal(true)}
