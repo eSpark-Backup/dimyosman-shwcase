@@ -161,6 +161,7 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                     }}
                 >
                     <Box
+                        component="Section"
                         onClick={((activity === "brand" || activity === "space") && activityId) ? () => navigate(`/${activity}/${activityId}`) : ()=>{}}
                         sx={{
                             cursor: "pointer",
@@ -197,6 +198,7 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                         </Box>
 
                         <Box
+                            component="header"
                             sx={{
                                 display: "flex",
                                 flexDirection: "column"
@@ -208,7 +210,7 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                                     fontWeight: "600",
                                     fontSize: { xs: "20px", md: "24px" }
                                 }}
-                                variant="h3"
+                                variant="h1"
                             >
                                 {activityName}
 
@@ -217,9 +219,10 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                                 sx={{
                                     color: theme.palette.primary.main,
                                     fontWeight: "300",
-                                    textAlign: "left"
+                                    textAlign: "left",
+                                    fontSize: "16px"
                                 }}
-                                variant="h5"
+                                variant="h2"
                             >
                                 {activityMaker}
                             </Typography>
@@ -227,6 +230,7 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                         </Box>
                     </Box>
                     <Box
+                        component="section"
                         sx={{
                             display: "flex",
                             flexDirection: "column",
@@ -309,10 +313,11 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                             flexDirection: "column",
                             rowGap: "5px"
                         }}
-                    >
+                    >   <header>
                         <Typography
-                            variant="h6"
+                            variant="h2"
                             style={{
+                                fontSize: "12px",
                                 fontWeight: "600",
                                 color: theme.palette.primary.dark,
                                 textAlign: "left"
@@ -326,6 +331,7 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                             style={{
                                 cursor: (activity !== "space" && activityLocationId) ? "pointer" : "default",
                                 fontWeight: "600",
+                                fontSize: "16px",
                                 color: theme.palette.primary.dark,
                                 textAlign: "left"
                             }}
@@ -334,8 +340,8 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                         </Typography>
 
                         <Typography
-                            variant="h6"
                             style={{
+                                fontSize: "12px",
                                 fontWeight: "300",
                                 color: theme.palette.primary.main,
                                 textAlign: "left"
@@ -343,21 +349,27 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                         >
                             {activityLocation2}
                         </Typography>
-                        <img src={activity === "event" ? miniMap : miniMap2} alt="" />
-                        <Typography
-                            variant="h6"
-                            style={{
-                                fontWeight: "400",
-                                color: theme.palette.primary.main,
-                                textAlign: "left"
-                            }}
-                        >
-                            {activityAddress}
-                        </Typography>
+                        </header>
+                        <figure role="img" aria-labelledby="profile-figcaption">
+                            <img src={activity === "event" ? miniMap : miniMap2} alt="" />
+                            <figcaption
+                                style={{
+                                    fontStyle: "normal",
+                                    fontSize: "12px",
+                                    fontWeight: "400",
+                                    color: theme.palette.primary.main,
+                                    textAlign: "left",
+                                    fontFamily: `"Segoe UI", "sans-serif"`,
+                                }}
+                            >
+                                 {activityAddress}
+                            </figcaption>
+                        </figure>
                         <Divider />
                         <Typography
-                            variant="h6"
+                            variant="h2"
                             style={{
+                                fontSize: "12px",
                                 fontWeight: "600",
                                 color: theme.palette.primary.main,
                                 textAlign: "left"
@@ -365,19 +377,19 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                         >
                             {activity === "event" ? "Starting" : "Lease"} from:
                         </Typography>
-                        <Typography
-                            variant="h1"
-                            style={{
-                                fontWeight: "600",
-                                color: theme.palette.primary.main,
-                                textAlign: "left",
-                                lineHeight: "140%"
-                            }}
+                        <time
+                          style={{
+                            fontSize: "32px",
+                            fontFamily: `"Segoe UI", "sans-serif"`,
+                            fontWeight: "600",
+                            color: theme.palette.primary.main,
+                            textAlign: "left",
+                            lineHeight: "140%",
+                          }}
                         >
                             {value}
-                        </Typography>
+                        </time>
                         <Typography
-                            variant="h6"
                             style={{
                                 fontWeight: "300",
                                 color: theme.palette.primary.main,

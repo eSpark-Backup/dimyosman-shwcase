@@ -5,12 +5,13 @@ const Details = ({ details, myProfile }) => {
   return (
     <Box>
       <Stack
+        component="section"
         direction={{ xs: "column", md: "row" }}
         justifyContent="space-between"
         alignItems="flex-start"
         gap={2}
       >
-        <Box>
+        <Box component="section">
           <Typography
             variant="h3"
             sx={{
@@ -87,88 +88,99 @@ const Details = ({ details, myProfile }) => {
             </Box>
           )}
         </Box>
-        <Box sx={{ marginTop: 1, width: { xs: "100%", md: "max-content" } }}>
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: "600",
-              textAlign: "left",
-            }}
-          >
-            {myProfile?.type === "brand" && !myProfile.owned
-              ? "Located at:"
-              : myProfile?.type === "brand"
-              ? "Headqarters at:"
-              : "Hosted at:"}
-          </Typography>
-          {myProfile?.type !== "brand" && (
+        <Box
+          component="section"
+          sx={{ marginTop: 1, width: { xs: "100%", md: "max-content" } }}
+        >
+          <header>
             <Typography
-              variant="h5"
+              variant="h2"
               sx={{
+                fontSize: "12px",
                 fontWeight: "600",
                 textAlign: "left",
               }}
             >
-              {details?.space}
+              {myProfile?.type === "brand" && !myProfile.owned
+                ? "Located at:"
+                : myProfile?.type === "brand"
+                ? "Headqarters at:"
+                : "Hosted at:"}
             </Typography>
-          )}
-          {myProfile?.type !== "brand" && (
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: "300",
-                textAlign: "left",
-              }}
-            >
-              {details?.spaceCategory}
-            </Typography>
-          )}
+            {myProfile?.type !== "brand" && (
+              <Typography
+                sx={{
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  textAlign: "left",
+                }}
+              >
+                {details?.space}
+              </Typography>
+            )}
+            {myProfile?.type !== "brand" && (
+              <Typography
+                sx={{
+                  fontSize: "12px",
+                  fontWeight: "300",
+                  textAlign: "left",
+                }}
+              >
+                {details?.spaceCategory}
+              </Typography>
+            )}
+          </header>
           <Box
             sx={{
               marginTop: "6px",
               width: { xs: "100%", md: "222px" },
-              height: { xs: "auto", md: "75px" },
+              height: "auto",
             }}
           >
-            <img width="100%" height="100%" src={miniMap} alt="map" />
+            <figure role="img" aria-labelledby="profile-figcaption">
+              <img width="100%" height="100%" src={miniMap} alt="map" />
+              <figcaption
+                style={{
+                  fontStyle: "normal",
+                  fontSize: "12px",
+                  fontWeight: "400",
+                  textAlign: "left",
+                  wordSpacing: "-1px",
+                  marginTop: "6px",
+                  fontFamily: `"Segoe UI", "sans-serif"`,
+                }}
+              >
+                {details.location}
+              </figcaption>
+            </figure>
           </Box>
-
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: "400",
-              textAlign: "left",
-              wordSpacing: "-1px",
-              marginTop: "6px",
-            }}
-          >
-            {details.location}
-          </Typography>
           {myProfile?.type !== "brand" && (
             <>
               <Divider sx={{ marginY: 1 }} />
               <Typography
-                variant="h6"
+                variant="h2"
                 style={{
+                  fontSize: "12px",
                   fontWeight: "600",
                   textAlign: "left",
                 }}
               >
                 Staring from:
               </Typography>
-              <Typography
-                variant="h1"
+              <time
                 style={{
+                  fontSize: "32px",
+                  fontFamily: `"Segoe UI", "sans-serif"`,
                   fontWeight: "600",
                   textAlign: "left",
                   lineHeight: "140%",
                 }}
               >
                 {details?.startingDate}
-              </Typography>
+              </time>
               <Typography
-                variant="h6"
                 style={{
+                  fontSize: "12px",
                   fontWeight: "300",
                   textAlign: "left",
                 }}

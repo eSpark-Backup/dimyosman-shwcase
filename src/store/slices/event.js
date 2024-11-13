@@ -1,10 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
   eventActivityImage,
-  eventMain,
   eventMain2,
   eventMain3,
   eventMainImage,
+  eventMain,
 } from "../../assets";
 
 const initialState = {
