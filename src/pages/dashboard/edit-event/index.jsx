@@ -1,7 +1,7 @@
 import { Box, Typography, useTheme } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import { FullWidthImgInput, ImgInputWithCategories, InputWithMap, OutlinedTabs } from '../../../components'
-import { flag } from '../../../assets'
+import { eventMain, flag } from '../../../assets'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
 import Reviews from '../../../components/BESprofiles/reviews'
@@ -90,7 +90,7 @@ const EditEvent = () => {
                 theme: 'snow',
                 modules: {
                     toolbar: [
-                        [{ 'header': 3 }],
+                        [{ 'header': [2, 3, 4, 5, 6, false] }],
                         ['bold', 'italic', 'strike'],
                         [{ 'align': [] }],
                         [{ 'list': 'ordered' }],
@@ -136,7 +136,7 @@ const EditEvent = () => {
                 mb: 2,
             }}
         >
-            <FullWidthImgInput activity={"event"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={flag} />
+            <FullWidthImgInput activity={"event"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={flag} editImage={eventMain} />
 
             <ImgInputWithCategories
                 handleImgClick={HandleProfileFileInputClick}

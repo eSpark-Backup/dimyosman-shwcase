@@ -10,14 +10,17 @@ const Activity = () => {
         <Grid
           item
           xs={12}
-          lg={8}
+          lg={8.8}
+          xl={8.9}
+          // lg={8}
           sx={{
             // pb: "10px",
             maxHeight: "calc(100vh - 100px)",
             overflowY: "auto",
             display: "flex",
             flexDirection: "column",
-            rowGap: "12px"
+            rowGap: "12px",
+            // border:"1px solid red"
           }}
         >
 

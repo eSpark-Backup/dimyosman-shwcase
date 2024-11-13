@@ -77,6 +77,7 @@ const NewEvent = () => {
                 theme: 'snow',
                 modules: {
                     toolbar: [
+                        [{ 'header': [2, 3, 4, 5, 6, false] }],
                         ['bold', 'italic', 'strike'],
                         [{ 'header': 3 }],
                         [{ 'list': 'ordered' }, { 'list': 'bullet' }],
