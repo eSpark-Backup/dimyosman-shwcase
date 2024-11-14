@@ -17,6 +17,7 @@ import {
   Profile,
   Settings,
   Space,
+  SpaceDetails,
 } from "./pages";
 
 function App() {
@@ -56,6 +57,7 @@ function App() {
           <Route path="/event" element={<Event />} />
           <Route path="/event/:id" element={<EventDetails />} />
           <Route path="/space" element={<Space />} />
+          <Route path="/space/:id" element={<SpaceDetails />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/message" element={<Message />} />
