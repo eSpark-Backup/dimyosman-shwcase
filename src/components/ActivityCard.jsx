@@ -163,7 +163,7 @@ const ActivityCard = ({
                 fontSize: { xs: "12px", lg: "16px" },
               }}
             >
-              <span style={{ fontWeight: 600 }}>{userName} </span>
+              <p style={{ display: "inline-block", fontWeight: 600, marginRight: "5px" }}>{userName} </p>
               published a new{" "}
               {activity === "event"
                 ? "Event!"
