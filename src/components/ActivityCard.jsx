@@ -549,18 +549,16 @@ const ActivityCard = ({
             >
               {activity === "event" ? "Starting" : "Lease"} from:
             </Typography>
-            <time
-              style={{
-                fontSize: "32px",
-                fontFamily: `"Segoe UI", "sans-serif"`,
-                fontWeight: "600",
-                color: theme.palette.primary.main,
-                textAlign: "left",
-                lineHeight: "140%",
-              }}
-            >
-              {value}
-            </time>
+              <Typography
+                style={{
+                  fontSize: "32px",
+                  fontWeight: "600",
+                  textAlign: "left",
+                  lineHeight: "140%",
+                }}
+              >
+                {value}
+              </Typography>
             <Typography
               style={{
                 fontWeight: "300",

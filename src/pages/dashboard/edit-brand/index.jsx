@@ -218,10 +218,10 @@ const EditBrand = () => {
                     rowGap: "2px"
                   }}
                 >
-                  <Typography variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "400" }}>Show:</Typography>
-                  <Typography onClick={() => setSelectedChoice(0)} variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 0 ? "600" : "400", cursor: "pointer" }}>All</Typography>
-                  <Typography onClick={() => setSelectedChoice(1)} variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 1 ? "600" : "400", cursor: "pointer" }}>Upcoming</Typography>
-                  <Typography onClick={() => setSelectedChoice(2)} variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 2 ? "600" : "400", cursor: "pointer" }}>Past</Typography>
+                  <Typography fontSize={16} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "400" }}>Show:</Typography>
+                  <Typography onClick={() => setSelectedChoice(0)} fontSize={16} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 0 ? "600" : "400", cursor: "pointer" }}>All</Typography>
+                  <Typography onClick={() => setSelectedChoice(1)} fontSize={16} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 1 ? "600" : "400", cursor: "pointer" }}>Upcoming</Typography>
+                  <Typography onClick={() => setSelectedChoice(2)} fontSize={16} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 2 ? "600" : "400", cursor: "pointer" }}>Past</Typography>
                 </Box>
                 <Button
                   onClick={() => navigate("/new-event")}
