@@ -1,7 +1,7 @@
 import { Box, Button, Divider, Stack, Typography } from "@mui/material";
 import { calender, comment, like, miniMap, share } from "../../assets";
 
-const Details = ({ details, myProfile }) => {
+const Details = ({ spaceInquire, details, myProfile }) => {
   return (
     <Box>
       <Stack
@@ -55,35 +55,89 @@ const Details = ({ details, myProfile }) => {
                   flexWrap: "wrap",
                   justifyContent: "space-between",
                   rowGap: "15px",
-                  flexDirection: { xs: "column", md: "row" },
+                  flexDirection: "column",
                 }}
               >
-                {details?.feature?.points?.map((item, index) => (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      columnGap: "5px",
-                      width: { xs: "100%", md: "33%" },
-                    }}
-                    key={index}
-                  >
-                    <img
-                      src={item?.icon}
-                      alt="Icon"
-                      style={{ width: "16px", height: "16px" }}
-                    />
-                    <Typography
-                      sx={{
-                        textAlign: "left",
-                        fontWeight: "400",
-                        fontSize: { xs: "12px", sm: "11px", xl: "12px" },
-                      }}
-                      variant="h6"
-                    >
-                      {item?.description}
-                    </Typography>
-                  </Box>
-                ))}
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    justifyContent: "space-between",
+                    rowGap: "15px",
+                    flexDirection: { xs: "column", md: "row" },
+                  }}
+                >
+                  {details?.feature?.points?.map(
+                    (item, index) =>
+                      index >= 0 &&
+                      index <= 2 && (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            columnGap: "5px",
+                            width: { xs: "100%", md: "150px" },
+                          }}
+                          key={index}
+                        >
+                          <img
+                            src={item?.icon}
+                            alt="Icon"
+                            style={{ width: "16px", height: "16px" }}
+                          />
+                          <Typography
+                            sx={{
+                              textAlign: "left",
+                              fontWeight: "400",
+                              fontSize: { xs: "12px", sm: "11px", xl: "12px" },
+                              color: theme => theme.palette.primary.dark
+                            }}
+                          >
+                            {item?.description}
+                          </Typography>
+                        </Box>
+                      )
+                  )}
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    justifyContent: "space-between",
+                    rowGap: "15px",
+                    flexDirection: { xs: "column", md: "row" },
+                  }}
+                >
+                  {details?.feature?.points?.map(
+                    (item, index) =>
+                      index >= 3 &&
+                      index <= 5 && (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            columnGap: "5px",
+                            width: { xs: "100%", md: "150px" },
+                          }}
+                          key={index}
+                        >
+                          <img
+                            src={item?.icon}
+                            alt="Icon"
+                            style={{ width: "16px", height: "16px" }}
+                          />
+                          <Typography
+                            sx={{
+                              textAlign: "left",
+                              fontWeight: "400",
+                              fontSize: { xs: "12px", sm: "11px", xl: "12px" },
+                              color: theme => theme.palette.primary.dark
+                            }}
+                          >
+                            {item?.description}
+                          </Typography>
+                        </Box>
+                      )
+                  )}
+                </Box>
               </Box>
             </Box>
           )}
@@ -163,6 +217,7 @@ const Details = ({ details, myProfile }) => {
                   fontSize: "12px",
                   fontWeight: "600",
                   textAlign: "left",
+                  color: (theme) => theme.palette.primary.dark,
                 }}
               >
                 Staring from:
@@ -231,6 +286,7 @@ const Details = ({ details, myProfile }) => {
         </Stack>
         {(myProfile.type === "space" || !myProfile?.owned) && (
           <Button
+            onClick={spaceInquire ? () => spaceInquire(myProfile?.id) : ()=>{}}
             sx={{
               background: (theme) => theme.palette.button.secondary,
               color: (theme) => theme.palette.primary.main,
@@ -328,17 +384,17 @@ const Details = ({ details, myProfile }) => {
         </Box>
       )}
       {details?.overviewImage && (
-        <img
-          style={{
-            borderRadius: "5px",
-            margin: "16px 0",
-            width: "100%",
-            height: "300px",
-            objectFit: "cover",
-          }}
-          src={details?.overviewImage}
-          alt="overview-image"
-        />
+          <img
+            style={{
+              borderRadius: "5px",
+              margin: "16px 0",
+              width: "100%",
+              height: "300px",
+              objectFit: "cover",
+            }}
+            src={details?.overviewImage}
+            alt="overview-image"
+          />
       )}
       {details?.otherPoints2 && (
         <Box>
@@ -398,6 +454,7 @@ const Details = ({ details, myProfile }) => {
         </Stack>
         {(myProfile.type === "space" || !myProfile?.owned) && (
           <Button
+            onClick={spaceInquire ? () => spaceInquire(myProfile?.id) : ()=>{}}
             sx={{
               background: (theme) => theme.palette.button.secondary,
               color: (theme) => theme.palette.primary.main,

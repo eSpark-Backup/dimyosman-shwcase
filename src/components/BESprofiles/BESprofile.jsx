@@ -11,7 +11,7 @@ import Spaces from "./spaces";
 import Teenacy from "./teenacy";
 import { brandBadge, eventBadge, spaceBadge, star } from "../../assets";
 
-const BESProfile = ({ type, data }) => {
+const BESProfile = ({ spaceInquire, type, data }) => {
   const [openSliderModal, setOpenSliderModal] = useState(false);
   const handleCloseModal = () => setOpenSliderModal(false);
   const navigate = useNavigate();
@@ -44,6 +44,7 @@ const BESProfile = ({ type, data }) => {
             {...tab.props}
             myProfile={myProfile}
             addNewEvent={addNewEvent}
+            spaceInquire={spaceInquire}
           />
         );
       },
@@ -134,30 +135,30 @@ const BESProfile = ({ type, data }) => {
                 height: "96px",
                 position: "relative",
               }}
-            >
-              <img
-                style={{ width: "100%", height: "100%" }}
-                src={myProfile.profilePic}
-                alt="brand-profile"
-              />
-              <img
-                style={{
-                  position: "absolute",
-                  bottom: "2px",
-                  right: "2px",
-                  width: "16px",
-                  height: "16px",
-                  zIndex: 99,
-                }}
-                src={
-                  myProfile?.type === "brand"
-                    ? brandBadge
-                    : myProfile?.type === "event"
-                    ? eventBadge
-                    : spaceBadge
-                }
+              >
+                <img
+                  style={{ width: "100%", height: "100%" }}
+                  src={myProfile.profilePic}
+                  alt="brand-profile"
+                />
+                <img
+                  style={{
+                    position: "absolute",
+                    bottom: "2px",
+                    right: "2px",
+                    width: "16px",
+                    height: "16px",
+                    zIndex: 99,
+                  }}
+                  src={
+                    myProfile?.type === "brand"
+                      ? brandBadge
+                      : myProfile?.type === "event"
+                      ? eventBadge
+                      : spaceBadge
+                  }
                 alt="brand-badge"
-              />
+                />
             </Box>
             <Stack
               component="header"

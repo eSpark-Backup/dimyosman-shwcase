@@ -223,6 +223,7 @@ export const theme = createTheme({
       disabled: "#9E9EA4",
     },
     button: {
+      primary: "#D1DBD766",
       secondary: "#edf1ef"
     },
     transparent: "transparent",

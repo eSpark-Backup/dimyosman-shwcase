@@ -79,7 +79,13 @@ import spaceBadge from "./space-badge.png";
 import profileBadge from "./profile-badge.png";
 import star from "./star.svg";
 import reviewer from "./reviewer.png";
-import arrowDown from "./arrow_down.svg"
+import arrowDown from "./arrow_down.svg";
+import bold from "./bold.svg";
+import italic from "./italic.svg";
+import lineThrough from "./line-through.svg";
+import paperClip from "./paperclip.svg";
+import link from "./link.svg";
+import smile from "./smile.svg";
 
 export {
   react,
@@ -163,5 +169,11 @@ export {
   profileBadge,
   star,
   reviewer,
-  arrowDown
+  arrowDown,
+  bold,
+  italic,
+  lineThrough,
+  paperClip,
+  link,
+  smile,
 };

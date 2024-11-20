@@ -74,6 +74,7 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                         </Box>
                     </Box>
                     <Box
+                        onClick={activityId ? () => navigate(`/${activity}/${activityId}`) : () => {}}
                         sx={{
                             display: "flex",
                             columnGap: "5px",
@@ -308,7 +309,7 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                     &&
                     <Box
                         sx={{
-                            width: { xs: "100%", lg: "35%" },
+                            width: { xs: "100%", lg: "max-content" },
                             display: "flex",
                             flexDirection: "column",
                             rowGap: "5px"

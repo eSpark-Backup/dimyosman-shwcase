@@ -11,7 +11,6 @@ const initialState = {
   spaces: [
     {
       id: 5,
-      by: 2,
       type: "space",
       owned: true,
       slides: [spaceMain, spaceMain2, spaceMain3],
@@ -221,7 +220,6 @@ const initialState = {
     },
     {
       id: 6,
-      by: 2,
       type: "space",
       owned: false,
       slides: [spaceMain, spaceMain2, spaceMain3],
