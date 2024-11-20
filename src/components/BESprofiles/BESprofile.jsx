@@ -11,7 +11,7 @@ import Spaces from "./spaces";
 import Teenacy from "./teenacy";
 import { brandBadge, eventBadge, spaceBadge, star } from "../../assets";
 
-const BESProfile = ({ type, data }) => {
+const BESProfile = ({ spaceInquire, type, data }) => {
   const [openSliderModal, setOpenSliderModal] = useState(false);
   const handleCloseModal = () => setOpenSliderModal(false);
   const navigate = useNavigate();
@@ -44,6 +44,7 @@ const BESProfile = ({ type, data }) => {
             {...tab.props}
             myProfile={myProfile}
             addNewEvent={addNewEvent}
+            spaceInquire={spaceInquire}
           />
         );
       },
@@ -135,29 +136,34 @@ const BESProfile = ({ type, data }) => {
                 position: "relative",
               }}
             >
-              <img
-                style={{ width: "100%", height: "100%" }}
-                src={myProfile.profilePic}
-                alt="brand-profile"
-              />
-              <img
-                style={{
-                  position: "absolute",
-                  bottom: "2px",
-                  right: "2px",
-                  width: "16px",
-                  height: "16px",
-                  zIndex: 99,
-                }}
-                src={
-                  myProfile?.type === "brand"
-                    ? brandBadge
-                    : myProfile?.type === "event"
-                    ? eventBadge
-                    : spaceBadge
-                }
-                alt="brand-badge"
-              />
+              <figure
+                role="profile-image"
+                aria-labelledby="profile-image-figcaption"
+              >
+                <img
+                  style={{ width: "100%", height: "100%" }}
+                  src={myProfile.profilePic}
+                  alt="brand-profile"
+                />
+                <img
+                  style={{
+                    position: "absolute",
+                    bottom: "2px",
+                    right: "2px",
+                    width: "16px",
+                    height: "16px",
+                    zIndex: 99,
+                  }}
+                  src={
+                    myProfile?.type === "brand"
+                      ? brandBadge
+                      : myProfile?.type === "event"
+                      ? eventBadge
+                      : spaceBadge
+                  }
+                  alt={`${type}-badge`}
+                />
+              </figure>
             </Box>
             <Stack
               component="header"
@@ -177,7 +183,7 @@ const BESProfile = ({ type, data }) => {
               </Typography>
               <Typography
                 sx={{
-                  fontSize: "20px",
+                  fontSize: "16px",
                   fontWeight: 300,
                 }}
               >
@@ -206,13 +212,13 @@ const BESProfile = ({ type, data }) => {
                             : () => {}
                         }
                         key={ind}
-                        variant="h6"
+                        fontSize={12}
                         sx={{
                           cursor:
                             myProfile?.by && key === "by"
                               ? "pointer"
                               : "default",
-                          fontWeight: 200,
+                          fontWeight: 400,
                           textTransform: "capitalize",
                         }}
                       >
