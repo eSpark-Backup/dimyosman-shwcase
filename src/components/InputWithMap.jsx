@@ -157,20 +157,20 @@ const InputWithMap = ({
             />
           </Box>
         )}
-
-        <img
-          src={miniMap}
-          alt="Map"
-          onClick={handleClick}
-          style={{ cursor: "pointer" }}
-        />
-        <Typography
-          fontSize={12}
-          sx={{ textAlign: "left", fontWeight: "300", fontStyle: "italic" }}
-        >
-          {mapDescription}
-        </Typography>
-
+        <figure style={{ width: "100%", height: "100%" }} role="img" aria-labelledby="profile-map">
+            <img width="100%" height="100%" src={miniMap} alt="map" />
+            <figcaption
+              style={{
+                fontStyle: "italic",
+                fontSize: "12px",
+                fontWeight: "300",
+                textAlign: "left",
+                fontFamily: `"Segoe UI", "sans-serif"`,
+              }}
+            >
+              {mapDescription}
+            </figcaption>
+        </figure>
         {activity === "event" && (
           <Box sx={{ position: "relative" }}>
             <Divider sx={{ marginY: 2 }} />

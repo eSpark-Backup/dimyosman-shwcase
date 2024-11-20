@@ -225,17 +225,16 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               >
                 Staring from:
               </Typography>
-              <time
+              <Typography
                 style={{
                   fontSize: "32px",
-                  fontFamily: `"Segoe UI", "sans-serif"`,
                   fontWeight: "600",
                   textAlign: "left",
                   lineHeight: "140%",
                 }}
               >
                 {details?.startingDate}
-              </time>
+              </Typography>
               <Typography
                 style={{
                   fontSize: "12px",
