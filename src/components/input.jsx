@@ -3,7 +3,7 @@ import { Box, IconButton, InputAdornment, TextField, Typography, useTheme } from
 import { eye } from "../assets";
 import RemoveRedEyeSharpIcon from '@mui/icons-material/RemoveRedEyeSharp';
 
-const Input = ({ login, onInputChange, name, label, type, placeholder, value, onBlur, error, helperText, sx, multiline, endAdornment }) => {
+const Input = ({ login, onInputChange, name, label, type, placeholder, value, onBlur, error, helperText, sx, multiline, endAdornment, ...rest }) => {
   const [showPassword, setShowPassword] = useState(false);
   const theme = useTheme()
 
@@ -13,7 +13,6 @@ const Input = ({ login, onInputChange, name, label, type, placeholder, value, on
       {label && (
         <Typography
           sx={{ fontSize: login ? "12px" : "14px", fontStyle: "italic", textAlign: "left", fontWeight: 300, color: theme.palette.primary.main }}
-          variant="h6"
         >
           {label}
         </Typography>
@@ -28,6 +27,7 @@ const Input = ({ login, onInputChange, name, label, type, placeholder, value, on
         error={error}
         onBlur={onBlur}
         multiline={multiline}
+        {...rest}
         sx={{
           "& .MuiOutlinedInput-root": {
             ...sx, // Apply sx styles to the OutlinedInput root

@@ -80,7 +80,7 @@ const InputWithMap = ({
       <Box sx={{ width: { xs: "100%", md: "70%" } }}>
         <Box sx={{ display: "flex", flexDirection: "column", rowGap: "3px" }}>
           <Typography
-            variant="h3"
+            variant="h2"
             sx={{
               textAlign: "left",
               color: theme.palette.primary.main,
@@ -106,7 +106,7 @@ const InputWithMap = ({
           rowGap: "10px",
         }}
       >
-        <Typography variant="h6" sx={{ textAlign: "left" }}>
+        <Typography variant="h3" fontSize={12} fontWeight={600} sx={{ textAlign: "left" }}>
           {activity === "brand" ? "Headquarters at:" : "Hosted at:"}
         </Typography>
 
@@ -130,7 +130,7 @@ const InputWithMap = ({
               sx={{ display: "flex", flexDirection: "column", rowGap: "5px" }}
             >
               <Typography
-                variant="h5"
+                fontSize={16}
                 sx={{
                   textAlign: "left",
                   fontWeight: "600",
@@ -140,7 +140,7 @@ const InputWithMap = ({
                 {eventName}
               </Typography>
               <Typography
-                variant="h6"
+                fontSize={12}
                 sx={{
                   textAlign: "left",
                   fontWeight: "300",
@@ -157,25 +157,27 @@ const InputWithMap = ({
             />
           </Box>
         )}
-
-        <img
-          src={miniMap}
-          alt="Map"
-          onClick={handleClick}
-          style={{ cursor: "pointer" }}
-        />
-        <Typography
-          variant="h6"
-          sx={{ textAlign: "left", fontWeight: "300", fontStyle: "italic" }}
-        >
-          {mapDescription}
-        </Typography>
-
+        <figure style={{ width: "100%", height: "100%" }} role="img" aria-labelledby="profile-map">
+            <img width="100%" height="100%" src={miniMap} alt="map" />
+            <figcaption
+              style={{
+                fontStyle: "italic",
+                fontSize: "12px",
+                fontWeight: "300",
+                textAlign: "left",
+                fontFamily: `"Segoe UI", "sans-serif"`,
+              }}
+            >
+              {mapDescription}
+            </figcaption>
+        </figure>
         {activity === "event" && (
           <Box sx={{ position: "relative" }}>
             <Divider sx={{ marginY: 2 }} />
             <Typography
-              variant="h6"
+              variant="h3"
+              fontSize={12}
+              fontWeight={600}
               sx={{ textAlign: "left", marginBottom: "10px" }}
             >
               Starting from:
@@ -196,13 +198,14 @@ const InputWithMap = ({
               }}
             >
               <Typography
-                variant="h1"
+                fontSize={32}
+                fontWeight={700}
                 sx={{ color: theme.palette.primary.main, textAlign: "left" }}
               >
                 {dateToShow}.
               </Typography>
               <Typography
-                variant="h6"
+                fontSize={12}
                 sx={{ textAlign: "left", color: theme.palette.primary.main }}
               >
                 until 15.4.2025.
