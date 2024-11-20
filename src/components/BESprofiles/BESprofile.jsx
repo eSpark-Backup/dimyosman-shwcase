@@ -219,7 +219,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                             myProfile?.by && key === "by"
                               ? "pointer"
                               : "default",
-                          fontWeight: 400,
+                          fontWeight: 300,
                           textTransform: "capitalize",
                         }}
                       >
