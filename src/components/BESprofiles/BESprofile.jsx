@@ -224,9 +224,9 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                         }}
                       >
                         {key}:{" "}
-                        <span style={{ fontWeight: 600, textTransform: "none" }}>
+                        <p style={{ display: "inline-block", fontWeight: 600, textTransform: "none" }}>
                           {values}
-                        </span>
+                        </p>
                       </Typography>
                     );
                   })}
@@ -247,7 +247,6 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                 fontWeight: 600,
                 fontSize: "32px",
               }}
-              variant="h2"
             >
               {myProfile?.rating.toFixed(1)}
             </Typography>
