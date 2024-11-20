@@ -37,7 +37,7 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
         />
       </figure>
       <Box component="section" padding={2} sx={{ display: "flex", flexDirection: "column", rowGap: "5px" }}>
-        <Typography variant="h1" textAlign="left" fontSize={20} fontWeight={600}>
+        <Typography textAlign="left" fontSize={20} fontWeight={600}>
           {event?.profileName}
         </Typography>
         <Typography textAlign="left" fontWeight={300} fontSize={16}>

@@ -92,7 +92,6 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                                 textAlign: "left",
                                 fontSize: { xs: "12px", lg: "16px" }
                             }}
-                            variant="h1"
                         >
                             <span style={{ fontWeight: 600 }}>{userName} </span>
                             published a new {activity === "event" ? "Event!" : activity === "brand" ? "Brand!" : "Space!"}
