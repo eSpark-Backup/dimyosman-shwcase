@@ -106,7 +106,7 @@ const InputWithMap = ({
           rowGap: "10px",
         }}
       >
-        <Typography variant="h2" fontSize={12} fontWeight={600} sx={{ textAlign: "left" }}>
+        <Typography variant="h3" fontSize={12} fontWeight={600} sx={{ textAlign: "left" }}>
           {activity === "brand" ? "Headquarters at:" : "Hosted at:"}
         </Typography>
 
@@ -175,7 +175,7 @@ const InputWithMap = ({
           <Box sx={{ position: "relative" }}>
             <Divider sx={{ marginY: 2 }} />
             <Typography
-              variant="h2"
+              variant="h3"
               fontSize={12}
               fontWeight={600}
               sx={{ textAlign: "left", marginBottom: "10px" }}
