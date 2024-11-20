@@ -22,7 +22,7 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
         cursor: onClick ? "pointer" : "default",
       }}
     >
-      <figure role="event-image" aria-labelledby="event-image-figcaption">
+      <figure style={{ width: "100%", height: "100%" }} role="event-image" aria-labelledby="event-image-figcaption">
         <img
           style={{ borderRadius: "5px 5px 0 0 " }}
           width="100%"
@@ -37,7 +37,7 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
         />
       </figure>
       <Box component="section" padding={2} sx={{ display: "flex", flexDirection: "column", rowGap: "5px" }}>
-        <Typography textAlign="left" fontSize={20} fontWeight={600}>
+        <Typography variant="h1" textAlign="left" fontSize={20} fontWeight={600}>
           {event?.profileName}
         </Typography>
         <Typography textAlign="left" fontWeight={300} fontSize={16}>

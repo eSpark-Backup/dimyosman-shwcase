@@ -46,8 +46,9 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                 sx={{
                   fontWeight: "600",
                   textAlign: "left",
+                  fontSize: "12px",
+                  color: theme => theme.palette.primary.dark
                 }}
-                variant="h4"
               >
                 {details?.feature?.title}
               </Typography>
@@ -150,6 +151,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         >
           <header>
             <Typography
+              variant="h3"
               sx={{
                 fontSize: "12px",
                 fontWeight: "600",
@@ -192,7 +194,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               height: "auto",
             }}
           >
-            <figure role="img" aria-labelledby="profile-map">
+            <figure style={{ width: "100%", height: "100%" }} role="img" aria-labelledby="profile-map">
               <img width="100%" height="100%" src={miniMap} alt="map" />
               <figcaption
                 style={{
@@ -213,6 +215,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             <>
               <Divider sx={{ marginY: 1 }} />
               <Typography
+                variant="h3"
                 style={{
                   fontSize: "12px",
                   fontWeight: "600",
@@ -384,7 +387,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         </Box>
       )}
       {details?.overviewImage && (
-        <figure role="overview-image" aria-labelledby="overview-image-figcaption">
+        <figure style={{ width: "100%", height: "100%" }} role="overview-image" aria-labelledby="overview-image-figcaption">
           <img
             style={{
               borderRadius: "5px",

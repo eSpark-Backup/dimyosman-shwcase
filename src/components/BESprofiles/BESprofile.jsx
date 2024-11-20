@@ -137,6 +137,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
               }}
             >
               <figure
+                style={{ width: "100%", height: "100%" }}
                 role="profile-image"
                 aria-labelledby="profile-image-figcaption"
               >
@@ -269,18 +270,15 @@ const BESProfile = ({ spaceInquire, type, data }) => {
               })}
             </Stack>
 
-            <address
-              style={{
+            <Typography
+              sx={{
                 textAlign: "right",
                 fontWeight: 300,
                 fontSize: "12px",
-                fontStyle: "normal",
-                fontFamily: `"Segoe UI", "sans-serif"`,
               }}
-              aria-label="Headquarters of EcoLux Designs"
             >
               {myProfile?.ratingBased}
-            </address>
+            </Typography>
           </Stack>
         </Stack>
         <OutlinedTabs tabs={myProfile?.tabs} />

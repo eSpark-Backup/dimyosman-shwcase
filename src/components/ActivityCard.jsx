@@ -29,6 +29,7 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                 }}
             >
                 <Box
+                    component="section"
                     sx={{
                         width: { xs: "100%", md: "80%" },
                         display: "flex",
@@ -54,7 +55,9 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                                 height: "62px"
                             }}
                         >
-                            <img src={userImage} alt="User Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            <figure style={{ width: "100%", height: "100%" }} role="img" aria-labelledby="profile-figcaption">
+                                <img src={userImage} alt="User Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            </figure>
                         </Box>
                         <Box
                             sx={{
@@ -85,23 +88,13 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                         <Typography
                             sx={{
                                 color: theme.palette.primary.main,
-                                fontWeight: "600",
+                                fontWeight: "400",
                                 textAlign: "left",
                                 fontSize: { xs: "12px", lg: "16px" }
                             }}
-                            variant="h5"
+                            variant="h1"
                         >
-                            {userName}
-                        </Typography>
-                        <Typography
-                            sx={{
-                                color: theme.palette.primary.main,
-                                fontWeight: "400",
-                                textAlign: "left",
-                                fontSize: { xs: "10px", lg: "16px" }
-                            }}
-                            variant="h5"
-                        >
+                            <span style={{ fontWeight: 600 }}>{userName} </span>
                             published a new {activity === "event" ? "Event!" : activity === "brand" ? "Brand!" : "Space!"}
                         </Typography>
                     </Box>
@@ -211,7 +204,7 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                                     fontWeight: "600",
                                     fontSize: { xs: "20px", md: "24px" }
                                 }}
-                                variant="h1"
+                                variant="h2"
                             >
                                 {activityName}
 
@@ -223,7 +216,6 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                                     textAlign: "left",
                                     fontSize: "16px"
                                 }}
-                                variant="h2"
                             >
                                 {activityMaker}
                             </Typography>
@@ -239,7 +231,7 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                         }}
                     >
                         {content?.map((item, index) => (
-                            <Typography variant="h5" sx={{ textAlign: "left", fontSize: { xs: "13px", md: "16px" }, color: theme.palette.primary.main, fontWeight: "400" }} key={index}>
+                            <Typography sx={{ textAlign: "left", fontSize: { xs: "13px", md: "16px" }, color: theme.palette.primary.main, fontWeight: "400" }} key={index}>
                                 {item}
                             </Typography>
                         ))}
@@ -259,9 +251,9 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                                 sx={{
                                     color: theme.palette.primary.dark,
                                     fontWeight: "600",
-                                    textAlign: "left"
+                                    textAlign: "left",
+                                    fontSize: "12px",
                                 }}
-                                variant='h6'
                             >
                                 Ammenities & Features:
                             </Typography>
@@ -290,7 +282,6 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                                                 fontWeight: "400",
                                                 fontSize: { xs: "12px", sm: "11px", xl: "12px" }
                                             }}
-                                            variant='h6'
                                         >
                                             {item?.description}
 
@@ -316,7 +307,7 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                         }}
                     >   <header>
                         <Typography
-                            variant="h2"
+                            variant="h3"
                             style={{
                                 fontSize: "12px",
                                 fontWeight: "600",
@@ -328,7 +319,6 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                         </Typography>
                         <Typography
                             onClick={(activity !== "space" && activityLocationId) ? () => navigate(`/space/${activityLocationId}`) : () => {}}
-                            variant="h5"
                             style={{
                                 cursor: (activity !== "space" && activityLocationId) ? "pointer" : "default",
                                 fontWeight: "600",
@@ -351,7 +341,7 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                             {activityLocation2}
                         </Typography>
                         </header>
-                        <figure role="img" aria-labelledby="profile-figcaption">
+                        <figure style={{ width: "100%", height: "100%" }} role="img" aria-labelledby="profile-figcaption">
                             <img src={activity === "event" ? miniMap : miniMap2} alt="" />
                             <figcaption
                                 style={{
@@ -368,7 +358,7 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                         </figure>
                         <Divider />
                         <Typography
-                            variant="h2"
+                            variant="h3"
                             style={{
                                 fontSize: "12px",
                                 fontWeight: "600",
@@ -431,7 +421,8 @@ const ActivityCard = ({ id, activityId, userName, userRole, userImage, mainImage
                         color: theme.palette.primary.main,
                         textAlign: "left"
                     }}
-                    variant="h5"
+                    fontSize={16}
+                    fontWeight={600}
                 >
                     Learn more
                 </Typography>

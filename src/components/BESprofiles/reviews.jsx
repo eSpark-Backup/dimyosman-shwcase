@@ -36,6 +36,7 @@ const Reviews = ({ reviews, showApproveBox, onApproveChange }) => {
             >
               <Box sx={{ width: 48, height: 48, position: "relative" }}>
                 <figure
+                  style={{ width: "100%", height: "100%" }}
                   role="profile-image"
                   aria-labelledby="profile-image-figcaption"
                 >
