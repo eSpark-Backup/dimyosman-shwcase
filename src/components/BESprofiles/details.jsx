@@ -13,7 +13,8 @@ const Details = ({ spaceInquire, details, myProfile }) => {
       >
         <Box component="section">
           <Typography
-            variant="h3"
+            variant="h2"
+            fontSize={24}
             sx={{
               textAlign: "left",
               fontWeight: 600,
@@ -25,8 +26,8 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           {details?.overview?.map((overview) => (
             <Typography
               key={overview}
-              variant="h5"
-              sx={{ textAlign: "left", marginTop: 1, fontWeight: 400 }}
+              fontSize={16}
+              sx={{ textAlign: "left", marginTop: 2, fontWeight: 400 }}
             >
               {overview}
             </Typography>
@@ -41,11 +42,12 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               }}
             >
               <Typography
+                fontSize={12}
                 sx={{
                   fontWeight: "600",
                   textAlign: "left",
                 }}
-                variant="h6"
+                variant="h4"
               >
                 {details?.feature?.title}
               </Typography>
@@ -148,7 +150,6 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         >
           <header>
             <Typography
-              variant="h2"
               sx={{
                 fontSize: "12px",
                 fontWeight: "600",
@@ -191,7 +192,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               height: "auto",
             }}
           >
-            <figure role="img" aria-labelledby="profile-figcaption">
+            <figure role="img" aria-labelledby="profile-map">
               <img width="100%" height="100%" src={miniMap} alt="map" />
               <figcaption
                 style={{
@@ -212,7 +213,6 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             <>
               <Divider sx={{ marginY: 1 }} />
               <Typography
-                variant="h2"
                 style={{
                   fontSize: "12px",
                   fontWeight: "600",
@@ -319,13 +319,13 @@ const Details = ({ spaceInquire, details, myProfile }) => {
       </Stack>
       {details?.expectedPoint && (
         <Box>
-          <Typography variant="h3" sx={{ textAlign: "left", fontWeight: 600 }}>
+          <Typography variant="h2" sx={{ fontSize: "24px", textAlign: "left", fontWeight: 600 }}>
             {details?.expectedPoint?.title}
           </Typography>
           {details?.expectedPoint?.points?.map((point) => (
             <Typography
               key={point}
-              variant="h5"
+              fontSize={16}
               sx={{ textAlign: "left", marginTop: 2, fontWeight: 400 }}
             >
               {point}
@@ -337,7 +337,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               return (
                 <li style={{ marginTop: "10px" }} key={point}>
                   <Typography
-                    variant="h5"
+                    fontSize={16}
                     sx={{
                       display: "inline",
                       textAlign: "left",
@@ -348,7 +348,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                     {newPoints[0]}:
                   </Typography>
                   <Typography
-                    variant="h5"
+                    fontSize={16}
                     sx={{
                       display: "inline",
                       textAlign: "left",
@@ -365,7 +365,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         </Box>
       )}
       {details?.otherPoints && (
-        <Box>
+        <Box component="article">
           <Typography
             variant="h3"
             sx={{ fontSize: "20px", textAlign: "left", fontWeight: 600 }}
@@ -375,7 +375,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           {details?.otherPoints?.points?.map((point) => (
             <Typography
               key={point}
-              variant="h5"
+              fontSize={16}
               sx={{ textAlign: "left", marginTop: 1, fontWeight: 400 }}
             >
               {point}
@@ -384,6 +384,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         </Box>
       )}
       {details?.overviewImage && (
+        <figure role="overview-image" aria-labelledby="overview-image-figcaption">
           <img
             style={{
               borderRadius: "5px",
@@ -395,9 +396,10 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             src={details?.overviewImage}
             alt="overview-image"
           />
+        </figure>
       )}
       {details?.otherPoints2 && (
-        <Box>
+        <Box component="article">
           <Typography
             variant="h3"
             sx={{ fontSize: "20px", textAlign: "left", fontWeight: 600 }}
@@ -407,7 +409,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           {details?.otherPoints2?.points?.map((point) => (
             <Typography
               key={point}
-              variant="h5"
+              fontSize={16}
               sx={{ textAlign: "left", marginTop: 1, fontWeight: 400 }}
             >
               {point}

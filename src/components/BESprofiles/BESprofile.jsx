@@ -135,6 +135,10 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                 height: "96px",
                 position: "relative",
               }}
+            >
+              <figure
+                role="profile-image"
+                aria-labelledby="profile-image-figcaption"
               >
                 <img
                   style={{ width: "100%", height: "100%" }}
@@ -157,8 +161,9 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                       ? eventBadge
                       : spaceBadge
                   }
-                alt="brand-badge"
+                  alt={`${type}-badge`}
                 />
+              </figure>
             </Box>
             <Stack
               component="header"
@@ -178,7 +183,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
               </Typography>
               <Typography
                 sx={{
-                  fontSize: "20px",
+                  fontSize: "16px",
                   fontWeight: 300,
                 }}
               >
@@ -207,13 +212,13 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                             : () => {}
                         }
                         key={ind}
-                        variant="h6"
+                        fontSize={12}
                         sx={{
                           cursor:
                             myProfile?.by && key === "by"
                               ? "pointer"
                               : "default",
-                          fontWeight: 200,
+                          fontWeight: 400,
                           textTransform: "capitalize",
                         }}
                       >

@@ -20,12 +20,13 @@ const Events = ({ myProfile, addNewEvent }) => {
         justifyContent="space-between"
       >
         <Stack
+          component="section"
           direction="row"
           alignItems="center"
           justifyContent="center"
           gap={2}
         >
-          <Typography sx={{ fontWeight: 300 }} variant="h5">
+          <Typography sx={{ fontWeight: 300 }} fontSize={16}>
             Show:{" "}
           </Typography>
           <Stack
@@ -37,7 +38,7 @@ const Events = ({ myProfile, addNewEvent }) => {
             {filterEvents.map((filter) => {
               return (
                 <Typography
-                  variant="h5"
+                  fontSize={16}
                   sx={{ fontWeight: filter === activeFilter ? 600 : 300, cursor: "pointer" }}
                   onClick={() => setActiveFilter(filter)}
                   key={filter}
@@ -81,6 +82,7 @@ const Events = ({ myProfile, addNewEvent }) => {
         </Button>
       </Stack>
       <Stack
+        component="section"
         marginTop={2}
         direction="row"
         alignItems="center"

@@ -10,9 +10,10 @@ const Reviews = ({ reviews, showApproveBox, onApproveChange }) => {
     const isChecked = event.target.checked;
     onApproveChange(ind, isChecked);
   };
-  
+
   return (
     <Stack
+      component="section"
       direction="column"
       justifyContent="center"
       alignItems="center"
@@ -27,41 +28,48 @@ const Reviews = ({ reviews, showApproveBox, onApproveChange }) => {
             gap={1}
           >
             <Stack
+              component="section"
               direction="row"
               justifyContent="center"
               alignItems="center"
               gap={1}
             >
               <Box sx={{ width: 48, height: 48, position: "relative" }}>
-                <img
-                  width="100%"
-                  height="100%"
-                  src={review?.reviewerPRofile}
-                  alt="profile"
-                />
-                <img
-                  style={{ position: "absolute", bottom: 0, right: 0 }}
-                  width={16}
-                  height={16}
-                  src={profileBadge}
-                  alt="profile-badge"
-                />
+                <figure
+                  role="profile-image"
+                  aria-labelledby="profile-image-figcaption"
+                >
+                  <img
+                    width="100%"
+                    height="100%"
+                    src={review?.reviewerPRofile}
+                    alt="profile"
+                  />
+                  <img
+                    style={{ position: "absolute", bottom: 0, right: 0 }}
+                    width={16}
+                    height={16}
+                    src={profileBadge}
+                    alt="profile-badge"
+                  />
+                </figure>
               </Box>
-              <Typography fontWeight={400} variant="h5">
+              <Typography fontWeight={400} fontSize={16}>
                 <span style={{ fontWeight: 600 }}>
                   {review?.reviewerName}
-                </span>{" "}
+                  </span>{" "}
                 rated{" "}
                 <span style={{ fontWeight: 600 }}>{review?.profileName}</span>
               </Typography>
             </Stack>
             <Stack
+              component="section"
               direction="row"
               justifyContent="center"
               alignItems="center"
               gap={1}
             >
-              <Typography variant="h2" fontSize={24} fontWeight={600}>
+              <Typography fontSize={24} fontWeight={600}>
                 {review?.rating?.toFixed(1)}
               </Typography>
               <Stack
@@ -85,7 +93,7 @@ const Reviews = ({ reviews, showApproveBox, onApproveChange }) => {
           <Typography
             sx={{ marginTop: "10px", color: theme.palette.primary.main }}
             textAlign="left"
-            variant="h5"
+            fontSize={16}
             fontWeight={350}
           >
             {review?.message}
@@ -112,7 +120,7 @@ const Reviews = ({ reviews, showApproveBox, onApproveChange }) => {
                 }}
               >
                 <Typography
-                  variant="h5"
+                  fontSize={16}
                   sx={{ textAlign: "left", fontWeight: "600", color: theme.palette.primary.main }}
                 >
                   Review approved?
