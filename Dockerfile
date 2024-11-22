@@ -6,4 +6,4 @@ COPY . .
 RUN npm run build
 RUN chown -R node /usr/src/app
 USER node
-CMD ["npm", "run", "start:prod"]
+CMD ["npm", "run", "start"]
