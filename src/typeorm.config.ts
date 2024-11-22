@@ -2,6 +2,7 @@ import { DataSource } from "typeorm";
 import dotenv from "dotenv";
 
 dotenv.config();
+console.log("Environment Variables:", process.env);
 
 // TypeORM Configuration
 export const AppDataSource = new DataSource({
