@@ -19,7 +19,9 @@ services:
     ports:
       - ${DOCKER_EXPOSED_PORT}:${DOCKER_APPLICATION_PORT}
   
-
+    depends_on:
+      shwcase_db:
+        condition: service_healthy
 
   shwcase_db:
     container_name: shwcase_db
@@ -34,6 +36,9 @@ services:
       - MYSQL_TCP_PORT=${MYSQL_PORT}
     volumes:
       - shwcase_database:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysql", "-uroot", "-p${MYSQL_ROOT_PASSWORD}", "-h", "shwcase_db", "-e", "USE ${MYSQL_DATABASE};"]
+      retries: 10
 
 volumes:
   shwcase_database:
