@@ -9,11 +9,11 @@ const swaggerDefinition: SwaggerDefinition = {
   },
   servers: [
     {
-      url: process.env.DEV_SERVER_URL,
+      url: `${process.env.DEV_SERVER_URL}/api/`,
       description: "Development server",
     },
     {
-      url: process.env.PROD_SERVER_URL,
+      url: `${process.env.PROD_SERVER_URL}/api/`,
       description: "Production server",
     },
   ],
