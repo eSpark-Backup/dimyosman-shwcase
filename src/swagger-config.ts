@@ -9,8 +9,12 @@ const swaggerDefinition: SwaggerDefinition = {
   },
   servers: [
     {
-      url: "http://localhost:3000/api",
+      url: process.env.DEV_SERVER_URL,
       description: "Development server",
+    },
+    {
+      url: process.env.PROD_SERVER_URL,
+      description: "Production server",
     },
   ],
 };
