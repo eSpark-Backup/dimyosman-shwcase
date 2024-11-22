@@ -5,11 +5,12 @@ dotenv.config();
 
 // TypeORM Configuration
 export const AppDataSource = new DataSource({
-  type: "mariadb",
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
-  username: process.env.DB_USER,
-  database: process.env.DB_NAME,
+  type: "mysql",
+  host: process.env.MYSQL_HOST,
+  port: process.env.MYSQL_PORT ? Number(process.env.DB_PORT) : 3306,
+  username: process.env.MYSQL_USER,
+  database: process.env.MYSQL_DATABASE,
+  password: process.env.MYSQL_PASSWORD,
   synchronize: true,
   logging: false,
   entities: [__dirname + "/entity/*.entity{.ts,.js}"],
