@@ -1,4 +1,6 @@
 import Joi from "joi";
+import { LoginType } from "../entity";
+import { profile } from "console";
 
 export class AuthValidation {
   static countryCodeValidation = Joi.string().when("phone", {
@@ -8,8 +10,17 @@ export class AuthValidation {
   static signupUser = Joi.object({
     firstName: Joi.string()?.optional(),
     email: Joi.string().email(),
-    password: Joi.string().min(8).required(),
+    password: Joi.string().min(8)?.optional(),
     lastName: Joi.string()?.optional(),
+    profileImage: Joi.string()?.optional(),
+    loginType: Joi.string().valid(...Object.values(LoginType)),
+    isSocialLogin: Joi.boolean().optional(),
+    socialId: Joi.string().optional(),
+  });
+
+  static loginUser = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(8).required(),
   });
 
   static LoginValidations = Joi.object({

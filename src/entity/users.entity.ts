@@ -19,6 +19,15 @@ export class User extends BaseEntity {
   @Column({ type: "varchar", length: 100, unique: true })
   email: string;
 
+  @Column({ type: "varchar", length: 100, nullable: true })
+  socialId: string;
+
+  @Column({ type: "varchar", length: 100, nullable: true })
+  profileImage: string;
+
+  @Column({ type: "varchar", length: 100, nullable: true })
+  imageKey: string;
+
   @Column({ type: "varchar", length: 255 })
   password: string;
 

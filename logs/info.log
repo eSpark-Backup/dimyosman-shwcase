@@ -1,0 +1,8 @@
+[31m{"level":"error","message":"AuthController :: registerUser :: Please provide socialId and profileImage for social login.","timestamp":"2024-11-22 15:25:05"}[39m
+[31m{"level":"error","message":"AuthController :: registerUser :: Please provide socialId and profileImage for social login.","timestamp":"2024-11-22 15:27:28"}[39m
+[31m{"level":"error","message":"AuthController :: registerUser :: Email is already registered. Please log in.","timestamp":"2024-11-22 15:29:41"}[39m
+[31m{"level":"error","message":"AuthController :: registerUser :: Invalid Login Method or Email Already Exists","timestamp":"2024-11-22 15:30:19"}[39m
+[31m{"level":"error","message":"AuthController :: registerUser :: Password is required for standard login.","timestamp":"2024-11-22 15:32:44"}[39m
+[31m{"level":"error","message":"AuthController :: registerUser :: ER_DUP_ENTRY: Duplicate entry 'user@examplse.com' for key 'IDX_e12875dfb3b1d92d7d7c5377e2'","timestamp":"2024-11-22 15:34:17"}[39m
+[31m{"level":"error","message":"AuthController :: loginUser :: Invalid email or password.","timestamp":"2024-11-22 15:39:53"}[39m
+[31m{"level":"error","message":"AuthController :: registerUser :: Email is already registered. Please log in.","timestamp":"2024-11-22 15:42:47"}[39m
