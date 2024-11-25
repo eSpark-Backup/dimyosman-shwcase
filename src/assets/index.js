@@ -18,6 +18,7 @@ import profile from "./profile.svg";
 import calendar from "./calendar.svg";
 import message from "./message.svg";
 import settings from "./settings.svg";
+import logout from "./logout.svg";
 import activityHover from "./activity-hover.svg";
 import brandHover from "./brand-hover.svg";
 import eventHover from "./event-hover.svg";
@@ -26,6 +27,7 @@ import profileHover from "./profile-hover.svg";
 import calendarHover from "./calendar-hover.svg";
 import messageHover from "./message-hover.svg";
 import settingsHover from "./settings-hover.svg";
+import logoutHover from "./logout-hover.svg";
 import activityLogo from "./activity-logo.svg"
 import flag from "./flag.svg"
 import eventMain from "./activity-main.svg"
@@ -103,6 +105,7 @@ export {
   calendar,
   message,
   settings,
+  logout,
   activityHover,
   brandHover,
   eventHover,
@@ -111,6 +114,7 @@ export {
   calendarHover,
   messageHover,
   settingsHover,
+  logoutHover,
   search,
   addIcon,
   chatIcon,

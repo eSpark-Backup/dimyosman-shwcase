@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import './App.css'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Header, AuthBox, DashboardLayout } from "./layout";
 import {
   Activity,
@@ -19,32 +19,41 @@ import {
   Space,
   SpaceDetails,
 } from "./pages";
+import { Alert } from "@mui/material";
+import { transitions, positions, Provider as AlertProvider } from "react-alert";
+
+const AlertTemplate = ({ style, options, message, close }) => (
+  <div style={style}>
+    <Alert severity={options?.type} onClose={close}>
+      {message}
+    </Alert>
+  </div>
+);
+
+const options = {
+  position: positions.TOP_RIGHT,
+  timeout: 5000,
+  offset: "30px",
+  transition: transitions.SCALE,
+};
 
 function App() {
-
-  const [isLogin, setIsLogin] = useState(false);
-  const { pathname } = useLocation()
+  const { pathname } = useLocation();
   const token = window.localStorage.getItem("token");
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (token) {
-      if (pathname !== "/auth") {
-        setIsLogin(true)
-      }
-      else {
-        setIsLogin(false)
-      }
+    if (token && pathname === "/auth") {
+      navigate("/activity");
     }
-    else {
-      setIsLogin(false);
-      // navigate("/auth?type=login")
+    if (!token && pathname !== "/auth") {
+      navigate("/auth?type=login");
     }
-  }, [token, pathname])
+  }, [token, pathname, navigate]);
 
   return (
-    <>
-      <Header isLogin={isLogin} />
+    <AlertProvider template={AlertTemplate} {...options}>
+      <Header isLogin={token} />
       <Routes>
         <Route path="/" element={<Navigate to={"/auth?type=login"} />} />
         <Route path="/auth" element={<AuthBox />} />
@@ -65,10 +74,10 @@ function App() {
           <Route path="/new-brand" element={<NewBrand />} />
           <Route path="/brand/:brand-id/edit" element={<EditBrand />} />
           <Route path="/new-event" element={<NewEvent />} />
-          <Route path='/event/:event-id/edit' element={<EditEvent />} />
+          <Route path="/event/:event-id/edit" element={<EditEvent />} />
         </Route>
       </Routes>
-    </>
+    </AlertProvider>
   );
 }
 

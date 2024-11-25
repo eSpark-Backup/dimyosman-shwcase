@@ -1,26 +1,51 @@
-import React, { useState } from 'react'
-import { Box, Button, Stack, Typography, useTheme } from '@mui/material'
+import { useEffect } from 'react'
+import { Box, Button, Typography, useTheme } from '@mui/material'
+import { LoadingButton } from "@mui/lab";
+import { useAlert } from "react-alert";
 import { Input } from "../../../components";
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { google, facebook, apple } from "../../../assets";
 import { useFormik } from "formik";
 import { registerSchema } from '../../../validation/validation';
+import { useRegisterMutation } from "../../../services/auth";
 
 const Register = () => {
-    const theme = useTheme();
-    const formik = useFormik({
-        initialValues: {
-            fName: "",
-            lName: "",
-            email: "",
-            password: "",
-            conPassword: "",
-        },
-        validationSchema: registerSchema,
-        onSubmit: (values) => {
-            console.log("Form Submitted", values);
-        },
-    });
+  const alert = useAlert();
+  const [register, { isLoading, isSuccess, isError, error }] =
+    useRegisterMutation();
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const formik = useFormik({
+    initialValues: {
+      fName: "",
+      lName: "",
+      email: "",
+      password: "",
+      conPassword: "",
+    },
+    validationSchema: registerSchema,
+    onSubmit: (values) => {
+      register({
+        firstName: values.fName,
+        lastName: values.lName,
+        email: values.email,
+        password: values.password,
+        loginType: "local",
+        isSocialLogin: false,
+        role: "user",
+      });
+    },
+  });
+
+  useEffect(() => {
+    if (isError) {
+      alert.error(error?.data?.message);
+    }
+    if (isSuccess) {
+      navigate("/activity");
+    }
+  }, [isError, isSuccess, navigate, error, alert]);
+
     const authBtnStyle = {
         width: { xs: "90%", md: "110px" },
         height: "50px",
@@ -34,9 +59,6 @@ const Register = () => {
             backgroundColor: "#F8F8F8"
         }
     };
-    const HandleSubmit = (values) => {
-        console.log(values)
-    }
     return (
         <>
             <Box
@@ -156,7 +178,9 @@ const Register = () => {
                         />
                     </Box>
                 </Box>
-                <Button type='submit'>Sign Up</Button>
+                <LoadingButton loading={isLoading} type="submit">
+                    Sign Up
+                </LoadingButton>
             </Box>
             <Box sx={{ display: "flex", flexDirection: "column", rowGap: "12px" }}>
                 <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
