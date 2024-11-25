@@ -31,7 +31,7 @@ export class User extends BaseEntity {
   @Column({ type: "varchar", length: 255 })
   password: string;
 
-  @Column({ type: "varchar", length: 50 })
+  @Column({ type: "varchar", length: 50, nullable: true, default: "user" })
   role: string;
   @Column({
     type: "enum",
