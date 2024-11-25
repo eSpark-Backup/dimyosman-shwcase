@@ -42,6 +42,8 @@ const authController = new AuthController(userRepository);
  *                 type: string
  *               socialId:
  *                 type: string
+ *               role:
+ *                 type: string
  *     responses:
  *       201:
  *         description: User registered successfully

@@ -16,6 +16,7 @@ export class AuthValidation {
     loginType: Joi.string().valid(...Object.values(LoginType)),
     isSocialLogin: Joi.boolean().optional(),
     socialId: Joi.string().optional(),
+    role: Joi.string().required(),
   });
 
   static loginUser = Joi.object({
