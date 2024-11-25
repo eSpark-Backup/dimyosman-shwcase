@@ -185,6 +185,12 @@ export class AuthController {
       if (!password) {
         throw new ApiError("Password is required.", HTTP_STATUS.BAD_REQUEST);
       }
+      if (user.isSocialLogin) {
+        throw new ApiError(
+          "This email is registered as a social login. Please use social login.",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
 
       // Compare hashed password
       const isPasswordValid = await bcrypt.compare(password, user.password);
