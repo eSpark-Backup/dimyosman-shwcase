@@ -11,28 +11,14 @@ import express, { Request, Response, NextFunction } from "express";
 dotenv.config();
 
 const app = express();
-const allowedOrigins = [
-  "http://localhost:8080",
-  "https://shwcase-stg.esparkconsultants.com",
-  "https://shwcase.esparkconsultants.com",
-];
-
 const corsOptions = {
-  origin: (
-    origin: string | undefined,
-    callback: (error: Error | null, allow?: boolean) => void
-  ) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   credentials: true,
 };
 
 app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const swaggerSpec = swaggerJsDoc(swaggerOptions);
