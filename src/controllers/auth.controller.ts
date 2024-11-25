@@ -137,6 +137,33 @@ export class AuthController {
     }
   }
 
+  async deleteAccount(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { email } = req.body;
+
+      const user = await this.usersRepo.findOne({ where: { email } });
+      if (!user) {
+        throw new ApiError("User not found.", HTTP_STATUS.NOT_FOUND);
+      }
+
+      await this.usersRepo.delete(user.id);
+
+      res
+        .status(HTTP_STATUS.OK)
+        .json(handleResponse("Account deleted successfully."));
+      return next();
+    } catch (error) {
+      logger.error(
+        `AuthController :: deleteAccount :: ${(error as Error)?.message}`
+      );
+      return next(error);
+    }
+  }
+
   async loginUser(
     req: Request,
     res: Response,

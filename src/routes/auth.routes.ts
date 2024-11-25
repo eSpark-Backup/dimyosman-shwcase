@@ -93,4 +93,36 @@ router.post(
   (req, res, next) => authController.loginUser(req, res, next)
 );
 
+/**
+ * @swagger
+ * /auth/delete:
+ *   delete:
+ *     summary: Delete user account
+ *     description: Deletes a user account using their email address.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Account deleted successfully
+ *       404:
+ *         description: User not found
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Server error
+ */
+router.delete(
+  "/delete",
+  validate(AuthValidation.deleteAccountValidation, "body"),
+  (req, res, next) => authController.deleteAccount(req, res, next)
+);
+
 export { router };

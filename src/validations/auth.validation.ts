@@ -24,6 +24,10 @@ export class AuthValidation {
     password: Joi.string().min(8).required(),
   });
 
+  static deleteAccountValidation = Joi.object({
+    email: Joi.string().email().required(),
+  });
+
   static LoginValidations = Joi.object({
     email: Joi.string().email(),
     password: Joi.string().min(8),
