@@ -67,6 +67,7 @@ export class AuthController {
         user.profileImage = profileImage;
         user.loginType = loginType;
         user.isSocialLogin = true;
+        user.socialId = socialId;
 
         const newUser = await this.usersRepo.save(user);
 
