@@ -206,7 +206,7 @@ const Header = ({ isLogin }) => {
               <hr className="nav-items-breaker" />
               <li>Help</li>
               <Button
-                onClick={() => setOpenProfilePopup(true)}
+                onClick={() => isLogin ? setOpenProfilePopup(true) : ()=>{}}
                 className="user-btn1"
                 sx={{
                   minWidth: "32px",
