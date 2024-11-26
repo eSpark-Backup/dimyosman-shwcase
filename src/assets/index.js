@@ -10,22 +10,24 @@ import addIcon from "./add-icon.svg"
 import chatIcon from "./chats-icon.svg"
 import bellIcon from "./bell-icon.svg"
 import userProfile from "./user-icon.svg"
-import activity from "./activity.png";
-import brand from "./brand.png";
-import event from "./event.png";
-import space from "./space.png";
-import profile from "./profile.png";
-import calendar from "./calendar.png";
-import message from "./message.png";
-import settings from "./settings.png";
-import activityHover from "./activity-hover.png";
-import brandHover from "./brand-hover.png";
-import eventHover from "./event-hover.png";
-import spaceHover from "./space-hover.png";
-import profileHover from "./profile-hover.png";
-import calendarHover from "./calendar-hover.png";
-import messageHover from "./message-hover.png";
-import settingsHover from "./settings-hover.png";
+import activity from "./activity.svg";
+import brand from "./brand-1.svg";
+import event from "./event.svg";
+import space from "./space-1.svg";
+import profile from "./profile.svg";
+import calendar from "./calendar.svg";
+import message from "./message.svg";
+import settings from "./settings.svg";
+import logout from "./logout.svg";
+import activityHover from "./activity-hover.svg";
+import brandHover from "./brand-hover.svg";
+import eventHover from "./event-hover.svg";
+import spaceHover from "./space-hover.svg";
+import profileHover from "./profile-hover.svg";
+import calendarHover from "./calendar-hover.svg";
+import messageHover from "./message-hover.svg";
+import settingsHover from "./settings-hover.svg";
+import logoutHover from "./logout-hover.svg";
 import activityLogo from "./activity-logo.svg"
 import flag from "./flag.svg"
 import eventMain from "./activity-main.svg"
@@ -95,6 +97,13 @@ import shareIcon from "./shareIcon.svg"
 import copyIcon from "./copyIcon.svg"
 import shareNotHovered from "./shareNotHovered.svg"
 import shareHovered from "./sharehovered.svg"
+// import arrowDown from "./arrow_down.svg";
+import bold from "./bold.svg";
+import italic from "./italic.svg";
+import lineThrough from "./line-through.svg";
+import paperClip from "./paperclip.svg";
+import link from "./link.svg";
+import smile from "./smile.svg";
 
 export {
   react,
@@ -112,6 +121,7 @@ export {
   calendar,
   message,
   settings,
+  logout,
   activityHover,
   brandHover,
   eventHover,
@@ -120,6 +130,7 @@ export {
   calendarHover,
   messageHover,
   settingsHover,
+  logoutHover,
   search,
   addIcon,
   chatIcon,
@@ -193,5 +204,11 @@ export {
   fbIcon,
   copyIcon,
   shareHovered,
-  shareNotHovered
+  shareNotHovered,
+  bold,
+  italic,
+  lineThrough,
+  paperClip,
+  link,
+  smile,
 };

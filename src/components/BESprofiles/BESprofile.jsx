@@ -11,7 +11,7 @@ import Spaces from "./spaces";
 import Teenacy from "./teenacy";
 import { brandBadge, eventBadge, spaceBadge, star } from "../../assets";
 
-const BESProfile = ({ type, data }) => {
+const BESProfile = ({ spaceInquire, type, data }) => {
   const [openSliderModal, setOpenSliderModal] = useState(false);
   const handleCloseModal = () => setOpenSliderModal(false);
   const navigate = useNavigate();
@@ -44,6 +44,7 @@ const BESProfile = ({ type, data }) => {
             {...tab.props}
             myProfile={myProfile}
             addNewEvent={addNewEvent}
+            spaceInquire={spaceInquire}
           />
         );
       },
@@ -80,23 +81,32 @@ const BESProfile = ({ type, data }) => {
           }}
         >
           {myProfile?.owned && (
-            <Button
-              onClick={editProfile}
+            <Box
               sx={{
-                padding: "10px 24px",
-                fontSize: "16px",
-                fontWeight: 600,
-                width: "77px",
-                height: "31px",
-                position: "absolute",
-                top: "8px",
-                right: "16px",
-                zIndex: 9,
-                textTransform: "capitalize",
+                position: "fixed",
+                top: "90px",
+                zIndex: 2,
               }}
+              className="buttons-box"
             >
-              Edit
-            </Button>
+              <Button
+                onClick={editProfile}
+                sx={{
+                  padding: "10px 24px",
+                  fontSize: "16px",
+                  fontWeight: 600,
+                  width: "77px",
+                  height: "31px",
+                  position: "absolute",
+                  top: "0px",
+                  right: "0px",
+                  zIndex: 9,
+                  textTransform: "capitalize",
+                }}
+              >
+                Edit
+              </Button>
+            </Box>
           )}
           <DynamicPaginationSwiper
             onClick={() => setOpenSliderModal(true)}
@@ -111,6 +121,7 @@ const BESProfile = ({ type, data }) => {
           alignItems="center"
         >
           <Stack
+            component="section"
             direction="row"
             justifyContent="center"
             alignItems={{ xs: "flex-start", md: "center" }}
@@ -125,31 +136,38 @@ const BESProfile = ({ type, data }) => {
                 position: "relative",
               }}
             >
-              <img
+              <figure
                 style={{ width: "100%", height: "100%" }}
-                src={myProfile.profilePic}
-                alt="brand-profile"
-              />
-              <img
-                style={{
-                  position: "absolute",
-                  bottom: "2px",
-                  right: "2px",
-                  width: "16px",
-                  height: "16px",
-                  zIndex: 99,
-                }}
-                src={
-                  myProfile?.type === "brand"
-                    ? brandBadge
-                    : myProfile?.type === "event"
-                    ? eventBadge
-                    : spaceBadge
-                }
-                alt="brand-badge"
-              />
+                role="profile-image"
+                aria-labelledby="profile-image-figcaption"
+              >
+                <img
+                  style={{ width: "100%", height: "100%" }}
+                  src={myProfile.profilePic}
+                  alt="brand-profile"
+                />
+                <img
+                  style={{
+                    position: "absolute",
+                    bottom: "2px",
+                    right: "2px",
+                    width: "16px",
+                    height: "16px",
+                    zIndex: 99,
+                  }}
+                  src={
+                    myProfile?.type === "brand"
+                      ? brandBadge
+                      : myProfile?.type === "event"
+                      ? eventBadge
+                      : spaceBadge
+                  }
+                  alt={`${type}-badge`}
+                />
+              </figure>
             </Box>
             <Stack
+              component="header"
               direction="column"
               justifyContent="center"
               alignItems="flex-start"
@@ -166,13 +184,14 @@ const BESProfile = ({ type, data }) => {
               </Typography>
               <Typography
                 sx={{
-                  fontSize: "20px",
+                  fontSize: "16px",
                   fontWeight: 300,
                 }}
               >
                 {myProfile?.category}
               </Typography>
               <Stack
+                component="section"
                 direction="row"
                 justifyContent="flex-start"
                 alignItems="center"
@@ -194,20 +213,20 @@ const BESProfile = ({ type, data }) => {
                             : () => {}
                         }
                         key={ind}
-                        variant="h6"
+                        fontSize={12}
                         sx={{
                           cursor:
                             myProfile?.by && key === "by"
                               ? "pointer"
                               : "default",
-                          fontWeight: 200,
+                          fontWeight: 300,
                           textTransform: "capitalize",
                         }}
                       >
                         {key}:{" "}
-                        <span style={{ fontWeight: 600, textTransform: "none" }}>
+                        <p style={{ display: "inline-block", fontWeight: 600, textTransform: "none" }}>
                           {values}
-                        </span>
+                        </p>
                       </Typography>
                     );
                   })}
@@ -215,6 +234,7 @@ const BESProfile = ({ type, data }) => {
             </Stack>
           </Stack>
           <Stack
+            component="section"
             direction="column"
             justifyContent="center"
             alignItems="flex-end"
@@ -225,8 +245,8 @@ const BESProfile = ({ type, data }) => {
               sx={{
                 lineHeight: "100%",
                 fontWeight: 600,
+                fontSize: "32px",
               }}
-              variant="h1"
             >
               {myProfile?.rating.toFixed(1)}
             </Typography>
@@ -248,12 +268,13 @@ const BESProfile = ({ type, data }) => {
                 );
               })}
             </Stack>
+
             <Typography
               sx={{
                 textAlign: "right",
                 fontWeight: 300,
+                fontSize: "12px",
               }}
-              variant="h6"
             >
               {myProfile?.ratingBased}
             </Typography>
@@ -269,6 +290,10 @@ const BESProfile = ({ type, data }) => {
             left: "50%",
             transform: "translate(-50%, -50%)",
             width: "65%",
+            ".swiper": {
+              height: "auto !important",
+              maxHeight: "80vh",
+            },
             ":focus-visible": {
               outline: "none !important",
             },

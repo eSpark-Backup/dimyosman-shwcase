@@ -72,7 +72,7 @@ const EditBrand = () => {
   const [selectedChoice, setSelectedChoice] = useState(0)
   const [activeTab, setActiveTab] = useState("Details");
 
-  const defaultTemplate = `<h2><strong>EcoLux Designs: Where Luxury Meets Sustainability</strong></h2><p>In an industry where trends come and go, EcoLux Designs stands out by creating fashion with a purpose. As a trailblazer in the world of sustainable luxury, this brand is redefining high-end fashion by merging style with eco-friendly practices. Every piece in the EcoLux collection is crafted with the utmost care, using organic fabrics, recycled materials, and responsible manufacturing processes.</p></br><p>From elegant dresses to timeless accessories, EcoLux Designs offers a wide range of high-end fashion pieces that not only look good but also do good for the planet. The brand’s commitment to sustainability goes beyond just the materials—they focus on ethical production and long-lasting designs, ensuring that each item has minimal environmental impact and maximum longevity in your wardrobe.</p><img src=${brandMain} alt="EcoLux Designs Image" style="width:100%; height:auto; margin: 10px 0;"/><br/><h2 style="font-size: 20px; font-weight: 600">Leading the Movement Toward Eco-Conscious Fashion</h2><p>What makes EcoLux Designs truly special is the balance it strikes between luxury and sustainability. The designs are contemporary, chic, and versatile, proving that eco-conscious fashion doesn’t have to compromise on style. Whether you’re attending a gala or simply updating your everyday wardrobe, EcoLux Designs has something that will elevate your look while aligning with your values.</p><br/><p>As more consumers seek out brands that reflect their commitment to the environment, EcoLux Designs is at the forefront of this movement—proving that fashion can be both luxurious and sustainable. By investing in quality over quantity, this brand is making a statement that fashion should enhance the world, not harm it.</p>`;
+  const defaultTemplate = `<h2>EcoLux Designs: Where Luxury Meets Sustainability</h2><p>In an industry where trends come and go, EcoLux Designs stands out by creating fashion with a purpose. As a trailblazer in the world of sustainable luxury, this brand is redefining high-end fashion by merging style with eco-friendly practices. Every piece in the EcoLux collection is crafted with the utmost care, using organic fabrics, recycled materials, and responsible manufacturing processes.</p></br><p>From elegant dresses to timeless accessories, EcoLux Designs offers a wide range of high-end fashion pieces that not only look good but also do good for the planet. The brand’s commitment to sustainability goes beyond just the materials—they focus on ethical production and long-lasting designs, ensuring that each item has minimal environmental impact and maximum longevity in your wardrobe.</p><img src=${brandMain} alt="EcoLux Designs Image" style="width:100%; height:auto; margin: 10px 0;"/><br/><h3 style="font-size: 20px; font-weight: 600">Leading the Movement Toward Eco-Conscious Fashion</h3><p>What makes EcoLux Designs truly special is the balance it strikes between luxury and sustainability. The designs are contemporary, chic, and versatile, proving that eco-conscious fashion doesn’t have to compromise on style. Whether you’re attending a gala or simply updating your everyday wardrobe, EcoLux Designs has something that will elevate your look while aligning with your values.</p><br/><p>As more consumers seek out brands that reflect their commitment to the environment, EcoLux Designs is at the forefront of this movement—proving that fashion can be both luxurious and sustainable. By investing in quality over quantity, this brand is making a statement that fashion should enhance the world, not harm it.</p>`;
 
   const [brandTitle, setBrandTitle] = useState(defaultTemplate);
   const [isEditorVisible, setIsEditorVisible] = useState(false);
@@ -96,7 +96,7 @@ const EditBrand = () => {
         theme: 'snow',
         modules: {
           toolbar: [
-            [{ 'header': 3 }],
+            [{ 'header': [2, 3, 4, 5, 6, false] }],
             ['bold', 'italic', 'strike'],
             [{ 'align': [] }],
             [{ 'list': 'ordered' }],
@@ -153,10 +153,11 @@ const EditBrand = () => {
         rowGap: "32px",
         backgroundColor: "white",
         borderRadius: "5px",
+        position: "relative",
         pb: 2,
       }}
     >
-      <FullWidthImgInput activity={"brand"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={brandIcon} />
+      <FullWidthImgInput activity={"brand"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={brandIcon} editImage={brandMain} />
       <ImgInputWithCategories
         handleImgClick={HandleProfileFileInputClick}
         imgRef={profileImageRef}
@@ -217,10 +218,10 @@ const EditBrand = () => {
                     rowGap: "2px"
                   }}
                 >
-                  <Typography variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "400" }}>Show:</Typography>
-                  <Typography onClick={() => setSelectedChoice(0)} variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 0 ? "600" : "400", cursor: "pointer" }}>All</Typography>
-                  <Typography onClick={() => setSelectedChoice(1)} variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 1 ? "600" : "400", cursor: "pointer" }}>Upcoming</Typography>
-                  <Typography onClick={() => setSelectedChoice(2)} variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 2 ? "600" : "400", cursor: "pointer" }}>Past</Typography>
+                  <Typography fontSize={16} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "400" }}>Show:</Typography>
+                  <Typography onClick={() => setSelectedChoice(0)} fontSize={16} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 0 ? "600" : "400", cursor: "pointer" }}>All</Typography>
+                  <Typography onClick={() => setSelectedChoice(1)} fontSize={16} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 1 ? "600" : "400", cursor: "pointer" }}>Upcoming</Typography>
+                  <Typography onClick={() => setSelectedChoice(2)} fontSize={16} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 2 ? "600" : "400", cursor: "pointer" }}>Past</Typography>
                 </Box>
                 <Button
                   onClick={() => navigate("/new-event")}

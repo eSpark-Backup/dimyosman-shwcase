@@ -1,89 +1,228 @@
-import { useEffect, useState } from "react";
-import { Button, useTheme } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
-import { logo, logoIcon, logoText, user, userProfile } from "../assets";
+import { useRef, useState } from "react";
+import { Box, Button, Stack, Typography, useTheme } from "@mui/material";
+import {
+  brand,
+  brandHover,
+  event,
+  eventHover,
+  logoIcon,
+  logoText,
+  logout,
+  logoutHover,
+  settings,
+  settingsHover,
+  space,
+  spaceHover,
+  user,
+  userProfile,
+} from "../assets";
 import { BadgeComp, SearchBar } from "../components";
 import { addIcon, chatIcon, bellIcon } from "../assets";
+import { useNavigate } from "react-router-dom";
+import { useClickOutside } from "../utils";
+import { useDispatch } from "react-redux";
+import { logout as logoutFunc } from "../store/slices/auth";
 
 const Header = ({ isLogin }) => {
-  const theme = useTheme()
-  const [isOpen, setIsOpen] = useState(false);
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const addRef = useRef();
+  const profileRef = useRef();
+  const [openProfilePopup, setOpenProfilePopup] = useState(false);
+  const [addPopup, setAddPopup] = useState(false);
+  useClickOutside(addRef, () => setAddPopup(false));
+  useClickOutside(profileRef, () => setOpenProfilePopup(false));
+
+  const handleLogout = () => {
+    dispatch(logoutFunc())
+    setAddPopup(false);
+    setOpenProfilePopup(false);
+    navigate("/auth?type=login")
   };
 
-  useEffect(() => {
-    const html = document.querySelector("html");
-    if (html) {
-      html.style.overflow = isOpen ? "hidden" : "auto";
-    }
-  }, [isOpen]);
+  const handleNavigate = (link) => {
+    navigate(link);
+    setAddPopup(false);
+  };
+
+  const addPopuptabs = [
+    {
+      img: brand,
+      hoverImg: brandHover,
+      title: "Brand",
+      func: () => handleNavigate("/new-brand"),
+    },
+    {
+      img: event,
+      hoverImg: eventHover,
+      title: "Event",
+      func: () => handleNavigate("/new-event"),
+    },
+    {
+      img: space,
+      hoverImg: spaceHover,
+      title: "Space",
+      // func: () => handleNavigate("/new-space"),
+    },
+  ];
+
+  const profilePopuptabs = [
+    {
+      img: settings,
+      hoverImg: settingsHover,
+      title: "Settings",
+      func: () => handleNavigate("/settings"),
+    },
+    {
+      img: logout,
+      hoverImg: logoutHover,
+      title: "Log Out",
+      func: handleLogout,
+    },
+  ];
+
+  const Popup = ({ title, data, open }) => {
+    const [hovered, setHovered] = useState(false);
+    return (
+      <Box
+        sx={{
+          opacity: open ? 1 : 0,
+          display: open ? "block" : "none",
+          position: "absolute",
+          top: "58px",
+          right: title ? "210px" : 0,
+          border: "1px solid #D1DBD7",
+          background: "#fff",
+          borderRadius: "0px 0px 5px 5px",
+          padding: "16px",
+        }}
+      >
+        {title && (
+          <Typography
+            fontSize={16}
+            fontWeight={400}
+            color="#000"
+            textAlign="left"
+            sx={{ marginBottom: "8px" }}
+          >
+            {title}
+          </Typography>
+        )}
+        <Stack gap="4px">
+          {data.map((item) => {
+            const active = hovered === item.title;
+            return (
+              <Stack
+                onClick={item?.func}
+                sx={{
+                  width: "129px",
+                  padding: "4px 14px",
+                  cursor: "pointer",
+                  borderRadius: "3px",
+                  background: (theme) =>
+                    active ? theme.palette.secondary.main : "transparent",
+                }}
+                direction="row"
+                alignItems="center"
+                justifyContent="space-evenly"
+                gap="12px"
+                key={item.title}
+                onMouseOver={() => setHovered(item.title)}
+                onMouseOut={() => setHovered(false)}
+              >
+                <img
+                  width={24}
+                  height={24}
+                  src={active ? item.hoverImg : item.img}
+                  alt="brand"
+                />
+                <Typography
+                  fontSize={16}
+                  fontWeight={600}
+                  sx={{ width: "max-content" }}
+                >
+                  {item.title}
+                </Typography>
+              </Stack>
+            );
+          })}
+        </Stack>
+      </Box>
+    );
+  };
+
   return (
     <>
       <div className="header">
         <nav>
           <div className="logo">
-            <img src={logoIcon} alt="Icon" />
-            <img src={logoText} alt="Icon" style={{ height: "22px" }} />
+            <img width={42} height={42} src={logoIcon} alt="Icon" />
+            <img className="text-icon" src={logoText} alt="Icon" style={{ height: "22px" }} />
           </div>
-          {isLogin
-            &&
+          {isLogin && (
             <div className="search-bar">
               <div className="search-box">
                 <SearchBar name={"query"} placeholder={"Search..."} />
               </div>
             </div>
-          }
-          {
-            isLogin ?
-              <ul className={`${isOpen ? "nav-links2 active" : "nav-links2"}`}>
-                <li>
-                  <BadgeComp imageSrc={addIcon} bg={theme.palette.transparent} />
-                </li>
-                <li>
-                  <BadgeComp imageSrc={chatIcon} bg={theme.palette.error.danger} />
-                </li>
-                <li>
-                  <BadgeComp imageSrc={bellIcon} bg={theme.palette.error.danger} />
-                </li>
-                <img src={userProfile} alt="User" style={{ cursor: "pointer" }} />
-              </ul>
-              :
-              <ul className={`${isOpen ? "nav-links active" : "nav-links"}`}>
-                <li onClick={() => setIsOpen(false)}>News</li>
-                <hr className="nav-items-breaker" />
-                <li onClick={() => setIsOpen(false)}>About</li>
-                <hr className="nav-items-breaker" />
-                <li onClick={() => setIsOpen(false)}>Help</li>
-                <Button className="user-btn1" sx={{
+          )}
+          {isLogin ? (
+            <ul
+              style={{ position: "relative" }}
+              className="nav-links2"
+            >
+              <li ref={addRef}>
+                <BadgeComp onClick={() => setAddPopup(true)} imageSrc={addIcon} bg={theme.palette.transparent} />
+                <Popup open={addPopup} title="Add New:" data={addPopuptabs} />
+              </li>
+              <li>
+                <BadgeComp
+                  imageSrc={chatIcon}
+                  bg={theme.palette.error.danger}
+                />
+              </li>
+              <li>
+                <BadgeComp
+                  imageSrc={bellIcon}
+                  bg={theme.palette.error.danger}
+                />
+              </li>
+              <Box sx={{ width: "50px", height: "50px" }} ref={profileRef}>
+                <img
+                  onClick={() => setOpenProfilePopup(true)}
+                  src={userProfile}
+                  alt="User"
+                  style={{ cursor: "pointer" }}
+                />
+                <Popup open={openProfilePopup} data={profilePopuptabs} />
+              </Box>
+            </ul>
+          ) : (
+            <ul className="nav-links">
+              <li>News</li>
+              <hr className="nav-items-breaker" />
+              <li>About</li>
+              <hr className="nav-items-breaker" />
+              <li>Help</li>
+              <Button
+                onClick={() => setOpenProfilePopup(true)}
+                className="user-btn1"
+                sx={{
                   minWidth: "32px",
                   height: "32px",
                   backgroundColor: "rgba(0, 20, 28, 0.8)",
                   ":hover": {
-                    backgroundColor: "rgba(0, 20, 28, 0.8)"
-                  }
-                }}>
-                  <img src={user} alt="User" />
-                </Button>
-              </ul>
-          }
-
-          <div className="icon" onClick={toggleMenu}>
-            {!isLogin && <Button sx={{
-              minWidth: "32px",
-              height: "32px",
-              backgroundColor: "rgba(0, 20, 28, 0.8)",
-              ":hover": {
-                backgroundColor: "rgba(0, 20, 28, 0.8)"
-              }
-            }}>
-              <img src={user} alt="User" />
-            </Button>}
-            {isOpen ? <CloseOutlinedIcon /> : <MenuIcon />}
-          </div>
+                    backgroundColor: "rgba(0, 20, 28, 0.8)",
+                  },
+                }}
+              >
+                <img src={user} alt="User" />
+              </Button>
+            </ul>
+          )}
         </nav>
-      </div >
+      </div>
     </>
   );
 };

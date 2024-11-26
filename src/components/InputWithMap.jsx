@@ -74,7 +74,7 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
       <Box sx={{ width: { xs: "100%", md: "65%" }, display: "flex", flexDirection: "column", rowGap: "20px" }}>
         <Box sx={{ display: "flex", flexDirection: "column", rowGap: "3px" }}>
           <Typography
-            variant="h3"
+            variant="h2"
             sx={{
               textAlign: "left",
               color: theme.palette.primary.main,
@@ -170,28 +170,30 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
             />
           </Box>
         )}
-        {(activity === "space" || activity === "brand") &&
-          <Typography
-            sx={{
-              fontSize: "14px",
-              fontWeight: "300",
-              fontStyle: "italic",
-              color: theme.palette.primary.main
-            }}
-          >
-            {mapInstruction}
-          </Typography>
-        }
-        <img src={miniMap} alt="Map" onClick={handleClick} style={{ cursor: "pointer" }} />
-        <Typography variant='h6' sx={{ textAlign: "left", fontWeight: "300", fontStyle: "italic" }}>
-          {mapDescription}
-        </Typography>
-
-        {(activity === "event" || activity === "space") && (
-          <Box sx={{ position: "relative", display: "flex", flexDirection: "column", rowGap: "10px" }}>
-            <Divider />
-            <Typography variant='h6' sx={{ textAlign: "left" }}>
-              {activity === "event" ? "Starting from:" : "Lease from"}
+        <figure style={{ width: "100%", height: "100%" }} role="img" aria-labelledby="profile-map">
+            <img width="100%" height="100%" src={miniMap} alt="map" />
+            <figcaption
+              style={{
+                fontStyle: "italic",
+                fontSize: "12px",
+                fontWeight: "300",
+                textAlign: "left",
+                fontFamily: `"Segoe UI", "sans-serif"`,
+              }}
+            >
+              {mapDescription}
+            </figcaption>
+        </figure>
+        {activity === "event" && (
+          <Box sx={{ position: "relative" }}>
+            <Divider sx={{ marginY: 2 }} />
+            <Typography
+              variant="h3"
+              fontSize={12}
+              fontWeight={600}
+              sx={{ textAlign: "left", marginBottom: "10px" }}
+            >
+              Starting from:
             </Typography>
 
             <Box
@@ -209,13 +211,14 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
               }}
             >
               <Typography
-                variant="h1"
+                fontSize={32}
+                fontWeight={700}
                 sx={{ color: theme.palette.primary.main, textAlign: "left" }}
               >
                 {defaultDate ? dateToShow + "." : defaultPrice}
               </Typography>
               <Typography
-                variant="h6"
+                fontSize={12}
                 sx={{ textAlign: "left", color: theme.palette.primary.main }}
               >
                 until 15.4.2025.

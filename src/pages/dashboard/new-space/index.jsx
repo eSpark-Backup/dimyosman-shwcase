@@ -93,7 +93,7 @@ const NewSpace = () => {
                 theme: 'snow',
                 modules: {
                     toolbar: [
-                        [{ 'header': 3 }],
+                        [{ 'header': [2, 3, 4, 5, 6, false] }],
                         ['bold', 'italic', 'strike'],
                         [{ 'align': [] }],
                         [{ 'list': 'ordered' }],
