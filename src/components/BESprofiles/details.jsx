@@ -1,18 +1,20 @@
 import { Box, Button, Divider, Stack, Typography } from "@mui/material";
 import { calender, comment, like, miniMap, share } from "../../assets";
 
-const Details = ({ details, myProfile }) => {
+const Details = ({ spaceInquire, details, myProfile }) => {
   return (
     <Box>
       <Stack
+        component="section"
         direction={{ xs: "column", md: "row" }}
         justifyContent="space-between"
         alignItems="flex-start"
         gap={2}
       >
-        <Box>
+        <Box component="section">
           <Typography
-            variant="h3"
+            variant="h2"
+            fontSize={24}
             sx={{
               textAlign: "left",
               fontWeight: 600,
@@ -24,8 +26,8 @@ const Details = ({ details, myProfile }) => {
           {details?.overview?.map((overview) => (
             <Typography
               key={overview}
-              variant="h5"
-              sx={{ textAlign: "left", marginTop: 1, fontWeight: 400 }}
+              fontSize={16}
+              sx={{ textAlign: "left", marginTop: 2, fontWeight: 400 }}
             >
               {overview}
             </Typography>
@@ -40,11 +42,13 @@ const Details = ({ details, myProfile }) => {
               }}
             >
               <Typography
+                fontSize={12}
                 sx={{
                   fontWeight: "600",
                   textAlign: "left",
+                  fontSize: "12px",
+                  color: theme => theme.palette.primary.dark
                 }}
-                variant="h6"
               >
                 {details?.feature?.title}
               </Typography>
@@ -54,111 +58,176 @@ const Details = ({ details, myProfile }) => {
                   flexWrap: "wrap",
                   justifyContent: "space-between",
                   rowGap: "15px",
-                  flexDirection: { xs: "column", md: "row" },
+                  flexDirection: "column",
                 }}
               >
-                {details?.feature?.points?.map((item, index) => (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      columnGap: "5px",
-                      width: { xs: "100%", md: "33%" },
-                    }}
-                    key={index}
-                  >
-                    <img
-                      src={item?.icon}
-                      alt="Icon"
-                      style={{ width: "16px", height: "16px" }}
-                    />
-                    <Typography
-                      sx={{
-                        textAlign: "left",
-                        fontWeight: "400",
-                        fontSize: { xs: "12px", sm: "11px", xl: "12px" },
-                      }}
-                      variant="h6"
-                    >
-                      {item?.description}
-                    </Typography>
-                  </Box>
-                ))}
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    justifyContent: "space-between",
+                    rowGap: "15px",
+                    flexDirection: { xs: "column", md: "row" },
+                  }}
+                >
+                  {details?.feature?.points?.map(
+                    (item, index) =>
+                      index >= 0 &&
+                      index <= 2 && (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            columnGap: "5px",
+                            width: { xs: "100%", md: "150px" },
+                          }}
+                          key={index}
+                        >
+                          <img
+                            src={item?.icon}
+                            alt="Icon"
+                            style={{ width: "16px", height: "16px" }}
+                          />
+                          <Typography
+                            sx={{
+                              textAlign: "left",
+                              fontWeight: "400",
+                              fontSize: { xs: "12px", sm: "11px", xl: "12px" },
+                              color: theme => theme.palette.primary.dark
+                            }}
+                          >
+                            {item?.description}
+                          </Typography>
+                        </Box>
+                      )
+                  )}
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    justifyContent: "space-between",
+                    rowGap: "15px",
+                    flexDirection: { xs: "column", md: "row" },
+                  }}
+                >
+                  {details?.feature?.points?.map(
+                    (item, index) =>
+                      index >= 3 &&
+                      index <= 5 && (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            columnGap: "5px",
+                            width: { xs: "100%", md: "150px" },
+                          }}
+                          key={index}
+                        >
+                          <img
+                            src={item?.icon}
+                            alt="Icon"
+                            style={{ width: "16px", height: "16px" }}
+                          />
+                          <Typography
+                            sx={{
+                              textAlign: "left",
+                              fontWeight: "400",
+                              fontSize: { xs: "12px", sm: "11px", xl: "12px" },
+                              color: theme => theme.palette.primary.dark
+                            }}
+                          >
+                            {item?.description}
+                          </Typography>
+                        </Box>
+                      )
+                  )}
+                </Box>
               </Box>
             </Box>
           )}
         </Box>
-        <Box sx={{ marginTop: 1, width: { xs: "100%", md: "max-content" } }}>
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: "600",
-              textAlign: "left",
-            }}
-          >
-            {myProfile?.type === "brand" && !myProfile.owned
-              ? "Located at:"
-              : myProfile?.type === "brand"
-              ? "Headqarters at:"
-              : "Hosted at:"}
-          </Typography>
-          {myProfile?.type !== "brand" && (
+        <Box
+          component="section"
+          sx={{ marginTop: 1, width: { xs: "100%", md: "max-content" } }}
+        >
+          <header>
             <Typography
-              variant="h5"
+              variant="h3"
               sx={{
+                fontSize: "12px",
                 fontWeight: "600",
                 textAlign: "left",
               }}
             >
-              {details?.space}
+              {myProfile?.type === "brand" && !myProfile.owned
+                ? "Located at:"
+                : myProfile?.type === "brand"
+                ? "Headqarters at:"
+                : "Hosted at:"}
             </Typography>
-          )}
-          {myProfile?.type !== "brand" && (
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: "300",
-                textAlign: "left",
-              }}
-            >
-              {details?.spaceCategory}
-            </Typography>
-          )}
+            {myProfile?.type !== "brand" && (
+              <Typography
+                sx={{
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  textAlign: "left",
+                }}
+              >
+                {details?.space}
+              </Typography>
+            )}
+            {myProfile?.type !== "brand" && (
+              <Typography
+                sx={{
+                  fontSize: "12px",
+                  fontWeight: "300",
+                  textAlign: "left",
+                }}
+              >
+                {details?.spaceCategory}
+              </Typography>
+            )}
+          </header>
           <Box
             sx={{
               marginTop: "6px",
               width: { xs: "100%", md: "222px" },
-              height: { xs: "auto", md: "75px" },
+              height: "auto",
             }}
           >
-            <img width="100%" height="100%" src={miniMap} alt="map" />
+            <figure style={{ width: "100%", height: "100%" }} role="img" aria-labelledby="profile-map">
+              <img width="100%" height="100%" src={miniMap} alt="map" />
+              <figcaption
+                style={{
+                  fontStyle: "normal",
+                  fontSize: "12px",
+                  fontWeight: "400",
+                  textAlign: "left",
+                  wordSpacing: "-1px",
+                  marginTop: "6px",
+                  fontFamily: `"Segoe UI", "sans-serif"`,
+                }}
+              >
+                {details.location}
+              </figcaption>
+            </figure>
           </Box>
-
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: "400",
-              textAlign: "left",
-              wordSpacing: "-1px",
-              marginTop: "6px",
-            }}
-          >
-            {details.location}
-          </Typography>
           {myProfile?.type !== "brand" && (
             <>
               <Divider sx={{ marginY: 1 }} />
               <Typography
-                variant="h6"
+                variant="h3"
                 style={{
+                  fontSize: "12px",
                   fontWeight: "600",
                   textAlign: "left",
+                  color: (theme) => theme.palette.primary.dark,
                 }}
               >
                 Staring from:
               </Typography>
               <Typography
-                variant="h1"
                 style={{
+                  fontSize: "32px",
                   fontWeight: "600",
                   textAlign: "left",
                   lineHeight: "140%",
@@ -167,8 +236,8 @@ const Details = ({ details, myProfile }) => {
                 {details?.startingDate}
               </Typography>
               <Typography
-                variant="h6"
                 style={{
+                  fontSize: "12px",
                   fontWeight: "300",
                   textAlign: "left",
                 }}
@@ -219,6 +288,7 @@ const Details = ({ details, myProfile }) => {
         </Stack>
         {(myProfile.type === "space" || !myProfile?.owned) && (
           <Button
+            onClick={spaceInquire ? () => spaceInquire(myProfile?.id) : ()=>{}}
             sx={{
               background: (theme) => theme.palette.button.secondary,
               color: (theme) => theme.palette.primary.main,
@@ -251,13 +321,13 @@ const Details = ({ details, myProfile }) => {
       </Stack>
       {details?.expectedPoint && (
         <Box>
-          <Typography variant="h3" sx={{ textAlign: "left", fontWeight: 600 }}>
+          <Typography variant="h2" sx={{ fontSize: "24px", textAlign: "left", fontWeight: 600 }}>
             {details?.expectedPoint?.title}
           </Typography>
           {details?.expectedPoint?.points?.map((point) => (
             <Typography
               key={point}
-              variant="h5"
+              fontSize={16}
               sx={{ textAlign: "left", marginTop: 2, fontWeight: 400 }}
             >
               {point}
@@ -269,7 +339,7 @@ const Details = ({ details, myProfile }) => {
               return (
                 <li style={{ marginTop: "10px" }} key={point}>
                   <Typography
-                    variant="h5"
+                    fontSize={16}
                     sx={{
                       display: "inline",
                       textAlign: "left",
@@ -280,7 +350,7 @@ const Details = ({ details, myProfile }) => {
                     {newPoints[0]}:
                   </Typography>
                   <Typography
-                    variant="h5"
+                    fontSize={16}
                     sx={{
                       display: "inline",
                       textAlign: "left",
@@ -297,7 +367,7 @@ const Details = ({ details, myProfile }) => {
         </Box>
       )}
       {details?.otherPoints && (
-        <Box>
+        <Box component="article">
           <Typography
             variant="h3"
             sx={{ fontSize: "20px", textAlign: "left", fontWeight: 600 }}
@@ -307,7 +377,7 @@ const Details = ({ details, myProfile }) => {
           {details?.otherPoints?.points?.map((point) => (
             <Typography
               key={point}
-              variant="h5"
+              fontSize={16}
               sx={{ textAlign: "left", marginTop: 1, fontWeight: 400 }}
             >
               {point}
@@ -316,20 +386,22 @@ const Details = ({ details, myProfile }) => {
         </Box>
       )}
       {details?.overviewImage && (
-        <img
-          style={{
-            borderRadius: "5px",
-            margin: "16px 0",
-            width: "100%",
-            height: "300px",
-            objectFit: "cover",
-          }}
-          src={details?.overviewImage}
-          alt="overview-image"
-        />
+        <figure style={{ width: "100%", height: "100%" }} role="overview-image" aria-labelledby="overview-image-figcaption">
+          <img
+            style={{
+              borderRadius: "5px",
+              margin: "16px 0",
+              width: "100%",
+              height: "300px",
+              objectFit: "cover",
+            }}
+            src={details?.overviewImage}
+            alt="overview-image"
+          />
+        </figure>
       )}
       {details?.otherPoints2 && (
-        <Box>
+        <Box component="article">
           <Typography
             variant="h3"
             sx={{ fontSize: "20px", textAlign: "left", fontWeight: 600 }}
@@ -339,7 +411,7 @@ const Details = ({ details, myProfile }) => {
           {details?.otherPoints2?.points?.map((point) => (
             <Typography
               key={point}
-              variant="h5"
+              fontSize={16}
               sx={{ textAlign: "left", marginTop: 1, fontWeight: 400 }}
             >
               {point}
@@ -386,6 +458,7 @@ const Details = ({ details, myProfile }) => {
         </Stack>
         {(myProfile.type === "space" || !myProfile?.owned) && (
           <Button
+            onClick={spaceInquire ? () => spaceInquire(myProfile?.id) : ()=>{}}
             sx={{
               background: (theme) => theme.palette.button.secondary,
               color: (theme) => theme.palette.primary.main,

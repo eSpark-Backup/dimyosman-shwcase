@@ -7,7 +7,7 @@ export const registerSchema = Yup.object({
         .required('Email is required'),
     password: Yup.string()
         .required('Password is required')
-        .min(5, "Password must contain at least 5 characters"),
+        .min(8, "Password must contain at least 8 characters"),
     conPassword: Yup.string()
         .oneOf([Yup.ref('password')], 'Passwords must match')
         .required('Confirm password is required'),
@@ -21,5 +21,5 @@ export const loginSchema = Yup.object({
         .required('Email is required'),
     password: Yup.string()
         .required('Password is required')
-        .min(5, "Password must contain at least 5 characters"),
+        .min(8, "Password must contain at least 8 characters"),
 });

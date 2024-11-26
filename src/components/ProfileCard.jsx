@@ -50,7 +50,13 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                         }
                     }}
                 >
-                    <img src={user} alt="User Icon" style={{ width: "31px", height: "32px" }} />
+                    <figure
+                        style={{ width: "100%", height: "100%" }}
+                        role="img"
+
+                    >
+                        <img src={user} alt="User Icon" style={{ width: "31px", height: "32px" }} />
+                    </figure>
 
                 </Button>
                 <Button
@@ -72,7 +78,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                             backgroundColor: isEdit ? "rgb(0, 20, 28, 0.9)" : "#4d5b60"
                         }
                     }}
-                    onClick={() => isEdit ? navigate(`/profile/${location?.pathname.split("/").at(-1)}`) : navigate(`/profile/${location?.pathname.split("/").at(-1)}/edit`)}
+                    onClick={() => isEdit ? navigate(`/profile/${location?.pathname.split("/").at(-2)}`) : navigate(`/profile/${location?.pathname.split("/").at(-1)}/edit`)}
                 >
                     {
                         isEdit ? "Publish" : "Edit"
@@ -134,7 +140,14 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                                         >
                                             upload image:
                                         </Typography>
-                                        <img src={uploadIcon} alt="Icon" />
+
+                                        <figure
+                                            style={{ width: "100%", height: "100%" }}
+                                            role="img"
+
+                                        >
+                                            <img src={uploadIcon} alt="Icon" />
+                                        </figure>
                                         <input type="file" style={{ display: "none" }}
                                             ref={profileImgRef} onChange={handleProfileChange}
                                         />
@@ -149,7 +162,14 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                                         position: "relative"
                                     }}
                                 >
-                                    <img src={userProfileImg} alt="User Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                    <figure
+                                        style={{ width: "100%", height: "100%" }}
+                                        role="img"
+
+                                    >
+                                        <img src={userProfileImg} alt="User Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+
+                                    </figure>
                                     <Box
                                         sx={{
                                             background: userRole === "event" ? "rgb(148, 185, 134)" : userRole === "brand" ? "rgb(196, 119, 127)" : userRole === "space" ? "rgb(120, 150, 195)" : theme.palette.primary.main,
@@ -164,7 +184,14 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                                             alignItems: "center"
                                         }}
                                     >
-                                        <img src={userRole === "event" ? flag : userRole === "brand" ? brandIcon : userRole === "space" ? spaceIcon : accountIcon} alt="Icon" style={{ width: "12px", height: "10px" }} />
+
+                                        <figure
+                                            style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
+                                            role="img"
+
+                                        >
+                                            <img src={userRole === "event" ? flag : userRole === "brand" ? brandIcon : userRole === "space" ? spaceIcon : accountIcon} alt="Icon" style={{ width: "12px", height: "10px" }} />
+                                        </figure>
                                     </Box>
                                 </Box>
                         }
@@ -202,14 +229,12 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                                                 fontWeight: "300",
                                                 color: theme.palette.primary.main
                                             }}
-                                            variant='h6'
                                         >{item?.name}</Typography>
                                         <Typography
                                             sx={{
                                                 fontWeight: "600",
                                                 color: theme.palette.primary.main
                                             }}
-                                            variant='h6'
                                         >{item?.value}</Typography>
 
                                     </Box>
@@ -248,7 +273,13 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                             >
                                 upload image:
                             </Typography>
-                            <img src={uploadIcon} alt="Icon" />
+                            <figure
+                                style={{ width: "100%", height: "100%" }}
+                                role="img"
+
+                            >
+                                <img src={uploadIcon} alt="Icon" />
+                            </figure>
                             <input type="file" style={{ display: "none" }}
                                 ref={mainImgRef} onChange={handleMainImgChange}
                             />

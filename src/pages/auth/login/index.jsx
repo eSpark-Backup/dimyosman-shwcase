@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect } from "react";
+import { LoadingButton } from "@mui/lab";
+import { useAlert } from "react-alert";
 import { Link, useNavigate } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
 import { Input } from "../../../components";
@@ -6,8 +8,11 @@ import { google, facebook, apple } from "../../../assets";
 import { useFormik } from "formik";
 import { loginSchema } from "../../../validation/validation";
 import { useTheme } from "@emotion/react";
+import { useLoginMutation } from "../../../services/auth";
 
 const Login = () => {
+    const alert = useAlert();
+    const [login, { isLoading, isSuccess, isError, error }] = useLoginMutation();
     const theme = useTheme();
     const navigate = useNavigate();
     const formik = useFormik({
@@ -17,11 +22,18 @@ const Login = () => {
         },
         validationSchema: loginSchema,
         onSubmit: (values) => {
-            window.localStorage.setItem("token", "token");
-            navigate("/activity")
-            console.log("Form Submitted", values);
+          login(values);
         },
-    });
+  });
+
+  useEffect(() => {
+    if (isError) {
+      alert.error(error?.data?.message);
+    }
+    if (isSuccess) {
+      navigate("/activity");
+    }
+  }, [isError, isSuccess, navigate, alert, error]);
 
     const authBtnStyle = {
         width: { xs: "90%", md: "110px" },
@@ -84,7 +96,13 @@ const Login = () => {
                 >
                     Forgot Password?
                 </Typography>
-                <Button type="submit" sx={{textTransform:"none"}}>Log In</Button>
+                <LoadingButton
+                    loading={isLoading}
+                    type="submit"
+                    sx={{ textTransform: "none" }}
+                >
+                    Log In
+                </LoadingButton>           
             </Box>
             <Box sx={{ display: "flex", flexDirection: "column", rowGap: "12px" }}>
                 <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
