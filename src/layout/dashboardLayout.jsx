@@ -1,10 +1,27 @@
 import { Box } from "@mui/material";
-import { Outlet, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import SplashScreen from "./splash";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./sidebar";
 import { getSmallSidebar } from "../constant";
 
 const DashboardLayout = () => {
+  const navigate = useNavigate();
+  const token = window.localStorage.getItem("token");
   const { pathname } = useLocation();
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+    if (!token) {
+      navigate("/auth?type=login");
+    }
+  }, []);
+  if (loading) {
+    return <SplashScreen />;
+  }
   return (
     <Box
       sx={{
