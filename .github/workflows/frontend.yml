@@ -14,10 +14,14 @@ jobs:
     - name: Checkout source repository
       uses: actions/checkout@v4
 
+    - name: Create .env File
+      run: |
+        touch .env
+        echo "VITE_BASE_URL=${{ secrets.VITE_BASE_URL }}" >> .env
 
     - name: Deploy Docker Container     
       run: |
-        docker stop shwcase-fe
-        docker rm shwcase-fe
+        docker stop shwcase-fe || true
+        docker rm shwcase-fe || true
         docker build . -t shwcase-frontend:latest
         docker run -d -p 3022:8081 --name shwcase-fe shwcase-frontend:latest

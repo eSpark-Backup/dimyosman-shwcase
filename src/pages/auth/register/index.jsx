@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Box, Button, Typography, useTheme } from '@mui/material'
 import { LoadingButton } from "@mui/lab";
-import { useAlert } from "react-alert";
+import { toast } from "react-toastify";
 import { Input } from "../../../components";
 import { Link, useNavigate } from 'react-router-dom'
 import { google, facebook, apple } from "../../../assets";
@@ -10,7 +10,6 @@ import { registerSchema } from '../../../validation/validation';
 import { useRegisterMutation } from "../../../services/auth";
 
 const Register = () => {
-  const alert = useAlert();
   const [register, { isLoading, isSuccess, isError, error }] =
     useRegisterMutation();
   const theme = useTheme();
@@ -39,12 +38,12 @@ const Register = () => {
 
   useEffect(() => {
     if (isError) {
-      alert.error(error?.data?.message);
+        toast.error(error?.data?.message);
     }
     if (isSuccess) {
       navigate("/activity");
     }
-  }, [isError, isSuccess, navigate, error, alert]);
+  }, [isError, isSuccess, navigate, error]);
 
     const authBtnStyle = {
         width: { xs: "90%", md: "110px" },

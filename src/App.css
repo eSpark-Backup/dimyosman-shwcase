@@ -47,7 +47,7 @@ input[data-autocompleted] {
   align-items: center;
   width: 100%;
   min-height: calc(100vh - 64px);
-  padding-top: 64px;
+  margin-top: 64px;
 }
 
 .auth-box {

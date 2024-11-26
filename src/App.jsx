@@ -21,23 +21,8 @@ import {
   Space,
   SpaceDetails,
 } from "./pages";
-import { Alert } from "@mui/material";
-import { transitions, positions, Provider as AlertProvider } from "react-alert";
-
-const AlertTemplate = ({ style, options, message, close }) => (
-  <div style={style}>
-    <Alert severity={options?.type} onClose={close}>
-      {message}
-    </Alert>
-  </div>
-);
-
-const options = {
-  position: positions.TOP_RIGHT,
-  timeout: 5000,
-  offset: "30px",
-  transition: transitions.SCALE,
-};
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const { pathname } = useLocation();
@@ -54,7 +39,7 @@ function App() {
   }, [token, pathname, navigate]);
 
   return (
-    <AlertProvider template={AlertTemplate} {...options}>
+    <>
       <Header isLogin={token} />
       <Routes>
         <Route path="/" element={<Navigate to={"/auth?type=login"} />} />
@@ -80,7 +65,19 @@ function App() {
           <Route path="/new-space" element={<NewSpace />} />
         </Route>
       </Routes>
-    </AlertProvider>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={true}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        transition:Bounce
+      />
+    </>
   );
 }
 
