@@ -152,7 +152,7 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
         </Typography>
 
         {(activity === "event" || activity === "space") && (
-          <Box sx={{ width: "100%", height: "60px", border: "1px dashed rgba(0, 20, 28, 0.4)", borderRadius: "3px", display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "rgba(209, 219, 215, 0.2)", px: "10px" }}>
+          <Box sx={{ width: "100%", minHeight: "60px", border: "1px dashed rgba(0, 20, 28, 0.4)", borderRadius: "3px", display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "rgba(209, 219, 215, 0.2)", px: "10px" }}>
             <Box sx={{ display: "flex", flexDirection: "column", rowGap: "5px", alignItems: activity === "space" && "center" }}>
               <Typography variant='h5' sx={{ textAlign: "left", fontWeight: "600", color: theme.palette.primary.dark }}>
                 {eventName}
@@ -170,21 +170,32 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
             />
           </Box>
         )}
+        {
+          mapInstruction && <Typography style={{
+            fontStyle: "italic",
+            fontSize: "12px",
+            fontWeight: "300",
+            textAlign: "left",
+            fontFamily: `"Segoe UI", "sans-serif"`,
+          }}>
+            {mapInstruction}
+          </Typography>
+        }
         <figure style={{ width: "100%", height: "100%" }} role="img" aria-labelledby="profile-map">
-            <img width="100%" height="100%" src={miniMap} alt="map" />
-            <figcaption
-              style={{
-                fontStyle: "italic",
-                fontSize: "12px",
-                fontWeight: "300",
-                textAlign: "left",
-                fontFamily: `"Segoe UI", "sans-serif"`,
-              }}
-            >
-              {mapDescription}
-            </figcaption>
+          <img width="100%" height="100%" src={miniMap} alt="map" />
+          <figcaption
+            style={{
+              fontStyle: "italic",
+              fontSize: "12px",
+              fontWeight: "300",
+              textAlign: "left",
+              fontFamily: `"Segoe UI", "sans-serif"`,
+            }}
+          >
+            {mapDescription}
+          </figcaption>
         </figure>
-        {activity === "event" && (
+        {(activity === "event" || activity === "space") && (
           <Box sx={{ position: "relative" }}>
             <Divider sx={{ marginY: 2 }} />
             <Typography
