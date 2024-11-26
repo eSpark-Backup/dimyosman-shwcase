@@ -25,10 +25,10 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                         rowGap: "2px"
                     }}
                 >
-                    <Typography variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "400" }}>Show:</Typography>
-                    <Typography onClick={() => setSelectedChoice(0)} variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 0 ? "600" : "400", cursor: "pointer" }}>{filter1}</Typography>
-                    <Typography onClick={() => setSelectedChoice(1)} variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 1 ? "600" : "400", cursor: "pointer" }}>{filter2}</Typography>
-                    <Typography onClick={() => setSelectedChoice(2)} variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 2 ? "600" : "400", cursor: "pointer" }}>{filter3}</Typography>
+                    <Typography sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "400", fontSize: "16px" }}>Show:</Typography>
+                    <Typography onClick={() => setSelectedChoice(0)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 0 ? "600" : "400", cursor: "pointer", fontSize: "16px" }}>{filter1}</Typography>
+                    <Typography onClick={() => setSelectedChoice(1)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 1 ? "600" : "400", cursor: "pointer", fontSize: "16px" }}>{filter2}</Typography>
+                    <Typography onClick={() => setSelectedChoice(2)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 2 ? "600" : "400", cursor: "pointer", fontSize: "16px" }}>{filter3}</Typography>
                 </Box>
                 <Button
                     sx={{
@@ -113,7 +113,14 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                                                     height: "62px"
                                                 }}
                                             >
-                                                <img src={item?.profileImage} alt="User Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+
+                                                <figure
+                                                    style={{ width: "100%", height: "100%" }}
+                                                    role="img"
+
+                                                >
+                                                    <img src={item?.profileImage} alt="User Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                                </figure>
                                             </Box>
                                             <Box
                                                 sx={{
@@ -129,7 +136,13 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                                                     alignItems: "center"
                                                 }}
                                             >
-                                                <img src={brandIcon} alt="Icon" style={{ width: "12px", height: "10px" }} />
+                                                <figure
+                                                    style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
+                                                    role="img"
+
+                                                >
+                                                    <img src={brandIcon} alt="Icon" style={{ width: "12px", height: "10px" }} />
+                                                </figure>
                                             </Box>
                                         </Box>
                                         <Box
@@ -145,7 +158,7 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                                                     fontWeight: "600",
                                                     textAlign: "left",
                                                 }}
-                                                variant="h3"
+                                                variant="h2"
                                             >
                                                 {item?.brandName}
                                             </Typography>
@@ -156,13 +169,12 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                                                     textAlign: "left",
                                                     fontSize: { xs: "10px", lg: "16px" }
                                                 }}
-                                                variant="h5"
                                             >
                                                 {item?.brandCategory}
                                             </Typography>
                                         </Box>
                                     </Box>
-                                    <Typography variant='h5' sx={{ fontWeight: '400', color: theme.palette.primary.main, textAlign: "left" }}>
+                                    <Typography sx={{ fontWeight: '400', color: theme.palette.primary.main, textAlign: "left" }}>
                                         {item?.description}
                                     </Typography>
                                     <Box
@@ -180,9 +192,14 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                                                 columnGap: "25px",
                                             }}
                                         >
-                                            {/* <img src={like} alt="Like Icon" /> */}
-                                            {/* <img src={comment} alt="Comment Icon" /> */}
-                                            <img src={share} alt="Share Icon" />
+
+                                            <figure
+                                                style={{ width: "100%", height: "100%" }}
+                                                role="img"
+
+                                            >
+                                                <img src={share} alt="Share Icon" />
+                                            </figure>
 
                                         </Box>
                                         {/* <Typography
@@ -224,15 +241,22 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                                         justifyContent: "center",
                                     }}
                                 >
-                                    <img
-                                        src={item?.brandImage}
-                                        alt="Image"
-                                        style={{
-                                            width: "100%",
-                                            height: "100%",
-                                            objectFit: "cover",
-                                        }}
-                                    />
+
+                                    <figure
+                                        style={{ width: "100%", height: "100%" }}
+                                        role="img"
+
+                                    >
+                                        <img
+                                            src={item?.brandImage}
+                                            alt="Image"
+                                            style={{
+                                                width: "100%",
+                                                height: "100%",
+                                                objectFit: "cover",
+                                            }}
+                                        />
+                                    </figure>
                                 </Box>
 
                             </Box>

@@ -10,7 +10,7 @@ const ProfileAboutSection = ({ content }) => {
     const shareBoxRef = useRef(null);
     const [isIconHovered, setIsIconHovered] = useState(false)
 
-  useClickOutside(shareBoxRef, () => setShowShareBox(false));
+    useClickOutside(shareBoxRef, () => setShowShareBox(false));
 
     return (
         <Box sx={{ my: "50px" }}>
@@ -22,7 +22,7 @@ const ProfileAboutSection = ({ content }) => {
                                 item?.type === "heading"
                                     ?
                                     <Typography
-                                        variant='h3'
+                                        variant='h2'
                                         sx={{
                                             textAlign: "left",
                                             color: theme.palette.primary.main,
@@ -36,7 +36,6 @@ const ProfileAboutSection = ({ content }) => {
                                     item?.type === "paragraph"
                                         ?
                                         <Typography
-                                            variant='h5'
                                             sx={{
                                                 textAlign: "left",
                                                 color: theme.palette.primary.main,
@@ -46,11 +45,31 @@ const ProfileAboutSection = ({ content }) => {
                                             {item?.content}
                                         </Typography>
                                         :
-                                        item?.type === "breaker"
+                                        item?.type === "heading2"
                                             ?
-                                            <br />
+                                            <Typography
+                                                variant='h3'
+                                                sx={{
+                                                    textAlign: "left",
+                                                    color: theme.palette.primary.main,
+                                                    fontWeight: "600",
+
+                                                }}
+                                            >
+                                                {item?.content}
+                                            </Typography>
                                             :
-                                            <img src={item?.content} style={{ width: "100%" }} />
+                                            item?.type === "breaker"
+                                                ?
+                                                <br />
+                                                :
+                                                <figure
+                                                    style={{ width: "100%", height: "100%" }}
+                                                    role="img"
+
+                                                >
+                                                    <img src={item?.content} style={{ width: "100%" }} />
+                                                </figure>
                             }
                         </React.Fragment>
                     )
@@ -68,7 +87,14 @@ const ProfileAboutSection = ({ content }) => {
                     onClick={() => setShowShareBox(true)}
                     onMouseEnter={() => setIsIconHovered(true)}
                     onMouseLeave={() => setIsIconHovered(false)}>
-                    <img src={isIconHovered ? shareHovered : shareNotHovered} alt="" />
+
+                    <figure
+                        style={{ width: "100%", height: "100%" }}
+                        role="img"
+
+                    >
+                        <img src={isIconHovered ? shareHovered : shareNotHovered} alt="Share Icon" />
+                    </figure>
                 </Button>
 
                 <Box
@@ -134,7 +160,14 @@ const ProfileAboutSection = ({ content }) => {
                                     backgroundColor: "rgb(209, 219, 215, 0.4)"
                                 }
                             }}>
-                            <img src={close} alt="Close Icon" style={{ cursor: "pointer" }} onClick={() => setShowShareBox(false)} />
+
+                            <figure
+                                style={{ width: "100%", height: "100%" }}
+                                role="img"
+
+                            >
+                                <img src={close} alt="Close Icon" style={{ cursor: "pointer" }} onClick={() => setShowShareBox(false)} />
+                            </figure>
                         </Box>
                     </Box>
                     <Box
@@ -166,13 +199,20 @@ const ProfileAboutSection = ({ content }) => {
                                             alignItems: "center"
                                         }}
                                     >
-                                        <img src={item?.icon} alt="Icon" />
+
+                                        <figure
+                                            style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
+                                            role="img"
+
+                                        >
+                                            <img src={item?.icon} alt="Icon" />
+                                        </figure>
                                     </Box>
                                     <Typography
-                                        variant='h6'
                                         sx={{
                                             fontWeight: "400",
-                                            color: theme.palette.primary.main
+                                            color: theme.palette.primary.main,
+                                            fontSize: "12px"
                                         }}
                                     >
                                         {item?.name}
@@ -205,7 +245,13 @@ const ProfileAboutSection = ({ content }) => {
                         >
                             shwcase.co/NlfVhYygR9mAQasassdsada/Share...
                         </Typography>
-                        <img src={copyIcon} alt="Icon" style={{ cursor: "pointer" }} />
+                        <figure
+                            // style={{ width: "100%", height: "100%" }}
+                            role="img"
+
+                        >
+                            <img src={copyIcon} alt="Icon" style={{ cursor: "pointer" }} />
+                        </figure>
                     </Box>
 
 

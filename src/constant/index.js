@@ -579,7 +579,7 @@ export const profileContent = [
         content: brandMain
       },
       {
-        type: "heading",
+        type: "heading2",
         content: "Leading the Movement Toward Eco-Conscious Fashion"
       },
       {

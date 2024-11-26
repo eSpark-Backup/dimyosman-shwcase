@@ -21,13 +21,20 @@ const SpaceCard = ({ onClick, spaces, showBtn }) => {
                 cursor: onClick ? "pointer" : "default",
             }}
         >
-            <img
-                style={{ borderRadius: "5px 5px 0 0 " }}
-                width="100%"
-                height="100%"
-                src={spaces?.spacePic}
-                alt="space-img"
-            />
+
+            <figure
+                style={{ width: "100%", height: "100%" }}
+                role="img"
+
+            >
+                <img
+                    style={{ borderRadius: "5px 5px 0 0 " }}
+                    width="100%"
+                    height="100%"
+                    src={spaces?.spacePic}
+                    alt="space-img"
+                />
+            </figure>
             <Box
                 sx={{
                     background: "rgb(120, 150, 195)",
@@ -42,25 +49,32 @@ const SpaceCard = ({ onClick, spaces, showBtn }) => {
                     alignItems: "center"
                 }}
             >
-                <img src={spaceIcon} alt="Icon" style={{ width: "12px", height: "12px" }} />
+
+                <figure
+                    style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
+                    role="img"
+
+                >
+                    <img src={spaceIcon} alt="Icon" style={{ width: "12px", height: "12px" }} />
+                </figure>
             </Box>
             <Box padding={2} sx={{ display: "flex", flexDirection: "column", rowGap: "5px" }}>
                 <Typography textAlign="left" fontSize={20} fontWeight={600}>
                     {spaces?.spaceName}
                 </Typography>
-                <Typography textAlign="left" fontWeight={300} variant="h5">
+                <Typography textAlign="left" fontWeight={300} style={{ fontSize: "16px" }}>
                     {spaces?.spaceAddress}
                 </Typography>
-                <Typography textAlign="left" fontWeight={400} variant="h6">
+                <Typography textAlign="left" fontWeight={400} style={{ fontSize: "12px" }}>
                     {spaces?.spaceDescription}
                 </Typography>
-                <Typography fontWeight={600} variant="h5" textAlign="left">
+                <Typography fontWeight={600} textAlign="left" style={{ fontSize: "12px" }}>
                     Lease from:
                 </Typography>
-                <Typography fontWeight={600} variant="h1" textAlign="left">
+                <Typography fontWeight={600} textAlign="left" style={{ fontSize: "32px" }}>
                     {spaces?.spacePrice}
                 </Typography>
-                <Typography fontWeight={300} variant="h6" textAlign="left">
+                <Typography fontWeight={300} textAlign="left" style={{ fontSize: "12px" }}>
                     {spaces?.spaceDeadline}
                 </Typography>
 
