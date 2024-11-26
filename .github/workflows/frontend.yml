@@ -17,7 +17,7 @@ jobs:
 
     - name: Deploy Docker Container     
       run: |
-        docker stop shwcase-fe
-        docker rm shwcase-fe
+        docker stop shwcase-fe || true
+        docker rm shwcase-fe || true
         docker build . -t shwcase-frontend:latest
         docker run -d -p 3022:8081 --name shwcase-fe shwcase-frontend:latest
