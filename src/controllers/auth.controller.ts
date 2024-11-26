@@ -47,7 +47,11 @@ export class AuthController {
         }
         if (existingUser) {
           const token = jwt.sign(
-            { id: existingUser.id, email: existingUser.email },
+            {
+              id: existingUser.id,
+              email: existingUser.email,
+              role: existingUser.role,
+            },
             process.env.JWT_SECRET!,
             { expiresIn: "1h" }
           );
@@ -75,7 +79,7 @@ export class AuthController {
 
         // Generate JWT for new social login user
         const token = jwt.sign(
-          { id: newUser.id, email: newUser.email },
+          { id: newUser.id, email: newUser.email, role: newUser.role },
           process.env.JWT_SECRET!,
           { expiresIn: "1h" }
         );
@@ -117,7 +121,7 @@ export class AuthController {
       const newUser = await this.usersRepo.save(user);
 
       const token = jwt.sign(
-        { id: newUser.id, email: newUser.email },
+        { id: newUser.id, email: newUser.email, role: newUser.role },
         process.env.JWT_SECRET!,
         { expiresIn: "1h" }
       );
@@ -202,7 +206,7 @@ export class AuthController {
       }
 
       const token = jwt.sign(
-        { id: user.id, email: user.email },
+        { id: user.id, email: user.email, role: user.role },
         process.env.JWT_SECRET!,
         { expiresIn: "1h" }
       );

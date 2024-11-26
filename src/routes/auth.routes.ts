@@ -1,7 +1,7 @@
 import { Router } from "express";
 import Joi from "joi";
 import { AuthValidation, validate } from "../validations";
-import { AuthController } from "../controllers/auth.controller";
+import { AuthController } from "../controllers";
 import { User } from "../entity";
 import { getRepository } from "typeorm";
 import { AppDataSource } from "../typeorm.config";
@@ -16,6 +16,8 @@ const authController = new AuthController(userRepository);
  *   post:
  *     summary: Register a new user
  *     description: This endpoint registers a new user.
+ *     tags:
+ *      - Auth
  *     requestBody:
  *       required: true
  *       content:
@@ -64,6 +66,8 @@ router.post(
  *   post:
  *     summary: Login user
  *     description: This endpoint logs in a user.
+ *     tags:
+ *      - Auth
  *     requestBody:
  *       required: true
  *       content:
@@ -99,6 +103,8 @@ router.post(
  *   delete:
  *     summary: Delete user account
  *     description: Deletes a user account using their email address.
+ *     tags:
+ *      - Auth
  *     requestBody:
  *       required: true
  *       content:

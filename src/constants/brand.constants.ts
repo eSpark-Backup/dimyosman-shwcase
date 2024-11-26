@@ -1,0 +1,5 @@
+export enum BRAND_STATUS {
+  ARCHIVE = "ARCHIVE",
+  DRAFT = "DRAFT",
+  PUBLISH = "PUBLISH",
+}

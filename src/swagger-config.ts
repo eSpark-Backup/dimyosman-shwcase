@@ -17,6 +17,15 @@ const swaggerDefinition: SwaggerDefinition = {
       description: "Production server",
     },
   ],
+  components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+      },
+    },
+  },
 };
 
 export const swaggerOptions: Options = {

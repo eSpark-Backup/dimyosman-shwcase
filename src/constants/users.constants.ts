@@ -7,7 +7,7 @@ export enum LOGIN_TYPE {
   GOOGLE = "google",
   APPLE = "apple",
   FACEBOOK = "facebook",
-  MANUAL = "manual",
+  LOCAL = "local",
 }
 
 export const ZERO = 0;
@@ -34,13 +34,8 @@ export enum ORDER_STATUS {
 
 export const DEFAULT_CATEGORIES_LENGTH = 10;
 
-export const DEFAULT_WISHLIST_NAME = "All Product";
-
 export enum FOLLOW_STATUS {
   ACTIVE = "active",
   INACTIVE = "inactive",
   PENDING = "pending",
 }
-
-export const USER_SELECTS =
-  "email name email phone bio language profileImg userName";
