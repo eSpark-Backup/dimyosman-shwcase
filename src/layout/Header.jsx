@@ -139,7 +139,7 @@ const Header = ({ isLogin }) => {
                 />
                 <Typography
                   fontSize={16}
-                  fontWeight={600}
+                  fontWeight={400}
                   sx={{ width: "max-content" }}
                 >
                   {item.title}
