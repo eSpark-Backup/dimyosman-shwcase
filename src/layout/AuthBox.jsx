@@ -58,7 +58,7 @@ const AuthBox = () => {
           }}
         >
           <Typography variant="h2" sx={{ color: theme.palette.primary.main }}>{tabs[activeTab].title}</Typography>
-          <Typography variant="h4" sx={{ color: theme.palette.primary.main }}>{tabs[activeTab].subTitle}</Typography>
+          <Typography sx={{ color: theme.palette.primary.main, fontWeight: 500, fontSize: "18px" }}>{tabs[activeTab].subTitle}</Typography>
         </Box>
         <Box
           sx={{
