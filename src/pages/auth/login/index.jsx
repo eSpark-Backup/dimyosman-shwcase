@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { LoadingButton } from "@mui/lab";
-import { useAlert } from "react-alert";
+import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
 import { Input } from "../../../components";
@@ -11,7 +11,6 @@ import { useTheme } from "@emotion/react";
 import { useLoginMutation } from "../../../services/auth";
 
 const Login = () => {
-    const alert = useAlert();
     const [login, { isLoading, isSuccess, isError, error }] = useLoginMutation();
     const theme = useTheme();
     const navigate = useNavigate();
@@ -28,12 +27,12 @@ const Login = () => {
 
   useEffect(() => {
     if (isError) {
-      alert.error(error?.data?.message);
+        toast.error(error?.data?.message);
     }
     if (isSuccess) {
       navigate("/activity");
     }
-  }, [isError, isSuccess, navigate, alert, error]);
+  }, [isError, isSuccess, navigate, error]);
 
     const authBtnStyle = {
         width: { xs: "90%", md: "110px" },
