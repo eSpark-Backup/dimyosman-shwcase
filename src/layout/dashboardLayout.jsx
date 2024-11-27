@@ -53,7 +53,7 @@ const DashboardLayout = () => {
                   xs: "calc(100% - 111px)",
                   md: "80%",
                   lg: "1080px",
-                  xl: "1440px",
+                  xl: "1280px",
                 }
               : "auto",
         }}

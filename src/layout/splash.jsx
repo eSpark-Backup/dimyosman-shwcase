@@ -22,7 +22,7 @@ const SplashScreen = () => {
         gap: "50px",
       }}
     >
-      <div className="logo">
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <img width={42} height={42} src={logoIcon} alt="Icon" />
         <img
           className="text-icon"
@@ -31,7 +31,7 @@ const SplashScreen = () => {
           style={{ height: "22px" }}
         />
       </div>
-      <LinearProgress sx={{ width: "200px" }} />
+      <LinearProgress sx={{ width: "220px" }} />
     </div>
   );
 };
