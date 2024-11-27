@@ -1,4 +1,4 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import { eventBadge } from "../assets";
 
 const myEventsColumns = (gotoDetail, handleAction) => {
@@ -26,28 +26,32 @@ const myEventsColumns = (gotoDetail, handleAction) => {
               }}
             >
               {item?.eventImg && (
-                <img
-                  style={{ width: "100%" }}
-                  src={item?.eventImg}
-                  alt="event-img"
-                />
+
+                <figure style={{ width: "100%", height: "100%" }} role="event-image">
+                  <img
+                    style={{ width: "100%" }}
+                    src={item?.eventImg}
+                    alt="event-img"
+                  />
+                </figure>
               )}
-              <img
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  right: 0,
-                  zIndex: 99,
-                }}
-                width={16}
-                height={16}
-                src={eventBadge}
-                alt="event-icon"
-              />
+              <figure style={{ width: "100%", height: "100%" }} role="event-icon">
+                <img
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    zIndex: 99,
+                  }}
+                  width={16}
+                  height={16}
+                  src={eventBadge}
+                  alt="event-icon"
+                />
+              </figure>
             </Box>
             <Typography
-              variant="h5"
-              sx={{ fontWeight: 600, cursor: "pointer" }}
+              sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
             >
               {item?.eventName}
             </Typography>
@@ -98,12 +102,22 @@ const myEventsColumns = (gotoDetail, handleAction) => {
       key: "action",
       component: (item) => {
         return (
-          <Typography
+          <Button
             onClick={() => handleAction(item)}
-            sx={{ fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+            sx={{
+              width: "56px",
+              maxHeight: "26px",
+              fontSize: "14px",
+              fontWeight: "600",
+              transition: "width 0.3s ease-in-out",
+              "&:hover": {
+                width: "100px",
+              },
+            }}
           >
             Edit
-          </Typography>
+          </Button>
+
         );
       },
     },
@@ -135,28 +149,32 @@ const rsvpEventColumns = (gotoDetail, handleAction) => {
               }}
             >
               {item?.eventImg && (
-                <img
-                  style={{ width: "100%" }}
-                  src={item?.eventImg}
-                  alt="event-img"
-                />
+
+                <figure style={{ width: "100%", height: "100%" }} role="event-icon">
+                  <img
+                    style={{ width: "100%" }}
+                    src={item?.eventImg}
+                    alt="event-img"
+                  />
+                </figure>
               )}
-              <img
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  right: 0,
-                  zIndex: 99,
-                }}
-                width={16}
-                height={16}
-                src={eventBadge}
-                alt="event-icon"
-              />
+              <figure style={{ width: "100%", height: "100%" }} role="event-icon">
+                <img
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    zIndex: 99,
+                  }}
+                  width={16}
+                  height={16}
+                  src={eventBadge}
+                  alt="event-icon"
+                />
+              </figure>
             </Box>
             <Typography
-              variant="h5"
-              sx={{ fontWeight: 600, cursor: "pointer" }}
+              sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
             >
               {item?.eventName}
             </Typography>
@@ -209,12 +227,17 @@ const rsvpEventColumns = (gotoDetail, handleAction) => {
       key: "action",
       component: (item) => {
         return (
-          <Typography
+          <Button
             onClick={() => handleAction(item)}
-            sx={{ fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+            sx={{
+              minWidth: "56px",
+              maxHeight: "26px",
+              fontSize: "14px",
+              fontWeight: "600",
+            }}
           >
             {item?.action}
-          </Typography>
+          </Button>
         );
       },
     },
@@ -246,28 +269,33 @@ const likedEventColumns = (gotoDetail, handleAction) => {
               }}
             >
               {item?.eventImg && (
-                <img
-                  style={{ width: "100%" }}
-                  src={item?.eventImg}
-                  alt="event-img"
-                />
+
+                <figure style={{ width: "100%", height: "100%" }} role="event-icon">
+                  <img
+                    style={{ width: "100%" }}
+                    src={item?.eventImg}
+                    alt="event-img"
+                  />
+                </figure>
               )}
-              <img
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  right: 0,
-                  zIndex: 99,
-                }}
-                width={16}
-                height={16}
-                src={eventBadge}
-                alt="event-icon"
-              />
+
+              <figure style={{ width: "100%", height: "100%" }} role="event-icon">
+                <img
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    zIndex: 99,
+                  }}
+                  width={16}
+                  height={16}
+                  src={eventBadge}
+                  alt="event-icon"
+                />
+              </figure>
             </Box>
             <Typography
-              variant="h5"
-              sx={{ fontWeight: 600, cursor: "pointer" }}
+              sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
             >
               {item?.eventName}
             </Typography>
@@ -320,12 +348,17 @@ const likedEventColumns = (gotoDetail, handleAction) => {
       key: "action",
       component: (item) => {
         return (
-          <Typography
+          <Button
             onClick={() => handleAction(item)}
-            sx={{ fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+            sx={{
+              minWidth: "83px",
+              maxHeight: "26px",
+              fontSize: "14px",
+              fontWeight: "600",
+            }}
           >
             Remove
-          </Typography>
+          </Button>
         );
       },
     },
