@@ -157,16 +157,30 @@ const InputWithMap = ({
             />
           </Box>
         )}
-        <figure style={{ width: "100%", height: "100%" }} role="img" aria-labelledby="profile-map">
-            <img width="100%" height="100%" src={miniMap} alt="map" />
+        {(activity === "brand" && !edit) && 
+          <Typography fontSize={14} fontWeight={300} sx={{ fontStyle: "italic" }}>Click on the map to select Address.</Typography>
+        }
+        <figure role="img" aria-labelledby="profile-map">
+            <img width="100%" height="auto" src={miniMap} alt="map" />
             <figcaption
-              style={{
+              style={activity === "brand" && !edit ? 
+                {
+                  fontStyle: "normal",
+                  fontSize: "12px",
+                  fontWeight: "400",
+                  textAlign: "left",
+                  marginTop: "6px",
+                  fontFamily: `"Segoe UI", "sans-serif"`,
+                }
+                :
+                {
                 fontStyle: "italic",
                 fontSize: "12px",
                 fontWeight: "300",
                 textAlign: "left",
                 fontFamily: `"Segoe UI", "sans-serif"`,
-              }}
+              }
+            }
             >
               {mapDescription}
             </figcaption>

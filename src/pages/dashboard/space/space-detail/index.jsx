@@ -5,21 +5,23 @@ import SpaceInquireModal from "./space-inquire-modal";
 
 const SpaceDetails = () => {
   const { spaces } = useSelector((state) => state.space);
-  const [open, setOpen] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [id, setId] = useState(null);
   const spaceInquire = (id) => {
-    setOpen(id);
+    setId(id);
+    setOpen(true);
   };
-  const handleSave = (id) => {
+  const handleSave = () => {
     ///save functionality
     console.log(id, "save");
-    setOpen(null);
+    setOpen(false);
   };
   return (
     <>
       <BESProfile spaceInquire={spaceInquire} type="space" data={spaces} />
       <SpaceInquireModal
         open={open}
-        handleClose={() => setOpen(null)}
+        handleClose={() => setOpen(false)}
         handleSave={handleSave}
       />
     </>

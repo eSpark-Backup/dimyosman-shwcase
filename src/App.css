@@ -6,15 +6,8 @@
 
 @font-face {
   font-family: 'Segoe UI';
-  src: url('./assets/fonts/Segoe\ UI.woff') format('woff2');
+  src: url('./assets/fonts/Segoe UI.tff') format('tff');
   font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Segoe UI';
-  src: url('./assets/fonts/Segoe\ UI\ Bold.woff') format('woff2');
-  font-weight: bold;
   font-style: normal;
 }
 
@@ -47,7 +40,7 @@ input[data-autocompleted] {
   align-items: center;
   width: 100%;
   min-height: calc(100vh - 64px);
-  padding-top: 64px;
+  margin-top: 64px;
 }
 
 .auth-box {
@@ -95,7 +88,7 @@ input[data-autocompleted] {
 .header .nav-links2 {
   display: flex;
   column-gap: 32px;
-  padding-right: 40px;
+  margin-right: 40px;
   align-items: center;
 }
 
@@ -126,6 +119,7 @@ input[data-autocompleted] {
 }
 
 .search-bar {
+  max-width: 768px;
   width: 50%;
   display: flex;
   justify-content: center;
@@ -239,30 +233,9 @@ input[data-autocompleted] {
     margin-left: 30px;
   }
 
-  .header .nav-links,
-  .header .nav-links2 {
-    flex-direction: column;
-    justify-content: space-evenly;
-    position: absolute;
-    width: 100vw;
-    align-items: center;
-    height: 30vh;
-    top: -800px;
-    right: 0;
-    z-index: 10;
-    background-color: white;
-    box-shadow: 0 2px 10px rgb(30 30 30 / 97%);
-    transition: top 0.5s ease-in-out;
-    padding-right: 0px;
-  }
-
   .header nav .logo {
     padding: 1.5rem 1.4rem;
     width: 180px;
-  }
-
-  .header nav .logo img {
-    width: 100%;
   }
 
   .nav-links.active,
@@ -274,10 +247,6 @@ input[data-autocompleted] {
   .nav-items-breaker {
     display: block;
     width: 90%;
-  }
-
-  .user-btn1 {
-    display: none !important;
   }
 
   .header .nav-links li {
@@ -295,30 +264,19 @@ input[data-autocompleted] {
 @media screen and (min-width:769px) and (max-width:950px) {
   .header .nav-links2 {
     column-gap: 20px;
-    padding-right: 20px;
+    margin-right: 20px;
   }
 }
 
-@media screen and (max-width:550px) {
-  .search-bar {
-    width: 100%;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-  }
-
-  .search-box {
-    width: 100%;
+@media screen and (max-width:768px) {
+  .search-bar, .text-icon {
+    display: none;
   }
 }
 
 @media screen and (min-width:551px) and (max-width:768px) {
   .auth-box {
     width: 85vw;
-  }
-
-  .search-bar {
-    justify-content: flex-start;
   }
 }
 

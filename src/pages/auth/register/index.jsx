@@ -1,26 +1,50 @@
-import React, { useState } from 'react'
-import { Box, Button, Stack, Typography, useTheme } from '@mui/material'
+import { useEffect } from 'react'
+import { Box, Button, Typography, useTheme } from '@mui/material'
+import { LoadingButton } from "@mui/lab";
+import { toast } from "react-toastify";
 import { Input } from "../../../components";
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { google, facebook, apple } from "../../../assets";
 import { useFormik } from "formik";
 import { registerSchema } from '../../../validation/validation';
+import { useRegisterMutation } from "../../../services/auth";
 
 const Register = () => {
-    const theme = useTheme();
-    const formik = useFormik({
-        initialValues: {
-            fName: "",
-            lName: "",
-            email: "",
-            password: "",
-            conPassword: "",
-        },
-        validationSchema: registerSchema,
-        onSubmit: (values) => {
-            console.log("Form Submitted", values);
-        },
-    });
+  const [register, { isLoading, isSuccess, isError, error }] =
+    useRegisterMutation();
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const formik = useFormik({
+    initialValues: {
+      fName: "",
+      lName: "",
+      email: "",
+      password: "",
+      conPassword: "",
+    },
+    validationSchema: registerSchema,
+    onSubmit: (values) => {
+      register({
+        firstName: values.fName,
+        lastName: values.lName,
+        email: values.email,
+        password: values.password,
+        loginType: "local",
+        isSocialLogin: false,
+        role: "user",
+      });
+    },
+  });
+
+  useEffect(() => {
+    if (isError) {
+        toast.error(error?.data?.message);
+    }
+    if (isSuccess) {
+      navigate("/activity");
+    }
+  }, [isError, isSuccess, navigate, error]);
+
     const authBtnStyle = {
         width: { xs: "90%", md: "110px" },
         height: "50px",
@@ -34,9 +58,6 @@ const Register = () => {
             backgroundColor: "#F8F8F8"
         }
     };
-    const HandleSubmit = (values) => {
-        console.log(values)
-    }
     return (
         <>
             <Box
@@ -156,17 +177,43 @@ const Register = () => {
                         />
                     </Box>
                 </Box>
-                <Button type='submit'>Sign Up</Button>
+                <LoadingButton loading={isLoading} type="submit">
+                    Sign Up
+                </LoadingButton>
             </Box>
-            <Box sx={{ display: "flex", flexDirection: "column", rowGap: "12px" }}>
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
-                    By signing, you are agreeing with our
-                </Typography>
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
-                    <span style={{ textDecoration: "underline", cursor: "pointer" }}>Terms of Use </span>
-                    and
-                    <span style={{ textDecoration: "underline", cursor: "pointer" }}> Privacy Policy</span>
-                </Typography>
+            <Box sx={{ display: "flex", flexDirection: "row", gap: "5px" }}>
+              <Link
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  color: "#00141C",
+                  fontFamily: "'Segoe UI'",
+                  display: "inline-block",
+                }}
+                to={"/auth?type=register"}
+              >
+                Terms of Use
+              </Link>
+              <Typography
+                fontSize={12}
+                fontWeight={500}
+                textAlign="center"
+                sx={{ display: "inline-block" }}
+              >
+                and
+              </Typography>
+              <Link
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  color: "#00141C",
+                  fontFamily: "'Segoe UI'",
+                  display: "inline-block",
+                }}
+                to={"/auth?type=register"}
+              >
+                Privacy Policy
+              </Link>
             </Box>
             <Box
                 sx={{
@@ -176,7 +223,7 @@ const Register = () => {
                     width: "100%",
                 }}
             >
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>Or connect via</Typography>
+                <Typography fontSize={12} fontWeight={500} textAlign="center" sx={{ color: theme.palette.primary.main }}>Or connect via</Typography>
                 <Box
                     sx={{
                         display: "flex",
@@ -202,18 +249,17 @@ const Register = () => {
                     </Button>
                 </Box>
             </Box>
-            <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
+            <Typography fontSize={12} fontWeight={500} textAlign="center" sx={{ color: theme.palette.primary.main }}>
                 Already have an account? {" "}
-                <Link to={"/auth?type=login"}>
-                    <span
-                        style={{
-                            textDecoration: "underline",
-                            cursor: "pointer",
-                            color: "#00141C",
-                        }}
-                    >
-                        Log in
-                    </span>
+                <Link to={"/auth?type=login"}
+                  style={{
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    color: "#00141C",
+                    fontFamily: "'Segoe UI'",
+                  }}
+                >
+                  Log in
                 </Link>
             </Typography>
         </>

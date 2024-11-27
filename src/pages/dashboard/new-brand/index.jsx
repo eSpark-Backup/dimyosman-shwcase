@@ -56,7 +56,6 @@ const NewBrand = () => {
 
     const handleModalOpen = () => {
         setModalOpen(true);
-        setSelectedInModal(categories.map(cat => ({ ...cat })));
     };
 
     const handleModalClose = () => {
@@ -164,7 +163,7 @@ const NewBrand = () => {
                     rowGap: "32px",
                 }}
             >
-                <InputWithMap inputLabel={"Brand Overview:"} inputValue={brandOverview} setInputValue={setBrandOverview} handleClick={() => setMapModal(true)} activity={"brand"} />
+                <InputWithMap mapDescription="123 Williamsburg Ave, Brooklyn, NY 11211" inputLabel={"Brand Overview:"} inputValue={brandOverview} setInputValue={setBrandOverview} handleClick={() => setMapModal(true)} activity={"brand"} />
                 <Box
                     sx={{
                         width: "98%",

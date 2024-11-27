@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Divider, Typography, useTheme } from "@mui/material";
+import { Box, Button, Divider, Stack, Typography, useTheme } from "@mui/material";
 import {
   accountIcon,
   brandIcon,
@@ -163,7 +163,7 @@ const ActivityCard = ({
                 fontSize: { xs: "12px", lg: "16px" },
               }}
             >
-              <p style={{ display: "inline-block", fontWeight: 600, marginRight: "5px" }}>{userName} </p>
+              <span style={{ display: "inline-block", fontWeight: 600, marginRight: "5px" }}>{userName} </span>
               published a new{" "}
               {activity === "event"
                 ? "Event!"
@@ -254,7 +254,7 @@ const ActivityCard = ({
           }}
         >
           <Box
-            component="Section"
+            component="section"
             onClick={
               activityId
                 ? () => navigate(`/${activity}/${activityId}`)
@@ -592,20 +592,27 @@ const ActivityCard = ({
           {activity !== "space" && <img src={comment} alt="Comment Icon" />}
           <img src={share} alt="Share Icon" />
         </Box>
-        <Typography
+        <Stack direction="row" alignItems="center" justifyContent="center" gap={2}>
+        <Button
+          variant="text"
           onClick={
             activityId ? () => navigate(`/${activity}/${activityId}`) : () => {}
           }
           sx={{
-            cursor: "pointer",
+            backgroundColor: "transparent",
+            width: { xs: "150px", sm: "220px" },
+            height: "31px",
+            fontSize: "16px",
+            fontWeight: 600,
             color: theme.palette.primary.main,
-            textAlign: "left",
+            textTransform: "capitalize",
+            ":hover": {
+              backgroundColor: "rgb(209, 219, 215, 0.4)",
+            },
           }}
-          fontSize={16}
-          fontWeight={600}
         >
           Learn more
-        </Typography>
+        </Button>
         <Button
           sx={{
             backgroundColor: "rgb(209, 219, 215, 0.4)",
@@ -633,6 +640,7 @@ const ActivityCard = ({
             </>
           )}
         </Button>
+        </Stack>
       </Box>
     </Box>
   );

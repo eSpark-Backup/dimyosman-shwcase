@@ -258,6 +258,7 @@ const EditBrand = () => {
                 {myEvents.map((event, ind) => {
                   return (
                     <Box
+                      key={`event-${ind + 1}`}
                       sx={{
                         width: { xs: "100%", md: "328px" }
                       }}

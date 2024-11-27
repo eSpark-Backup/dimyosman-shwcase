@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect } from "react";
+import { LoadingButton } from "@mui/lab";
+import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
 import { Input } from "../../../components";
@@ -6,8 +8,10 @@ import { google, facebook, apple } from "../../../assets";
 import { useFormik } from "formik";
 import { loginSchema } from "../../../validation/validation";
 import { useTheme } from "@emotion/react";
+import { useLoginMutation } from "../../../services/auth";
 
 const Login = () => {
+    const [login, { isLoading, isSuccess, isError, error }] = useLoginMutation();
     const theme = useTheme();
     const navigate = useNavigate();
     const formik = useFormik({
@@ -17,11 +21,18 @@ const Login = () => {
         },
         validationSchema: loginSchema,
         onSubmit: (values) => {
-            window.localStorage.setItem("token", "token");
-            navigate("/activity")
-            console.log("Form Submitted", values);
+          login(values);
         },
-    });
+  });
+
+  useEffect(() => {
+    if (isError) {
+        toast.error(error?.data?.message);
+    }
+    if (isSuccess) {
+      navigate("/activity");
+    }
+  }, [isError, isSuccess, navigate, error]);
 
     const authBtnStyle = {
         width: { xs: "90%", md: "110px" },
@@ -73,28 +84,60 @@ const Login = () => {
                     helperText={formik.touched.password && formik.errors.password}
                     placeholder={"Type Your Password"}
                 />
-                <Typography
-                    sx={{
+                <Link
+                    style={{
                         fontSize: "12px",
                         fontWeight: "500",
                         textDecoration: "underline",
                         cursor: "pointer",
-                        color: theme.palette.primary.main
+                        color: "#00141C",
+                        fontFamily: "'Segoe UI'",
                     }}
+                    to={"/auth?type=login"}
                 >
                     Forgot Password?
-                </Typography>
-                <Button type="submit" sx={{textTransform:"none"}}>Log In</Button>
+                </Link>
+                <LoadingButton
+                    loading={isLoading}
+                    type="submit"
+                    sx={{ textTransform: "none" }}
+                >
+                    Log In
+                </LoadingButton>           
             </Box>
-            <Box sx={{ display: "flex", flexDirection: "column", rowGap: "12px" }}>
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
-                    By logging, you are agreeing with our
-                </Typography>
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
-                    <span style={{ textDecoration: "underline", cursor: "pointer" }}>Terms of Use </span>
-                    and
-                    <span style={{ textDecoration: "underline", cursor: "pointer" }}> Privacy Policy</span>
-                </Typography>
+            <Box sx={{ display: "flex", flexDirection: "row", gap: "5px" }}>
+              <Link
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  color: "#00141C",
+                  fontFamily: "'Segoe UI'",
+                  display: "inline-block",
+                }}
+                to={"/auth?type=login"}
+              >
+                Terms of Use
+              </Link>
+              <Typography
+                fontSize={12}
+                fontWeight={500}
+                textAlign="center"
+                sx={{ display: "inline-block" }}
+              >
+                and
+              </Typography>
+              <Link
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  color: "#00141C",
+                  fontFamily: "'Segoe UI'",
+                  display: "inline-block",
+                }}
+                to={"/auth?type=login"}
+              >
+                Privacy Policy
+              </Link>
             </Box>
             <Box
                 sx={{
@@ -104,7 +147,7 @@ const Login = () => {
                     width: "100%",
                 }}
             >
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>Or connect via</Typography>
+                <Typography textAlign="center" fontSize={12} fontWeight={500} sx={{ color: theme.palette.primary.main }}>Or connect via</Typography>
                 <Box
                     sx={{
                         display: "flex",
@@ -130,18 +173,17 @@ const Login = () => {
                     </Button>
                 </Box>
             </Box>
-            <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
+            <Typography fontSize={12} fontWeight={500} sx={{ color: theme.palette.primary.main }}>
                 Don’t have an account?{" "}
-                <Link to={"/auth?type=register"}>
-                    <span
-                        style={{
-                            textDecoration: "underline",
-                            cursor: "pointer",
-                            color: "#00141C",
-                        }}
-                    >
+                <Link to={"/auth?type=register"}
+                  style={{
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    color: "#00141C",
+                    fontFamily: "'Segoe UI'",
+                  }}
+                >
                         Sign Up!
-                    </span>
                 </Link>
             </Typography>
         </>

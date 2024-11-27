@@ -11,6 +11,7 @@ const Dropdown = ({ label, options, value, onChange, disable, placeholder }) => 
         <Box sx={{ display: "flex", flexDirection: "column", rowGap: "8px" }}>
             {label && (
                 <Typography
+                    component="label"
                     sx={{ fontSize: "14px", fontStyle: "italic", textAlign: "left", fontWeight: 300, color: theme.palette.primary.main }}
                 >
                     {label}

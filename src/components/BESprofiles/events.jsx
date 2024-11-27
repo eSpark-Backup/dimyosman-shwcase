@@ -94,6 +94,7 @@ const Events = ({ myProfile, addNewEvent }) => {
         {myEvents.map((event, ind) => {
           return (
             <Box
+              key={`event-${ind + 1}`}
               sx={{
                 width: "328px"
               }}
