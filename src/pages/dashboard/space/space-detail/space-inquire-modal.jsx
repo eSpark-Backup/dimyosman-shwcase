@@ -88,6 +88,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
                   textAlign="left"
                   fontWeight={600}
                   fontSize={24}
+                  variant="h2"
                 >
                   Urban Pop-Up Studio 3B{" "}
                 </Typography>
