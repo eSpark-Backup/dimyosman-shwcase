@@ -11,12 +11,12 @@
   font-style: normal;
 }
 
-@font-face {
+/* @font-face {
   font-family: 'Segoe UI';
   src: url('./assets/fonts/Segoe UI Bold.woff') format('woff');
   font-weight: bold;
   font-style: normal;
-}
+} */
 
 body {
   background-color: #F2F3F4;
