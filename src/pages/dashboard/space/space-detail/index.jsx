@@ -21,7 +21,7 @@ const SpaceDetails = () => {
       <BESProfile spaceInquire={spaceInquire} type="space" data={spaces} />
       <SpaceInquireModal
         open={open}
-        handleClose={() => setOpen(null)}
+        handleClose={() => setOpen(false)}
         handleSave={handleSave}
       />
     </>
