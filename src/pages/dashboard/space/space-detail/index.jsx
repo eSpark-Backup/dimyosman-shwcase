@@ -6,10 +6,12 @@ import SpaceInquireModal from "./space-inquire-modal";
 const SpaceDetails = () => {
   const { spaces } = useSelector((state) => state.space);
   const [open, setOpen] = useState(false);
+  const [id, setId] = useState(null);
   const spaceInquire = (id) => {
-    setOpen(id);
+    setId(id);
+    setOpen(true);
   };
-  const handleSave = (id) => {
+  const handleSave = () => {
     ///save functionality
     console.log(id, "save");
     setOpen(false);
