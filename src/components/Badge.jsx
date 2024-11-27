@@ -3,12 +3,13 @@ import React from 'react';
 import MailIcon from '@mui/icons-material/Mail';
 import { addIcon } from '../assets';
 
-const BadgeComp = ({ imageSrc, bg }) => {
+const BadgeComp = ({ onClick, imageSrc, bg }) => {
     const theme = useTheme();
     return (
         <Box
+            onClick={onClick}
             sx={{
-                backgroundColor: theme.palette.button.secondary,
+                backgroundColor: "rgb(0, 20, 28, 0.4)",
                 width: "32px",
                 height: "32px",
                 justifyContent: "center",

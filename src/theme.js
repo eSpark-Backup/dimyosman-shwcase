@@ -37,6 +37,11 @@ export const theme = createTheme({
       defaultProps: {
         color: "primary",
       },
+      styleOverrides: {
+        root: {
+          color: "#00141C",
+        },
+      },
     },
     MuiButton: {
       styleOverrides: {
@@ -84,6 +89,36 @@ export const theme = createTheme({
           },
           fieldset: {
             border: 0,
+          },
+        },
+      },
+    },
+    MuiSelect: {
+      styleOverrides: {
+        root: {
+          border: "1px dashed #D1DBD7",
+          borderRadius: "3px",
+          backgroundColor: "rgba(209, 219, 215, 0.2)",
+          height: "auto",
+          width: "100%",
+          padding: "0px 5px",
+          fontSize: "20px",
+          cursor: "pointer",
+          color: "#00141C",
+          fontWeight: 100,
+          "& .MuiOutlinedInput-notchedOutline": {
+            border: "none",
+          },
+          "&.Mui-disabled": {
+            backgroundColor: "rgba(209, 219, 215, 0.2)",
+            border: "1px dashed #D1DBD7",
+            cursor: "pointer",
+          },
+        },
+        icon: {
+          color: "#00141C",
+          "&.Mui-disabled": {
+            color: "#00141C",
           },
         },
       },
@@ -188,6 +223,7 @@ export const theme = createTheme({
       disabled: "#9E9EA4",
     },
     button: {
+      primary: "#D1DBD766",
       secondary: "#edf1ef"
     },
     transparent: "transparent",

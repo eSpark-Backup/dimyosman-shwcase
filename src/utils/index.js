@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 export function useQuery() {
@@ -16,3 +17,30 @@ export function getValue(item, keys) {
 
   return value;
 }
+
+export const formatDate = (date) => {
+  if (!(date instanceof Date)) return ""; // Check if the input is a valid Date object
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+
+  return `${day}.${month}.${year}`;
+}
+
+export function useClickOutside(ref, onClickOutside) {
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (ref.current && !ref.current.contains(event.target)) {
+        onClickOutside();
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [ref, onClickOutside]);
+}
+

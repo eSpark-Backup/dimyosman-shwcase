@@ -1,11 +1,16 @@
-import { Box, Stack, Typography, useTheme } from "@mui/material";
+import { useState } from "react";
+import { Stack, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getSmallSidebar, sidebarRoutes } from "../constant";
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const theme = useTheme()
+  const splittedPath = `/${pathname.split("/")[1]}`;
+  const splittedSubPath = splittedPath.split("-");
+  const currentPath =
+    splittedSubPath.length > 1 ? `/${splittedSubPath[1]}` : splittedSubPath[0];
+  const [hovered, setHovered] = useState(false);
 
   return (
     <Stack
@@ -26,10 +31,14 @@ const Sidebar = () => {
         },
       }}
     >
-      {sidebarRoutes.map((item) => {
+      {sidebarRoutes.map((item, ind) => {
+        const active = item?.link === currentPath;
+        const hover = hovered === ind;
         return (
           <Stack
             onClick={() => navigate(item.link)}
+            onMouseOver={() => setHovered(ind)}
+            onMouseOut={() => setHovered(false)}
             direction="row"
             justifyContent="flex-start"
             alignItems="center"
@@ -41,28 +50,20 @@ const Sidebar = () => {
               padding: 2,
               width: "100%",
               transition: "all 0.5s ease",
-              backgroundColor: item?.title.toLowerCase().includes(pathname.slice(1)) ? theme.palette.secondary.main : "transparent",
-              "&:hover": {
-                backgroundColor: (theme) => theme.palette.secondary.main,
-              },
-              "&:hover .sidebar-img": {
-                backgroundImage: `url(${item.hoverIcon})`,
-              },
+              backgroundColor: (theme) =>
+                hover || active ? theme.palette.secondary.main : "transparent",
             }}
           >
-            <Box
-              sx={{
-                backgroundImage: item?.title.toLowerCase().includes(pathname.slice(1)) ? `url(${item.hoverIcon})` : `url(${item.icon})`,
-                width: "24px",
-                height: "24px",
-              }}
-              className="sidebar-img"
-            >
-            </Box>
+            <img
+              width={24}
+              height={24}
+              src={hover || active ? item.hoverIcon : item.icon}
+              alt={item.title}
+            />
             <Typography
               sx={{
                 width: "196px",
-                color:theme.palette.primary.main,
+                color: (theme) => theme.palette.primary.main,
                 display: getSmallSidebar(pathname)
                   ? "none"
                   : { xs: "none", md: "block" },

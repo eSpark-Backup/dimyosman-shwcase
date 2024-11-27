@@ -3,6 +3,7 @@ import { Box, Button, Card, Stack, Typography } from "@mui/material";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { brandTableData } from "../../../constant";
 import { addIcon, brandIconlight, like } from "../../../assets";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Brand = () => {
   const tabs = [
@@ -20,6 +21,8 @@ const Brand = () => {
     },
   ];
   const [activeTab, setActiveTab] = useState(0);
+  const location = useLocation();
+  const navigate = useNavigate()
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -33,6 +36,9 @@ const Brand = () => {
   const handleAction = (item, type) => {
     if (type === "edit") {
       //edit functionality
+      if (location?.pathname === "/brand") {
+        navigate(`/brand/${item?.id}/edit`)
+      }
     } else if (type === "unfollow") {
       //unfollow functionality
     } else if (type === "remove")
@@ -44,6 +50,10 @@ const Brand = () => {
 
   const handleAdd = () => {
     //add functionality
+    if (location?.pathname === "/brand") {
+      navigate("/new-brand")
+    }
+
   };
 
   return (

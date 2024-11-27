@@ -10,20 +10,31 @@ const Activity = () => {
         <Grid
           item
           xs={12}
-          lg={8}
+          lg={8.8}
+          xl={8.9}
+          // lg={8}
           sx={{
             // pb: "10px",
             maxHeight: "calc(100vh - 100px)",
             overflowY: "auto",
             display: "flex",
             flexDirection: "column",
-            rowGap: "12px"
+            rowGap: "12px",
+            // border:"1px solid red"
           }}
         >
 
           {activityItems.map((item, index) => (
             <ActivityCard
               key={index}
+              id={item?.profileId}
+              activityId={
+                item?.activity === "event"
+                  ? item?.eventId
+                  : item?.activity === "space"
+                  ? item?.spaceId
+                  : item?.brandId
+              }
               activity={item?.activity}
               userName={item?.userName}
               userImage={item?.userImage}
@@ -34,6 +45,7 @@ const Activity = () => {
               content={item?.content}
               activityLocation={item?.activityLocation}
               activityLocation2={item?.activityLocation2}
+              activityLocationId={item?.activityLocationId}
               activityAddress={item?.activityAddress}
               value={item?.value}
               deadline={item?.deadline}
@@ -73,7 +85,7 @@ const Activity = () => {
         </Grid>
       </Grid>
 
-
+      
     </>
   );
 };
