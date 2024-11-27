@@ -50,6 +50,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                         onClick={handleImgClick}
                     >
                         <Typography
+                            component="label"
                             sx={{
                                 fontSize: '14px',
                                 fontWeight: "300",
@@ -97,6 +98,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                         }}
                     >
                         <Typography
+                            component="label"
                             sx={{ fontSize: "14px", fontStyle: "italic", textAlign: "left", fontWeight: 300, color: theme.palette.primary.main }}
                         >
                             {categoryLabel}
@@ -149,7 +151,7 @@ const ImgInputWithCategories = ({ handleImgClick, imgRef, handleChange, inputVal
                                 </Box>
                             }
                         </Box>
-                        <Typography sx={{ fontWeight: 300, fontSize: "14px", color: theme.palette.primary.main, fontStyle: "italic" }}>
+                        <Typography component="label" sx={{ fontWeight: 300, fontSize: "14px", color: theme.palette.primary.main, fontStyle: "italic" }}>
                             {description}
                         </Typography>
                     </Box>

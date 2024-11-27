@@ -131,6 +131,7 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, act
                 onClick={HandleInputCLick}
             >
                 <Typography
+                    component="label"
                     sx={{
                         fontSize: '14px',
                         fontWeight: "300",
