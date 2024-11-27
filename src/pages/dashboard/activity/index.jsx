@@ -10,11 +10,11 @@ const Activity = () => {
         <Grid
           item
           xs={12}
-          lg={8.8}
-          xl={8.9}
-          // lg={8}
+          lg={8}
           sx={{
             // pb: "10px",
+            maxWidth: "1080px !important",
+            margin: { xs: "0", xl: "0  auto !important" },
             maxHeight: "calc(100vh - 100px)",
             overflowY: "auto",
             display: "flex",
@@ -58,7 +58,7 @@ const Activity = () => {
         <Grid
           item
           xs={12}
-          lg={3}
+          lg={3.8}
           sx={{
             height: "70vh",
             overflow: "hidden",

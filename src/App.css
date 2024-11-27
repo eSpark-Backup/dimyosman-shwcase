@@ -119,6 +119,7 @@ input[data-autocompleted] {
 }
 
 .search-bar {
+  max-width: 768px;
   width: 50%;
   display: flex;
   justify-content: center;
