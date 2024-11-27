@@ -181,15 +181,39 @@ const Register = () => {
                     Sign Up
                 </LoadingButton>
             </Box>
-            <Box sx={{ display: "flex", flexDirection: "column", rowGap: "12px" }}>
-                <Typography fontSize={12} fontWeight={500} textAlign="center" sx={{ color: theme.palette.primary.main }}>
-                    By signing, you are agreeing with our
-                </Typography>
-                <Typography fontSize={12} fontWeight={500} textAlign="center" sx={{ color: theme.palette.primary.main, textDecoration: "underline", cursor: "pointer" }}>
-                    Terms of Use
-                    <span style={{ display: "inline-block", textDecoration: "none", cursor: "pointer", margin: "0px 5px" }}>and</span>
-                    Privacy Policy
-                </Typography>
+            <Box sx={{ display: "flex", flexDirection: "row", gap: "5px" }}>
+              <Link
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  color: "#00141C",
+                  fontFamily: "'Segoe UI'",
+                  display: "inline-block",
+                }}
+                to={"/auth?type=register"}
+              >
+                Terms of Use
+              </Link>
+              <Typography
+                fontSize={12}
+                fontWeight={500}
+                textAlign="center"
+                sx={{ display: "inline-block" }}
+              >
+                and
+              </Typography>
+              <Link
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  color: "#00141C",
+                  fontFamily: "'Segoe UI'",
+                  display: "inline-block",
+                }}
+                to={"/auth?type=register"}
+              >
+                Privacy Policy
+              </Link>
             </Box>
             <Box
                 sx={{
@@ -227,16 +251,15 @@ const Register = () => {
             </Box>
             <Typography fontSize={12} fontWeight={500} textAlign="center" sx={{ color: theme.palette.primary.main }}>
                 Already have an account? {" "}
-                <Link to={"/auth?type=login"}>
-                    <span
-                        style={{
-                            textDecoration: "underline",
-                            cursor: "pointer",
-                            color: "#00141C",
-                        }}
-                    >
-                        Log in
-                    </span>
+                <Link to={"/auth?type=login"}
+                  style={{
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    color: "#00141C",
+                    fontFamily: "'Segoe UI'",
+                  }}
+                >
+                  Log in
                 </Link>
             </Typography>
         </>

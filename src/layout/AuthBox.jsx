@@ -20,7 +20,6 @@ const AuthBox = () => {
 
   useEffect(() => {
     setActiveTab(pathType === "register" ? 1 : 0);
-    console.log(pathType)
   }, [pathType]);
 
   const tabs = [
