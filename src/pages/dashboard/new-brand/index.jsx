@@ -56,7 +56,6 @@ const NewBrand = () => {
 
     const handleModalOpen = () => {
         setModalOpen(true);
-        setSelectedInModal(categories.map(cat => ({ ...cat })));
     };
 
     const handleModalClose = () => {
