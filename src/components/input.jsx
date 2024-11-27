@@ -11,7 +11,7 @@ const Input = ({ login, onInputChange, name, label, type, placeholder, value, on
   return (
     <Box sx={{ display: "flex", flexDirection: "column", rowGap: "8px" }}>
       {label && (
-        <Typography
+        <Typography component="label"
           sx={{ fontSize: login ? "12px" : "14px", fontStyle: "italic", textAlign: "left", fontWeight: 300, color: theme.palette.primary.main }}
         >
           {label}

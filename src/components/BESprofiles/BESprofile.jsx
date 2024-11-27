@@ -224,9 +224,9 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                         }}
                       >
                         {key}:{" "}
-                        <p style={{ display: "inline-block", fontWeight: 600, textTransform: "none" }}>
+                        <span style={{ display: "inline-block", fontWeight: 600, textTransform: "none" }}>
                           {values}
-                        </p>
+                        </span>
                       </Typography>
                     );
                   })}

@@ -182,13 +182,13 @@ const Register = () => {
                 </LoadingButton>
             </Box>
             <Box sx={{ display: "flex", flexDirection: "column", rowGap: "12px" }}>
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
+                <Typography fontSize={12} fontWeight={500} textAlign="center" sx={{ color: theme.palette.primary.main }}>
                     By signing, you are agreeing with our
                 </Typography>
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
-                    <span style={{ textDecoration: "underline", cursor: "pointer" }}>Terms of Use </span>
-                    and
-                    <span style={{ textDecoration: "underline", cursor: "pointer" }}> Privacy Policy</span>
+                <Typography fontSize={12} fontWeight={500} textAlign="center" sx={{ color: theme.palette.primary.main, textDecoration: "underline", cursor: "pointer" }}>
+                    Terms of Use
+                    <span style={{ display: "inline-block", textDecoration: "none", cursor: "pointer", margin: "0px 5px" }}>and</span>
+                    Privacy Policy
                 </Typography>
             </Box>
             <Box
@@ -199,7 +199,7 @@ const Register = () => {
                     width: "100%",
                 }}
             >
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>Or connect via</Typography>
+                <Typography fontSize={12} fontWeight={500} textAlign="center" sx={{ color: theme.palette.primary.main }}>Or connect via</Typography>
                 <Box
                     sx={{
                         display: "flex",
@@ -225,7 +225,7 @@ const Register = () => {
                     </Button>
                 </Box>
             </Box>
-            <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
+            <Typography fontSize={12} fontWeight={500} textAlign="center" sx={{ color: theme.palette.primary.main }}>
                 Already have an account? {" "}
                 <Link to={"/auth?type=login"}>
                     <span
