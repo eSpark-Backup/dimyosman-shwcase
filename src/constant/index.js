@@ -49,6 +49,7 @@ import {
   myEventsColumns,
   rsvpEventColumns,
 } from "../columns/event";
+import { leasingSpaceColumns, likedSpaceColumns, mySpaceColumns } from "../columns/space";
 
 export const sidebarRoutes = [
   {
@@ -533,6 +534,114 @@ export const likedEventData = [
   },
 ];
 
+const mySpaceData = [];
+
+export const leaseSpaceData = [
+  {
+    id: 1,
+    type: "space",
+    eventName: "Urban Pop-Up Studio 3B",
+    eventImg: spaceActivityImage,
+    currently: "Leasing",
+    price: "$1000",
+    term: "Monthly",
+    event: "Ecolux Chic Pop-Up",
+    brand: "Urban Pop-Up Pavilion",
+    eventUrl: "-",
+    brandUrl: "-",
+    action: "Details"
+  },
+  {
+    id: 2,
+    type: "space",
+    eventName: "Space Name 1",
+    eventImg: null,
+    currently: "Pending Sign",
+    price: "$200",
+    term: "Weekly",
+    event: "---",
+    brand: "Brand 1",
+    eventUrl: null,
+    brandUrl: null,
+    action: "Sign"
+  },
+  {
+    id: 3,
+    type: "space",
+    eventName: "Space Name 2",
+    eventImg: null,
+    currently: "Pending Pay",
+    price: "$100",
+    term: "Daily",
+    event: "---",
+    brand: "Brand 2",
+    eventUrl: null,
+    brandUrl: null,
+    action: "Verify Pay 1/2"
+  },
+  {
+    id: 4,
+    type: "space",
+    eventName: "Space Name 3",
+    eventImg: null,
+    currently: "Lease Ended",
+    price: "$4000",
+    term: "Monthly",
+    event: "Event 3",
+    brand: "Brand 3",
+    eventUrl: null,
+    brandUrl: null,
+    action: "Review"
+  },
+];
+
+export const likedSpaceData = [
+  {
+    id: 1,
+    type: "space",
+    eventName: "Urban Pop-Up Studio 3B",
+    eventImg: spaceActivityImage,
+    brand: "Urban Pop-Up Pavilion",
+    brandUrl: "-",
+    price: "$1000",
+    term: "Monthly",
+    status: "Leasing",
+  },
+  {
+    id: 2,
+    type: "space",
+    eventName: "Space Name 1",
+    eventImg: null,
+    brand: "Brand 1",
+    brandUrl: null,
+    price: "$200",
+    term: "Weekly",
+    status: "Inquired",
+  },
+  {
+    id: 3,
+    type: "space",
+    eventName: "Space Name 2",
+    eventImg: null,
+    brand: "Brand 2",
+    brandUrl: null,
+    price: "$100",
+    term: "Daily",
+    status: "Talking",
+  },
+  {
+    id: 4,
+    type: "space",
+    eventName: "Space Name 3",
+    eventImg: null,
+    brand: "Brand 3",
+    brandUrl: null,
+    price: "$4000",
+    term: "Monthly",
+    status: "---",
+  },
+];
+
 export const brandTableData = (gotoDetail, handleAction) => [
   {
     data: myBrandData,
@@ -566,6 +675,24 @@ export const eventTableData = (gotoDetail, handleAction) => [
   {
     data: likedEventData,
     column: likedEventColumns(gotoDetail, (item) =>
+      handleAction(item, "remove")
+    ),
+  },
+];
+export const spaceTableData = (gotoDetail, handleAction) => [
+  {
+    data:  mySpaceData,
+    column: mySpaceColumns(gotoDetail, (item) => handleAction(item, "edit")),
+  },
+  {
+    data: leaseSpaceData,
+    column: leasingSpaceColumns(gotoDetail, (item) =>
+      handleAction(item, item?.action)
+    ),
+  },
+  {
+    data: likedSpaceData,
+    column: likedSpaceColumns(gotoDetail, (item) =>
       handleAction(item, "remove")
     ),
   },
