@@ -9,9 +9,10 @@ import { useFormik } from "formik";
 import { loginSchema } from "../../../validation/validation";
 import { useTheme } from "@emotion/react";
 import { useLoginMutation } from "../../../services/auth";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const Login = () => {
-    const [login, { isLoading, isSuccess, isError, error }] = useLoginMutation();
+    const [login, { isLoading: loginLoading, isSuccess, isError, error: loginError }] = useLoginMutation();
     const theme = useTheme();
     const navigate = useNavigate();
     const formik = useFormik({
@@ -21,18 +22,28 @@ const Login = () => {
         },
         validationSchema: loginSchema,
         onSubmit: (values) => {
-          login(values);
+            login(values);
         },
-  });
+    });
 
-  useEffect(() => {
-    if (isError) {
-        toast.error(error?.data?.message);
-    }
-    if (isSuccess) {
-      navigate("/activity");
-    }
-  }, [isError, isSuccess, navigate, error]);
+    useEffect(() => {
+        if (isError) {
+            toast.error(loginError?.data?.message);
+        }
+        if (isSuccess) {
+            navigate("/activity");
+        }
+    }, [isError, isSuccess, navigate, loginError]);
+
+    const { loginWithRedirect, logout, user, isAuthenticated, error, isLoading } = useAuth0();
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            console.log("User authenticated:", user);
+        }
+    }, [isAuthenticated, user]);
+
+
 
     const authBtnStyle = {
         width: { xs: "90%", md: "110px" },
@@ -47,6 +58,10 @@ const Login = () => {
             backgroundColor: "#F8F8F8"
         }
     };
+
+    // if (isLoading) {
+    //     return <div>Loading...</div>;
+    // }
 
     return (
         <>
@@ -96,12 +111,12 @@ const Login = () => {
                     Forgot Password?
                 </Typography>
                 <LoadingButton
-                    loading={isLoading}
+                    loading={loginLoading}
                     type="submit"
                     sx={{ textTransform: "none" }}
                 >
                     Log In
-                </LoadingButton>           
+                </LoadingButton>
             </Box>
             <Box sx={{ display: "flex", flexDirection: "column", rowGap: "12px" }}>
                 <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
@@ -136,13 +151,13 @@ const Login = () => {
                         },
                     }}
                 >
-                    <Button sx={authBtnStyle}>
+                    <Button sx={authBtnStyle} onClick={() => loginWithRedirect({ connection: "google-oauth2" })}>
                         <img src={google} alt="Google Logo" />
                     </Button>
-                    <Button sx={authBtnStyle}>
+                    <Button sx={authBtnStyle} onClick={() => loginWithRedirect({ connection: "facebook" })}>
                         <img src={facebook} alt="Facebook Logo" />
                     </Button>
-                    <Button sx={authBtnStyle}>
+                    <Button sx={authBtnStyle} onClick={() => loginWithRedirect({ connection: "apple" })}>
                         <img src={apple} alt="Apple Logo" />
                     </Button>
                 </Box>
