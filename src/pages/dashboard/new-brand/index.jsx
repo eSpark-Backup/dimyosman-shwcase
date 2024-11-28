@@ -1,13 +1,15 @@
-import { Box, Typography, useTheme } from '@mui/material'
+import { Box, Button, Typography, useTheme } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import { brandIcon } from '../../../assets'
 import ReusableModal from '../../../components/Modal'
 import { ChoiceSelectionModal, FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs } from '../../../components'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
+import { useNavigate } from 'react-router-dom'
 
 
 const NewBrand = () => {
+    const navigate = useNavigate();
     const theme = useTheme();
     const mainImageRef = useRef(null)
     const profileImageRef = useRef(null)
@@ -130,6 +132,56 @@ const NewBrand = () => {
                 pb: 2,
             }}
         >
+            <Box
+                sx={{
+                    position: "sticky",
+                    alignSelf: "flex-end",
+                    top: "16px",
+                    display: "flex",
+                    columnGap: "10px",
+                    width: "max-content",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    zIndex: 2,
+                    right: 0,
+                    marginRight: "16px",
+                }}
+                className="buttons-box"
+            >
+                <Button
+                  sx={{
+                    fontSize: "16px",
+                    width: "143px",
+                    height: "31px",
+                    textTransform: "none",
+                  }}
+                  onClick={() => navigate(`/brand`)}
+                >
+                  Save as Draft
+                </Button>
+                <Button
+                  sx={{
+                  fontSize: "16px",
+                  width: "103px",
+                  height: "31px",
+                  backgroundColor: "rgb(0, 20, 28, 0.9)",
+                  textTransform: "none",
+                  }}
+                >
+                  Publish
+                </Button>
+                <Button
+                  sx={{
+                    fontSize: "16px",
+                    width: "102px",
+                    height: "31px",
+                    textTransform: "none",
+                  }}
+                  onClick={() => navigate(`/brand`)}
+                >
+                  Archive
+                </Button>
+            </Box>
             <FullWidthImgInput activity={"brand"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={brandIcon} />
             <ImgInputWithCategories
                 handleImgClick={HandleProfileFileInputClick}

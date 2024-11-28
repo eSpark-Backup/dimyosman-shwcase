@@ -61,6 +61,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
     <>
       <Box
         sx={{
+          position: "relative",
           background: "#fff",
           borderRadius: "5px",
           border: "1px solid #e8ebed",
@@ -74,17 +75,12 @@ const BESProfile = ({ spaceInquire, type, data }) => {
           },
         }}
       >
-        <Box
-          sx={{
-            width: "100%",
-            position: "relative",
-          }}
-        >
-          {myProfile?.owned && (
+        {myProfile?.owned && (
             <Box
               sx={{
-                position: "fixed",
-                top: "90px",
+                position: "sticky",
+                top: "16px",
+                marginRight: "16px",
                 zIndex: 2,
               }}
               className="buttons-box"
@@ -108,6 +104,11 @@ const BESProfile = ({ spaceInquire, type, data }) => {
               </Button>
             </Box>
           )}
+        <Box
+          sx={{
+            width: "100%",
+          }}
+        >
           <DynamicPaginationSwiper
             onClick={() => setOpenSliderModal(true)}
             slides={myProfile?.slides}
