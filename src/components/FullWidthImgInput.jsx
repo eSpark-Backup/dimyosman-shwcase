@@ -31,7 +31,7 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, act
                     top: 0,
                     left: 0,
                     width: "100%",
-                    height: "100%",
+                    height: "100.2%",
                     backgroundColor: editImage ? "#d3d3d3c4" : "transparent",
                     borderRadius: "5px 5px 0 0",
                     zIndex: 1
