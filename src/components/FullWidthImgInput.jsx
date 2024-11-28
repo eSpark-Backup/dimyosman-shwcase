@@ -9,6 +9,7 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, act
     return (
         <Box
             sx={{
+                marginTop: "-63px",
                 height: activity === "brand" ? "300px" : "500px",
                 borderRadius: "5px 5px 0 0",
                 border: "1px dashed rgba(0, 20, 28, 0.4)",
@@ -52,53 +53,6 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, act
                 }}
             >
                 <img src={icon} alt="Icon" style={{ width: "23px", height: "32px" }} />
-            </Box>
-            <Box
-                sx={{
-                    position: "fixed",
-                    top: "90px",
-                    display: "flex",
-                    columnGap: "10px",
-                    flexDirection: { xs: "column", md: "row" },
-                    justifyContent: "center",
-                    alignItems: "center",
-                    zIndex: 2,
-                }}
-                className="buttons-box"
-            >
-                <Button
-                    sx={{
-                        fontSize: "16px",
-                        width: "143px",
-                        height: "31px",
-                        textTransform: "none",
-                    }}
-                    onClick={() => naivgate(`/${activity}`)}
-                >
-                    Save as Draft
-                </Button>
-                <Button
-                    sx={{
-                        fontSize: "16px",
-                        width: "103px",
-                        height: "31px",
-                        backgroundColor: "rgb(0, 20, 28, 0.9)",
-                        textTransform: "none",
-                    }}
-                >
-                    Publish
-                </Button>
-                <Button
-                    sx={{
-                        fontSize: "16px",
-                        width: "102px",
-                        height: "31px",
-                        textTransform: "none",
-                    }}
-                    onClick={() => naivgate(`/${activity}`)}
-                >
-                    Archive
-                </Button>
             </Box>
 
 
