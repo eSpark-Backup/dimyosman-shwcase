@@ -18,10 +18,6 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, act
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                backgroundImage: editImage && `url(${editImage})`,
-                backgroundPosition: "center",
-                backgroundSize: "cover",
-                backgroundRepeat: "no-repeat"
             }}
         >
             {/* Dimming overlay */}
@@ -31,10 +27,14 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, act
                     top: 0,
                     left: 0,
                     width: "100%",
-                    height: "100.2%",
-                    backgroundColor: editImage ? "#d3d3d3c4" : "transparent",
+                    height: "100%",
+                    backgroundImage: editImage && `url(${editImage})`,
+                    backgroundPosition: "top",
+                    backgroundSize: "cover",
+                    backgroundRepeat: "no-repeat",
                     borderRadius: "5px 5px 0 0",
-                    zIndex: 1
+                    zIndex: 1,
+                    opacity: editImage ? 0.5 : 1
                 }}
             />
             <Box
