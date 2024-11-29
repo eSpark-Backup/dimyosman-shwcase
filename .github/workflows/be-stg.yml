@@ -98,6 +98,8 @@ jobs:
       run: |
         touch .env
         echo "PORT=${{ secrets.PORT_BE }}" >> .env
+        echo "DOCKER_EXPOSED_PORT=${{ secrets.DOCKER_EXPOSED_PORT }}" >> .env
+        echo "DOCKER_APPLICATION_PORT=${{ secrets.DOCKER_APPLICATION_PORT }}" >> .env
         echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
         echo "DEV_SERVER_URL=${{ secrets.DEV_SERVER_URL }}" >> .env
         echo "PROD_SERVER_URL=${{ secrets.PROD_SERVER_URL }}" >> .env
@@ -107,8 +109,11 @@ jobs:
         echo "MYSQL_PORT: ${{ secrets.MYSQL_PORT }}" >> .env
         echo "MYSQL_USER: ${{ secrets.MYSQL_USER }}" >> .env
         echo "MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}" >> .env
-        echo "DOCKER_EXPOSED_PORT=${{ secrets.DOCKER_EXPOSED_PORT }}" >> .env
-        echo "DOCKER_APPLICATION_PORT=${{ secrets.DOCKER_APPLICATION_PORT }}" >> .env
+        echo "CLOUD_NAME: ${{ secrets.CLOUD_NAME }}" >> .env
+        echo "CLOUD_SECRET: ${{ secrets.CLOUD_SECRET }}" >> .env
+        echo "CLOUD_API_KEY: ${{ secrets.CLOUD_API_KEY }}" >> .env
+        echo "EXPIRES_IN: ${{ secrets.EXPIRES_IN }}" >> .env        
+        echo "SALT: ${{ secrets.SALT }}" >> .env                        
         
 
     - name: Build, tag, and push image to Amazon ECR
@@ -168,13 +173,18 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: ${{ env.ECR_REPO_NAME }}
         IMAGE_TAG: ${{ env.image_tag }}
+        DOCKER_EXPOSED_PORT: ${{ secrets.DOCKER_EXPOSED_PORT }}
+        DOCKER_APPLICATION_PORT: ${{ secrets.DOCKER_APPLICATION_PORT }}
         MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
         MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
         MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
         MYSQL_USER: ${{ secrets.MYSQL_USER }}
         MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-        DOCKER_EXPOSED_PORT: ${{ secrets.DOCKER_EXPOSED_PORT }}
-        DOCKER_APPLICATION_PORT: ${{ secrets.DOCKER_APPLICATION_PORT }}
+        CLOUD_NAME: ${{ secrets.CLOUD_NAME }}
+        CLOUD_SECRET: ${{ secrets.CLOUD_SECRET }}
+        CLOUD_API_KEY: ${{ secrets.CLOUD_API_KEY }}
+        EXPIRES_IN: ${{ secrets.EXPIRES_IN }}
+        SALT: ${{ secrets.SALT }}
       
       run: |
         docker compose pull

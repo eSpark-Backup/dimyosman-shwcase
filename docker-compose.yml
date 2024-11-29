@@ -13,6 +13,12 @@ services:
       - MYSQL_PORT
       - MYSQL_USER
       - MYSQL_PASSWORD
+      - CLOUD_NAME
+      - CLOUD_SECRET
+      - CLOUD_API_KEY
+      - EXPIRES_IN
+      - SALT
+
     build:
       context: .
       dockerfile: Dockerfile
