@@ -14,8 +14,6 @@ export const configs = {
   JWT_SECRET_KEY: <string>getEnv("JWT_SECRET"),
   EXPIRES_IN: <string>getEnv("EXPIRES_IN"),
 
-  // Mongo uri
-  DB_URI: <string>getEnv("DB_URI"),
 };
 
 export const bcryptConfig = {
