@@ -41,3 +41,15 @@ export interface IFileObject {
   size: number;
   buffer: Buffer;
 }
+
+export interface IFileRequest extends Request {
+  files: {
+    cover?: Express.Multer.File[];
+    image?: Express.Multer.File[];
+  };
+}
+
+export interface UploadResult {
+  url: string;
+  public_id: string;
+}

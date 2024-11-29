@@ -3,6 +3,7 @@ import { BRAND_STATUS } from "../constants";
 
 export class BrandValidation {
   static CreateBrand = Joi.object({
+    brandName: Joi.string().required(),
     brandCategory: Joi.array()
       .items(
         Joi.object({
@@ -10,7 +11,9 @@ export class BrandValidation {
         })
       )
       .required(),
-    details: Joi.object().optional(),
+    details: Joi.object({
+      description: Joi.string().optional(),
+    }).optional(),
     location: Joi.object({
       long: Joi.number().required(),
       lat: Joi.number().required(),
@@ -18,5 +21,26 @@ export class BrandValidation {
     status: Joi.string()
       .valid(...Object.values(BRAND_STATUS))
       .required(),
+  });
+
+  static UpdateBrand = Joi.object({
+    brandName: Joi.string().optional(),
+    brandCategory: Joi.array()
+      .items(
+        Joi.object({
+          name: Joi.string().required(),
+        })
+      )
+      .optional(),
+    details: Joi.object({
+      description: Joi.string().optional(),
+    }).optional(),
+    location: Joi.object({
+      long: Joi.number().optional(),
+      lat: Joi.number().optional(),
+    }).optional(),
+    status: Joi.string()
+      .valid(...Object.values(BRAND_STATUS))
+      .optional(),
   });
 }

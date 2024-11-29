@@ -9,48 +9,49 @@ import {
 import { ApiError } from "../errors";
 import { logger } from "../utils";
 import { commonHelper } from "../helpers";
-import { IFileObject } from "../interfaces";
-import { extname } from "path";
+const storage = multer.memoryStorage();
 
+const filterFiles = (
+  req: Request,
+  file: Express.Multer.File,
+  cb: multer.FileFilterCallback
+) => {
+  if (ALLOWED_IMG_TYPES.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Invalid file type. Only images are allowed."));
+  }
+};
 /**
  * @description Function to handle form data
  */
 export const handleMultipleFiles = (
   fields: { name: string; maxCount: number }[],
-  filterFunction?: Function
+  filterFunction?: (req: Request) => void
 ) =>
   function (req: Request, res: Response, next: NextFunction) {
-    const upload = multer({
-      storage: multer.memoryStorage(),
-      fileFilter: (req, file, cb) => {
-        const fieldExists = fields.some(
-          (field) => field.name === file.fieldname
-        );
-        if (fieldExists) {
-          cb(null, true);
-        } else {
-          cb(null, false);
-        }
-      },
-    }).fields(fields);
+    const upload = multer({ storage, fileFilter: filterFiles }).fields(fields);
 
     upload(req, res, function (err) {
       try {
         if (err) {
           handleMulterError(err);
+          return res.status(400).json({ error: err.message });
         }
 
         if (filterFunction) {
           filterFunction(req);
         }
+
         return next();
       } catch (err) {
-        logger.error(`Error in handleFormData :: ${(err as Error)?.message}`);
+        logger.error(
+          `Error in handleMultipleFiles :: ${(err as Error)?.message}`
+        );
         next(err);
       }
     });
   };
-
 export const handleSingleFile = (fieldName: FILE_FIELDS = FILE_FIELDS.FILE) =>
   function (req: Request, res: Response, next: NextFunction) {
     const upload = multer().single(fieldName);
@@ -80,14 +81,14 @@ const handleMulterError = function (err: any) {
   }
 };
 
-const filterFiles = function (req: any) {
-  if (req?.files?.length) {
-    // const isAllowedFile = req?.files?.filter(file => !ALLOWED_IMG_TYPES.includes(file?.mimetype))?.length > 0;
-    // if (isAllowedFile) throw new ApiError('Only image files are allowed', 422);
-  }
-  if (req?.file) {
-    if (!ALLOWED_IMG_TYPES.includes(req?.file?.mimetype))
-      throw new ApiError("Only image files are allowed", 422);
-  }
-  return true;
-};
+// const filterFiles = function (req: any) {
+//   if (req?.files?.length) {
+//     // const isAllowedFile = req?.files?.filter(file => !ALLOWED_IMG_TYPES.includes(file?.mimetype))?.length > 0;
+//     // if (isAllowedFile) throw new ApiError('Only image files are allowed', 422);
+//   }
+//   if (req?.file) {
+//     if (!ALLOWED_IMG_TYPES.includes(req?.file?.mimetype))
+//       throw new ApiError("Only image files are allowed", 422);
+//   }
+//   return true;
+// };

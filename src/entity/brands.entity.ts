@@ -24,11 +24,14 @@ export class Brand extends BaseEntity {
   @JoinColumn({ name: "user" })
   user: User;
 
+  @Column({ type: "varchar", length: 100, nullable: false })
+  brandName: string;
+
   @Column({ type: "json", nullable: true })
   brandCategory: object;
 
   @Column({ type: "varchar", length: 500, nullable: true })
-  brandImages: string;
+  brandImage: string;
 
   @Column({ type: "varchar", length: 500, nullable: true })
   imageKey: string;

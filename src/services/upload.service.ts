@@ -11,10 +11,7 @@ cloudinary.config({
   api_secret: CLOUD_CONFIG.apiSecret,
 });
 class UploadService {
-  async uploadMultipleFiles(
-    files: IFileObject[],
-    folderName = CLOUD_FOLDERS.EVENT
-  ) {
+  async uploadMultipleFiles(files: IFileObject[], folderName: string) {
     return new Promise(async (resolve, reject) => {
       if (!files?.length) {
         return resolve({});
@@ -24,7 +21,10 @@ class UploadService {
       for (const file of files) {
         try {
           const uploadFile = await this.uploadFile(file, folderName);
-          imagesUrl?.push((uploadFile as any)?.url);
+          imagesUrl.push({
+            url: (uploadFile as any)?.url,
+            public_id: (uploadFile as any)?.public_id,
+          });
           uploadCount++;
         } catch (err) {
           logger.error(`Error in uploading file :: ${(err as Error)?.message}`);
@@ -34,7 +34,7 @@ class UploadService {
       return resolve(imagesUrl);
     });
   }
-  async uploadFile(file: IFileObject, folderName: CLOUD_FOLDERS) {
+  async uploadFile(file: IFileObject, folderName: string) {
     return new Promise((resolve, reject) => {
       const cloudStream = cloudinary.uploader.upload_stream(
         {

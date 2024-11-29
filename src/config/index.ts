@@ -11,7 +11,7 @@ export const configs = {
   PORT: Number(getEnv("PORT")),
 
   // JWT Configs
-  JWT_SECRET_KEY: <string>getEnv("JWT_SECRET_KEY"),
+  JWT_SECRET_KEY: <string>getEnv("JWT_SECRET"),
   EXPIRES_IN: <string>getEnv("EXPIRES_IN"),
 
   // Mongo uri
