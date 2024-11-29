@@ -23,10 +23,20 @@ export class BrandController {
       const { files } = file;
 
       if (!files?.cover || !files?.image) {
-        throw new Error("Missing required files: 'cover' or 'image'");
+        throw new ApiError(
+          "Missing required files: 'cover' or 'image'",
+          HTTP_STATUS.BAD_REQUEST
+        );
       }
 
       const { brandName, brandCategory, details, location, status } = req.body;
+      const checkName = await this.brandRepo.findOne({ where: { brandName } });
+      if (checkName) {
+        throw new ApiError(
+          "Brand with this name already exists",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
 
       const FolderName = `${CLOUD_FOLDERS.BRAND}/${brandName}`;
       const coverUrls = await uploadService.uploadMultipleFiles(
@@ -78,6 +88,13 @@ export class BrandController {
       const existingBrand = await this.brandRepo.findOne({ where: { id } });
       if (!existingBrand) {
         return next(res.status(404).json({ message: "Brand not found" }));
+      }
+      const checkName = await this.brandRepo.findOne({ where: { brandName } });
+      if (checkName && checkName.brandName !== existingBrand.brandName) {
+        throw new ApiError(
+          "Brand with this name already exists",
+          HTTP_STATUS.BAD_REQUEST
+        );
       }
       let oldCoverImages: UploadResult[] = [];
 
@@ -163,7 +180,7 @@ export class BrandController {
         });
 
         if (!brand) {
-          res.status(404).json({ message: "Brand not found" });
+          res.status(404).json(handleResponse("Brand not found"));
           return next();
         }
 
@@ -179,6 +196,9 @@ export class BrandController {
         where: { user: { id: req.user?.id } },
         skip: skipNumber,
         take: takeNumber,
+        order: {
+          createdAt: "DESC",
+        },
       });
 
       if (brands.length === 0) {

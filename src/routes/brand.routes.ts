@@ -49,8 +49,14 @@ const brandController = new BrandController(brandRepository, userRepository);
  *                       description: Name of the brand category.
  *                 description: The category of the brand.
  *               details:
- *                 type: object
- *                 description: Details about the brand.
+ *                  type: object
+ *                  properties:
+ *                    description:
+ *                       type: string
+ *                       description: A brief description of the brand
+ *                    htmlContent:
+ *                       type: string
+ *                       description: HTML content related to the brand (e.g., description with HTML tags)
  *               location:
  *                 type: object
  *                 properties:
@@ -134,7 +140,14 @@ router.post(
  *                     name:
  *                       type: string
  *               details:
- *                 type: object
+ *                  type: object
+ *                  properties:
+ *                    description:
+ *                       type: string
+ *                       description: A brief description of the brand
+ *                    htmlContent:
+ *                       type: string
+ *                       description: HTML content related to the brand (e.g., description with HTML tags)
  *               location:
  *                 type: object
  *                 properties:

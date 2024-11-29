@@ -13,6 +13,7 @@ export class BrandValidation {
       .required(),
     details: Joi.object({
       description: Joi.string().optional(),
+      htmlContent: Joi.string().optional(),
     }).optional(),
     location: Joi.object({
       long: Joi.number().required(),
@@ -34,6 +35,7 @@ export class BrandValidation {
       .optional(),
     details: Joi.object({
       description: Joi.string().optional(),
+      htmlContent: Joi.string().optional(),
     }).optional(),
     location: Joi.object({
       long: Joi.number().optional(),
