@@ -45,7 +45,7 @@ const DashboardLayout = () => {
               ? "0 0 0 105px"
               : getSmallSidebar(pathname)
               ? "0"
-              : { xs: "0 0 0 105px", md: "0 0 0 320px" },
+              : { xs: "0 0 0 105px", lg: "0 0 0 320px" },
           "::-webkit-scrollbar": { display: "none" },
           maxWidth:
             getSmallSidebar(pathname) && pathname !== "/message"

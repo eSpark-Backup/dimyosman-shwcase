@@ -160,7 +160,7 @@ const ActivityCard = ({
                 color: theme.palette.primary.main,
                 fontWeight: "400",
                 textAlign: "left",
-                fontSize: { xs: "12px", lg: "16px" },
+                fontSize: { xs: "12px", md: "16px" },
               }}
             >
               <span style={{ display: "inline-block", fontWeight: 600, marginRight: "5px" }}>{userName} </span>
@@ -240,7 +240,7 @@ const ActivityCard = ({
           display: "flex",
           justifyContent: "space-between",
           padding: { xs: "0px 8px", md: "0px 20px" },
-          flexDirection: { xs: "column", lg: "row" },
+          flexDirection: { xs: "column", md: "row" },
           gap: "16px",
         }}
       >
@@ -388,7 +388,7 @@ const ActivityCard = ({
                   flexWrap: "wrap",
                   justifyContent: "space-between",
                   rowGap: "15px",
-                  flexDirection: { xs: "column", md: "row" },
+                  flexDirection: { xs: "column", sm: "row" },
                 }}
               >
                 {features?.map(
@@ -399,7 +399,7 @@ const ActivityCard = ({
                         sx={{
                           display: "flex",
                           columnGap: "5px",
-                          width: { xs: "100%", md: "150px" },
+                          width: { xs: "100%", sm: "150px" },
                         }}
                         key={index}
                       >
@@ -428,7 +428,7 @@ const ActivityCard = ({
                   flexWrap: "wrap",
                   justifyContent: "space-between",
                   rowGap: "15px",
-                  flexDirection: { xs: "column", md: "row" },
+                  flexDirection: { xs: "column", sm: "row" },
                 }}
               >
                 {features?.map(
@@ -439,7 +439,7 @@ const ActivityCard = ({
                         sx={{
                           display: "flex",
                           columnGap: "5px",
-                          width: { xs: "100%", md: "150px" },
+                          width: { xs: "100%", sm: "150px" },
                         }}
                         key={index}
                       >
@@ -468,7 +468,7 @@ const ActivityCard = ({
         {activity !== "brand" && (
           <Box
             sx={{
-              width: { xs: "100%", lg: "max-content" },
+              width: { xs: "100%", md: "max-content" },
               display: "flex",
               flexDirection: "column",
               rowGap: "5px",
@@ -577,7 +577,7 @@ const ActivityCard = ({
           display: "flex",
           justifyContent: "space-between",
           padding: { xs: "0px 8px", md: "0px 20px" },
-          flexDirection: { xs: "column", lg: "row" },
+          flexDirection: { xs: "column", md: "row" },
           rowGap: "15px",
           alignItems: "center",
         }}
