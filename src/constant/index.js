@@ -44,6 +44,11 @@ import {
   likedBrandColumns,
   myBrandColumns,
 } from "../columns/brand";
+import {
+  likedEventColumns,
+  myEventsColumns,
+  rsvpEventColumns,
+} from "../columns/event";
 
 export const sidebarRoutes = [
   {
@@ -350,6 +355,184 @@ export const likedBrandData = [
   },
 ];
 
+const myEventData = [
+  {
+    id: 1,
+    type: "event",
+    eventName: "Ecolux Chic Pop-Up",
+    eventImg: eventActivityImage,
+    brand: "Ecolux Designs",
+    brandUrl: "-",
+    rsvp: 123,
+    startDate: "dd.mm.yyyy.",
+    status: "Upcoming",
+    hostedIn: "Urban Pop-Up Studio 3B",
+    spaceUrl: "-",
+    action: "Cancel",
+  },
+  {
+    id: 2,
+    type: "event",
+    eventName: "Event Name 1",
+    eventImg: null,
+    brand: "Ecolux Designs",
+    brandUrl: "-",
+    rsvp: 124,
+    startDate: "dd.mm.yyyy.",
+    status: "Ongoing",
+    hostedIn: "Space 1",
+    spaceUrl: null,
+    action: "Verify Att",
+  },
+  {
+    id: 3,
+    type: "event",
+    eventName: "Event Name 2",
+    eventImg: null,
+    brand: "Brand Name 2",
+    brandUrl: null,
+    rsvp: 12,
+    startDate: "dd.mm.yyyy.",
+    status: "Ongoing",
+    hostedIn: "Space 2",
+    spaceUrl: null,
+    action: "Verify Att",
+  },
+  {
+    id: 4,
+    type: "event",
+    eventName: "Event Name 3",
+    eventImg: null,
+    brand: "Brand Name 3",
+    brandUrl: null,
+    rsvp: 1234,
+    startDate: "dd.mm.yyyy.",
+    status: "Ended",
+    hostedIn: "Space 3",
+    spaceUrl: null,
+    action: "Review",
+  },
+];
+
+export const rsvcEventData = [
+  {
+    id: 1,
+    type: "event",
+    eventName: "Ecolux Chic Pop-Up",
+    eventImg: eventActivityImage,
+    brand: "Ecolux Designs",
+    brandUrl: "-",
+    rsvp: 123,
+    startDate: "dd.mm.yyyy.",
+    status: "Upcoming",
+    hostedIn: "Urban Pop-Up Studio 3B",
+    liveSpace: true,
+    spaceUrl: "-",
+    action: "Cancel",
+  },
+  {
+    id: 2,
+    type: "event",
+    eventName: "Event Name 4",
+    eventImg: null,
+    brand: "Ecolux Designs",
+    brandUrl: "-",
+    rsvp: 124,
+    startDate: "dd.mm.yyyy.",
+    status: "Ongoing",
+    hostedIn: "Space 1",
+    spaceUrl: null,
+    action: "Verify Att",
+  },
+  {
+    id: 3,
+    type: "event",
+    eventName: "Event Name 5",
+    eventImg: null,
+    brand: "Brand Name 2",
+    brandUrl: null,
+    rsvp: 12,
+    startDate: "dd.mm.yyyy.",
+    status: "Ongoing",
+    hostedIn: "Space 2",
+    spaceUrl: null,
+    action: "Verify Att",
+  },
+  {
+    id: 4,
+    type: "event",
+    eventName: "Event Name 6",
+    eventImg: null,
+    brand: "Brand Name 3",
+    brandUrl: null,
+    rsvp: 1234,
+    startDate: "dd.mm.yyyy.",
+    status: "Ended",
+    hostedIn: "Space 3",
+    spaceUrl: null,
+    action: "Review",
+  },
+];
+
+export const likedEventData = [
+  {
+    id: 1,
+    type: "event",
+    eventName: "Ecolux Chic Pop-Up",
+    eventImg: eventActivityImage,
+    brand: "Ecolux Designs",
+    brandUrl: "-",
+    category: "Sustainable Fashion",
+    startDate: "dd.mm.yyyy.",
+    status: "Upcoming",
+    hostedIn: "Urban Pop-Up Studio 3B",
+    spaceUrl: "-",
+    action: "Cancel",
+  },
+  {
+    id: 2,
+    type: "event",
+    eventName: "Event Name 7",
+    eventImg: null,
+    brand: "Ecolux Designs",
+    brandUrl: "-",
+    category: "Sustainable Fashion",
+    startDate: "dd.mm.yyyy.",
+    status: "Ongoing",
+    hostedIn: "Space 1",
+    spaceUrl: null,
+    action: "Verify Att",
+  },
+  {
+    id: 3,
+    type: "event",
+    eventName: "Event Name 8",
+    eventImg: null,
+    brand: "Brand Name 2",
+    brandUrl: null,
+    category: "Real Estate",
+    startDate: "dd.mm.yyyy.",
+    status: "Ongoing",
+    hostedIn: "Space 2",
+    spaceUrl: null,
+    action: "Verify Att",
+  },
+  {
+    id: 4,
+    type: "event",
+    eventName: "Event Name 9",
+    eventImg: null,
+    brand: "Brand Name 3",
+    brandUrl: null,
+    category: "1234",
+    startDate: "dd.mm.yyyy.",
+    status: "Ended",
+    hostedIn: "Space 3",
+    spaceUrl: null,
+    action: "Review",
+  },
+];
+
 export const brandTableData = (gotoDetail, handleAction) => [
   {
     data: myBrandData,
@@ -369,6 +552,24 @@ export const brandTableData = (gotoDetail, handleAction) => [
   },
 ];
 
+export const eventTableData = (gotoDetail, handleAction) => [
+  {
+    data: myEventData,
+    column: myEventsColumns(gotoDetail, (item) => handleAction(item, "edit")),
+  },
+  {
+    data: rsvcEventData,
+    column: rsvpEventColumns(gotoDetail, (item) =>
+      handleAction(item, item?.action)
+    ),
+  },
+  {
+    data: likedEventData,
+    column: likedEventColumns(gotoDetail, (item) =>
+      handleAction(item, "remove")
+    ),
+  },
+];
 export const reviews = [
   {
     reviewerPRofile: reviewer,

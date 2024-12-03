@@ -65,6 +65,7 @@ import logoIcon from "./logo-icon.svg"
 import logoText from "./logo-text.svg"
 import brandIconlight from "./brand-icon.png";
 import brandBadge from "./brand-badge.png";
+import eventIconLight from "./event-icon.png";
 import activeItemIcon from './activeItemIcon.svg'
 import notActiveIcon from "./notActiveItemIcon.svg"
 import add from "./addIcon.svg"
@@ -157,6 +158,8 @@ export {
   logoText,
   brandIconlight,
   brandBadge,
+  eventIconLight,
+  eventBadge,
   activeItemIcon,
   notActiveIcon,
   add,
@@ -168,7 +171,6 @@ export {
   locationIcon,
   modalMap,
   addGrey,
-  eventBadge,
   spaceBadge,
   profileBadge,
   star,
