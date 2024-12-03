@@ -1,3 +1,4 @@
 export * from "./auth.validation";
 export * from "./base.validation";
 export * from "./brand.validation";
+export * from "./category.validation";

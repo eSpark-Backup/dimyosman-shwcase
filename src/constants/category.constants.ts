@@ -1,0 +1,5 @@
+export enum CATEGORY_TYPE {
+  BRANDS = "BRANDS",
+  EVENTS = "EVENTS",
+  SPACES = "SPACES",
+}
