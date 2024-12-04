@@ -47,9 +47,22 @@ export const brandApi = api.injectEndpoints({
                 };
             },
         }),
+        getAllBrands: builder.query({
+            query: ({ id, page = 1, pageSize = 7 }) => {
+                
+                const baseUrl = id ? `/brand/${id}` : `/brand`;
+                const queryParams = `?pageSize=${pageSize}&page=${page}`;
+                return {
+                    url: `${baseUrl}${id ? "" : queryParams}`,
+                    method: "GET",
+                };
+            },
+        }),
+
     }),
 });
 
 export const {
-    useNewBrandMutation
+    useNewBrandMutation,
+    useGetAllBrandsQuery
 } = brandApi;

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Button, Card, Stack, Typography } from "@mui/material";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { brandTableData } from "../../../constant";
 import { addIcon, brandIconlight, like } from "../../../assets";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useGetAllBrandsQuery } from "../../../services/brands";
 
 const Brand = () => {
   const tabs = [
@@ -55,6 +56,43 @@ const Brand = () => {
     }
 
   };
+  const [myBrandData, setMyBrandData] = useState([]);
+  const { data, isError, isLoading, isSuccess, error } = useGetAllBrandsQuery({ page: 1, pageSize: 7 });
+
+  const transformBrandData = (apiData) => {
+    return apiData.map((brand, index) => ({
+      id: brand?.id,
+      type: "brand",
+      brandName: brand.brandName || "N/A",
+      brandImg: brand.brandImage || "",
+      brandCategory: brand.brandCategory && brand.brandCategory.length > 0
+        ? brand.brandCategory.map(item => item.name).join(", ")
+        : "N/A",
+      events: brand.events || "-",
+      followers: brand.followers || "-",
+      status: brand.status || "N/A",
+      colHeader1: "Table cell",
+      colHeader2: "Table cell",
+      colHeader3: "Table cell",
+      colHeader4: "Table cell",
+      colHeader5: "Table cell",
+      colHeader6: "Table cell",
+      colHeader7: "Table cell",
+    }));
+  };
+
+  useEffect(() => {
+    if (isError) {
+      console.log(error)
+    }
+  }, [isError])
+
+  useEffect(() => {
+    if (isSuccess) {
+      setMyBrandData(transformBrandData(data?.data?.brands || []));
+      console.log(data)
+    }
+  }, [isSuccess])
 
   return (
     <Box>
@@ -68,11 +106,11 @@ const Brand = () => {
           handleChange={handleChange}
           handleAdd={handleAdd}
         />
-        {brandTableData(gotoDetail, handleAction)[activeTab].data.length > 0 ? (
+        {brandTableData(gotoDetail, handleAction, myBrandData)[activeTab].data.length > 0 ? (
           <DynamicTable
-            isLoading={false}
-            data={brandTableData(gotoDetail, handleAction)[activeTab].data}
-            columns={brandTableData(gotoDetail, handleAction)[activeTab].column}
+            isLoading={isLoading}
+            data={brandTableData(gotoDetail, handleAction, myBrandData)[activeTab].data}
+            columns={brandTableData(gotoDetail, handleAction, myBrandData)[activeTab].column}
           />
         ) : (
           <Stack

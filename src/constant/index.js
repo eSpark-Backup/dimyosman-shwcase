@@ -642,7 +642,7 @@ export const likedSpaceData = [
   },
 ];
 
-export const brandTableData = (gotoDetail, handleAction) => [
+export const brandTableData = (gotoDetail, handleAction, myBrandData) => [
   {
     data: myBrandData,
     column: myBrandColumns(gotoDetail, (item) => handleAction(item, "edit")),
