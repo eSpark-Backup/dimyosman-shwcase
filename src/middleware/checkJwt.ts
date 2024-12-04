@@ -14,6 +14,7 @@ export const checkJwt = (
 
   try {
     const secret = process.env.JWT_SECRET!;
+
     const decoded = jwt.verify(token, secret) as JwtPayload;
 
     req.user = {

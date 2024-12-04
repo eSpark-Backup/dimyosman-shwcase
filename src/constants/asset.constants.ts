@@ -32,6 +32,7 @@ export enum CLOUD_FOLDERS {
   EVENT = "Event",
   SPACE = "Space",
   FILES = "Files",
+  AMENITY = "Amenity",
 }
 
 export const imageExtensions = [
