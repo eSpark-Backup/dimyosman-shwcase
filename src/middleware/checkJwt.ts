@@ -10,7 +10,7 @@ export const checkJwt = (
   next: NextFunction
 ) => {
   const token = req.headers.authorization?.split(" ")[1];
-  if (!token) throw new Error("Token not found");
+  if (!token) throw new Error(token);
 
   try {
     const secret = process.env.JWT_SECRET!;
