@@ -19,13 +19,37 @@ const EditBrand = () => {
   const [brandOverview, setBrandOverview] = useState("EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.")
   const [address, setAddress] = useState("");
 
-  const HandleMainFileInputClick = () => {
-    mainImageRef.current.click();
-  }
+  const [brandData, setBrandData] = useState({
+    cover: [
 
-  const HandleMainImageChange = async (event) => {
+      { id: 1, src: brandMain },
+    ],
+  });
+  const [currentIndex, setCurrentIndex] = useState(brandData.cover.length);
+
+  const handleMainFileInputClick = () => {
+    if (brandData.cover.length < 3) mainImageRef.current.click();
+  };
+
+  const handleMainImageChange = (event) => {
     const file = event.target.files[0];
-    console.log(file);
+    if (file) {
+      const updatedCover = [...brandData.cover];
+      updatedCover[currentIndex] = { id: Date.now(), src: URL.createObjectURL(file) };
+      setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+    }
+  };
+
+  const handleAddImage = () => {
+    if (brandData.cover.length < 3) {
+      setCurrentIndex(brandData.cover.length);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    const updatedCover = brandData.cover.filter((_, index) => index !== currentIndex);
+    setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+    setCurrentIndex((prev) => Math.max(0, prev - 1));
   };
 
   const HandleProfileFileInputClick = () => {
@@ -158,20 +182,20 @@ const EditBrand = () => {
       }}
     >
       <Box
-          sx={{
-              position: "sticky",
-              alignSelf: "flex-end",
-              top: "16px",
-              display: "flex",
-              columnGap: "10px",
-              width: "max-content",
-              justifyContent: "center",
-              alignItems: "center",
-              zIndex: 2,
-              right: 0,
-              marginRight: "16px",
-          }}
-          className="buttons-box"
+        sx={{
+          position: "sticky",
+          alignSelf: "flex-end",
+          top: "16px",
+          display: "flex",
+          columnGap: "10px",
+          width: "max-content",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 2,
+          right: 0,
+          marginRight: "16px",
+        }}
+        className="buttons-box"
       >
         <Button
           sx={{
@@ -186,11 +210,11 @@ const EditBrand = () => {
         </Button>
         <Button
           sx={{
-          fontSize: "16px",
-          width: "103px",
-          height: "31px",
-          backgroundColor: "rgb(0, 20, 28, 0.9)",
-          textTransform: "none",
+            fontSize: "16px",
+            width: "103px",
+            height: "31px",
+            backgroundColor: "rgb(0, 20, 28, 0.9)",
+            textTransform: "none",
           }}
         >
           Publish
@@ -207,7 +231,17 @@ const EditBrand = () => {
           Archive
         </Button>
       </Box>
-      <FullWidthImgInput activity={"brand"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={brandIcon} editImage={brandMain} />
+      <FullWidthImgInput
+        HandleChange={handleMainImageChange}
+        HandleInputCLick={handleMainFileInputClick}
+        imageRef={mainImageRef}
+        icon={brandIcon}
+        activity="brand"
+        editImage={brandData.cover[currentIndex] ? brandData.cover[currentIndex].src : null}
+        handleAdd={handleAddImage}
+        handleRemove={handleRemoveImage}
+        currentIndex={currentIndex}
+      />
       <ImgInputWithCategories
         handleImgClick={HandleProfileFileInputClick}
         imgRef={profileImageRef}
