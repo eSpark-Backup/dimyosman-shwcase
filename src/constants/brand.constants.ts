@@ -3,3 +3,9 @@ export enum BRAND_STATUS {
   DRAFT = "DRAFT",
   PUBLISH = "PUBLISH",
 }
+
+export enum SPACE_STATUS {
+  ARCHIVE = "ARCHIVE",
+  DRAFT = "DRAFT",
+  PUBLISH = "PUBLISH",
+}

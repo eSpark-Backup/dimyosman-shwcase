@@ -3,7 +3,7 @@ import { router as authRoutes } from "./auth.routes";
 import { router as brandRoutes } from "./brand.routes";
 import { router as categoryRoutes } from "./category.routes";
 import { router as AmenitiesRoutes } from "./amenities.routes";
-
+import { router as spaceRoutes } from "./space.routes";
 const router = Router();
 
 router.get("/", (req, res) => {
@@ -13,5 +13,6 @@ router.use("/auth", authRoutes);
 router.use("/brand", brandRoutes);
 router.use("/category", categoryRoutes);
 router.use("/amenities", AmenitiesRoutes);
+router.use("/space", spaceRoutes);
 
 export { router };

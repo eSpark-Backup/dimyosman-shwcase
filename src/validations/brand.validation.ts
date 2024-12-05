@@ -41,6 +41,9 @@ export class BrandValidation {
       long: Joi.number().optional(),
       lat: Joi.number().optional(),
     }).optional(),
+    coverKeys: Joi.alternatives()
+      .try(Joi.string(), Joi.array().items(Joi.string()))
+      .optional(),
     status: Joi.string()
       .valid(...Object.values(BRAND_STATUS))
       .optional(),

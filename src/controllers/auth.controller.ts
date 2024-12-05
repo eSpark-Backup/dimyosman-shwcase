@@ -53,7 +53,7 @@ export class AuthController {
               role: existingUser.role,
             },
             process.env.JWT_SECRET!,
-            { expiresIn: "1h" }
+            { expiresIn: "24h" }
           );
 
           res.status(HTTP_STATUS.OK).json(
@@ -81,7 +81,7 @@ export class AuthController {
         const token = jwt.sign(
           { id: newUser.id, email: newUser.email, role: newUser.role },
           process.env.JWT_SECRET!,
-          { expiresIn: "1h" }
+          { expiresIn: "24h" }
         );
 
         res.status(HTTP_STATUS.CREATED).json(
@@ -123,7 +123,7 @@ export class AuthController {
       const token = jwt.sign(
         { id: newUser.id, email: newUser.email, role: newUser.role },
         process.env.JWT_SECRET!,
-        { expiresIn: "1h" }
+        { expiresIn: "24h" }
       );
       const { password: _, ...userWithoutPassword } = newUser;
 
@@ -208,7 +208,7 @@ export class AuthController {
       const token = jwt.sign(
         { id: user.id, email: user.email, role: user.role },
         process.env.JWT_SECRET!,
-        { expiresIn: "1h" }
+        { expiresIn: "24h" }
       );
       const { password: _, ...userWithoutPassword } = user;
 

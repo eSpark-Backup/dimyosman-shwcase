@@ -8,7 +8,7 @@ import {
 } from "typeorm";
 import { BaseEntity, User, Brand } from "./index";
 
-export enum BrandStatus {
+export enum SpaceStatus {
   ARCHIVE = "ARCHIVE",
   DRAFT = "DRAFT",
   PUBLISH = "PUBLISH",
@@ -24,18 +24,18 @@ export class Spaces extends BaseEntity {
   @JoinColumn({ name: "user" })
   user: User;
 
-  @ManyToOne(() => Brand, (brand) => brand.id, { nullable: false })
+  @ManyToOne(() => Brand, (brand) => brand.id, { nullable: true })
   @JoinColumn({ name: "brand" })
   brand: Brand;
 
   @Column({ type: "varchar", length: 100, nullable: false })
-  brandName: string;
+  spaceName: string;
 
   @Column({ type: "json", nullable: true })
-  brandCategory: object;
+  spaceCategory: object;
 
   @Column({ type: "varchar", length: 500, nullable: true })
-  brandImage: string;
+  spaceImage: string;
 
   @Column({ type: "varchar", length: 500, nullable: true })
   imageKey: string;
@@ -46,13 +46,19 @@ export class Spaces extends BaseEntity {
   @Column({ type: "json", nullable: true })
   details: object;
 
+  @Column({ type: "varchar", length: 256, nullable: true })
+  minLeaseDays: string;
+
   @Column({ type: "json", nullable: true })
   location: object;
 
+  @Column({ type: "json", nullable: true })
+  amenity: object;
+
   @Column({
     type: "enum",
-    enum: BrandStatus,
-    default: BrandStatus.DRAFT,
+    enum: SpaceStatus,
+    default: SpaceStatus.DRAFT,
   })
-  status: BrandStatus;
+  status: SpaceStatus;
 }

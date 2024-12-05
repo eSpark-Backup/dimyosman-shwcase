@@ -124,7 +124,6 @@ router.post(
  *         schema:
  *           type: string
  *     requestBody:
- *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
@@ -166,6 +165,11 @@ router.post(
  *                 items:
  *                   type: string
  *                   format: binary
+ *               coverKeys:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of cover keys for the space.
  *               image:
  *                 type: string
  *                 format: binary
