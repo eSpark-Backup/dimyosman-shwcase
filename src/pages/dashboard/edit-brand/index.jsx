@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, Stack, Typography, useTheme } from '@mui/material'
+import { Box, Button, CircularProgress, Stack, Typography, useTheme, LinearProgress } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { addGrey, brand, brandIcon, brandMain } from '../../../assets'
 import ReusableModal from '../../../components/Modal'
@@ -289,7 +289,9 @@ const EditBrand = () => {
 
   if (isLoading || GetCategoryLoading) {
     return (
-      <h1>Loading...</h1>
+      <Box sx={{ width: "100%" }}>
+        <LinearProgress />
+      </Box>
     )
   }
 

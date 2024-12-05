@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Box, Button, Card, Stack, Typography } from "@mui/material";
+import { Box, Button, Card, LinearProgress, Stack, Typography } from "@mui/material";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { brandTableData } from "../../../constant";
 import { addIcon, brandIconlight, like } from "../../../assets";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useGetAllBrandsQuery } from "../../../services/brands";
+import { toast } from "react-toastify";
 
 const Brand = () => {
   const tabs = [
@@ -83,16 +84,23 @@ const Brand = () => {
 
   useEffect(() => {
     if (isError) {
-      console.log(error)
+      toast.error(error?.data?.message)
     }
   }, [isError])
 
   useEffect(() => {
     if (isSuccess) {
       setMyBrandData(transformBrandData(data?.data?.brands || []));
-      console.log(data)
     }
   }, [isSuccess])
+
+  if (isLoading) {
+    return (
+      <Box sx={{ width: "100%" }}>
+        <LinearProgress />
+      </Box>
+    )
+  }
 
   return (
     <Box>
