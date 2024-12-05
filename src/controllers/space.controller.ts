@@ -102,9 +102,22 @@ export class SpaceController {
     try {
       const { files } = file;
       const { id } = req.params;
-      const { spaceName, spaceCategory, details, location, status, amenity } =
-        req.body;
+      let {
+        spaceName,
+        spaceCategory,
+        details,
+        location,
+        status,
+        amenity,
+        coverKeys,
+      } = req.body;
+      if (typeof coverKeys === "string") {
+        coverKeys = coverKeys.split(",").map((key) => key.trim());
+      }
 
+      if (Array.isArray(coverKeys)) {
+        coverKeys = coverKeys.filter((key) => typeof key === "string");
+      }
       const existingSpace = await this.spaceRepo.findOne({ where: { id } });
       if (!existingSpace) {
         return next(res.status(404).json({ message: "Space not found" }));
@@ -152,10 +165,10 @@ export class SpaceController {
       ) as UploadResult[];
 
       for (const oldCoverImage of oldCoverImages) {
-        if (
-          !coverUrls.some((url) => url.public_id === oldCoverImage.public_id)
-        ) {
+        if (!coverKeys.includes(oldCoverImage.public_id)) {
           await uploadService.deleteFile(oldCoverImage.public_id);
+        } else {
+          coverUrls.push(oldCoverImage);
         }
       }
 

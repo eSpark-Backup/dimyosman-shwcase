@@ -56,6 +56,9 @@ export class SpaceValidation {
       description: Joi.string().optional(),
       htmlContent: Joi.string().optional(),
     }).optional(),
+    coverKeys: Joi.alternatives()
+      .try(Joi.string(), Joi.array().items(Joi.string()))
+      .optional(),
     location: Joi.object({
       long: Joi.number().optional(),
       lat: Joi.number().optional(),
