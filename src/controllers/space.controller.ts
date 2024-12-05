@@ -215,6 +215,7 @@ export class SpaceController {
       if (id && id !== "{id}") {
         const space = await this.spaceRepo.findOne({
           where: { id },
+          relations: ["brand"],
         });
 
         if (!space) {
@@ -232,6 +233,7 @@ export class SpaceController {
 
       const [spaces, totalItems] = await this.spaceRepo.findAndCount({
         where: { user: { id: req.user?.id } },
+        relations: ["brand"],
 
         skip: skipNumber,
         take: takeNumber,
