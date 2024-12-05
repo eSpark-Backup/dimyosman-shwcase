@@ -1,4 +1,4 @@
-import { Box, Button, Typography, useTheme } from '@mui/material'
+import { Box, Button, CircularProgress, Typography, useTheme } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import { brandIcon } from '../../../assets'
 import ReusableModal from '../../../components/Modal'
@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGetCategoriesQuery } from '../../../services/categories'
 import { useNewBrandMutation } from '../../../services/brands'
 import { toast } from 'react-toastify'
+import { LoadingButton } from '@mui/lab'
 
 
 const NewBrand = () => {
@@ -29,7 +30,7 @@ const NewBrand = () => {
     });
 
     const { isError, isSuccess, error, data, isLoading } = useGetCategoriesQuery('BRANDS')
-    const [brand, { isSuccess: brandPostSuccess, isError: IsBrandPostError, error: brandPostError, data: brandPostData }] = useNewBrandMutation()
+    const [brand, { isSuccess: brandPostSuccess, isError: IsBrandPostError, error: brandPostError, data: brandPostData, isLoading: BrandPostingLoading }] = useNewBrandMutation()
 
     useEffect(() => {
         if (isError) {
@@ -58,48 +59,61 @@ const NewBrand = () => {
             toast?.error("Please upload cover photo of brand");
             return false;
         }
-    
+
         if (!brandData?.profileImage) {
             toast?.error("Please upload profile photo of brand");
             return false;
         }
-    
+
         if (!brandData?.brandName || brandData?.brandName.trim() === "") {
             toast?.error("Brand name can not be empty.");
             return false;
         }
-    
+
         const selectedCategories = brandData?.brandCategories?.filter((item) => item?.selected);
         if (!selectedCategories || selectedCategories.length <= 0) {
             toast?.error("Please select at least one category.");
             return false;
         }
-    
+
         if (!brandData?.brandOverview || brandData?.brandOverview.trim() === "") {
             toast?.error("Brand overview can not be empty.");
             return false;
         }
-    
+
         if (!brandData?.brandTitle || brandData?.brandTitle.trim() === "") {
             toast?.error("Brand title can not be empty.");
             return false;
         }
-    
+
+        const strippedContent = brandData?.brandTitle?.replace(/<[^>]*>/g, "").trim();
+        if (!strippedContent) {
+            toast?.error("Brand title can not be empty.");
+            return false;
+        }
+
         return true;
     };
-    
-    const handleSubmit = (status) => {
+
+    const [loadingButton, setLoadingButton] = useState(null);
+
+    const handleSubmit = async (status) => {
         if (!validateBrandData()) {
             return;
         }
-        brand({ ...brandData, status });
+        setLoadingButton(status);
+        try {
+            await brand({ ...brandData, status });
+        } finally {
+            setLoadingButton(null);
+        }
     };
 
-    
+
     const HandlePublishSubmit = () => handleSubmit("PUBLISH");
     const HandleDraftSubmit = () => handleSubmit("DRAFT");
     const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
-    
+
 
     useEffect(() => {
         if (brandPostSuccess) {
@@ -268,18 +282,22 @@ const NewBrand = () => {
                 }}
                 className="buttons-box"
             >
-                <Button
+                <LoadingButton
                     sx={{
                         fontSize: "16px",
                         width: "143px",
                         height: "31px",
                         textTransform: "none",
                     }}
+                    loading={loadingButton === "Draft"}
                     onClick={HandleDraftSubmit}
+                    loadingIndicator={
+                        <CircularProgress size={20} sx={{ color: "#FFFFFF" }} />
+                    }
                 >
                     Save as Draft
-                </Button>
-                <Button
+                </LoadingButton>
+                <LoadingButton
                     sx={{
                         fontSize: "16px",
                         width: "103px",
@@ -287,21 +305,29 @@ const NewBrand = () => {
                         backgroundColor: "rgb(0, 20, 28, 0.9)",
                         textTransform: "none",
                     }}
+                    loading={loadingButton === "PUBLISH"}
                     onClick={HandlePublishSubmit}
+                    loadingIndicator={
+                        <CircularProgress size={20} sx={{ color: "#FFFFFF" }} />
+                    }
                 >
                     Publish
-                </Button>
-                <Button
+                </LoadingButton>
+                <LoadingButton
                     sx={{
                         fontSize: "16px",
                         width: "102px",
                         height: "31px",
                         textTransform: "none",
                     }}
+                    loading={loadingButton === "ARCHIVE"}
                     onClick={HandleArchiveSubmit}
+                    loadingIndicator={
+                        <CircularProgress size={20} sx={{ color: "#FFFFFF" }} />
+                    }
                 >
                     Archive
-                </Button>
+                </LoadingButton>
             </Box>
             <FullWidthImgInput
                 HandleChange={handleMainImageChange}

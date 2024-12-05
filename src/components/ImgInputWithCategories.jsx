@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 import { add, subtract, uploadIcon } from '../assets';
 import Input from './input';
@@ -19,9 +19,14 @@ const ImgInputWithCategories = ({
     activity,
     HandleCategoryChange,
     showDropDown,
+    imgUrl
 }) => {
     const theme = useTheme();
-    const [previewImage, setPreviewImage] = useState(null); // For displaying the selected image
+    const [previewImage, setPreviewImage] = useState(imgUrl ? imgUrl : null);
+
+    useEffect(() => {
+        setPreviewImage(imgUrl);
+    }, [imgUrl]);
 
     const handleImageChange = (event) => {
         handleChange(event); // Call the parent handler

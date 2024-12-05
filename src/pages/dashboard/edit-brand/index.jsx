@@ -1,12 +1,16 @@
-import { Box, Button, Stack, Typography, useTheme } from '@mui/material'
+import { Box, Button, CircularProgress, Stack, Typography, useTheme } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
-import { addGrey, brandIcon, brandMain } from '../../../assets'
+import { addGrey, brand, brandIcon, brandMain } from '../../../assets'
 import ReusableModal from '../../../components/Modal'
 import { ChoiceSelectionModal, EventCard, FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs } from '../../../components'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
 import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useGetCategoriesQuery } from '../../../services/categories'
+import { useEditBrandMutation, useGetAllBrandsQuery } from '../../../services/brands'
+import { toast } from 'react-toastify'
+import { LoadingButton } from '@mui/lab'
 
 const EditBrand = () => {
   const navigate = useNavigate();
@@ -15,34 +19,87 @@ const EditBrand = () => {
   const theme = useTheme()
   const mainImageRef = useRef(null)
   const profileImageRef = useRef(null)
-  const [brandName, setBrandName] = useState("EcoLux Designs")
-  const [brandOverview, setBrandOverview] = useState("EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.")
   const [address, setAddress] = useState("");
 
   const [brandData, setBrandData] = useState({
-    cover: [
-
-      { id: 1, src: brandMain },
-    ],
+    cover: [],
+    brandName: "",
+    brandOverview: "",
+    profileImage: null,
+    brandTitle: null,
+    brandCategories: [],
+    location: {}
   });
-  const [currentIndex, setCurrentIndex] = useState(brandData.cover.length);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const params = useParams();
+
+  const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading } = useGetCategoriesQuery('BRANDS')
+  const { data, isError, isLoading, isSuccess, error } = useGetAllBrandsQuery({
+    page: 1, pageSize: 7, id: params?.brandId
+  });
+
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(error)
+    }
+  }, [isError])
+
+  useEffect(() => {
+    if (IsGetCategoryError) {
+      toast.error(GetCategoryError?.message)
+    }
+  }, [IsGetCategoryError])
+
+  useEffect(() => {
+    if (GetCategorySuccess && isSuccess) {
+      const allCategories = GetCategoryData?.data?.map((cat, index) => ({
+        id: index,
+        name: cat?.name,
+        selected: false,
+      }));
+
+      const selectedCategories = data?.data?.brandCategory?.map((cat) => cat?.name);
+
+      const mergedCategories = allCategories.map((category) => ({
+        ...category,
+        selected: selectedCategories?.includes(category.name),
+      }));
+
+      setBrandData((prevState) => ({
+        ...prevState,
+        brandCategories: mergedCategories,
+      }));
+      setBrandData((prevState) => ({
+        ...prevState,
+        brandCategories: mergedCategories,
+        brandName: data?.data?.brandName,
+        profileImage: data?.data?.brandImage,
+        brandOverview: data?.data?.details?.description,
+        brandTitle: data?.data?.details?.htmlContent,
+        location: data?.data?.location,
+        cover: data?.data?.coverImages
+      }));
+    }
+  }, [GetCategorySuccess, isSuccess]);
+
 
   const handleMainFileInputClick = () => {
-    if (brandData.cover.length < 3) mainImageRef.current.click();
+    mainImageRef.current.click();
   };
 
   const handleMainImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       const updatedCover = [...brandData.cover];
-      updatedCover[currentIndex] = { id: Date.now(), src: URL.createObjectURL(file) };
+      updatedCover[currentIndex] = file;
       setBrandData((prev) => ({ ...prev, cover: updatedCover }));
     }
   };
 
   const handleAddImage = () => {
-    if (brandData.cover.length < 3) {
-      setCurrentIndex(brandData.cover.length);
+    if (currentIndex < 2) {
+      setCurrentIndex(currentIndex + 1);
     }
   };
 
@@ -58,26 +115,13 @@ const EditBrand = () => {
 
   const HandleProfileImageChange = async (event) => {
     const file = event.target.files[0];
-    console.log(file);
+    if (file) {
+      setBrandData((prev) => ({
+        ...prev,
+        profileImage: file,
+      }));
+    }
   };
-
-  const [categories, setCategories] = useState([
-    { id: 1, name: 'Sustainable Fashion', selected: true },
-    { id: 2, name: 'Real Estate', selected: true },
-    { id: 3, name: 'Technology', selected: false },
-    { id: 4, name: 'Health & Wellness', selected: false },
-    { id: 5, name: 'Education', selected: false },
-    { id: 6, name: 'Finance', selected: false },
-    { id: 7, name: 'Travel', selected: false },
-    { id: 8, name: 'Food & Beverage', selected: false },
-    { id: 9, name: 'Art & Design', selected: false },
-    { id: 10, name: 'Sports', selected: false },
-    { id: 11, name: 'Entertainment', selected: false },
-    { id: 12, name: 'Automotive', selected: false },
-    { id: 13, name: 'Gaming', selected: false },
-    { id: 14, name: 'Lifestyle', selected: false },
-    { id: 15, name: 'Science & Technology', selected: false },
-  ]);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [openMapModal, setMapModal] = useState(false);
@@ -90,28 +134,29 @@ const EditBrand = () => {
     setModalOpen(false);
   };
 
-  const selectedCategories = categories.filter(cat => cat.selected);
+  const selectedCategories = brandData?.brandCategories?.filter(cat => cat.selected);
 
 
   const [selectedChoice, setSelectedChoice] = useState(0)
   const [activeTab, setActiveTab] = useState("Details");
 
-  const defaultTemplate = `<h2>EcoLux Designs: Where Luxury Meets Sustainability</h2><p>In an industry where trends come and go, EcoLux Designs stands out by creating fashion with a purpose. As a trailblazer in the world of sustainable luxury, this brand is redefining high-end fashion by merging style with eco-friendly practices. Every piece in the EcoLux collection is crafted with the utmost care, using organic fabrics, recycled materials, and responsible manufacturing processes.</p></br><p>From elegant dresses to timeless accessories, EcoLux Designs offers a wide range of high-end fashion pieces that not only look good but also do good for the planet. The brand’s commitment to sustainability goes beyond just the materials—they focus on ethical production and long-lasting designs, ensuring that each item has minimal environmental impact and maximum longevity in your wardrobe.</p><img src=${brandMain} alt="EcoLux Designs Image" style="width:100%; height:auto; margin: 10px 0;"/><br/><h3 style="font-size: 20px; font-weight: 600">Leading the Movement Toward Eco-Conscious Fashion</h3><p>What makes EcoLux Designs truly special is the balance it strikes between luxury and sustainability. The designs are contemporary, chic, and versatile, proving that eco-conscious fashion doesn’t have to compromise on style. Whether you’re attending a gala or simply updating your everyday wardrobe, EcoLux Designs has something that will elevate your look while aligning with your values.</p><br/><p>As more consumers seek out brands that reflect their commitment to the environment, EcoLux Designs is at the forefront of this movement—proving that fashion can be both luxurious and sustainable. By investing in quality over quantity, this brand is making a statement that fashion should enhance the world, not harm it.</p>`;
-
-  const [brandTitle, setBrandTitle] = useState(defaultTemplate);
   const [isEditorVisible, setIsEditorVisible] = useState(false);
   const editorRef = useRef(null);
   const quillRef = useRef(null);
 
-
   useEffect(() => {
-
     if (quillRef.current) {
       quillRef.current = null;
     }
-    setBrandTitle(defaultTemplate);
+
+    setBrandData((prevState) => ({
+      ...prevState,
+      brandTitle: brandData?.brandTitle,
+    }));
+
     setIsEditorVisible(false);
   }, [activeTab]);
+
 
   useEffect(() => {
 
@@ -128,17 +173,16 @@ const EditBrand = () => {
           ],
         },
       });
-
-
-      quillRef.current.root.innerHTML = brandTitle;
-
-
+      quillRef.current.root.innerHTML = brandData?.brandTitle;
       quillRef.current.on('text-change', () => {
         const updatedContent = quillRef.current.root.innerHTML;
-        setBrandTitle(updatedContent);
+        setBrandData((prevData) => ({
+          ...prevData,
+          brandTitle: updatedContent,
+        }));
       });
     }
-  }, [isEditorVisible, brandTitle]);
+  }, [isEditorVisible, brandData?.brandTitle]);
 
 
   const tabs = [
@@ -153,22 +197,102 @@ const EditBrand = () => {
   };
 
   const CategoryChangeHandler = (index) => {
-    const categoriesSelected = categories.filter((cat) => cat.selected).length;
+    const categoriesSelected = brandData?.brandCategories.filter((cat) => cat.selected).length;
 
-    if (categories.find((cat) => cat.id === index).selected && categoriesSelected === 1) {
+    if (brandData?.brandCategories?.find((cat) => cat.id === index)?.selected && categoriesSelected === 1) {
       alert("Atleast one category should be selected");
       return;
     }
-    if (!categories.find((cat) => cat.id === index).selected && categoriesSelected >= 2) {
+    if (!brandData?.brandCategories?.find((cat) => cat.id === index)?.selected && categoriesSelected >= 2) {
       alert("You can select 2 categories at max.");
       return;
     }
 
-    const newCategories = categories.map((cat, i) =>
+    const newCategories = brandData?.brandCategories?.map((cat, i) =>
       cat?.id === index ? { ...cat, selected: !cat.selected } : cat
     )
-    setCategories(newCategories);
+    setBrandData({ ...brandData, brandCategories: newCategories });
   }
+  const [brand, { isSuccess: brandPostSuccess, isError: IsBrandPostError, error: brandPostError, data: brandPostData }] = useEditBrandMutation()
+
+  useEffect(() => {
+    if (brandPostSuccess) {
+      toast.success(brandPostData?.message)
+    }
+  }, [brandPostSuccess])
+
+  useEffect(() => {
+    if (IsBrandPostError) {
+      toast.error(brandPostError?.data?.message)
+    }
+  }, [IsBrandPostError])
+
+  const validateBrandData = () => {
+    if (!brandData?.cover || brandData?.cover?.length <= 0) {
+      toast?.error("Please upload cover photo of brand");
+      return false;
+    }
+
+    if (!brandData?.profileImage) {
+      toast?.error("Please upload profile photo of brand");
+      return false;
+    }
+
+    if (!brandData?.brandName || brandData?.brandName.trim() === "") {
+      toast?.error("Brand name can not be empty.");
+      return false;
+    }
+
+    const selectedCategories = brandData?.brandCategories?.filter((item) => item?.selected);
+    if (!selectedCategories || selectedCategories.length <= 0) {
+      toast?.error("Please select at least one category.");
+      return false;
+    }
+
+    if (!brandData?.brandOverview || brandData?.brandOverview.trim() === "") {
+      toast?.error("Brand overview can not be empty.");
+      return false;
+    }
+
+    if (!brandData?.brandTitle || brandData?.brandTitle.trim() === "") {
+      toast?.error("Brand title can not be empty.");
+      return false;
+    }
+
+    const strippedContent = brandData?.brandTitle?.replace(/<[^>]*>/g, "").trim();
+    if (!strippedContent) {
+      toast?.error("Brand title can not be empty.");
+      return false;
+    }
+
+    return true;
+  };
+  const [loadingButton, setLoadingButton] = useState(null);
+
+
+  const handleSubmit = async (status) => {
+    if (!validateBrandData()) {
+      return;
+    }
+    setLoadingButton(status);
+    try {
+      // console.log(brandData)
+      await brand({ brandData: { ...brandData, status }, id: params?.brandId });
+    } finally {
+      setLoadingButton(null);
+    }
+  };
+
+  const HandlePublishSubmit = () => handleSubmit("PUBLISH");
+  const HandleDraftSubmit = () => handleSubmit("DRAFT");
+  const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
+
+  if (isLoading || GetCategoryLoading) {
+    return (
+      <h1>Loading...</h1>
+    )
+  }
+
   return (
     <Box
       sx={{
@@ -191,24 +315,28 @@ const EditBrand = () => {
           width: "max-content",
           justifyContent: "center",
           alignItems: "center",
-          zIndex: 2,
+          zIndex: 99,
           right: 0,
           marginRight: "16px",
         }}
         className="buttons-box"
       >
-        <Button
+        <LoadingButton
           sx={{
             fontSize: "16px",
             width: "143px",
             height: "31px",
             textTransform: "none",
           }}
-          onClick={() => navigate(`/brand`)}
+          loadingIndicator={
+            <CircularProgress size={20} sx={{ color: "#FFFFFF" }} />
+          }
+          onClick={HandleDraftSubmit}
+          loading={loadingButton === "Draft"}
         >
           Save as Draft
-        </Button>
-        <Button
+        </LoadingButton>
+        <LoadingButton
           sx={{
             fontSize: "16px",
             width: "103px",
@@ -216,20 +344,29 @@ const EditBrand = () => {
             backgroundColor: "rgb(0, 20, 28, 0.9)",
             textTransform: "none",
           }}
+          loadingIndicator={
+            <CircularProgress size={20} sx={{ color: "#FFFFFF" }} />
+          }
+          loading={loadingButton === "PUBLISH"}
+          onClick={HandlePublishSubmit}
         >
           Publish
-        </Button>
-        <Button
+        </LoadingButton>
+        <LoadingButton
           sx={{
             fontSize: "16px",
             width: "102px",
             height: "31px",
             textTransform: "none",
           }}
-          onClick={() => navigate(`/brand`)}
+          loading={loadingButton === "ARCHIVE"}
+          loadingIndicator={
+            <CircularProgress size={20} sx={{ color: "#FFFFFF" }} />
+          }
+          onClick={HandleArchiveSubmit}
         >
           Archive
-        </Button>
+        </LoadingButton>
       </Box>
       <FullWidthImgInput
         HandleChange={handleMainImageChange}
@@ -237,7 +374,16 @@ const EditBrand = () => {
         imageRef={mainImageRef}
         icon={brandIcon}
         activity="brand"
-        editImage={brandData.cover[currentIndex] ? brandData.cover[currentIndex].src : null}
+        editImage={
+          brandData.cover[currentIndex]?.url
+            ?
+            brandData.cover[currentIndex]?.url
+            :
+            brandData.cover[currentIndex] ?
+              URL.createObjectURL(brandData.cover[currentIndex])
+              :
+              null
+        }
         handleAdd={handleAddImage}
         handleRemove={handleRemoveImage}
         currentIndex={currentIndex}
@@ -246,8 +392,11 @@ const EditBrand = () => {
         handleImgClick={HandleProfileFileInputClick}
         imgRef={profileImageRef}
         handleChange={HandleProfileImageChange}
-        inputVal={brandName}
-        onChange={(e) => setBrandName(e.target.value)}
+        inputVal={brandData?.brandName}
+        onChange={(e) => setBrandData((prev) => ({
+          ...prev,
+          brandName: e.target.value
+        }))}
         inputlabel={"brand name:"}
         categoryLabel={"brand category:"}
         categories={selectedCategories}
@@ -255,12 +404,13 @@ const EditBrand = () => {
         description={"Checkbox on the categories will display them publicly. All selected Brand categories are inherited by Events and Spaces, allowing them for individual selection."}
         activity={"brand"}
         HandleCategoryChange={CategoryChangeHandler}
+        imgUrl={brandData?.profileImage}
       />
       <ReusableModal cat open={modalOpen} handleClose={handleModalClose} heading={"Select Brand Categories"}>
         <ChoiceSelectionModal
-          categories={categories}
+          categories={brandData?.brandCategories}
           handleClose={handleModalClose}
-          onSelect={setCategories}
+          onSelect={(categories) => setBrandData({ ...brandData, brandCategories: categories })}
         />
       </ReusableModal>
       <OutlinedTabs tabs={tabs} onTabChange={handleTabChange} />
@@ -355,7 +505,7 @@ const EditBrand = () => {
             </Box>
             :
             <>
-              <InputWithMap inputLabel={"Brand Overview:"} inputValue={brandOverview} setInputValue={setBrandOverview} handleClick={() => setMapModal(true)} mapDescription={"Click on the map to select Address."} activity={"brand"} />
+              <InputWithMap inputLabel={"Brand Overview:"} inputValue={brandData?.brandOverview} setInputValue={(value) => setBrandData({ ...brandData, brandOverview: value })} handleClick={() => setMapModal(true)} mapDescription={"Click on the map to select Address."} activity={"brand"} />
               <Box
                 sx={{
                   width: "98%",
@@ -379,7 +529,7 @@ const EditBrand = () => {
                     <Typography
                       variant="body1"
                       color={theme.palette.primary.main}
-                      dangerouslySetInnerHTML={{ __html: brandTitle }}
+                      dangerouslySetInnerHTML={{ __html: brandData?.brandTitle }}
                     />
                   </Box>
                 }
@@ -405,7 +555,7 @@ const EditBrand = () => {
         }
       </Box>
       <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-        <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} />
+        <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[brandData?.location?.lat, brandData?.location?.long]} setBrandData={setBrandData} />
       </ReusableModal>
     </Box>
   )
