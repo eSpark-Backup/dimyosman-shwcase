@@ -113,6 +113,7 @@ const myEventsColumns = (gotoDetail, handleAction) => {
               "&:hover": {
                 width: "100px",
               },
+              textTransform: "none"
             }}
           >
             Edit
@@ -227,17 +228,29 @@ const rsvpEventColumns = (gotoDetail, handleAction) => {
       key: "action",
       component: (item) => {
         return (
-          <Button
-            onClick={() => handleAction(item)}
+          <Box
             sx={{
-              minWidth: "56px",
-              maxHeight: "26px",
-              fontSize: "14px",
-              fontWeight: "600",
+              width: "100%",
+              display: "flex",
+              justifyContent: "flex-end"
             }}
           >
-            {item?.action}
-          </Button>
+            <Button
+              onClick={() => handleAction(item)}
+              sx={{
+                maxHeight: "26px",
+                fontSize: "14px",
+                fontWeight: "600",
+                textTransform: "none",
+
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {item?.action}
+            </Button>
+          </Box>
         );
       },
     },
@@ -355,6 +368,7 @@ const likedEventColumns = (gotoDetail, handleAction) => {
               maxHeight: "26px",
               fontSize: "14px",
               fontWeight: "600",
+              textTransform: "none"
             }}
           >
             Remove
