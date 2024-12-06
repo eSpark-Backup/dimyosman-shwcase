@@ -136,10 +136,18 @@ export class BrandController {
       ) as UploadResult[];
 
       for (const oldCoverImage of oldCoverImages) {
-        if (!coverKeys.includes(oldCoverImage.public_id)) {
-          await uploadService.deleteFile(oldCoverImage.public_id);
+        if (coverKeys.length > 0) {
+          if (!coverKeys.includes(oldCoverImage.public_id)) {
+            await uploadService.deleteFile(oldCoverImage.public_id);
+          } else {
+            coverUrls.push(oldCoverImage);
+          }
         } else {
-          coverUrls.push(oldCoverImage);
+          if (
+            !coverUrls.some((url) => url.public_id === oldCoverImage.public_id)
+          ) {
+            await uploadService.deleteFile(oldCoverImage.public_id);
+          }
         }
       }
 
