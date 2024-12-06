@@ -89,6 +89,7 @@ import lineThrough from "./line-through.svg";
 import paperClip from "./paperclip.svg";
 import link from "./link.svg";
 import smile from "./smile.svg";
+import mapMarker from "./map-marker.svg"
 
 export {
   react,
@@ -182,4 +183,5 @@ export {
   paperClip,
   link,
   smile,
+  mapMarker
 };

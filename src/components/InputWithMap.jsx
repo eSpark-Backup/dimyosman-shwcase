@@ -157,23 +157,23 @@ const InputWithMap = ({
             />
           </Box>
         )}
-        {(activity === "brand" && !edit) && 
+        {(activity === "brand" && !edit) &&
           <Typography fontSize={14} fontWeight={300} sx={{ fontStyle: "italic" }}>Click on the map to select Address.</Typography>
         }
-        <figure role="img" aria-labelledby="profile-map">
-            <img width="100%" height="auto" src={miniMap} alt="map" />
-            <figcaption
-              style={activity === "brand" && !edit ? 
-                {
-                  fontStyle: "normal",
-                  fontSize: "12px",
-                  fontWeight: "400",
-                  textAlign: "left",
-                  marginTop: "6px",
-                  fontFamily: `"Segoe UI", "sans-serif"`,
-                }
-                :
-                {
+        <figure role="img" aria-labelledby="profile-map" onClick={handleClick} style={{ cursor: "pointer" }}>
+          <img width="100%" height="auto" src={miniMap} alt="map" />
+          <figcaption
+            style={activity === "brand" && !edit ?
+              {
+                fontStyle: "normal",
+                fontSize: "12px",
+                fontWeight: "400",
+                textAlign: "left",
+                marginTop: "6px",
+                fontFamily: `"Segoe UI", "sans-serif"`,
+              }
+              :
+              {
                 fontStyle: "italic",
                 fontSize: "12px",
                 fontWeight: "300",
@@ -181,9 +181,9 @@ const InputWithMap = ({
                 fontFamily: `"Segoe UI", "sans-serif"`,
               }
             }
-            >
-              {mapDescription}
-            </figcaption>
+          >
+            {mapDescription}
+          </figcaption>
         </figure>
         {activity === "event" && (
           <Box sx={{ position: "relative" }}>

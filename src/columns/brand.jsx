@@ -29,7 +29,7 @@ const myBrandColumns = (gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="brand-image">
                   <img
-                    style={{ width: "100%" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     src={item?.brandImg}
                     alt="brand-img"
                   />
