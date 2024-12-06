@@ -139,7 +139,8 @@ export const DynamicTable = ({ data, columns, isLoading, ...rest }) => {
                               : "0",
                           minWidth:
                             index === 0
-                              ? { xs: "300px", lg: "max-content" }
+                              ?
+                              "300px"
                               : index === extendedColumns.length - 1
                                 ? "100px"
                                 : "160px",
@@ -149,7 +150,7 @@ export const DynamicTable = ({ data, columns, isLoading, ...rest }) => {
                               : 1,
                           background: (theme) =>
                             theme.palette.primary.contrastText,
-                          wordBreak: { xs: "unset", lg: "break-word" }
+                          // wordBreak: { xs: "unset", lg: "break-word" }
                         }}
                       >
                         {generateCell(column, item)}

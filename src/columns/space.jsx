@@ -227,21 +227,57 @@ const leasingSpaceColumns = (gotoDetail, handleAction) => {
       },
     },
     {
+      name: "Col Header",
+      key: "colHeader1",
+    },
+    {
+      name: "Col Header",
+      key: "colHeader2",
+    },
+    {
+      name: "Col Header",
+      key: "colHeader3",
+    },
+    {
+      name: "Col Header",
+      key: "colHeader4",
+    },
+    {
+      name: "Col Header",
+      key: "colHeader5",
+    },
+    {
+      name: "Col Header",
+      key: "colHeader6",
+    },
+    {
       name: "Action",
       key: "action",
       component: (item) => {
         return (
-          <Button
-            onClick={() => handleAction(item)}
+          <Box
             sx={{
-              minWidth: "56px",
-              maxHeight: "26px",
-              fontSize: "14px",
-              fontWeight: "600",
+              width: "100%",
+              display: "flex",
+              justifyContent: "flex-end"
             }}
           >
-            {item?.action}
-          </Button>
+            <Button
+              onClick={() => handleAction(item)}
+              sx={{
+                minWidth: "56px",
+                maxHeight: "26px",
+                fontSize: "14px",
+                fontWeight: "600",
+                textTransform: "none",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {item?.action}
+            </Button>
+          </Box>
         );
       },
     },

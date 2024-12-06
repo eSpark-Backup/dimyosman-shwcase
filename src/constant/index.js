@@ -549,7 +549,13 @@ export const leaseSpaceData = [
     brand: "Urban Pop-Up Pavilion",
     eventUrl: "-",
     brandUrl: "-",
-    action: "Details"
+    action: "Details",
+    colHeader1: "Table cell",
+    colHeader2: "Table cell",
+    colHeader3: "Table cell",
+    colHeader4: "Table cell",
+    colHeader5: "Table cell",
+    colHeader6: "Table cell",
   },
   {
     id: 2,
@@ -563,7 +569,13 @@ export const leaseSpaceData = [
     brand: "Brand 1",
     eventUrl: null,
     brandUrl: null,
-    action: "Sign"
+    action: "Sign",
+    colHeader1: "Table cell",
+    colHeader2: "Table cell",
+    colHeader3: "Table cell",
+    colHeader4: "Table cell",
+    colHeader5: "Table cell",
+    colHeader6: "Table cell",
   },
   {
     id: 3,
@@ -577,7 +589,13 @@ export const leaseSpaceData = [
     brand: "Brand 2",
     eventUrl: null,
     brandUrl: null,
-    action: "Verify Pay 1/2"
+    action: "Verify Pay 1/2",
+    colHeader1: "Table cell",
+    colHeader2: "Table cell",
+    colHeader3: "Table cell",
+    colHeader4: "Table cell",
+    colHeader5: "Table cell",
+    colHeader6: "Table cell",
   },
   {
     id: 4,
@@ -591,7 +609,13 @@ export const leaseSpaceData = [
     brand: "Brand 3",
     eventUrl: null,
     brandUrl: null,
-    action: "Review"
+    action: "Review",
+    colHeader1: "Table cell",
+    colHeader2: "Table cell",
+    colHeader3: "Table cell",
+    colHeader4: "Table cell",
+    colHeader5: "Table cell",
+    colHeader6: "Table cell",
   },
 ];
 
