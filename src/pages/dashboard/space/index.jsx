@@ -64,7 +64,7 @@ const Space = () => {
           </figure>
         </Box>
       </Stack>
-      <Card sx={{ marginY: 2 }}>
+      <Card sx={{ marginY: 2, border: "1px solid rgb(230, 235, 233)" }}>
         <FilterationTabs
           tabs={tabs}
           activeTab={activeTab}

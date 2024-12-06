@@ -74,8 +74,8 @@ export const DynamicTable = ({ data, columns, isLoading, ...rest }) => {
                   <TableCell
                     key={`${index}`}
                     sx={{
-                      width: column.width || "initial",
-                      minWidth: column.minWidth || "initial",
+                      // width: column.width || "initial",
+                      // minWidth: column.minWidth || "initial",
                       position:
                         index === 0 || index === extendedColumns.length - 1
                           ? { xs: "static", lg: "sticky" }
@@ -139,16 +139,18 @@ export const DynamicTable = ({ data, columns, isLoading, ...rest }) => {
                               : "0",
                           minWidth:
                             index === 0
-                              ? "300px"
+                              ?
+                              "300px"
                               : index === extendedColumns.length - 1
-                              ? "100px"
-                              : "160px",
+                                ? "100px"
+                                : "160px",
                           zIndex:
                             index === 0 || index === extendedColumns.length - 1
                               ? 2
                               : 1,
                           background: (theme) =>
                             theme.palette.primary.contrastText,
+                          // wordBreak: { xs: "unset", lg: "break-word" }
                         }}
                       >
                         {generateCell(column, item)}
