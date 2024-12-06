@@ -218,6 +218,7 @@ const EditBrand = () => {
   useEffect(() => {
     if (brandPostSuccess) {
       toast.success(brandPostData?.message)
+      navigate("/brand")
     }
   }, [brandPostSuccess])
 

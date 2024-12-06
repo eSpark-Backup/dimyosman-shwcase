@@ -119,6 +119,7 @@ const NewBrand = () => {
         if (brandPostSuccess) {
             console.log(brandPostData)
             toast.success(brandPostData?.message)
+            navigate("/brand")
         }
     }, [brandPostSuccess])
 
