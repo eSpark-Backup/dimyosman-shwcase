@@ -46,6 +46,7 @@ export const brandApi = api.injectEndpoints({
                     body: formData,
                 };
             },
+            invalidatesTags: ['brand'],
         }),
         getAllBrands: builder.query({
             query: ({ id, page = 1, pageSize = 7 }) => {
@@ -57,6 +58,7 @@ export const brandApi = api.injectEndpoints({
                     method: "GET",
                 };
             },
+            providesTags: ['brand'],
         }),
         editBrand: builder.mutation({
             query: ({ brandData, id }) => {
@@ -97,9 +99,9 @@ export const brandApi = api.injectEndpoints({
                     });
 
 
-                    if (coverKeys.length > 0) {
-                        formData.append('coverKeys', JSON.stringify(coverKeys));
-                    }
+                    // if (coverKeys.length > 0) {
+                    formData.append('coverKeys', JSON.stringify(coverKeys));
+                    // }
                 }
 
                 if (brandData?.profileImage) {
@@ -116,6 +118,7 @@ export const brandApi = api.injectEndpoints({
                     body: formData,
                 };
             },
+            providesTags: ['brand'],
         }),
 
     }),

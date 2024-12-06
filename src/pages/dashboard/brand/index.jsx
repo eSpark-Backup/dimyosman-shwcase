@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, Button, Card, LinearProgress, Stack, Typography } from "@mui/material";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { brandTableData } from "../../../constant";
-import { addIcon, brandIconlight, like } from "../../../assets";
+import { addIcon, brandIconlight, brandMain, eventMain, eventUserImage, like } from "../../../assets";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useGetAllBrandsQuery } from "../../../services/brands";
 import { toast } from "react-toastify";
@@ -33,6 +33,9 @@ const Brand = () => {
   const gotoDetail = (item) => {
     //go to detail page functionality
     console.log(item, "item");
+    if (location?.pathname === "/brand") {
+      navigate(`/brand/${item?.id}`)
+    }
   };
 
   const handleAction = (item, type) => {
@@ -58,7 +61,10 @@ const Brand = () => {
 
   };
   const [myBrandData, setMyBrandData] = useState([]);
-  const { data, isError, isLoading, isSuccess, error } = useGetAllBrandsQuery({ page: 1, pageSize: 7 });
+  const { data, isError, isLoading, isSuccess, error, refetch } = useGetAllBrandsQuery({ page: 1, pageSize: 7 }, {
+    refetchOnMountOrArgChange: true,
+  });
+
 
   const transformBrandData = (apiData) => {
     return apiData.map((brand, index) => ({
