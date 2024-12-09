@@ -28,6 +28,12 @@ export const handleResponse = (
   };
 };
 
+export const parseCoverImages = (obj: any) => {
+  if (obj && typeof obj.coverImages === "string") {
+    obj.coverImages = JSON.parse(obj.coverImages);
+  }
+};
+
 export function parseJsonFields(fields: string[]) {
   return (req: Request, res: Response, next: NextFunction) => {
     fields.forEach((field) => {

@@ -9,3 +9,9 @@ export enum SPACE_STATUS {
   DRAFT = "DRAFT",
   PUBLISH = "PUBLISH",
 }
+
+export enum EVENT_STATUS {
+  ARCHIVE = "ARCHIVE",
+  DRAFT = "DRAFT",
+  PUBLISH = "PUBLISH",
+}

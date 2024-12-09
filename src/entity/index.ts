@@ -4,3 +4,4 @@ export * from "./brands.entity";
 export * from "./category.entity";
 export * from "./amenities.entity";
 export * from "./spaces.entity";
+export * from "./events.entity";
