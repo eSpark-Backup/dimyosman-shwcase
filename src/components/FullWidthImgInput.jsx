@@ -1,14 +1,34 @@
-import { Box, Button, Typography, useTheme } from '@mui/material'
-import React from 'react'
-import { activeItemIcon, add, brandMain, notActiveIcon, subtract, uploadIcon } from '../assets'
-import { useNavigate } from 'react-router-dom'
+import { Box, Typography, useTheme } from '@mui/material';
+import React from 'react';
+import { activeItemIcon, add, notActiveIcon, subtract, uploadIcon } from '../assets';
 
-const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, activity, editImage }) => {
-    const theme = useTheme()
-    const naivgate = useNavigate()
+const FullWidthImgInput = ({
+    HandleChange,
+    imageRef,
+    HandleInputCLick,
+    icon,
+    activity,
+    editImage,
+    handleAdd,
+    handleRemove,
+    currentIndex,
+}) => {
+    const theme = useTheme();
+
+    const handleFileChange = (event) => {
+        if (HandleChange) {
+            HandleChange(event);
+        }
+        // Reset the file input value to allow selecting the same file again
+        if (imageRef && imageRef.current) {
+            imageRef.current.value = '';
+        }
+    };
+
     return (
         <Box
             sx={{
+                marginTop: "-63px",
                 height: activity === "brand" ? "300px" : "500px",
                 borderRadius: "5px 5px 0 0",
                 border: "1px dashed rgba(0, 20, 28, 0.4)",
@@ -17,13 +37,46 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, act
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                backgroundImage: editImage && `url(${editImage})`,
-                backgroundPosition: "center",
-                backgroundSize: "cover",
-                backgroundRepeat: "no-repeat"
+                overflow: "hidden",
             }}
         >
+            {/* Image as background */}
+            {editImage && (
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundImage: `url(${ editImage })`,
+                        backgroundPosition: "center",
+                        backgroundSize: "cover",
+                        backgroundRepeat: "no-repeat",
+                        borderRadius: "5px 5px 0 0",
+                        zIndex: 1,
+                        opacity: 0.5,
+                    }}
+                />
+            )}
+
             {/* Dimming overlay */}
+            {editImage && (
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "rgba(0, 0, 0, 0.4)", // Semi-transparent black overlay
+                        borderRadius: "5px 5px 0 0",
+                        zIndex: 2, // Overlay above the image
+                    }}
+                />
+            )}
+
+            {/* Top-left icon */}
             <Box
                 sx={{
                     position: "absolute",
@@ -48,60 +101,13 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, act
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    zIndex: 2
+                    zIndex: 3, // Above the overlay
                 }}
             >
                 <img src={icon} alt="Icon" style={{ width: "23px", height: "32px" }} />
             </Box>
-            <Box
-                sx={{
-                    position: "fixed",
-                    top: "90px",
-                    display: "flex",
-                    columnGap: "10px",
-                    flexDirection: { xs: "column", md: "row" },
-                    justifyContent: "center",
-                    alignItems: "center",
-                    zIndex: 2,
-                }}
-                className="buttons-box"
-            >
-                <Button
-                    sx={{
-                        fontSize: "16px",
-                        width: "143px",
-                        height: "31px",
-                        textTransform: "none"
-                    }}
-                    onClick={() => naivgate(`/${activity}`)}
-                >
-                    Save as Draft
-                </Button>
-                <Button
-                    sx={{
-                        fontSize: "16px",
-                        width: "103px",
-                        height: "31px",
-                        backgroundColor: "rgb(0, 20, 28, 0.9)",
-                        textTransform: "none"
-                    }}
-                >
-                    Publish
-                </Button>
-                <Button
-                    sx={{
-                        fontSize: "16px",
-                        width: "102px",
-                        height: "31px",
-                        textTransform: "none"
-                    }}
-                    onClick={() => naivgate(`/${activity}`)}
-                >
-                    Archive
-                </Button>
-            </Box>
 
-
+            {/* Bottom-right icons */}
             <Box
                 sx={{
                     position: "absolute",
@@ -109,43 +115,62 @@ const FullWidthImgInput = ({ HandleChange, imageRef, HandleInputCLick, icon, act
                     right: "10px",
                     display: "flex",
                     columnGap: "20px",
-                    zIndex: 2
+                    zIndex: 3, // Above the overlay
                 }}
             >
-                <img src={activeItemIcon} alt="Icon" style={{ cursor: "pointer" }} />
-                <img src={notActiveIcon} alt="Icon" style={{ cursor: "pointer" }} />
-                <img src={notActiveIcon} alt="Icon" style={{ cursor: "pointer" }} />
-                <img src={add} alt="Icon" style={{ cursor: "pointer" }} />
-                <img src={subtract} alt="Icon" style={{ cursor: "pointer" }} />
+                {[0, 1, 2].map((index) => (
+                    <img
+                        key={index}
+                        src={index === currentIndex ? activeItemIcon : notActiveIcon}
+                        alt={index === currentIndex ? "Active Icon" : "Not Active Icon"}
+                        style={{ cursor: "pointer" }}
+                    />
+                ))}
+                <img
+                    src={add}
+                    alt="Add Icon"
+                    style={{ cursor: "pointer" }}
+                    onClick={handleAdd}
+                />
+                <img
+                    src={subtract}
+                    alt="Remove Icon"
+                    style={{ cursor: "pointer" }}
+                    onClick={handleRemove}
+                />
             </Box>
 
-
+            {/* Image upload section */}
             <Box
                 sx={{
                     display: "flex",
                     flexDirection: "column",
-                    rowGap: "0px",
                     cursor: "pointer",
-                    zIndex: 2
+                    zIndex: 3, // Above the overlay
                 }}
                 onClick={HandleInputCLick}
             >
                 <Typography
+                    component="label"
                     sx={{
-                        fontSize: '14px',
+                        fontSize: "14px",
                         fontWeight: "300",
                         color: theme.palette.primary.main,
-                        fontStyle: "italic"
+                        fontStyle: "italic",
                     }}
                 >
                     Upload image:
                 </Typography>
-                <img src={uploadIcon} alt="Icon" />
-                <input type="file" style={{ display: "none" }} ref={imageRef} onChange={HandleChange} />
+                <img src={uploadIcon} alt="Upload Icon" />
+                <input
+                    type="file"
+                    style={{ display: "none" }}
+                    ref={imageRef}
+                    onChange={handleFileChange} // Use the updated handler
+                />
             </Box>
         </Box>
+    );
+};
 
-    )
-}
-
-export default FullWidthImgInput
+export default FullWidthImgInput;

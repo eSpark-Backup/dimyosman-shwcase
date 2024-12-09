@@ -59,7 +59,7 @@ function App() {
           <Route path="/message" element={<Message />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/new-brand" element={<NewBrand />} />
-          <Route path="/brand/:brand-id/edit" element={<EditBrand />} />
+          <Route path="/brand/:brandId/edit" element={<EditBrand />} />
           <Route path="/new-event" element={<NewEvent />} />
           <Route path='/event/:event-id/edit' element={<EditEvent />} />
           <Route path="/new-space" element={<NewSpace />} />

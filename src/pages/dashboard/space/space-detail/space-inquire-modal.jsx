@@ -88,6 +88,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
                   textAlign="left"
                   fontWeight={600}
                   fontSize={24}
+                  variant="h2"
                 >
                   Urban Pop-Up Studio 3B{" "}
                 </Typography>
@@ -220,6 +221,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
             <Typography fontWeight={300} fontSize={16}>
               Tenant:
               <Typography
+                component="span"
                 sx={{ display: "inline", marginLeft: "5px" }}
                 fontWeight={600}
                 fontSize={16}
@@ -247,6 +249,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
             <Typography fontWeight={300} fontSize={16}>
               Event:
               <Typography
+                component="span"
                 sx={{ display: "inline", marginLeft: "5px" }}
                 fontWeight={600}
                 fontSize={16}
@@ -271,7 +274,6 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
           <Input
             multiline
             rows={2}
-            minRows={2}
             sx={{
               height: "auto",
               borderRadius: "5px",

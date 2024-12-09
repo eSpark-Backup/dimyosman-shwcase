@@ -66,7 +66,7 @@ const Sidebar = () => {
                 color: (theme) => theme.palette.primary.main,
                 display: getSmallSidebar(pathname)
                   ? "none"
-                  : { xs: "none", md: "block" },
+                  : { xs: "none", lg: "block" },
               }}
             >
               {item.title}

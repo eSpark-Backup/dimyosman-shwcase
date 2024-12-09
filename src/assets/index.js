@@ -65,6 +65,7 @@ import logoIcon from "./logo-icon.svg"
 import logoText from "./logo-text.svg"
 import brandIconlight from "./brand-icon.png";
 import brandBadge from "./brand-badge.png";
+import eventIconLight from "./event-icon.png";
 import activeItemIcon from './activeItemIcon.svg'
 import notActiveIcon from "./notActiveItemIcon.svg"
 import add from "./addIcon.svg"
@@ -104,6 +105,7 @@ import lineThrough from "./line-through.svg";
 import paperClip from "./paperclip.svg";
 import link from "./link.svg";
 import smile from "./smile.svg";
+import mapMarker from "./map-marker.svg"
 
 export {
   react,
@@ -173,6 +175,8 @@ export {
   logoText,
   brandIconlight,
   brandBadge,
+  eventIconLight,
+  eventBadge,
   activeItemIcon,
   notActiveIcon,
   add,
@@ -184,7 +188,6 @@ export {
   locationIcon,
   modalMap,
   addGrey,
-  eventBadge,
   spaceBadge,
   profileBadge,
   star,
@@ -211,4 +214,5 @@ export {
   paperClip,
   link,
   smile,
+  mapMarker
 };

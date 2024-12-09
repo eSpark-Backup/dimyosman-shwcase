@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Divider, Typography, useTheme } from "@mui/material";
+import { Box, Button, Divider, Stack, Typography, useTheme } from "@mui/material";
 import {
   accountIcon,
   brandIcon,
@@ -160,10 +160,10 @@ const ActivityCard = ({
                 color: theme.palette.primary.main,
                 fontWeight: "400",
                 textAlign: "left",
-                fontSize: { xs: "12px", lg: "16px" },
+                fontSize: { xs: "12px", md: "16px" },
               }}
             >
-              <p style={{ display: "inline-block", fontWeight: 600, marginRight: "5px" }}>{userName} </p>
+              <span style={{ display: "inline-block", fontWeight: 600, marginRight: "5px" }}>{userName} </span>
               published a new{" "}
               {activity === "event"
                 ? "Event!"
@@ -240,7 +240,7 @@ const ActivityCard = ({
           display: "flex",
           justifyContent: "space-between",
           padding: { xs: "0px 8px", md: "0px 20px" },
-          flexDirection: { xs: "column", lg: "row" },
+          flexDirection: { xs: "column", md: "row" },
           gap: "16px",
         }}
       >
@@ -254,7 +254,7 @@ const ActivityCard = ({
           }}
         >
           <Box
-            component="Section"
+            component="section"
             onClick={
               activityId
                 ? () => navigate(`/${activity}/${activityId}`)
@@ -388,7 +388,7 @@ const ActivityCard = ({
                   flexWrap: "wrap",
                   justifyContent: "space-between",
                   rowGap: "15px",
-                  flexDirection: { xs: "column", md: "row" },
+                  flexDirection: { xs: "column", sm: "row" },
                 }}
               >
                 {features?.map(
@@ -399,7 +399,7 @@ const ActivityCard = ({
                         sx={{
                           display: "flex",
                           columnGap: "5px",
-                          width: { xs: "100%", md: "150px" },
+                          width: { xs: "100%", sm: "150px" },
                         }}
                         key={index}
                       >
@@ -428,7 +428,7 @@ const ActivityCard = ({
                   flexWrap: "wrap",
                   justifyContent: "space-between",
                   rowGap: "15px",
-                  flexDirection: { xs: "column", md: "row" },
+                  flexDirection: { xs: "column", sm: "row" },
                 }}
               >
                 {features?.map(
@@ -439,7 +439,7 @@ const ActivityCard = ({
                         sx={{
                           display: "flex",
                           columnGap: "5px",
-                          width: { xs: "100%", md: "150px" },
+                          width: { xs: "100%", sm: "150px" },
                         }}
                         key={index}
                       >
@@ -468,7 +468,7 @@ const ActivityCard = ({
         {activity !== "brand" && (
           <Box
             sx={{
-              width: { xs: "100%", lg: "max-content" },
+              width: { xs: "100%", md: "max-content" },
               display: "flex",
               flexDirection: "column",
               rowGap: "5px",
@@ -577,7 +577,7 @@ const ActivityCard = ({
           display: "flex",
           justifyContent: "space-between",
           padding: { xs: "0px 8px", md: "0px 20px" },
-          flexDirection: { xs: "column", lg: "row" },
+          flexDirection: { xs: "column", md: "row" },
           rowGap: "15px",
           alignItems: "center",
         }}
@@ -592,20 +592,27 @@ const ActivityCard = ({
           {activity !== "space" && <img src={comment} alt="Comment Icon" />}
           <img src={share} alt="Share Icon" />
         </Box>
-        <Typography
+        <Stack direction="row" alignItems="center" justifyContent="center" gap={2}>
+        <Button
+          variant="text"
           onClick={
             activityId ? () => navigate(`/${activity}/${activityId}`) : () => {}
           }
           sx={{
-            cursor: "pointer",
+            backgroundColor: "transparent",
+            width: { xs: "150px", sm: "220px" },
+            height: "31px",
+            fontSize: "16px",
+            fontWeight: 600,
             color: theme.palette.primary.main,
-            textAlign: "left",
+            textTransform: "capitalize",
+            ":hover": {
+              backgroundColor: "rgb(209, 219, 215, 0.4)",
+            },
           }}
-          fontSize={16}
-          fontWeight={600}
         >
           Learn more
-        </Typography>
+        </Button>
         <Button
           sx={{
             backgroundColor: "rgb(209, 219, 215, 0.4)",
@@ -633,6 +640,7 @@ const ActivityCard = ({
             </>
           )}
         </Button>
+        </Stack>
       </Box>
     </Box>
   );

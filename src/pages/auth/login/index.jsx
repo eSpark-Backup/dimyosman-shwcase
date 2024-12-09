@@ -84,17 +84,19 @@ const Login = () => {
                     helperText={formik.touched.password && formik.errors.password}
                     placeholder={"Type Your Password"}
                 />
-                <Typography
-                    sx={{
+                <Link
+                    style={{
                         fontSize: "12px",
                         fontWeight: "500",
                         textDecoration: "underline",
                         cursor: "pointer",
-                        color: theme.palette.primary.main
+                        color: "#00141C",
+                        fontFamily: "'Segoe UI'",
                     }}
+                    to={"/auth?type=login"}
                 >
                     Forgot Password?
-                </Typography>
+                </Link>
                 <LoadingButton
                     loading={isLoading}
                     type="submit"
@@ -103,15 +105,39 @@ const Login = () => {
                     Log In
                 </LoadingButton>           
             </Box>
-            <Box sx={{ display: "flex", flexDirection: "column", rowGap: "12px" }}>
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
-                    By logging, you are agreeing with our
-                </Typography>
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
-                    <span style={{ textDecoration: "underline", cursor: "pointer" }}>Terms of Use </span>
-                    and
-                    <span style={{ textDecoration: "underline", cursor: "pointer" }}> Privacy Policy</span>
-                </Typography>
+            <Box sx={{ display: "flex", flexDirection: "row", gap: "5px" }}>
+              <Link
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  color: "#00141C",
+                  fontFamily: "'Segoe UI'",
+                  display: "inline-block",
+                }}
+                to={"/auth?type=login"}
+              >
+                Terms of Use
+              </Link>
+              <Typography
+                fontSize={12}
+                fontWeight={500}
+                textAlign="center"
+                sx={{ display: "inline-block" }}
+              >
+                and
+              </Typography>
+              <Link
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  color: "#00141C",
+                  fontFamily: "'Segoe UI'",
+                  display: "inline-block",
+                }}
+                to={"/auth?type=login"}
+              >
+                Privacy Policy
+              </Link>
             </Box>
             <Box
                 sx={{
@@ -121,7 +147,7 @@ const Login = () => {
                     width: "100%",
                 }}
             >
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>Or connect via</Typography>
+                <Typography textAlign="center" fontSize={12} fontWeight={500} sx={{ color: theme.palette.primary.main }}>Or connect via</Typography>
                 <Box
                     sx={{
                         display: "flex",
@@ -147,18 +173,17 @@ const Login = () => {
                     </Button>
                 </Box>
             </Box>
-            <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
+            <Typography fontSize={12} fontWeight={500} sx={{ color: theme.palette.primary.main }}>
                 Don’t have an account?{" "}
-                <Link to={"/auth?type=register"}>
-                    <span
-                        style={{
-                            textDecoration: "underline",
-                            cursor: "pointer",
-                            color: "#00141C",
-                        }}
-                    >
+                <Link to={"/auth?type=register"}
+                  style={{
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    color: "#00141C",
+                    fontFamily: "'Segoe UI'",
+                  }}
+                >
                         Sign Up!
-                    </span>
                 </Link>
             </Typography>
         </>

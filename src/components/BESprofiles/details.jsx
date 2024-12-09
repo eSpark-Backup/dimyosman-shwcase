@@ -329,9 +329,8 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               key={point}
               fontSize={16}
               sx={{ textAlign: "left", marginTop: 2, fontWeight: 400 }}
-            >
-              {point}
-            </Typography>
+              dangerouslySetInnerHTML={{ __html: point }}
+            />
           ))}
           <ul style={{ marginLeft: "16px" }}>
             {details?.expectedPoint?.ulPoints?.map((point) => {

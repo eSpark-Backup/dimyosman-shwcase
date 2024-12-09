@@ -181,15 +181,39 @@ const Register = () => {
                     Sign Up
                 </LoadingButton>
             </Box>
-            <Box sx={{ display: "flex", flexDirection: "column", rowGap: "12px" }}>
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
-                    By signing, you are agreeing with our
-                </Typography>
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
-                    <span style={{ textDecoration: "underline", cursor: "pointer" }}>Terms of Use </span>
-                    and
-                    <span style={{ textDecoration: "underline", cursor: "pointer" }}> Privacy Policy</span>
-                </Typography>
+            <Box sx={{ display: "flex", flexDirection: "row", gap: "5px" }}>
+              <Link
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  color: "#00141C",
+                  fontFamily: "'Segoe UI'",
+                  display: "inline-block",
+                }}
+                to={"/auth?type=register"}
+              >
+                Terms of Use
+              </Link>
+              <Typography
+                fontSize={12}
+                fontWeight={500}
+                textAlign="center"
+                sx={{ display: "inline-block" }}
+              >
+                and
+              </Typography>
+              <Link
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  color: "#00141C",
+                  fontFamily: "'Segoe UI'",
+                  display: "inline-block",
+                }}
+                to={"/auth?type=register"}
+              >
+                Privacy Policy
+              </Link>
             </Box>
             <Box
                 sx={{
@@ -199,7 +223,7 @@ const Register = () => {
                     width: "100%",
                 }}
             >
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>Or connect via</Typography>
+                <Typography fontSize={12} fontWeight={500} textAlign="center" sx={{ color: theme.palette.primary.main }}>Or connect via</Typography>
                 <Box
                     sx={{
                         display: "flex",
@@ -225,18 +249,17 @@ const Register = () => {
                     </Button>
                 </Box>
             </Box>
-            <Typography variant="h6" sx={{ color: theme.palette.primary.main }}>
+            <Typography fontSize={12} fontWeight={500} textAlign="center" sx={{ color: theme.palette.primary.main }}>
                 Already have an account? {" "}
-                <Link to={"/auth?type=login"}>
-                    <span
-                        style={{
-                            textDecoration: "underline",
-                            cursor: "pointer",
-                            color: "#00141C",
-                        }}
-                    >
-                        Log in
-                    </span>
+                <Link to={"/auth?type=login"}
+                  style={{
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    color: "#00141C",
+                    fontFamily: "'Segoe UI'",
+                  }}
+                >
+                  Log in
                 </Link>
             </Typography>
         </>

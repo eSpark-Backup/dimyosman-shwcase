@@ -1,11 +1,27 @@
-import { useState } from "react";
-import { Box, Card, Stack } from "@mui/material";
+import { useEffect, useState } from "react";
+import { Box, Button, Card, LinearProgress, Stack, Typography } from "@mui/material";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { brandTableData } from "../../../constant";
-import { brandIconlight } from "../../../assets";
+import { addIcon, brandIconlight, brandMain, eventMain, eventUserImage, like } from "../../../assets";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useGetAllBrandsQuery } from "../../../services/brands";
+import { toast } from "react-toastify";
 
 const Brand = () => {
+  const tabs = [
+    {
+      label: "My Brands",
+      icon: null,
+    },
+    {
+      label: "Following Brands",
+      icon: null,
+    },
+    {
+      label: "Saved Brands",
+      icon: like,
+    },
+  ];
   const [activeTab, setActiveTab] = useState(0);
   const location = useLocation();
   const navigate = useNavigate()
@@ -17,6 +33,9 @@ const Brand = () => {
   const gotoDetail = (item) => {
     //go to detail page functionality
     console.log(item, "item");
+    if (location?.pathname === "/brand") {
+      navigate(`/brand/${item?.id}`)
+    }
   };
 
   const handleAction = (item, type) => {
@@ -41,6 +60,53 @@ const Brand = () => {
     }
 
   };
+  const [myBrandData, setMyBrandData] = useState([]);
+  const { data, isError, isLoading, isSuccess, error, refetch } = useGetAllBrandsQuery({ page: 1, pageSize: 7 }, {
+    refetchOnMountOrArgChange: true,
+  });
+
+
+  const transformBrandData = (apiData) => {
+    return apiData.map((brand, index) => ({
+      id: brand?.id,
+      type: "brand",
+      brandName: brand.brandName || "N/A",
+      brandImg: brand.brandImage || "",
+      brandCategory: brand.brandCategory && brand.brandCategory.length > 0
+        ? brand.brandCategory.map(item => item.name).join(", ")
+        : "N/A",
+      events: brand.events || "-",
+      followers: brand.followers || "-",
+      status: brand.status || "N/A",
+      colHeader1: "Table cell",
+      colHeader2: "Table cell",
+      colHeader3: "Table cell",
+      colHeader4: "Table cell",
+      colHeader5: "Table cell",
+      colHeader6: "Table cell",
+      colHeader7: "Table cell",
+    }));
+  };
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(error?.data?.message)
+    }
+  }, [isError])
+
+  useEffect(() => {
+    if (isSuccess) {
+      setMyBrandData(transformBrandData(data?.data?.brands || []));
+    }
+  }, [isSuccess])
+
+  if (isLoading) {
+    return (
+      <Box sx={{ width: "100%" }}>
+        <LinearProgress />
+      </Box>
+    )
+  }
 
   return (
     <Box>
@@ -49,15 +115,63 @@ const Brand = () => {
       </Stack>
       <Card sx={{ marginY: 2 }}>
         <FilterationTabs
+          tabs={tabs}
           activeTab={activeTab}
           handleChange={handleChange}
           handleAdd={handleAdd}
         />
-        <DynamicTable
-          isLoading={false}
-          data={brandTableData(gotoDetail, handleAction)[activeTab].data}
-          columns={brandTableData(gotoDetail, handleAction)[activeTab].column}
-        />
+        {brandTableData(gotoDetail, handleAction, myBrandData)[activeTab].data.length > 0 ? (
+          <DynamicTable
+            isLoading={isLoading}
+            data={brandTableData(gotoDetail, handleAction, myBrandData)[activeTab].data}
+            columns={brandTableData(gotoDetail, handleAction, myBrandData)[activeTab].column}
+          />
+        ) : (
+          <Stack
+            direction="column"
+            alignItems="center"
+            justifyContent="center"
+            gap={2}
+            paddingY={4}
+          >
+            <Typography sx={{ fontWeight: 400 }} color="primary" variant="h5">
+              {
+                "You don't currently own any brand. Would you like to add a new one?"
+              }
+            </Typography>
+            <Button
+              onClick={handleAdd}
+              startIcon={
+                <img
+                  style={{
+                    filter:
+                      "brightness(0) saturate(100%) invert(5%) sepia(29%) saturate(6114%) hue-rotate(176deg) brightness(93%) contrast(102%)",
+                  }}
+                  width={16}
+                  height={16}
+                  src={addIcon}
+                  alt="add-icon"
+                />
+              }
+              sx={{
+                background: (theme) => theme.palette.button.secondary,
+                color: (theme) => theme.palette.primary.main,
+                fontSize: "16px",
+                fontWeight: 500,
+                width: { xs: "100%", sm: "142px" },
+                height: "31px",
+                textTransform: "capitalize",
+                borderRadius: "3px",
+                "&:hover": {
+                  background: (theme) => theme.palette.button.secondary,
+                  color: (theme) => theme.palette.primary.main,
+                },
+              }}
+            >
+              Add New
+            </Button>
+          </Stack>
+        )}
       </Card>
     </Box>
   );

@@ -1,12 +1,14 @@
-import { Box, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import { flag } from '../../../assets'
 import { FullWidthImgInput, ImgInputWithCategories, InputWithMap, OutlinedTabs } from '../../../components'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
 import { useTheme } from '@emotion/react'
+import { useNavigate } from 'react-router-dom'
 
 const NewEvent = () => {
+    const navigate = useNavigate();
     const theme = useTheme();
     // States and Ref
     const mainImageRef = useRef(null)
@@ -106,6 +108,56 @@ const NewEvent = () => {
                 pb: 2
             }}
         >
+            <Box
+                sx={{
+                    position: "sticky",
+                    alignSelf: "flex-end",
+                    top: "16px",
+                    display: "flex",
+                    columnGap: "10px",
+                    width: "max-content",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    zIndex: 2,
+                    right: 0,
+                    marginRight: "16px",
+                }}
+                className="buttons-box"
+            >
+                <Button
+                  sx={{
+                    fontSize: "16px",
+                    width: "143px",
+                    height: "31px",
+                    textTransform: "none",
+                  }}
+                  onClick={() => navigate(`/event`)}
+                >
+                  Save as Draft
+                </Button>
+                <Button
+                  sx={{
+                  fontSize: "16px",
+                  width: "103px",
+                  height: "31px",
+                  backgroundColor: "rgb(0, 20, 28, 0.9)",
+                  textTransform: "none",
+                  }}
+                >
+                  Publish
+                </Button>
+                <Button
+                  sx={{
+                    fontSize: "16px",
+                    width: "102px",
+                    height: "31px",
+                    textTransform: "none",
+                  }}
+                  onClick={() => navigate(`/event`)}
+                >
+                  Archive
+                </Button>
+            </Box>
             <FullWidthImgInput activity={"event"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={flag} />
 
             <ImgInputWithCategories
