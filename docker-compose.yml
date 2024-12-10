@@ -31,7 +31,7 @@ services:
 
   shwcase_db:
     container_name: shwcase_db
-    image: mysql:5.7.16
+    image: mysql:8.0.0
     ports:
       - ${MYSQL_PORT}:${MYSQL_PORT}
     environment:
