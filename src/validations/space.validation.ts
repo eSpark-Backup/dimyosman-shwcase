@@ -28,6 +28,7 @@ export class SpaceValidation {
     location: Joi.object({
       long: Joi.number().required(),
       lat: Joi.number().required(),
+      additional: Joi.string().optional(),
     }).optional(),
     status: Joi.string()
       .valid(...Object.values(SPACE_STATUS))
@@ -62,6 +63,7 @@ export class SpaceValidation {
     location: Joi.object({
       long: Joi.number().optional(),
       lat: Joi.number().optional(),
+      additional: Joi.string().optional(),
     }).optional(),
     status: Joi.string()
       .valid(...Object.values(SPACE_STATUS))

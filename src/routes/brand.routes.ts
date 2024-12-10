@@ -66,6 +66,9 @@ const brandController = new BrandController(brandRepository, userRepository);
  *                   lat:
  *                     type: number
  *                     description: Latitude of the brand's location.
+ *                   additional:
+ *                     type: string
+ *                     description: Additional information about the location.
  *               status:
  *                 type: string
  *                 enum:
@@ -154,6 +157,9 @@ router.post(
  *                     type: number
  *                   lat:
  *                     type: number
+ *                   additional:
+ *                     type: string
+ *
  *               status:
  *                 type: string
  *                 enum:
@@ -269,6 +275,9 @@ router.put(
  *                           lat:
  *                             type: number
  *                             description: Latitude of the brand's location.
+ *                           additional:
+ *                             type: string
+ *                             description: Additional information about the location.
  *                       status:
  *                         type: string
  *                         enum:

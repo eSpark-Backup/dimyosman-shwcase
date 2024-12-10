@@ -64,7 +64,7 @@ export class BrandController {
       await this.brandRepo.save(newBrand);
       res
         .status(HTTP_STATUS.OK)
-        .json(handleResponse("Brand Created Successfully successful"));
+        .json(handleResponse("Brand Created Successfully"));
       return next();
     } catch (error) {
       logger.error(

@@ -90,11 +90,11 @@ export class EventController {
 
       res
         .status(HTTP_STATUS.OK)
-        .json(handleResponse("Space Created Successfully successful", event));
+        .json(handleResponse("Event Created Successfully", event));
       return next();
     } catch (error) {
       logger.error(
-        `SpaceController :: CreateSpace :: ${(error as Error)?.message}`
+        `EventController :: CreateEvent :: ${(error as Error)?.message}`
       );
       return next(error);
     }
@@ -127,7 +127,7 @@ export class EventController {
       }
       const existingEvent = await this.eventRepo.findOne({ where: { id } });
       if (!existingEvent) {
-        return next(res.status(404).json({ message: "Space not found" }));
+        return next(res.status(404).json({ message: "Event not found" }));
       }
       if (eventName) {
         const checkName = await this.eventRepo.findOne({
@@ -135,7 +135,7 @@ export class EventController {
         });
         if (checkName && checkName.eventName !== existingEvent.eventName) {
           throw new ApiError(
-            "Space with this name already exists",
+            "Event with this name already exists",
             HTTP_STATUS.BAD_REQUEST
           );
         }
@@ -206,11 +206,11 @@ export class EventController {
 
       res
         .status(HTTP_STATUS.OK)
-        .json(handleResponse("Space Updated Successfully"));
+        .json(handleResponse("Event Updated Successfully"));
       return next();
     } catch (error) {
       logger.error(
-        `SpaceController :: updateSpace :: ${(error as Error)?.message}`
+        `EventController :: updateEvent :: ${(error as Error)?.message}`
       );
       return next(error);
     }

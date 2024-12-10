@@ -19,7 +19,7 @@ const filterFiles = (
   if (ALLOWED_IMG_TYPES.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Invalid file type. Only images are allowed."));
+    cb(new Error(" Invalid file type. Only images are allowed."));
   }
 };
 /**

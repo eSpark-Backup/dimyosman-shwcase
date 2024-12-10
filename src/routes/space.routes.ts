@@ -89,6 +89,9 @@ const spaceController = new SpaceController(
  *                   lat:
  *                     type: number
  *                     description: Latitude of the space's location.
+ *                   additional:
+ *                     type: string
+ *                     description: Additional information about the location.
  *               status:
  *                 type: string
  *                 enum:
@@ -192,6 +195,8 @@ router.post(
  *                     type: number
  *                   lat:
  *                     type: number
+ *                   additional:
+ *                     type: string
  *               status:
  *                 type: string
  *                 enum:
@@ -307,6 +312,9 @@ router.put(
  *                           lat:
  *                             type: number
  *                             description: Latitude of the space's location.
+ *                           additional:
+ *                             type: string
+ *                             description: Additional information about the location.
  *                       status:
  *                         type: string
  *                         enum:

@@ -83,7 +83,7 @@ export class SpaceController {
 
       res
         .status(HTTP_STATUS.OK)
-        .json(handleResponse("Space Created Successfully successful", space));
+        .json(handleResponse("Space Created Successfully", space));
       return next();
     } catch (error) {
       logger.error(
