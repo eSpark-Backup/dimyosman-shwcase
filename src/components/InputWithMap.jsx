@@ -11,8 +11,9 @@ import { useClickOutside } from '../utils';
 import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
+import Dropdown from './Dropdown';
 
-const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapDescription, activity, eventName, eventAddress, defaultDate, mapInstruction, categories, HandleCategoryChange, handleModalOpen, defaultPrice, HandlePriceModal, edit }) => {
+const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapDescription, activity, eventName, eventAddress, defaultDate, mapInstruction, categories, HandleCategoryChange, handleModalOpen, defaultPrice, HandlePriceModal, edit, options, onBrandSelect, selectedValue }) => {
   const theme = useTheme();
   const datePickerRef = useRef(null);
   const [openDatePicker, setOpenDatePicker] = useState(false);
@@ -61,6 +62,12 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
       },
     },
   };
+
+  const handleSelectChange = (selectedOption) => {
+    console.log("Selected Option in Child:", selectedOption.target);
+    onBrandSelect(selectedOption.target.value)
+  };
+
   return (
     <Box
       sx={{
@@ -151,17 +158,51 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
           {activity === "brand" ? "Headquarters at:" : activity === "event" ? "Hosted at:" : "Located at:"}
         </Typography>
 
-        {(activity === "event" || activity === "space") && (
-          <Box sx={{ width: "100%", minHeight: "60px", border: "1px dashed rgba(0, 20, 28, 0.4)", borderRadius: "3px", display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "rgba(209, 219, 215, 0.2)", px: "10px" }}>
-            <Box sx={{ display: "flex", flexDirection: "column", rowGap: "5px", alignItems: activity === "space" && "center" }}>
-              <Typography variant='h5' sx={{ textAlign: "left", fontWeight: "600", color: theme.palette.primary.dark }}>
+        {activity === "space" ? (
+          <Dropdown
+            options={options}
+            onChange={handleSelectChange}
+            label={'Select brand:'}
+            value={selectedValue}
+          />
+        ) : (
+          // Default content for "event" activity
+          <Box
+            sx={{
+              width: "100%",
+              minHeight: "60px",
+              border: "1px dashed rgba(0, 20, 28, 0.4)",
+              borderRadius: "3px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              backgroundColor: "rgba(209, 219, 215, 0.2)",
+              px: "10px",
+            }}
+          >
+            <Box sx={{ display: "flex", flexDirection: "column", rowGap: "5px" }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  textAlign: "left",
+                  fontWeight: "600",
+                  color: theme.palette.primary.dark,
+                }}
+              >
                 {eventName}
               </Typography>
-              {
-                eventAddress && <Typography variant='h6' sx={{ textAlign: "left", fontWeight: "300", color: theme.palette.primary.main }}>
+              {eventAddress && (
+                <Typography
+                  variant="h6"
+                  sx={{
+                    textAlign: "left",
+                    fontWeight: "300",
+                    color: theme.palette.primary.main,
+                  }}
+                >
                   {eventAddress}
                 </Typography>
-              }
+              )}
             </Box>
             <img
               style={{ marginTop: "7px" }}
@@ -170,27 +211,30 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
             />
           </Box>
         )}
-        {
-          mapInstruction && <Typography style={{
-            fontStyle: "italic",
-            fontSize: "12px",
-            fontWeight: "300",
-            textAlign: "left",
-            fontFamily: `"Segoe UI", "sans-serif"`,
-          }}>
-            {mapInstruction}
-          </Typography>
+        {(activity === "brand" && !edit) &&
+          <Typography fontSize={14} fontWeight={300} sx={{ fontStyle: "italic" }}>Click on the map to select Address.</Typography>
         }
-        <figure style={{ width: "100%", height: "100%" }} role="img" aria-labelledby="profile-map">
-          <img width="100%" height="100%" src={miniMap} alt="map" />
+        <figure role="img" aria-labelledby="profile-map" onClick={handleClick} style={{ cursor: "pointer" }}>
+          <img width="100%" height="auto" src={miniMap} alt="map" />
           <figcaption
-            style={{
-              fontStyle: "italic",
-              fontSize: "12px",
-              fontWeight: "300",
-              textAlign: "left",
-              fontFamily: `"Segoe UI", "sans-serif"`,
-            }}
+            style={activity === "brand" && !edit ?
+              {
+                fontStyle: "normal",
+                fontSize: "12px",
+                fontWeight: "400",
+                textAlign: "left",
+                marginTop: "6px",
+                fontFamily: `"Segoe UI", "sans-serif"`,
+              }
+              :
+              {
+                fontStyle: "italic",
+                fontSize: "12px",
+                fontWeight: "300",
+                textAlign: "left",
+                fontFamily: `"Segoe UI", "sans-serif"`,
+              }
+            }
           >
             {mapDescription}
           </figcaption>

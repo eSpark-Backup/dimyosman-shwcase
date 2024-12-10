@@ -5,8 +5,8 @@ import { PriceColumns } from '../columns/price';
 const PriceModal = ({handleClose}) => {
     const theme = useTheme();
     const [items, setItems] = useState([
-        { id: 1, price: "$200", term: "Day", minimum: "7", select: true },
-        { id: 2, price: "$1000", term: "Week", minimum: "2", select: true },
+        { id: 1, price: "$200", term: "Day", minimum: "7", select: false },
+        { id: 2, price: "$1000", term: "Week", minimum: "2", select: false },
         { id: 3, price: "$4000", term: "Month", minimum: "3", select: false },
         { id: 4, price: "$400000", term: "Year", minimum: "2", select: false },
     ]);
