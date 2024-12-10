@@ -207,15 +207,14 @@ export class BrandController {
         return next();
       }
 
-      const [brands, totalItems] = await this.brandRepo
-        .createQueryBuilder("brand")
-        .leftJoinAndSelect("brand.user", "user")
-        .where("user.id = :userId", { userId: req.user?.id })
-        .skip(skipNumber)
-        .take(takeNumber)
-        .orderBy("brand.createdAt", "DESC")
-        .cache(false)
-        .getManyAndCount();
+      const [brands, totalItems] = await this.brandRepo.findAndCount({
+        where: { user: { id: req.user?.id } },
+        skip: skipNumber,
+        take: takeNumber,
+        order: {
+          createdAt: "DESC",
+        },
+      });
 
       if (brands.length === 0) {
         res.status(404).json(handleResponse("No Brands Found"));
