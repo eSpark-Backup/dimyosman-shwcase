@@ -47,8 +47,9 @@ const Calendar = () => {
 
   const [timeZone, setTimeZone] = useState("");
   const [events, setEvents] = useState([
-    { title: "Info here", date: "2024-12-11T10:00:00", status: "no" },
-    { title: "60 min", date: "2024-12-24T09:00:00", status: "yes" },
+    { title: "(Info here)", date: "2024-12-11T13:00:00", status: "no" },
+    { title: "(Info here)", date: "2024-12-11T13:00:00", status: "no" },
+    { title: "(60 min)", date: "2024-12-24T12:00:00", status: "yes" },
   ]);
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -251,6 +252,11 @@ const Calendar = () => {
         eventClassNames={(arg) => getEventClassNames(arg.event)}
         viewDidMount={handleViewDidMount}
         slotLabelFormat={{
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }}
+        eventTimeFormat={{
           hour: "2-digit",
           minute: "2-digit",
           hour12: false,
