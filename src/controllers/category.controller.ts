@@ -42,9 +42,12 @@ export class CategoryController {
 
       const filter = type as CategoryType;
 
-      const categories = await this.categoryRepo.find({
-        where: { categoryType: filter },
-      });
+      const categories = await this.categoryRepo
+        .createQueryBuilder("category")
+        .where("category.categoryType = :filter", { filter })
+        .cache(false)
+        .getMany();
+
       res
         .status(200)
         .json(handleResponse("Categories Fetched Successfully", categories));
