@@ -23,7 +23,6 @@ import { DataSource } from "typeorm";
 import dotenv from "dotenv";
 
 dotenv.config();
-//console.log("Environment Variables:", process.env);
 
 // TypeORM Configuration
 export const AppDataSource = new DataSource({
@@ -37,5 +36,5 @@ export const AppDataSource = new DataSource({
   logging: true,
   entities: [__dirname + "/entity/*.entity{.ts,.js}"],
   migrations: [__dirname + "/*.entity{.ts,.js}"],
-  subscribers: [],
+  cache: false,
 });
