@@ -32,7 +32,7 @@ const slice = createSlice({
         const { data } = payload;
         state.token = data.token;
         state.user = data?.user;
-        localStorage.setItem("token", data.token);
+        // localStorage.setItem("token", data.token);
       }
     );
   },
