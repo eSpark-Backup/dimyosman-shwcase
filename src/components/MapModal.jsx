@@ -5,9 +5,11 @@ import { locationIcon, mapMarker } from '../assets'
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import "leaflet/dist/leaflet.css"
+import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
+import 'leaflet-geosearch/dist/geosearch.css'
 
 const MapModal = ({
-    value, setValue, addressLine, address, handleClose, buttonVal, initialPosition, setBrandData
+    value, setValue, addressLine, address, handleClose, buttonVal, initialPosition, setBrandData, instructionValue, setInstructionValue
 }) => {
     const theme = useTheme()
 
@@ -20,6 +22,7 @@ const MapModal = ({
         popupAnchor: [0, -32]
     })
 
+    
     const MapEvents = () => {
         useMapEvents({
             click(e) {
@@ -27,7 +30,7 @@ const MapModal = ({
                 console.log("Map clicked at:", lat, lng)
                 setPosition([lat, lng])
 
-                // Update the brandData in the parent component with the new position
+                
                 setBrandData(prevData => ({
                     ...prevData,
                     location: { lat, long: lng }
@@ -37,6 +40,41 @@ const MapModal = ({
         return null
     }
 
+    const handleSearch = (e) => {
+        const query = e.target.value
+        setValue(query)
+
+        if (query.length >= 3) {
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data[0]) {
+                        const lat = data[0].lat
+                        const lon = data[0].lon
+                        setPosition([lat, lon])
+
+                        
+                        setBrandData(prevData => ({
+                            ...prevData,
+                            location: { lat, long: lon }
+                        }))
+                    }
+                })
+                .catch(error => console.error("Error fetching location:", error))
+        }
+    }
+
+    useEffect(() => {
+        const map = document.querySelector('.leaflet-container').leafletMap;
+        if (map) {
+            const geoSearch = new GeoSearchControl({
+                provider: new OpenStreetMapProvider(),
+                style: 'bar',
+            })
+            map.addControl(geoSearch)
+        }
+    }, [position])
+
     return (
         <>
             <Input
@@ -44,7 +82,7 @@ const MapModal = ({
                 value={value}
                 type={"text"}
                 placeholder={"Type Address..."}
-                onInputChange={(e) => setValue(e.target.value)}
+                onInputChange={handleSearch}
                 endAdornment={
                     <InputAdornment position="end">
                         <IconButton>
@@ -67,7 +105,7 @@ const MapModal = ({
                     <span style={{ fontWeight: "300" }}>{addressLine} </span>
                     {address}
                 </Typography>
-                <Input type={"text"} placeholder={"Additional instructions like entrances, floors..."} />
+                <Input type={"text"} placeholder={"Additional instructions like entrances, floors..."} value={instructionValue} onInputChange={setInstructionValue} />
             </Box>
 
             <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
@@ -91,4 +129,3 @@ const MapModal = ({
 }
 
 export default MapModal
-

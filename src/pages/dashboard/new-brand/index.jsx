@@ -26,7 +26,8 @@ const NewBrand = () => {
         brandCategories: [],
         brandOverview: "Add a brief brand overview that highlights the core aspects of the brand.\n\nClearly explain the brand’s mission, what makes it unique, and why it stands out in the market. Mention key products or services, emphasizing any unique selling points or values the brand embodies (e.g., sustainability, luxury, innovation).\n \nKeep it concise and informative, focusing on the brand’s identity and what customers can expect. \n\nThis description will be used as an excerpt.",
         brandTitle: defaultTemplate,
-        location: { lat: 30.188760426055236, long: 70.22460937500001 }
+        location: { lat: 30.188760426055236, long: 70.22460937500001 },
+        mapInstructions: ""
     });
 
     const { isError, isSuccess, error, data, isLoading } = useGetCategoriesQuery('BRANDS')
@@ -172,8 +173,9 @@ const NewBrand = () => {
 
 
     const handleAddImage = () => {
-        if (brandData.cover.length < 3) {
-            setCurrentIndex(brandData.cover.length);
+        const nextIndex = brandData.cover.length;
+        if (nextIndex >= 0 && nextIndex <= brandData.cover.length) {
+            setCurrentIndex(nextIndex);
         }
     };
 
@@ -256,6 +258,13 @@ const NewBrand = () => {
         setBrandData({ ...brandData, brandCategories: newCategories });
     }
 
+    const HandleSlideChange = (index) => {
+        if (index >= 0 && index <= brandData.cover.length) {
+            setCurrentIndex(index);
+        }
+    };
+
+
     return (
         <Box
             sx={{
@@ -292,12 +301,12 @@ const NewBrand = () => {
                     }}
                     loading={loadingButton === "Draft"}
                     onClick={HandleDraftSubmit}
-                    loadingIndicator={
-                        <CircularProgress size={20} sx={{ color: "#FFFFFF" }} />
-                    }
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
+                    disabled={loadingButton && loadingButton !== "Draft"}
                 >
                     Save as Draft
                 </LoadingButton>
+
                 <LoadingButton
                     sx={{
                         fontSize: "16px",
@@ -308,12 +317,12 @@ const NewBrand = () => {
                     }}
                     loading={loadingButton === "PUBLISH"}
                     onClick={HandlePublishSubmit}
-                    loadingIndicator={
-                        <CircularProgress size={20} sx={{ color: "#FFFFFF" }} />
-                    }
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
+                    disabled={loadingButton && loadingButton !== "PUBLISH"}
                 >
                     Publish
                 </LoadingButton>
+
                 <LoadingButton
                     sx={{
                         fontSize: "16px",
@@ -323,12 +332,12 @@ const NewBrand = () => {
                     }}
                     loading={loadingButton === "ARCHIVE"}
                     onClick={HandleArchiveSubmit}
-                    loadingIndicator={
-                        <CircularProgress size={20} sx={{ color: "#FFFFFF" }} />
-                    }
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
+                    disabled={loadingButton && loadingButton !== "ARCHIVE"}
                 >
                     Archive
                 </LoadingButton>
+
             </Box>
             <FullWidthImgInput
                 HandleChange={handleMainImageChange}
@@ -340,6 +349,7 @@ const NewBrand = () => {
                 handleAdd={handleAddImage}
                 handleRemove={handleRemoveImage}
                 currentIndex={currentIndex}
+                HandleSlideChange={HandleSlideChange}
             />
 
             <ImgInputWithCategories
@@ -420,7 +430,11 @@ const NewBrand = () => {
 
             </Box>
             <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-                <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[brandData?.location?.lat, brandData?.location?.long]} setBrandData={setBrandData} />
+                <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[brandData?.location?.lat, brandData?.location?.long]} setBrandData={setBrandData} instructionValue={brandData?.mapInstructions}
+                    setInstructionValue={(e) => setBrandData((prev) => ({
+                        ...prev,
+                        mapInstructions: e.target.value
+                    }))} />
             </ReusableModal>
         </Box>
     )
