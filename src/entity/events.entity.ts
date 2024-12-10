@@ -17,11 +17,10 @@ export enum EventStatus {
 @Entity()
 export class Events extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
-  @Index()
   id: string;
 
-  @ManyToOne(() => User, (user) => user.id, { nullable: false })
-  @JoinColumn({ name: "user" })
+  @ManyToOne(() => User, (user) => user.events, { cascade: true })
+  @JoinColumn({ name: "userId" })
   user: User;
 
   @ManyToOne(() => Brand, (brand) => brand.id, { nullable: true })

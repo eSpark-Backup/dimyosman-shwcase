@@ -17,11 +17,10 @@ export enum BrandStatus {
 @Entity()
 export class Brand extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
-  @Index()
   id: string;
 
-  @ManyToOne(() => User, (user) => user.id, { nullable: false })
-  @JoinColumn({ name: "user" })
+  @ManyToOne(() => User, (user) => user.brands, { cascade: true })
+  @JoinColumn({ name: "userId" })
   user: User;
 
   @Column({ type: "varchar", length: 100, nullable: false })

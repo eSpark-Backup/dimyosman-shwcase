@@ -17,11 +17,10 @@ export enum SpaceStatus {
 @Entity()
 export class Spaces extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
-  @Index()
   id: string;
 
-  @ManyToOne(() => User, (user) => user.id, { nullable: false })
-  @JoinColumn({ name: "user" })
+  @ManyToOne(() => User, (user) => user.spaces, { cascade: true })
+  @JoinColumn({ name: "userId" })
   user: User;
 
   @ManyToOne(() => Brand, (brand) => brand.id, { nullable: true })
