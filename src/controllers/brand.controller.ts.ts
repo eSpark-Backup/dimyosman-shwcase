@@ -79,7 +79,7 @@ export class BrandController {
     file: IFileRequest,
     res: Response,
     next: NextFunction
-  ): Promise<void> {
+  ): Promise<any> {
     try {
       const { files } = file;
       const { id } = req.params;
@@ -167,10 +167,9 @@ export class BrandController {
 
       await this.brandRepo.update(id, existingBrand);
 
-      res
+      return res
         .status(HTTP_STATUS.OK)
         .json(handleResponse("Brand Updated Successfully"));
-      return next();
     } catch (error) {
       logger.error(
         `BrandController :: updateBrand :: ${(error as Error)?.message}`
@@ -183,7 +182,7 @@ export class BrandController {
     req: ICustomRequest,
     res: Response,
     next: NextFunction
-  ): Promise<void> {
+  ): Promise<any> {
     try {
       const { id } = req.params;
       const { page, take, skip } = req?.query;
@@ -228,7 +227,7 @@ export class BrandController {
         }
       });
 
-      res.status(200).json(
+      return res.status(200).json(
         handleResponse("Brands Fetched Successfully", {
           brands,
           pagination: {
@@ -239,7 +238,6 @@ export class BrandController {
           },
         })
       );
-      return next();
     } catch (error) {
       next(error);
     }
