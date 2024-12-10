@@ -195,7 +195,7 @@ export class SpaceController {
       existingSpace.spaceImage = imageUrls[0].url;
       existingSpace.imageKey = imageUrls[0].public_id;
 
-      await this.spaceRepo.save(existingSpace);
+      await this.spaceRepo.update(id, existingSpace);
 
       res
         .status(HTTP_STATUS.OK)

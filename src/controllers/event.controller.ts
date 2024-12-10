@@ -202,7 +202,7 @@ export class EventController {
       existingEvent.eventImage = imageUrls[0].url;
       existingEvent.imageKey = imageUrls[0].public_id;
 
-      await this.eventRepo.save(existingEvent);
+      await this.eventRepo.update(id, existingEvent);
 
       res
         .status(HTTP_STATUS.OK)

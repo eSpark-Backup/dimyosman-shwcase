@@ -165,7 +165,7 @@ export class BrandController {
       existingBrand.brandImage = imageUrls[0].url;
       existingBrand.imageKey = imageUrls[0].public_id;
 
-      await this.brandRepo.save(existingBrand);
+      await this.brandRepo.update(id, existingBrand);
 
       res
         .status(HTTP_STATUS.OK)
