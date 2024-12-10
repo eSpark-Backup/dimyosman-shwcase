@@ -165,11 +165,11 @@ export class BrandController {
       existingBrand.brandImage = imageUrls[0].url;
       existingBrand.imageKey = imageUrls[0].public_id;
 
-      await this.brandRepo.update(id, existingBrand);
+      const UpdatedBrand = await this.brandRepo.update(id, existingBrand);
 
       return res
         .status(HTTP_STATUS.OK)
-        .json(handleResponse("Brand Updated Successfully"));
+        .json(handleResponse("Brand Updated Successfully", UpdatedBrand));
     } catch (error) {
       logger.error(
         `BrandController :: updateBrand :: ${(error as Error)?.message}`
