@@ -84,6 +84,7 @@ export const brandApi = api.injectEndpoints({
                 const location = {
                     lat: brandData?.location?.lat,
                     long: brandData?.location?.long,
+                    additional: brandData?.mapInstructions
                 };
                 formData.append('location', JSON.stringify(location));
 
