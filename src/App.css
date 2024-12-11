@@ -216,6 +216,188 @@ input[data-autocompleted] {
 
 /* Text Editor */
 
+/* Calendar */
+.fc.fc-media-screen {
+  background-color: white;
+  padding: 16px;
+  border-radius: 5px;
+  font-family: "Segoe UI";
+}
+
+.fc table{
+  font-size: 12px;
+  font-weight: 600 !important;
+}
+
+.fc .fc-col-header-cell-cushion {
+  min-height: 40px !important;
+  background-color: rgb(209, 219, 215, 0.4);
+  /* width: 100%; */
+  display: flex !important;
+  /* justify-content: center !important; */
+  align-items: center !important;
+  padding-left: 10px !important;
+  font-weight: 600 !important;
+  color: rgb(0, 20, 28, 0.5);
+  text-transform: uppercase;
+}
+
+.fc .fc-daygrid-day-top {
+  flex-direction: row;
+  padding: 10px 0px 0px 7px;
+}
+
+.fc .fc-daygrid-day.fc-day-today, .fc .fc-timegrid-col.fc-day-today {
+  background-color: rgb(209, 219, 215, 0.4);
+}
+
+.fc-event {
+  background-color: #C4777F !important;
+  border-color: #C4777F !important;
+  min-height: 30px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+}
+
+.fc-button {
+  color: #00141C !important;
+  /* Text color red */
+  background-color: rgb(209, 219, 213, 0.2) !important;
+  text-transform: capitalize !important;
+  border: 1px solid rgb(209, 219, 213, 0.2) !important;
+  max-height: 31px !important;
+  width: 100px;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  font-weight: 600 !important;
+  font-size: 16px;
+  /* Background color white */
+}
+
+/* Style for selected button */
+.fc-button.fc-button-active {
+  background-color: rgb(209, 219, 215, 0.6) !important;
+  border: 1px solid rgb(209, 219, 215, 0.6) !important;
+}
+
+.fc-button:focus{
+  box-shadow: none !important;
+}
+
+.fc .fc-toolbar-title{
+  font-weight: 600;
+  font-size: 20px;
+  color: #00141C;
+}
+
+.event-yes {
+  background-color: #94B986 !important; 
+  border: none !important;
+  color: white !important;
+}
+
+.event-no {
+  background-color: #C4777F !important;
+  color: white !important;
+  border: none !important;
+}
+
+.weekly-day {
+  display: block;
+}
+
+.fc-timeGridWeek-view .fc-timegrid-slots colgroup col, 
+.fc-timeGridWeek-view .fc-col-header colgroup col, 
+.fc-timeGridWeek-view .fc-timegrid-cols colgroup col, 
+.fc-timeGridDay-view colgroup col {
+  width: 80px !important;
+}
+
+.fc-timeGridWeek-view .fc-timegrid-slot-label, 
+.fc-timeGridDay-view .fc-timegrid-slot-label {
+  background-color: rgba(209, 219, 215, 0.4);
+}
+
+.fc-timeGridWeek-view .fc-scrollgrid-shrink, 
+.fc-timeGridDay-view .fc-scrollgrid-shrink {
+  border: none;
+  height: 44px !important;
+  border-bottom: 1px solid var(--fc-border-color);
+}
+
+.fc-timeGridWeek-view .fc-timegrid-slot-minor, 
+.fc-timeGridDay-view .fc-timegrid-slot-minor {
+  display: none;
+}
+
+.fc-timeGridWeek-view .fc-timegrid-bg-harness,
+.fc-timeGridDay-view .fc-timegrid-bg-harness {
+  height: 44px;
+}
+
+.fc-timeGridWeek-view .fc-col-header .fc-day,
+.fc-timeGridDay-view .fc-col-header .fc-day {
+  height: 80px !important;
+}
+
+.fc-timeGridWeek-view .fc-col-header .fc-day div.fc-scrollgrid-sync-inner, 
+.fc-timeGridWeek-view .fc-col-header .fc-day div a,
+.fc-timeGridDay-view .fc-col-header .fc-day div.fc-scrollgrid-sync-inner, 
+.fc-timeGridDay-view .fc-col-header .fc-day div a {
+  height: 100% !important;
+  background: #ffffff;
+}
+
+.fc-timeGridWeek-view .fc-col-header .fc-day div a div {
+  display: flex;
+  flex-direction: column;
+}
+
+.fc-timeGridWeek-view .fc-timegrid-slot-label-cushion,
+.fc-timeGridDay-view .fc-timegrid-slot-label-cushion {
+  font-size: 14px;
+  font-weight: 400;
+  padding-right: 8px;
+  color: #00141C;
+}
+
+.fc-timeGridWeek-view .fc-timegrid-axis-frame,
+.fc-timeGridDay-view .fc-timegrid-axis-frame {
+  height: 100%;
+  background-color: rgba(209, 219, 215, 0.4);
+  padding-right: 8px;
+}
+
+.timegrid-gmt {
+  color: #00141C;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.fc-daygrid-event-dot{
+  display: none;
+}
+.fc-direction-ltr .fc-daygrid-event.fc-event-end, .fc-direction-rtl .fc-daygrid-event.fc-event-start{
+  padding-left: 6px;
+}
+.fc-daygrid-dot-event .fc-event-title{
+  font-weight: 600;
+}.fc-daygrid-event-dot{
+  display: none;
+}
+.fc-direction-ltr .fc-daygrid-event.fc-event-end, .fc-direction-rtl .fc-daygrid-event.fc-event-start{
+  padding-left: 6px;
+}
+.fc-daygrid-dot-event .fc-event-title{
+  font-weight: 600;
+}
+
+/* Calendar */
+
 
 /* Media Query Starts */
 @media screen and (max-width:550px) {
@@ -270,7 +452,9 @@ input[data-autocompleted] {
 }
 
 @media screen and (max-width:768px) {
-  .search-bar, .text-icon {
+
+  .search-bar,
+  .text-icon {
     display: none;
   }
 }

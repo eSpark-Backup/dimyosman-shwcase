@@ -105,6 +105,7 @@ import lineThrough from "./line-through.svg";
 import paperClip from "./paperclip.svg";
 import link from "./link.svg";
 import smile from "./smile.svg";
+import bigCalendar from "./big-calendar.svg";
 import mapMarker from "./map-marker.svg"
 
 export {
@@ -214,5 +215,6 @@ export {
   paperClip,
   link,
   smile,
+  bigCalendar,
   mapMarker
 };

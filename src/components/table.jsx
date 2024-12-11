@@ -2,6 +2,7 @@ import {
   Box,
   LinearProgress,
   Table as MUITable,
+  Pagination,
   Stack,
   TableBody,
   TableCell,
@@ -12,8 +13,9 @@ import {
 import PerfectScrollbar from "react-perfect-scrollbar";
 import { getValue } from "../utils";
 import { useRef, useState } from "react";
+import 'react-perfect-scrollbar/dist/css/styles.css';
 
-export const DynamicTable = ({ data, columns, isLoading, ...rest }) => {
+export const DynamicTable = ({ data, columns, isLoading, page, handlePageChange, total, ...rest }) => {
   const tableRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -66,7 +68,7 @@ export const DynamicTable = ({ data, columns, isLoading, ...rest }) => {
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
-        <PerfectScrollbar>
+        <PerfectScrollbar options={{ suppressScrollX: false, suppressScrollY: true }}>
           <MUITable sx={{ minWidth: 650, borderCollapse: "separate" }}>
             <TableHead>
               <TableRow>
@@ -161,13 +163,27 @@ export const DynamicTable = ({ data, columns, isLoading, ...rest }) => {
               </TableBody>
             )}
           </MUITable>
+
           {isLoading && (
             <Box sx={{ width: "100%" }}>
               <LinearProgress />
             </Box>
           )}
+
         </PerfectScrollbar>
+
       </TableContainer>
+      {
+        data?.length >= 1 && !isLoading ? <Stack sx={{ marginTop: { xs: "20px", sm: "10px" } }} p={{ xs: 0, sm: 2 }} alignItems="center">
+          <Pagination
+            page={page}
+            variant="outlined" shape="rounded" onChange={handlePageChange ? (_, page) => handlePageChange(page) : () => { }} count={Math.ceil((total || 1) / 7)} />
+        </Stack> : data?.length >= 7 && !isLoading ? <Stack sx={{ marginTop: { xs: "20px", sm: "10px" } }} p={{ xs: 0, sm: 2 }} alignItems="center">
+          <Pagination
+            page={page}
+            variant="outlined" shape="rounded" onChange={handlePageChange ? (_, page) => handlePageChange(page) : () => { }} count={Math.ceil((total || 1) / 7)} />
+        </Stack> : null
+      }
     </>
   );
 };

@@ -22,6 +22,7 @@ const Brand = () => {
       icon: like,
     },
   ];
+  const [page, setPage] = useState(1)
   const [activeTab, setActiveTab] = useState(0);
   const location = useLocation();
   const navigate = useNavigate()
@@ -61,7 +62,7 @@ const Brand = () => {
 
   };
   const [myBrandData, setMyBrandData] = useState([]);
-  const { data, isError, isLoading, isSuccess, error, refetch } = useGetAllBrandsQuery({ page: 1, pageSize: 7 }, {
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({ page, pageSize: 7 }, {
     refetchOnMountOrArgChange: true,
   });
 
@@ -88,17 +89,24 @@ const Brand = () => {
     }));
   };
 
-  useEffect(() => {
-    if (isError) {
-      toast.error(error?.data?.message)
-    }
-  }, [isError])
+  const [hasShownErrorToast, setHasShownErrorToast] = useState(false);
 
   useEffect(() => {
+    if (isError && !hasShownErrorToast) {
+      toast.error(error?.data?.message, { toastId: "error-toast" });
+      setHasShownErrorToast(true);
+    }
+
     if (isSuccess) {
       setMyBrandData(transformBrandData(data?.data?.brands || []));
+      setHasShownErrorToast(false);
+      console.log(data)
     }
-  }, [isSuccess])
+  }, [isError, isSuccess, error, hasShownErrorToast, page, data]);
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
 
   if (isLoading) {
     return (
@@ -122,9 +130,12 @@ const Brand = () => {
         />
         {brandTableData(gotoDetail, handleAction, myBrandData)[activeTab].data.length > 0 ? (
           <DynamicTable
-            isLoading={isLoading}
+            isLoading={isLoading || isFetching}
             data={brandTableData(gotoDetail, handleAction, myBrandData)[activeTab].data}
             columns={brandTableData(gotoDetail, handleAction, myBrandData)[activeTab].column}
+            total={data && data?.data?.pagination?.totalItems}
+            handlePageChange={handlePageChange}
+            page={page}
           />
         ) : (
           <Stack
