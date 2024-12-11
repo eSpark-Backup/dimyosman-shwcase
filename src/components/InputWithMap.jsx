@@ -64,7 +64,6 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
   };
 
   const handleSelectChange = (selectedOption) => {
-    console.log("Selected Option in Child:", selectedOption.target);
     onBrandSelect(selectedOption.target.value)
   };
 

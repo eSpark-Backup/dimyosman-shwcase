@@ -7,6 +7,7 @@ import 'quill/dist/quill.snow.css';
 import ReusableModal from '../../../components/Modal';
 import { useGetCategoriesQuery } from '../../../services/categories';
 import { useGetAllBrandsQuery } from '../../../services/brands';
+import { useGetAmenitiesQuery } from '../../../services/amenities';
 
 const NewSpace = () => {
     const theme = useTheme()
@@ -23,19 +24,13 @@ const NewSpace = () => {
         spaceOverview: "Add a brief overview of the space, highlighting its size, location, and key features.\n\nExplain what makes the space ideal for events, pop-ups, or other uses, focusing on its flexibility and amenities. Be sure to mention any standout aspects, such as design, accessibility, or additional services provided (e.g., security, Wi-Fi).\n\nKeep the description informative yet concise, ensuring it appeals to potential users by focusing on what they will benefit from. You can also include a brief note on the atmosphere or style of the space.",
         spaceTitle: defaultTemplate,
         location: { lat: 30.188760426055236, long: 70.22460937500001 },
-        selectedBrand: ""
+        selectedBrand: "",
+        price: "",
+        amenities: []
     });
 
     const mainImageRef = useRef(null)
     const profileImageRef = useRef(null)
-    const [feature, setfeatures] = useState([
-        { name: 'Flexible Layout', selected: true, icon: arrow, id: 1 },
-        { name: 'Wifi', selected: true, icon: wifi, id: 2 },
-        { name: 'Accessible Location', selected: false, icon: accessibility, id: 3 },
-        { name: 'Natural Lighting', selected: false, icon: sun, id: 4 },
-        { name: 'Compact Storage Area', selected: false, icon: storage, id: 5 },
-        { name: 'On-Site Security', selected: true, icon: security, id: 6 },
-    ]);
     const [isEditorVisible, setIsEditorVisible] = useState(false);
 
     const editorRef = useRef(null);
@@ -46,13 +41,9 @@ const NewSpace = () => {
     const [priceModal, setPriceModal] = useState(false)
 
     const { isError, isSuccess, error, data, isLoading } = useGetCategoriesQuery('BRANDS')
-    const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError } = useGetAllBrandsQuery({ page: 1, pageSize: 7 });
+    const { isError: IsAmenitiesError, isSuccess: AmeitiesSuccess, error: AmenitiesError, data: AmenitiesData, isLoading: AmenitiesLoading } = useGetAmenitiesQuery()
+    const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
 
-    useEffect(() => {
-        if (IsBrandSuccess) {
-            console.log(brandData)
-        }
-    }, [IsBrandSuccess])
 
     useEffect(() => {
         if (isError) {
@@ -75,6 +66,23 @@ const NewSpace = () => {
             }));
         }
     }, [isSuccess, data]);
+
+    useEffect(() => {
+        if (AmeitiesSuccess) {
+            const updatedAmenities = AmenitiesData?.data.map((amenity) => ({
+                id: amenity.id,
+                name: amenity.amenitiesName,
+                selected: false,
+                icon: amenity.amenitiesImage,
+            }));
+
+            setSpaceData((prevState) => ({
+                ...prevState,
+                amenities: updatedAmenities,
+            }));
+        }
+    }, [AmeitiesSuccess, AmenitiesData]);
+
 
 
     // Functions
@@ -140,7 +148,8 @@ const NewSpace = () => {
 
     const handleModalOpen = () => {
         setModalOpen(true);
-        setSelectedInModal(feature.map(feat => ({ ...feat })));
+        // setSelectedInModal(feature.map(feat => ({ ...feat })));
+        setSelectedInModal(spaceData?.amenities.map(feat => ({ ...feat })));        
     };
 
     const handleModalClose = () => {
@@ -179,11 +188,21 @@ const NewSpace = () => {
     }, [isEditorVisible, spaceData?.spaceTitle]);
 
     const CategoryChangeHandler2 = (index) => {
-        const newFeatures = feature?.map((item, i) =>
+        const amenitiesSelected = spaceData?.amenities?.filter((item) => item.selected).length;
+        if (spaceData?.amenities?.find((item) => item.id === index)?.selected && amenitiesSelected === 1) {
+            alert("At least one amenity should be selected.");
+            return;
+        }    
+        const newFeatures = spaceData?.amenities?.map((item) =>
             item?.id === index ? { ...item, selected: !item?.selected } : item
-        )
-        setfeatures(newFeatures);
-    }
+        );
+    
+        setSpaceData((prevData) => ({
+            ...prevData,
+            amenities: newFeatures,
+        }));
+    };
+    
 
     const options = brandData?.data?.brands?.map((brand) => ({
         label: brand.brandName,
@@ -194,13 +213,30 @@ const NewSpace = () => {
     const handleBrandSelect = (value) => {
         const selectedItem = options.find((option) => option.value === value);
 
-        console.log('Selected Brand in Parent:', selectedItem);
-
         setSpaceData((prev) => ({
             ...prev,
             selectedBrand: selectedItem?.item,
         }));
     };
+
+    const HandlePriceSelect = (item) => {
+        setPriceModal(false)
+        setSpaceData((prevState) => ({
+            ...prevState,
+            price: item[0]
+        }));
+    }
+
+    const setfeatures = (selectedAmenities) => {
+        setSpaceData((prevState) => ({
+            ...prevState,
+            amenities: prevState.amenities.map((amenity) => {
+                const matchedItem = selectedAmenities.find((selected) => selected.id === amenity.id);
+                return matchedItem ? { ...amenity, selected: matchedItem.selected } : amenity;
+            }),
+        }));
+    };    
+    
 
     return (
         <Box
@@ -293,10 +329,10 @@ const NewSpace = () => {
                 }}
             >
                 <InputWithMap inputLabel={"Space Overview:"} inputValue={spaceData?.spaceOverview} setInputValue={(value) => setSpaceData({ ...spaceData, spaceOverview: value })} mapInstruction={"Click on the map to change/adjust."} mapDescription={"Brand Address is displayed automatically"} activity={"space"} eventName={"Select your Brand"}
-                    defaultPrice={"$xxx/day"}
+                    defaultPrice={spaceData?.price === "" ? "$xxx/day" : spaceData?.price?.price + "/" + spaceData?.price?.term}
                     handleModalOpen={handleModalOpen}
                     handleClick={() => setMapModal(true)}
-                    categories={feature}
+                    categories={spaceData?.amenities}
                     HandleCategoryChange={CategoryChangeHandler2}
                     HandlePriceModal={() => setPriceModal(true)}
                     options={options}
@@ -349,7 +385,7 @@ const NewSpace = () => {
             </Box>
             <ReusableModal open={modalOpen} handleClose={handleModalClose} heading={"Select Amenities and Features"}>
                 <ChoiceSelectionModal
-                    categories={feature}
+                    categories={spaceData?.amenities}
                     handleClose={handleModalClose}
                     onSelect={setfeatures}
                     maxSelections={Infinity}
@@ -360,7 +396,7 @@ const NewSpace = () => {
                 <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[spaceData?.location?.lat, spaceData?.location?.long]} />
             </ReusableModal>
             <ReusableModal open={priceModal} handleClose={() => setPriceModal(false)} heading={"Pricing and terms"}>
-                <PriceModal handleClose={() => setPriceModal(false)} />
+                <PriceModal handleClose={HandlePriceSelect} />
             </ReusableModal>
         </Box>
     )

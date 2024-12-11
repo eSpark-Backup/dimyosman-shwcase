@@ -12,6 +12,11 @@ const PriceModal = ({handleClose}) => {
     ]);
 
     const columns = PriceColumns({ items, setItems });
+    
+    const handleSelectClick = () => {
+        const selectedItems = items.filter((item) => item.select);
+        handleClose(selectedItems);
+    };
     return (
         <>
             <Box
@@ -86,7 +91,7 @@ const PriceModal = ({handleClose}) => {
                         color: theme.palette.primary.main,
                         "&:hover": { backgroundColor: "rgba(209, 219, 215, 0.4)" }
                     }}
-                    onClick={handleClose}
+                    onClick={handleSelectClick}
                 >
                     Select
                 </Button>
