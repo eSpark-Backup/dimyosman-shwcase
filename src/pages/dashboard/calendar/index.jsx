@@ -48,7 +48,7 @@ const Calendar = () => {
   const [timeZone, setTimeZone] = useState("");
   const [events, setEvents] = useState([
     { title: "(Info here)", date: "2024-12-11T13:00:00", status: "no" },
-    { title: "(Info here)", date: "2024-12-11T13:00:00", status: "no" },
+    { title: "(Info here)", date: "2024-12-11T14:00:00", status: "no" },
     { title: "(60 min)", date: "2024-12-24T12:00:00", status: "yes" },
   ]);
   const [selectedDate, setSelectedDate] = useState(dayjs());
@@ -147,7 +147,7 @@ const Calendar = () => {
   }, []);
 
   return (
-    <>
+    <Box sx={{ marginBottom: "50px" }}>
       <Stack alignItems="flex-end" marginBottom={2}>
         <Box
           sx={{
@@ -247,8 +247,8 @@ const Calendar = () => {
         events={events}
         editable={true}
         selectable={true}
-        dateClick={(info) => alert(`Clicked on date: ${info.dateStr}`)}
-        eventClick={(info) => alert(`Event: ${info.event.title}`)}
+        dateClick={(info) => console.log(`Clicked on date: ${info.dateStr}`)}
+        eventClick={(info) => console.log(`Event: ${info.event.title}`)}
         eventClassNames={(arg) => getEventClassNames(arg.event)}
         viewDidMount={handleViewDidMount}
         slotLabelFormat={{
@@ -261,8 +261,11 @@ const Calendar = () => {
           minute: "2-digit",
           hour12: false,
         }}
+        dayMaxEvents={3}
+        firstDay={1}
+        height="auto"
       />
-    </>
+    </Box>
   );
 };
 

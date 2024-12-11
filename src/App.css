@@ -227,6 +227,7 @@ input[data-autocompleted] {
 .fc table{
   font-size: 12px;
   font-weight: 600 !important;
+  color: #00141C;
 }
 
 .fc .fc-col-header-cell-cushion {
@@ -381,19 +382,33 @@ input[data-autocompleted] {
 .fc-daygrid-event-dot{
   display: none;
 }
+
 .fc-direction-ltr .fc-daygrid-event.fc-event-end, .fc-direction-rtl .fc-daygrid-event.fc-event-start{
   padding-left: 6px;
 }
+
 .fc-daygrid-dot-event .fc-event-title{
   font-weight: 600;
-}.fc-daygrid-event-dot{
+}
+
+.fc-daygrid-event-dot{
   display: none;
 }
+
 .fc-direction-ltr .fc-daygrid-event.fc-event-end, .fc-direction-rtl .fc-daygrid-event.fc-event-start{
   padding-left: 6px;
 }
+
 .fc-daygrid-dot-event .fc-event-title{
   font-weight: 600;
+}
+
+.fc-daygrid-day {
+  height: 150px; 
+}
+
+.fc .fc-day-other .fc-daygrid-day-top{
+  opacity: 1;
 }
 
 /* Calendar */
