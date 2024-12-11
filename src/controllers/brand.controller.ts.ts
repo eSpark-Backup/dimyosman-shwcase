@@ -1,9 +1,14 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { Brand, User } from "../entity";
+import { Brand, BrandStatus, User } from "../entity";
 import { ApiError } from "../errors";
 import { Repository } from "typeorm";
 import { handleResponse, logger } from "../utils";
-import { CLOUD_FOLDERS, HTTP_STATUS, PAGINATION } from "../constants";
+import {
+  BRAND_STATUS,
+  CLOUD_FOLDERS,
+  HTTP_STATUS,
+  PAGINATION,
+} from "../constants";
 import { uploadService } from "../services";
 import { ICustomRequest, IFileRequest, UploadResult } from "../interfaces";
 
@@ -227,9 +232,22 @@ export class BrandController {
         }
       });
 
+      const groupedBrands = {
+        publishedBrands: brands.filter(
+          (brand) => brand.status === BrandStatus.PUBLISH
+        ),
+        draftBrands: brands.filter(
+          (brand) => brand.status === BrandStatus.DRAFT
+        ),
+        archivedBrands: brands.filter(
+          (brand) => brand.status === BrandStatus.ARCHIVE
+        ),
+        totalItems,
+      };
+
       return res.status(200).json(
         handleResponse("Brands Fetched Successfully", {
-          brands,
+          groupedBrands,
           pagination: {
             totalItems,
             currentPage: parseInt(page as string, 10),
