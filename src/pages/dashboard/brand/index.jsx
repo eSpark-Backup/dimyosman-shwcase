@@ -98,7 +98,7 @@ const Brand = () => {
     }
 
     if (isSuccess) {
-      setMyBrandData(transformBrandData(data?.data?.brands || []));
+      setMyBrandData(transformBrandData(data?.data?.groupedBrands?.publishedBrands || []));
       setHasShownErrorToast(false);
       console.log(data)
     }

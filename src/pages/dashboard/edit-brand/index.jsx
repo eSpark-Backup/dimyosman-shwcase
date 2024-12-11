@@ -147,19 +147,20 @@ const EditBrand = () => {
   const [isEditorVisible, setIsEditorVisible] = useState(false);
   const editorRef = useRef(null);
   const quillRef = useRef(null);
+  
 
   useEffect(() => {
     if (quillRef.current) {
       quillRef.current = null;
     }
-
     setBrandData((prevState) => ({
       ...prevState,
-      brandTitle: brandData?.brandTitle,
+      brandTitle: prevState?.brandTitle,
     }));
-
+  
     setIsEditorVisible(false);
   }, [activeTab]);
+  
 
 
   useEffect(() => {
@@ -281,7 +282,6 @@ const EditBrand = () => {
     }
     setLoadingButton(status);
     try {
-      // console.log(brandData)
       await brand({ brandData: { ...brandData, status }, id: params?.brandId });
     } finally {
       setLoadingButton(null);

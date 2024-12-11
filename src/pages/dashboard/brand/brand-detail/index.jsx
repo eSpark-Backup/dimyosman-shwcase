@@ -14,7 +14,7 @@ const BrandDetails = () => {
 
   useEffect(() => {
     if (isSuccess) {
-      const updatedBrands = data.data.brands.map((fetchedBrand) => ({
+      const updatedBrands = data?.data?.groupedBrands?.publishedBrands.map((fetchedBrand) => ({
         id: fetchedBrand?.id,
         type: "brand",
         owned: true,
