@@ -10,7 +10,7 @@ import { registerSchema } from '../../../validation/validation';
 import { useRegisterMutation } from "../../../services/auth";
 
 const Register = () => {
-  const [register, { isLoading, isSuccess, isError, error, data }] =
+  const [register, { isLoading, isSuccess, isError, error}] =
     useRegisterMutation();
   const theme = useTheme();
   const navigate = useNavigate();
@@ -41,8 +41,7 @@ const Register = () => {
             toast.error(error?.data?.message);
         }
         if (isSuccess) {
-            toast.success(data?.message)
-            navigate("/auth?type=login");
+            navigate("/activity");
         }
     }, [isError, isSuccess, navigate, error]);
 
