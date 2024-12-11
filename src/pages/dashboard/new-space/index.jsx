@@ -26,7 +26,8 @@ const NewSpace = () => {
         location: { lat: 30.188760426055236, long: 70.22460937500001 },
         selectedBrand: "",
         price: "",
-        amenities: []
+        amenities: [],
+        mapInstructions: ""
     });
 
     const mainImageRef = useRef(null)
@@ -99,6 +100,12 @@ const NewSpace = () => {
         if (spaceData.cover.length < 3) mainImageRef.current.click();
     };
 
+    const HandleSlideChange = (index) => {
+        if (index >= 0 && index <= spaceData.cover.length) {
+            setCurrentIndex(index);
+        }
+    };
+
     const HandleProfileFileInputClick = () => {
         profileImageRef.current.click();
     }
@@ -114,8 +121,9 @@ const NewSpace = () => {
     };
 
     const handleAddImage = () => {
-        if (spaceData.cover.length < 3) {
-            setCurrentIndex(spaceData.cover.length);
+        const nextIndex = spaceData.cover.length;
+        if (nextIndex >= 0 && nextIndex <= spaceData.cover.length) {
+            setCurrentIndex(nextIndex);
         }
     };
 
@@ -149,7 +157,7 @@ const NewSpace = () => {
     const handleModalOpen = () => {
         setModalOpen(true);
         // setSelectedInModal(feature.map(feat => ({ ...feat })));
-        setSelectedInModal(spaceData?.amenities.map(feat => ({ ...feat })));        
+        setSelectedInModal(spaceData?.amenities.map(feat => ({ ...feat })));
     };
 
     const handleModalClose = () => {
@@ -192,17 +200,17 @@ const NewSpace = () => {
         if (spaceData?.amenities?.find((item) => item.id === index)?.selected && amenitiesSelected === 1) {
             alert("At least one amenity should be selected.");
             return;
-        }    
+        }
         const newFeatures = spaceData?.amenities?.map((item) =>
             item?.id === index ? { ...item, selected: !item?.selected } : item
         );
-    
+
         setSpaceData((prevData) => ({
             ...prevData,
             amenities: newFeatures,
         }));
     };
-    
+
 
     const options = brandData?.data?.brands?.map((brand) => ({
         label: brand.brandName,
@@ -235,8 +243,8 @@ const NewSpace = () => {
                 return matchedItem ? { ...amenity, selected: matchedItem.selected } : amenity;
             }),
         }));
-    };    
-    
+    };
+
 
     return (
         <Box
@@ -300,7 +308,9 @@ const NewSpace = () => {
             </Box>
             <FullWidthImgInput activity={"space"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={spaceIcon} editImage={spaceData.cover[currentIndex] ? URL.createObjectURL(spaceData.cover[currentIndex]) : null} handleAdd={handleAddImage}
                 handleRemove={handleRemoveImage}
-                currentIndex={currentIndex} />
+                currentIndex={currentIndex}
+                HandleSlideChange={HandleSlideChange}
+            />
 
             <ImgInputWithCategories
                 handleImgClick={HandleProfileFileInputClick}
@@ -393,7 +403,11 @@ const NewSpace = () => {
                 />
             </ReusableModal>
             <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-                <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[spaceData?.location?.lat, spaceData?.location?.long]} />
+                <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[spaceData?.location?.lat, spaceData?.location?.long]} instructionValue={spaceData?.mapInstructions}
+                    setInstructionValue={(e) => setSpaceData((prev) => ({
+                        ...prev,
+                        mapInstructions: e.target.value
+                    }))} />
             </ReusableModal>
             <ReusableModal open={priceModal} handleClose={() => setPriceModal(false)} heading={"Pricing and terms"}>
                 <PriceModal handleClose={HandlePriceSelect} />
