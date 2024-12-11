@@ -224,6 +224,20 @@ input[data-autocompleted] {
   font-family: "Segoe UI";
 }
 
+.fc .fc-scrollgrid {
+  border-radius: 5px;
+}
+
+.fc-scrollgrid-section-body td {
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.fc-scrollgrid-section-header th {
+  border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
+}
+
 .fc table{
   font-size: 12px;
   font-weight: 600 !important;
@@ -324,11 +338,10 @@ input[data-autocompleted] {
 }
 
 .fc-timeGridWeek-view .fc-scrollgrid-shrink, 
-.fc-timeGridDay-view .fc-scrollgrid-shrink {
-  border: none;
+.fc-timeGridDay-view .fc-scrollgrid-shrink{
   height: 44px !important;
-  border-bottom: 1px solid var(--fc-border-color);
 }
+
 
 .fc-timeGridWeek-view .fc-timegrid-slot-minor, 
 .fc-timeGridDay-view .fc-timegrid-slot-minor {
