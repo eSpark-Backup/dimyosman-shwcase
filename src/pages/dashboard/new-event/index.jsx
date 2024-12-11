@@ -8,24 +8,30 @@ import { useTheme } from '@emotion/react'
 import { useNavigate } from 'react-router-dom'
 
 const NewEvent = () => {
+    const defaultTemplate = `<h2><strong>Event Blog Post Title</strong></h2><p><strong>Main Features:</strong> Highlight the key aspects of the event. This could include exclusive offers, workshops, activities, or special guests. Be sure to describe what attendees can expect and why it’s valuable to them. Adding images to this section can make it more visually appealing.</p><br/><p><strong>Interactive Elements:</strong> If there are any interactive experiences, such as displays or hands-on activities, explain how they will enhance the overall event experience. Keep the description clear and focused on what attendees will gain.</p><br/><p><strong>Venue & Atmosphere:</strong> Give a brief mention of the venue and how it contributes to the event’s overall vibe. If the event has a theme like sustainability, mention how it aligns with the venue or event practices. Adding a relevant image can help set the tone.</p><br/><p><strong>Conclusion:</strong> Wrap up with a call to action, encouraging readers to attend, register, or follow for more updates. Reiterate what makes the event special and why it’s a must-attend.</p>`;
+    const [eventData, setEventData] = useState({
+        cover: [],
+        profileImage: null,
+        eventName: "New Event",
+        eventCategories: [],
+        eventOverview: "Add a brief event overview that highlights the key aspects of the event.\n\nMake sure to clearly explain the purpose, what attendees can expect, and why it's valuable to them. Keep it informative, mentioning any special features like workshops, activities, or unique selling points of the products or services offered.\n\nAim to engage the reader by focusing on the most important details, while ensuring the description stays concise and easy to understand.\n\nThis description will be used as an excerpt.",
+        eventTitle: defaultTemplate,
+        location: { lat: 30.188760426055236, long: 70.22460937500001 },
+        mapInstructions: ""
+    });
     const navigate = useNavigate();
     const theme = useTheme();
-    // States and Ref
     const mainImageRef = useRef(null)
     const profileImageRef = useRef(null)
-    const [eventName, setEventName] = useState("New Event")
-    const [categories, setCategories] = useState([
-        { name: 'Sustainable Fashion', selected: true, id: 1 },
-        { name: 'Real Estate', selected: false, id: 2 },
-        { name: 'Technology', selected: false, id: 3 },
-        { name: 'Health & Wellness', selected: false, id: 4 },
-        { name: 'Education', selected: false, id: 5 },
-    ]);
-    const [eventOverview, setEventOverview] = useState("Add a brief event overview that highlights the key aspects of the event.\n\nMake sure to clearly explain the purpose, what attendees can expect, and why it's valuable to them. Keep it informative, mentioning any special features like workshops, activities, or unique selling points of the products or services offered.\n\nAim to engage the reader by focusing on the most important details, while ensuring the description stays concise and easy to understand.\n\nThis description will be used as an excerpt.")
+    const [currentIndex, setCurrentIndex] = useState(0);
+    // const [categories, setCategories] = useState([
+    //     { name: 'Sustainable Fashion', selected: true, id: 1 },
+    //     { name: 'Real Estate', selected: false, id: 2 },
+    //     { name: 'Technology', selected: false, id: 3 },
+    //     { name: 'Health & Wellness', selected: false, id: 4 },
+    //     { name: 'Education', selected: false, id: 5 },
+    // ]);
     const [isEditorVisible, setIsEditorVisible] = useState(false);
-
-    const defaultTemplate = `<h2><strong>Event Blog Post Title</strong></h2><p><strong>Main Features:</strong> Highlight the key aspects of the event. This could include exclusive offers, workshops, activities, or special guests. Be sure to describe what attendees can expect and why it’s valuable to them. Adding images to this section can make it more visually appealing.</p><br/><p><strong>Interactive Elements:</strong> If there are any interactive experiences, such as displays or hands-on activities, explain how they will enhance the overall event experience. Keep the description clear and focused on what attendees will gain.</p><br/><p><strong>Venue & Atmosphere:</strong> Give a brief mention of the venue and how it contributes to the event’s overall vibe. If the event has a theme like sustainability, mention how it aligns with the venue or event practices. Adding a relevant image can help set the tone.</p><br/><p><strong>Conclusion:</strong> Wrap up with a call to action, encouraging readers to attend, register, or follow for more updates. Reiterate what makes the event special and why it’s a must-attend.</p>`;
-    const [eventTitle, setEventTitle] = useState(defaultTemplate);
 
     const editorRef = useRef(null);
     const quillRef = useRef(null);
@@ -35,12 +41,16 @@ const NewEvent = () => {
 
 
     // Functions
-    const HandleMainFileInputClick = () => {
-        mainImageRef.current.click();
-    }
-    const HandleMainImageChange = async (event) => {
+    const handleMainFileInputClick = () => {
+        if (eventData.cover.length < 3) mainImageRef.current.click();
+    };
+    const handleMainImageChange = (event) => {
         const file = event.target.files[0];
-        console.log(file);
+        if (file) {
+            const updatedCover = [...eventData.cover];
+            updatedCover[currentIndex] = file;
+            setEventData((prev) => ({ ...prev, cover: updatedCover }));
+        }
     };
 
     const HandleProfileFileInputClick = () => {
@@ -48,26 +58,50 @@ const NewEvent = () => {
     }
     const HandleProfileImageChange = async (event) => {
         const file = event.target.files[0];
-        console.log(file);
+        if (file) {
+            setEventData((prev) => ({
+                ...prev,
+                profileImage: file,
+            }));
+        }
+    };
+
+    const handleAddImage = () => {
+        const nextIndex = eventData.cover.length;
+        if (nextIndex >= 0 && nextIndex <= eventData.cover.length) {
+            setCurrentIndex(nextIndex);
+        }
+    };
+
+    const handleRemoveImage = () => {
+        const updatedCover = eventData.cover.filter((_, index) => index !== currentIndex);
+        setEventData((prev) => ({ ...prev, cover: updatedCover }));
+        setCurrentIndex((prev) => Math.max(0, prev - 1));
     };
 
     const CategoryChangeHandler = (index) => {
-        const categoriesSelected = categories.filter((cat) => cat.selected).length;
+        const categoriesSelected = eventData?.eventCategories?.filter((cat) => cat.selected).length;
 
-        if (categories.find((cat) => cat.id === index).selected && categoriesSelected === 1) {
+        if (eventData?.eventCategories?.find((cat) => cat.id === index).selected && categoriesSelected === 1) {
             alert("Atleast one category should be selected");
             return;
         }
-        if (!categories.find((cat) => cat.id === index).selected && categoriesSelected >= 2) {
+        if (!eventData?.eventCategories?.find((cat) => cat.id === index).selected && categoriesSelected >= 2) {
             alert("You can select 2 categories at max.");
             return;
         }
 
-        const newCategories = categories.map((cat, i) =>
+        const newCategories = eventData?.eventCategories?.map((cat, i) =>
             cat?.id === index ? { ...cat, selected: !cat.selected } : cat
         )
-        setCategories(newCategories);
+        setEventData({ ...eventData, eventCategories: newCategories });
     }
+
+    const HandleSlideChange = (index) => {
+        if (index >= 0 && index <= eventData.cover.length) {
+            setCurrentIndex(index);
+        }
+    };
 
     const tabs = [
         { label: "Details", component: <></> },
@@ -123,47 +157,60 @@ const NewEvent = () => {
                 className="buttons-box"
             >
                 <Button
-                  sx={{
-                    fontSize: "16px",
-                    width: "143px",
-                    height: "31px",
-                    textTransform: "none",
-                  }}
-                  onClick={() => navigate(`/event`)}
+                    sx={{
+                        fontSize: "16px",
+                        width: "143px",
+                        height: "31px",
+                        textTransform: "none",
+                    }}
+                    onClick={() => navigate(`/event`)}
                 >
-                  Save as Draft
+                    Save as Draft
                 </Button>
                 <Button
-                  sx={{
-                  fontSize: "16px",
-                  width: "103px",
-                  height: "31px",
-                  backgroundColor: "rgb(0, 20, 28, 0.9)",
-                  textTransform: "none",
-                  }}
+                    sx={{
+                        fontSize: "16px",
+                        width: "103px",
+                        height: "31px",
+                        backgroundColor: "rgb(0, 20, 28, 0.9)",
+                        textTransform: "none",
+                    }}
                 >
-                  Publish
+                    Publish
                 </Button>
                 <Button
-                  sx={{
-                    fontSize: "16px",
-                    width: "102px",
-                    height: "31px",
-                    textTransform: "none",
-                  }}
-                  onClick={() => navigate(`/event`)}
+                    sx={{
+                        fontSize: "16px",
+                        width: "102px",
+                        height: "31px",
+                        textTransform: "none",
+                    }}
+                    onClick={() => navigate(`/event`)}
                 >
-                  Archive
+                    Archive
                 </Button>
             </Box>
-            <FullWidthImgInput activity={"event"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={flag} />
+            <FullWidthImgInput
+                activity={"event"}
+                HandleChange={handleMainImageChange}
+                HandleInputCLick={handleMainFileInputClick}
+                imageRef={mainImageRef}
+                icon={flag}
+                editImage={eventData.cover[currentIndex] ? URL.createObjectURL(eventData.cover[currentIndex]) : null}
+                handleAdd={handleAddImage}
+                handleRemove={handleRemoveImage}
+                currentIndex={currentIndex}
+                HandleSlideChange={HandleSlideChange}
+            />
 
             <ImgInputWithCategories
                 handleImgClick={HandleProfileFileInputClick}
                 imgRef={profileImageRef}
                 handleChange={HandleProfileImageChange}
-                inputVal={eventName}
-                onChange={(e) => setEventName(e.target.value)}
+                inputVal={eventData?.eventName}
+                onChange={(e) =>
+                    setEventData((prev) => ({ ...prev, eventName: e.target.value }))
+                }
                 inputlabel={"event name:"}
                 categoryLabel={"event category:"}
                 categories={categories}
