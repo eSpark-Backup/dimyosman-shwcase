@@ -62,7 +62,6 @@ export class BrandController {
         commonHelper.createFileObject(path.join(coverFilesPath, file), "cover")
       );
 
-      // Create IFileObject array for image files
       const imageFileObjects: IFileObject[] = imageFiles.map((file) =>
         commonHelper.createFileObject(path.join(imageFilesPath, file), "image")
       );
@@ -131,7 +130,24 @@ export class BrandController {
     next: NextFunction
   ): Promise<any> {
     try {
-      const { files } = file;
+      const coverFilesPath = path.join(process.cwd(), "uploads");
+      const imageFilesPath = path.join(process.cwd(), "uploads");
+      const coverFiles = fs
+        .readdirSync(coverFilesPath)
+        .filter((file) => file.startsWith("cover")); // Filter for cover files
+      const imageFiles = fs
+        .readdirSync(path.join(imageFilesPath))
+        .filter((file) => file.startsWith("image")); // Filter for image files
+
+      const coverFileObjects: IFileObject[] = coverFiles.map((file) =>
+        commonHelper.createFileObject(path.join(coverFilesPath, file), "cover")
+      );
+
+      // Create IFileObject array for image files
+      const imageFileObjects: IFileObject[] = imageFiles.map((file) =>
+        commonHelper.createFileObject(path.join(imageFilesPath, file), "image")
+      );
+
       const { id } = req.params;
       let { brandName, brandCategory, details, location, status, coverKeys } =
         req.body;
@@ -172,16 +188,19 @@ export class BrandController {
 
       const oldBrandImage = existingBrand.brandImage;
 
-      const coverUrls: UploadResult[] = files?.cover
+      const coverUrls: UploadResult[] = coverFileObjects?.length
         ? ((await uploadService.uploadMultipleFiles(
-            files.cover,
+            coverFileObjects,
             FolderName
           )) as UploadResult[])
         : oldCoverImages;
 
       const imageUrls = (
-        files?.image
-          ? await uploadService.uploadMultipleFiles(files.image, FolderName)
+        imageFileObjects?.length
+          ? await uploadService.uploadMultipleFiles(
+              imageFileObjects,
+              FolderName
+            )
           : [{ url: oldBrandImage }]
       ) as UploadResult[];
 
@@ -201,7 +220,7 @@ export class BrandController {
         }
       }
 
-      if (files?.image && oldBrandImage !== imageUrls[0]?.url) {
+      if (imageFileObjects && oldBrandImage !== imageUrls[0]?.url) {
         await uploadService.deleteFile(existingBrand.imageKey);
       }
 
@@ -216,11 +235,29 @@ export class BrandController {
       existingBrand.imageKey = imageUrls[0].public_id;
 
       const UpdatedBrand = await this.brandRepo.update(id, existingBrand);
+      const uploadsPath = path.join(process.cwd(), "uploads");
+
+      const files = fs.readdirSync(uploadsPath);
+
+      files.forEach((file) => {
+        const filePath = path.join(uploadsPath, file);
+        fs.unlinkSync(filePath);
+        console.log(`Deleted file: ${filePath}`);
+      });
 
       return res
         .status(HTTP_STATUS.OK)
         .json(handleResponse("Brand Updated Successfully", UpdatedBrand));
     } catch (error) {
+      const uploadsPath = path.join(process.cwd(), "uploads");
+
+      const files = fs.readdirSync(uploadsPath);
+
+      files.forEach((file) => {
+        const filePath = path.join(uploadsPath, file);
+        fs.unlinkSync(filePath);
+        console.log(`Deleted file: ${filePath}`);
+      });
       logger.error(
         `BrandController :: updateBrand :: ${(error as Error)?.message}`
       );
