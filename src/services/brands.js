@@ -91,7 +91,7 @@ export const brandApi = api.injectEndpoints({
 
                 if (brandData?.cover) {
                     const coverKeys = [];
-
+                
                     brandData.cover.forEach((file) => {
                         if (file?.public_id) {
                             coverKeys.push(file.public_id);
@@ -99,12 +99,11 @@ export const brandApi = api.injectEndpoints({
                             formData.append('cover', file);
                         }
                     });
-
-
-                    // if (coverKeys.length > 0) {
+                
                     formData.append('coverKeys', JSON.stringify(coverKeys));
-                    // }
+                    // formData.append('coverKeys', coverKeys.join(','));
                 }
+                
 
                 if (brandData?.profileImage) {
                     if (brandData.profileImage instanceof File) {
