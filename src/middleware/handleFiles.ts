@@ -50,6 +50,9 @@ export const handleMultipleFiles = (
     const upload = multer({
       storage,
       fileFilter: filterFiles,
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5 MB per file
+      },
     }).fields(fields);
 
     upload(req, res, function (err) {
