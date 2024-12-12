@@ -51,7 +51,6 @@ const Brand = () => {
       [
         //remove functionality
       ];
-    console.log(item, "item", type);
   };
 
   const handleAdd = () => {
@@ -100,7 +99,6 @@ const Brand = () => {
     if (isSuccess) {
       setMyBrandData(transformBrandData(data?.data?.groupedBrands?.publishedBrands || []));
       setHasShownErrorToast(false);
-      console.log(data)
     }
   }, [isError, isSuccess, error, hasShownErrorToast, page, data]);
 
