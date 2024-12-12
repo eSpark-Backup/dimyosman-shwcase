@@ -104,7 +104,6 @@ export class BrandController {
       res
         .status(HTTP_STATUS.OK)
         .json(handleResponse("Brand Created Successfully"));
-      return next();
     } catch (error) {
       const uploadsPath = path.join(process.cwd(), "uploads");
 
@@ -113,7 +112,7 @@ export class BrandController {
         files.forEach((file) => {
           const filePath = path.join(uploadsPath, file);
           fs.unlinkSync(filePath);
-          console.log(`Deleted file: ${filePath}`);
+          console.log(`Deleted file From Catch Block: ${filePath}`);
         });
       }
       logger.error(
@@ -128,7 +127,7 @@ export class BrandController {
     file: IFileRequest,
     res: Response,
     next: NextFunction
-  ): Promise<any> {
+  ): Promise<void> {
     try {
       const coverFilesPath = path.join(process.cwd(), "uploads");
       const imageFilesPath = path.join(process.cwd(), "uploads");
@@ -245,7 +244,7 @@ export class BrandController {
         console.log(`Deleted file: ${filePath}`);
       });
 
-      return res
+      res
         .status(HTTP_STATUS.OK)
         .json(handleResponse("Brand Updated Successfully", UpdatedBrand));
     } catch (error) {
@@ -269,7 +268,7 @@ export class BrandController {
     req: ICustomRequest,
     res: Response,
     next: NextFunction
-  ): Promise<any> {
+  ): Promise<void> {
     try {
       const { id } = req.params;
       const { page, take, skip } = req?.query;
@@ -327,7 +326,7 @@ export class BrandController {
         totalItems,
       };
 
-      return res.status(200).json(
+      res.status(200).json(
         handleResponse("Brands Fetched Successfully", {
           groupedBrands,
           pagination: {
