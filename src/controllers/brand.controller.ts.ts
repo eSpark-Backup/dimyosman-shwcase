@@ -187,15 +187,16 @@ export class BrandController {
 
       const oldBrandImage = existingBrand.brandImage;
 
-      const coverUrls: UploadResult[] = coverFileObjects?.length
-        ? ((await uploadService.uploadMultipleFiles(
-            coverFileObjects,
-            FolderName
-          )) as UploadResult[])
-        : oldCoverImages;
+      const coverUrls: UploadResult[] =
+        coverFileObjects?.length > 0
+          ? ((await uploadService.uploadMultipleFiles(
+              coverFileObjects,
+              FolderName
+            )) as UploadResult[])
+          : oldCoverImages;
 
       const imageUrls = (
-        imageFileObjects?.length
+        imageFileObjects?.length > 0
           ? await uploadService.uploadMultipleFiles(
               imageFileObjects,
               FolderName
