@@ -27,7 +27,9 @@ class UploadService {
           });
           uploadCount++;
         } catch (err) {
-          logger.error(`Error in uploading file :: ${(err as Error)?.message}`);
+          logger.error(
+            `Errors in uploading file :: ${(err as Error)?.message}`
+          );
           return reject(err);
         }
       }
