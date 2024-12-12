@@ -57,7 +57,7 @@ export class AuthController {
           );
 
           res.status(HTTP_STATUS.OK).json(
-            handleResponse("Social Login successfull", {
+            handleResponse("Social Login successfully", {
               token,
               user: existingUser,
             })
