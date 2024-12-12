@@ -158,11 +158,7 @@ export class BrandController {
         console.log("Array");
         console.log(coverKeys);
       }
-      if (typeof coverKeys === "string" && !Array.isArray(coverKeys)) {
-        coverKeys = coverKeys.split(",").map((key) => key.trim());
-        console.log("String");
-        console.log(coverKeys);
-      }
+
       const existingBrand = await this.brandRepo.findOne({ where: { id } });
       if (!existingBrand) {
         return next(res.status(404).json({ message: "Brand not found" }));
