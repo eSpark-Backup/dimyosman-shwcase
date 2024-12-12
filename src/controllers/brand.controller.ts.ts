@@ -153,13 +153,6 @@ export class BrandController {
       console.log("From BOdy");
       console.log(coverKeys);
 
-      if (typeof coverKeys === "string") {
-        coverKeys = coverKeys.split(",");
-        console.log("String");
-
-        console.log(coverKeys);
-      }
-
       if (Array.isArray(coverKeys)) {
         coverKeys = coverKeys.filter((key) => typeof key === "string");
         console.log("Array");
