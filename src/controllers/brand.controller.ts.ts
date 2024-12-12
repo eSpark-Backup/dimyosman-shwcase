@@ -158,6 +158,11 @@ export class BrandController {
         console.log("Array");
         console.log(coverKeys);
       }
+      if (typeof coverKeys === "string" && !Array.isArray(coverKeys)) {
+        coverKeys = coverKeys.split(",").map((key) => key.trim());
+        console.log("String");
+        console.log(coverKeys);
+      }
       const existingBrand = await this.brandRepo.findOne({ where: { id } });
       if (!existingBrand) {
         return next(res.status(404).json({ message: "Brand not found" }));
@@ -187,13 +192,14 @@ export class BrandController {
 
       const oldBrandImage = existingBrand.brandImage;
 
-      const coverUrls: UploadResult[] =
+      const coverUrls = (
         coverFileObjects?.length > 0
-          ? ((await uploadService.uploadMultipleFiles(
+          ? await uploadService.uploadMultipleFiles(
               coverFileObjects,
               FolderName
-            )) as UploadResult[])
-          : oldCoverImages;
+            )
+          : []
+      ) as UploadResult[];
 
       const imageUrls = (
         imageFileObjects?.length > 0
@@ -205,7 +211,7 @@ export class BrandController {
       ) as UploadResult[];
 
       for (const oldCoverImage of oldCoverImages) {
-        if (coverKeys.length > 0) {
+        if (coverKeys && coverKeys.length > 0) {
           if (!coverKeys.includes(oldCoverImage.public_id)) {
             await uploadService.deleteFile(oldCoverImage.public_id);
           } else {
