@@ -150,13 +150,20 @@ export class BrandController {
       const { id } = req.params;
       let { brandName, brandCategory, details, location, status, coverKeys } =
         req.body;
+      console.log("From BOdy");
+      console.log(coverKeys);
 
       if (typeof coverKeys === "string") {
-        coverKeys = coverKeys.split(",").map((key) => key.trim());
+        coverKeys = coverKeys.split(",");
+        console.log("String");
+
+        console.log(coverKeys);
       }
 
       if (Array.isArray(coverKeys)) {
         coverKeys = coverKeys.filter((key) => typeof key === "string");
+        console.log("Array");
+        console.log(coverKeys);
       }
       const existingBrand = await this.brandRepo.findOne({ where: { id } });
       if (!existingBrand) {
@@ -171,7 +178,7 @@ export class BrandController {
       }
       let oldCoverImages: UploadResult[] = [];
 
-      const FolderName = `${CLOUD_FOLDERS.BRAND}/${brandName}`;
+      const FolderName = `${CLOUD_FOLDERS.BRAND}/${brandName.trim()}`;
       if (typeof existingBrand.coverImages === "string") {
         try {
           oldCoverImages = JSON.parse(
