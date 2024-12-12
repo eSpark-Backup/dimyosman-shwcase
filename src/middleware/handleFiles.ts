@@ -9,9 +9,18 @@ import {
 import { ApiError } from "../errors";
 import { logger } from "../utils";
 import { commonHelper } from "../helpers";
+import fs from "fs";
+import path from "path";
+const uploadsPath = path.join(process.cwd(), "uploads");
+
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath, { recursive: true }); // This ensures that the folder is created, including any missing parent directories
+  console.log("Uploads folder created");
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/");
+    cb(null, uploadsPath); // Use the uploads folder path
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);

@@ -25,6 +25,8 @@ app.use(express.urlencoded({ extended: true }));
 const swaggerSpec = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 console.log("Environment Variables:", process.memoryUsage());
+console.log(process.cwd());
+console.log(__dirname);
 AppDataSource.initialize()
   .then(() => {
     console.log("Database connection established successfully.");
