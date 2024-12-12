@@ -9,7 +9,15 @@ import {
 import { ApiError } from "../errors";
 import { logger } from "../utils";
 import { commonHelper } from "../helpers";
-const storage = multer.memoryStorage();
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, file.fieldname + "-" + uniqueSuffix + "-" + file.originalname);
+  },
+});
 
 const filterFiles = (
   req: Request,
@@ -30,7 +38,10 @@ export const handleMultipleFiles = (
   filterFunction?: (req: Request) => void
 ) =>
   function (req: Request, res: Response, next: NextFunction) {
-    const upload = multer({ storage, fileFilter: filterFiles }).fields(fields);
+    const upload = multer({
+      storage,
+      fileFilter: filterFiles,
+    }).fields(fields);
 
     upload(req, res, function (err) {
       try {

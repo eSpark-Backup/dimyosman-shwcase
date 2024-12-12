@@ -1,6 +1,22 @@
 import { EntityTypes, imageExtensions } from "../constants";
-
+import fs from "fs";
+import path from "path";
+import { IFileObject } from "../interfaces";
 export class CommonHelper {
+  createFileObject = (filePath: string, fieldname: string): IFileObject => {
+    const fileBuffer = fs.readFileSync(filePath); // Read file as Buffer
+    const fileStats = fs.statSync(filePath); // Get file stats (for size)
+
+    return {
+      fieldname: fieldname,
+      originalname: path.basename(filePath), // Get the original filename
+      encoding: "7bit", // Default encoding for files in form-data
+      mimetype: "application/octet-stream", // You can modify this to get the actual MIME type
+      size: fileStats.size, // File size
+      buffer: fileBuffer, // File contents as Buffer
+    };
+  };
+
   assignValues(target: Record<string, any>, source: Record<string, any>) {
     for (const key in source) {
       if (source?.hasOwnProperty(key)) {

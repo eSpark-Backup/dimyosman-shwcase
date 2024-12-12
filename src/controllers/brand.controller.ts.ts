@@ -3,15 +3,23 @@ import { Brand, BrandStatus, User } from "../entity";
 import { ApiError } from "../errors";
 import { Repository } from "typeorm";
 import { handleResponse, logger } from "../utils";
+import { commonHelper } from "../helpers";
+
 import {
   BRAND_STATUS,
   CLOUD_FOLDERS,
   HTTP_STATUS,
   PAGINATION,
 } from "../constants";
-import { uploadService } from "../services";
-import { ICustomRequest, IFileRequest, UploadResult } from "../interfaces";
-
+import { uploadService } from "../services/";
+import {
+  ICustomRequest,
+  IFileObject,
+  IFileRequest,
+  UploadResult,
+} from "../interfaces";
+import fs from "fs";
+import path from "path";
 export class BrandController {
   constructor(
     private brandRepo: Repository<Brand>,
@@ -25,9 +33,16 @@ export class BrandController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { files } = file;
+      const coverFilesPath = path.join(process.cwd(), "uploads");
+      const imageFilesPath = path.join(process.cwd(), "uploads");
+      const coverFiles = fs
+        .readdirSync(coverFilesPath)
+        .filter((file) => file.startsWith("cover")); // Filter for cover files
+      const imageFiles = fs
+        .readdirSync(path.join(imageFilesPath))
+        .filter((file) => file.startsWith("image")); // Filter for image files
 
-      if (!files?.cover || !files?.image) {
+      if (!coverFiles.length || !imageFiles.length) {
         throw new ApiError(
           "Missing required files: 'cover' or 'image'",
           HTTP_STATUS.BAD_REQUEST
@@ -43,16 +58,26 @@ export class BrandController {
         );
       }
 
-      const FolderName = `${CLOUD_FOLDERS.BRAND}/${brandName}`;
-      const coverUrls = await uploadService.uploadMultipleFiles(
-        files.cover,
-        FolderName
+      const coverFileObjects: IFileObject[] = coverFiles.map((file) =>
+        commonHelper.createFileObject(path.join(coverFilesPath, file), "cover")
       );
 
-      const imageUrls = (await uploadService.uploadMultipleFiles(
-        files.image,
+      // Create IFileObject array for image files
+      const imageFileObjects: IFileObject[] = imageFiles.map((file) =>
+        commonHelper.createFileObject(path.join(imageFilesPath, file), "image")
+      );
+
+      const FolderName = `${CLOUD_FOLDERS.BRAND}/${brandName}`;
+      const coverUrls = (await uploadService.uploadMultipleFiles(
+        coverFileObjects,
         FolderName
       )) as UploadResult[];
+
+      const imageUrls = (await uploadService.uploadMultipleFiles(
+        imageFileObjects,
+        FolderName
+      )) as UploadResult[];
+
       const userId = req.user?.id;
       const user = await this.userRepo.findOne({ where: { id: userId } });
 
@@ -64,14 +89,34 @@ export class BrandController {
       newBrand.status = status;
       newBrand.user = user as User;
       newBrand.coverImages = JSON.stringify(coverUrls) as Object;
-      newBrand.brandImage = imageUrls[0].url as string;
+      newBrand.brandImage = imageUrls[0].url as any;
       newBrand.imageKey = imageUrls[0].public_id;
       await this.brandRepo.save(newBrand);
+
+      const uploadsPath = path.join(process.cwd(), "uploads");
+
+      const files = fs.readdirSync(uploadsPath);
+
+      files.forEach((file) => {
+        const filePath = path.join(uploadsPath, file);
+        fs.unlinkSync(filePath);
+        console.log(`Deleted file: ${filePath}`);
+      });
       res
         .status(HTTP_STATUS.OK)
         .json(handleResponse("Brand Created Successfully"));
       return next();
     } catch (error) {
+      const uploadsPath = path.join(process.cwd(), "uploads");
+
+      const files = fs.readdirSync(uploadsPath);
+      if (files.length > 0) {
+        files.forEach((file) => {
+          const filePath = path.join(uploadsPath, file);
+          fs.unlinkSync(filePath);
+          console.log(`Deleted file: ${filePath}`);
+        });
+      }
       logger.error(
         `BrandController :: CreateBrand :: ${(error as Error)?.message}`
       );
