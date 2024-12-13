@@ -112,7 +112,7 @@ export class BrandController {
         files.forEach((file) => {
           const filePath = path.join(uploadsPath, file);
           fs.unlinkSync(filePath);
-          console.log(`Deleted file From Catch Block: ${filePath}`);
+          logger.error(`Deleted file From Catch Block: ${filePath}`);
         });
       }
       logger.error(
@@ -150,13 +150,9 @@ export class BrandController {
       const { id } = req.params;
       let { brandName, brandCategory, details, location, status, coverKeys } =
         req.body;
-      console.log("From BOdy");
-      console.log(coverKeys);
 
       if (Array.isArray(coverKeys)) {
         coverKeys = coverKeys.filter((key) => typeof key === "string");
-        console.log("Array");
-        console.log(coverKeys);
       }
 
       const existingBrand = await this.brandRepo.findOne({ where: { id } });
@@ -244,7 +240,6 @@ export class BrandController {
       files.forEach((file) => {
         const filePath = path.join(uploadsPath, file);
         fs.unlinkSync(filePath);
-        console.log(`Deleted file: ${filePath}`);
       });
 
       res
@@ -258,7 +253,7 @@ export class BrandController {
       files.forEach((file) => {
         const filePath = path.join(uploadsPath, file);
         fs.unlinkSync(filePath);
-        console.log(`Deleted file: ${filePath}`);
+        logger.error(`Deleted file: ${filePath}`);
       });
       logger.error(
         `BrandController :: updateBrand :: ${(error as Error)?.message}`

@@ -5,8 +5,15 @@ import { Repository } from "typeorm";
 import { handleResponse, logger, parseCoverImages } from "../utils";
 import { CLOUD_FOLDERS, HTTP_STATUS, PAGINATION } from "../constants";
 import { uploadService } from "../services";
-import { ICustomRequest, IFileRequest, UploadResult } from "../interfaces";
-
+import {
+  ICustomRequest,
+  IFileObject,
+  IFileRequest,
+  UploadResult,
+} from "../interfaces";
+import fs from "fs";
+import path from "path";
+import { commonHelper } from "../helpers";
 export class EventController {
   constructor(
     private spaceRepo: Repository<Spaces>,
@@ -22,15 +29,21 @@ export class EventController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { files } = file;
+      const coverFilesPath = path.join(process.cwd(), "uploads");
+      const imageFilesPath = path.join(process.cwd(), "uploads");
+      const coverFiles = fs
+        .readdirSync(coverFilesPath)
+        .filter((file) => file.startsWith("cover")); // Filter for cover files
+      const imageFiles = fs
+        .readdirSync(path.join(imageFilesPath))
+        .filter((file) => file.startsWith("image")); // Filter for image files
 
-      if (!files?.cover || !files?.image) {
+      if (!coverFiles.length || !imageFiles.length) {
         throw new ApiError(
           "Missing required files: 'cover' or 'image'",
           HTTP_STATUS.BAD_REQUEST
         );
       }
-
       const {
         eventName,
         eventCategory,
@@ -50,16 +63,25 @@ export class EventController {
         );
       }
 
-      const FolderName = `${CLOUD_FOLDERS.EVENT}/${eventName}`;
-      const coverUrls = await uploadService.uploadMultipleFiles(
-        files.cover,
-        FolderName
+      const coverFileObjects: IFileObject[] = coverFiles.map((file) =>
+        commonHelper.createFileObject(path.join(coverFilesPath, file), "cover")
       );
 
-      const imageUrls = (await uploadService.uploadMultipleFiles(
-        files.image,
+      const imageFileObjects: IFileObject[] = imageFiles.map((file) =>
+        commonHelper.createFileObject(path.join(imageFilesPath, file), "image")
+      );
+
+      const FolderName = `${CLOUD_FOLDERS.EVENT}/${eventName}`;
+      const coverUrls = (await uploadService.uploadMultipleFiles(
+        coverFileObjects,
         FolderName
       )) as UploadResult[];
+
+      const imageUrls = (await uploadService.uploadMultipleFiles(
+        imageFileObjects,
+        FolderName
+      )) as UploadResult[];
+
       const userId = req.user?.id;
       const user = await this.userRepo.findOne({ where: { id: userId } });
       const brand = await this.brandRepo.findOne({ where: { id: brandId } });
@@ -88,11 +110,31 @@ export class EventController {
       const event = await this.eventRepo.save(newEvent);
       event.coverImages = JSON.parse(event.coverImages as unknown as string);
 
+      const uploadsPath = path.join(process.cwd(), "uploads");
+
+      const files = fs.readdirSync(uploadsPath);
+
+      files.forEach((file) => {
+        const filePath = path.join(uploadsPath, file);
+        fs.unlinkSync(filePath);
+        console.log(`Deleted file: ${filePath}`);
+      });
+
       res
         .status(HTTP_STATUS.OK)
         .json(handleResponse("Event Created Successfully", event));
       return next();
     } catch (error) {
+      const uploadsPath = path.join(process.cwd(), "uploads");
+
+      const files = fs.readdirSync(uploadsPath);
+      if (files.length > 0) {
+        files.forEach((file) => {
+          const filePath = path.join(uploadsPath, file);
+          fs.unlinkSync(filePath);
+          logger.error(`Deleted file From Catch Block: ${filePath}`);
+        });
+      }
       logger.error(
         `EventController :: CreateEvent :: ${(error as Error)?.message}`
       );
@@ -107,7 +149,6 @@ export class EventController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { files } = file;
       const { id } = req.params;
       let {
         eventName,
@@ -118,9 +159,24 @@ export class EventController {
         eventDate,
         coverKeys,
       } = req.body;
-      if (typeof coverKeys === "string") {
-        coverKeys = coverKeys.split(",").map((key) => key.trim());
-      }
+
+      const coverFilesPath = path.join(process.cwd(), "uploads");
+      const imageFilesPath = path.join(process.cwd(), "uploads");
+      const coverFiles = fs
+        .readdirSync(coverFilesPath)
+        .filter((file) => file.startsWith("cover")); // Filter for cover files
+      const imageFiles = fs
+        .readdirSync(path.join(imageFilesPath))
+        .filter((file) => file.startsWith("image")); // Filter for image files
+
+      const coverFileObjects: IFileObject[] = coverFiles.map((file) =>
+        commonHelper.createFileObject(path.join(coverFilesPath, file), "cover")
+      );
+
+      // Create IFileObject array for image files
+      const imageFileObjects: IFileObject[] = imageFiles.map((file) =>
+        commonHelper.createFileObject(path.join(imageFilesPath, file), "image")
+      );
 
       if (Array.isArray(coverKeys)) {
         coverKeys = coverKeys.filter((key) => typeof key === "string");
@@ -143,6 +199,7 @@ export class EventController {
       let oldCoverImages: UploadResult[] = [];
 
       const FolderName = `${CLOUD_FOLDERS.EVENT}/${eventName}`;
+
       if (typeof existingEvent.coverImages === "string") {
         try {
           oldCoverImages = JSON.parse(
@@ -158,16 +215,21 @@ export class EventController {
 
       const oldEventImage = existingEvent.eventImage;
 
-      const coverUrls: UploadResult[] = files?.cover
-        ? ((await uploadService.uploadMultipleFiles(
-            files.cover,
-            FolderName
-          )) as UploadResult[])
-        : oldCoverImages;
+      const coverUrls = (
+        coverFileObjects?.length > 0
+          ? await uploadService.uploadMultipleFiles(
+              coverFileObjects,
+              FolderName
+            )
+          : []
+      ) as UploadResult[];
 
       const imageUrls = (
-        files?.image
-          ? await uploadService.uploadMultipleFiles(files.image, FolderName)
+        imageFileObjects?.length > 0
+          ? await uploadService.uploadMultipleFiles(
+              imageFileObjects,
+              FolderName
+            )
           : [{ url: oldEventImage }]
       ) as UploadResult[];
 
@@ -187,7 +249,7 @@ export class EventController {
         }
       }
 
-      if (files?.image && oldEventImage !== imageUrls[0]?.url) {
+      if (imageFileObjects && oldEventImage !== imageUrls[0]?.url) {
         await uploadService.deleteFile(existingEvent.imageKey);
       }
 
@@ -203,12 +265,29 @@ export class EventController {
       existingEvent.imageKey = imageUrls[0].public_id;
 
       await this.eventRepo.update(id, existingEvent);
+      const uploadsPath = path.join(process.cwd(), "uploads");
+
+      const files = fs.readdirSync(uploadsPath);
+
+      files.forEach((file) => {
+        const filePath = path.join(uploadsPath, file);
+        fs.unlinkSync(filePath);
+      });
 
       res
         .status(HTTP_STATUS.OK)
         .json(handleResponse("Event Updated Successfully"));
       return next();
     } catch (error) {
+      const uploadsPath = path.join(process.cwd(), "uploads");
+
+      const files = fs.readdirSync(uploadsPath);
+
+      files.forEach((file) => {
+        const filePath = path.join(uploadsPath, file);
+        fs.unlinkSync(filePath);
+        logger.error(`Deleted file: ${filePath}`);
+      });
       logger.error(
         `EventController :: updateEvent :: ${(error as Error)?.message}`
       );
