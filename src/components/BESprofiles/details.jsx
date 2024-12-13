@@ -27,7 +27,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             <Typography
               key={overview}
               fontSize={16}
-              sx={{ textAlign: "left", marginTop: 2, fontWeight: 400 }}
+              sx={{ textAlign: "left", marginTop: 2, fontWeight: 400, wordBreak:"break-word" }}
             >
               {overview}
             </Typography>
