@@ -107,7 +107,9 @@ export const brandApi = api.injectEndpoints({
                         }
                     });
 
-                    formData.append('coverKeys', coverKeys);
+                    if (coverKeys?.length > 0) {
+                        formData.append('coverKeys', coverKeys);
+                    }
                 }
 
 
