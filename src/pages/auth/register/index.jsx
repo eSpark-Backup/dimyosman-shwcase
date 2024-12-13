@@ -10,7 +10,7 @@ import { registerSchema } from '../../../validation/validation';
 import { useRegisterMutation } from "../../../services/auth";
 
 const Register = () => {
-  const [register, { isLoading, isSuccess, isError, error }] =
+  const [register, { isLoading, isSuccess, isError, error}] =
     useRegisterMutation();
   const theme = useTheme();
   const navigate = useNavigate();
@@ -36,14 +36,14 @@ const Register = () => {
     },
   });
 
-  useEffect(() => {
-    if (isError) {
-        toast.error(error?.data?.message);
-    }
-    if (isSuccess) {
-      navigate("/activity");
-    }
-  }, [isError, isSuccess, navigate, error]);
+    useEffect(() => {
+        if (isError) {
+            toast.error(error?.data?.message);
+        }
+        if (isSuccess) {
+            navigate("/activity");
+        }
+    }, [isError, isSuccess, navigate, error]);
 
     const authBtnStyle = {
         width: { xs: "90%", md: "110px" },
@@ -259,7 +259,7 @@ const Register = () => {
                     fontFamily: "'Segoe UI'",
                   }}
                 >
-                  Log in
+                    Log in
                 </Link>
             </Typography>
         </>

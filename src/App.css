@@ -224,9 +224,24 @@ input[data-autocompleted] {
   font-family: "Segoe UI";
 }
 
+.fc .fc-scrollgrid {
+  border-radius: 5px;
+}
+
+.fc-scrollgrid-section-body td {
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.fc-scrollgrid-section-header th {
+  border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
+}
+
 .fc table{
   font-size: 12px;
   font-weight: 600 !important;
+  color: #00141C;
 }
 
 .fc .fc-col-header-cell-cushion {
@@ -323,11 +338,10 @@ input[data-autocompleted] {
 }
 
 .fc-timeGridWeek-view .fc-scrollgrid-shrink, 
-.fc-timeGridDay-view .fc-scrollgrid-shrink {
-  border: none;
+.fc-timeGridDay-view .fc-scrollgrid-shrink{
   height: 44px !important;
-  border-bottom: 1px solid var(--fc-border-color);
 }
+
 
 .fc-timeGridWeek-view .fc-timegrid-slot-minor, 
 .fc-timeGridDay-view .fc-timegrid-slot-minor {
@@ -381,19 +395,33 @@ input[data-autocompleted] {
 .fc-daygrid-event-dot{
   display: none;
 }
+
 .fc-direction-ltr .fc-daygrid-event.fc-event-end, .fc-direction-rtl .fc-daygrid-event.fc-event-start{
   padding-left: 6px;
 }
+
 .fc-daygrid-dot-event .fc-event-title{
   font-weight: 600;
-}.fc-daygrid-event-dot{
+}
+
+.fc-daygrid-event-dot{
   display: none;
 }
+
 .fc-direction-ltr .fc-daygrid-event.fc-event-end, .fc-direction-rtl .fc-daygrid-event.fc-event-start{
   padding-left: 6px;
 }
+
 .fc-daygrid-dot-event .fc-event-title{
   font-weight: 600;
+}
+
+.fc-daygrid-day {
+  height: 150px; 
+}
+
+.fc .fc-day-other .fc-daygrid-day-top{
+  opacity: 1;
 }
 
 /* Calendar */

@@ -142,7 +142,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
             <Box
               sx={{
                 borderRadius: "5px",
-                minWidth: "96px",
+                width: "96px",
                 height: "96px",
                 position: "relative",
               }}

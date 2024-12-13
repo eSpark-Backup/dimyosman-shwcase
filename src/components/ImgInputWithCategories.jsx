@@ -233,12 +233,6 @@ const ImgInputWithCategories = ({
                                         style={{ cursor: 'pointer' }}
                                         onClick={handleModalOpen}
                                     />
-                                    <img
-                                        src={subtract}
-                                        alt="Subtract Icon"
-                                        style={{ cursor: 'pointer' }}
-                                        onClick={handleModalOpen}
-                                    />
                                 </Box>
                             )}
                         </Box>

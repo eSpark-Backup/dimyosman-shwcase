@@ -12,6 +12,7 @@ const FullWidthImgInput = ({
     handleAdd,
     handleRemove,
     currentIndex,
+    HandleSlideChange
 }) => {
     const theme = useTheme();
 
@@ -24,6 +25,7 @@ const FullWidthImgInput = ({
             imageRef.current.value = '';
         }
     };
+
 
     return (
         <Box
@@ -40,25 +42,31 @@ const FullWidthImgInput = ({
                 overflow: "hidden",
             }}
         >
-            {/* Image as background */}
-            {editImage && (
-                <Box
-                    sx={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        backgroundImage: `url(${ editImage })`,
-                        backgroundPosition: "center",
-                        backgroundSize: "cover",
-                        backgroundRepeat: "no-repeat",
-                        borderRadius: "5px 5px 0 0",
-                        zIndex: 1,
-                        opacity: 0.5,
-                    }}
-                />
-            )}
+            <Box
+                sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: "5px 5px 0 0",
+                    zIndex: 1,
+                    opacity: 0.5,
+                }}
+            >
+                {editImage && (
+                    <img
+                        src={editImage}
+                        alt="edit"
+                        style={{
+                            objectFit: "cover",
+                            width: "100%",
+                            height: "100%",
+                            borderRadius: "5px 5px 0 0",
+                        }}
+                    />
+                )}
+            </Box>
 
             {/* Dimming overlay */}
             {editImage && (
@@ -112,6 +120,7 @@ const FullWidthImgInput = ({
                         src={index === currentIndex ? activeItemIcon : notActiveIcon}
                         alt={index === currentIndex ? "Active Icon" : "Not Active Icon"}
                         style={{ cursor: "pointer" }}
+                        onClick={() => HandleSlideChange(index)}
                     />
                 ))}
                 <img

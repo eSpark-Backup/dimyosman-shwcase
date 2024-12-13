@@ -28,15 +28,16 @@ const EditBrand = () => {
     profileImage: null,
     brandTitle: null,
     brandCategories: [],
-    location: {}
+    location: {},
+    mapInstructions: ""
   });
   const [currentIndex, setCurrentIndex] = useState(0);
   const params = useParams();
 
   const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading } = useGetCategoriesQuery('BRANDS')
-  const { data, isError, isLoading, isSuccess, error } = useGetAllBrandsQuery({
+  const { data, isError, isLoading, isSuccess, error,isFetching } = useGetAllBrandsQuery({
     page: 1, pageSize: 7, id: params?.brandId
-  });
+  }, { refetchOnMountOrArgChange: true });
 
 
   useEffect(() => {
@@ -78,10 +79,11 @@ const EditBrand = () => {
         brandOverview: data?.data?.details?.description,
         brandTitle: data?.data?.details?.htmlContent,
         location: data?.data?.location,
-        cover: data?.data?.coverImages
+        cover: data?.data?.coverImages,
+        mapInstructions: data?.data?.location?.additional
       }));
     }
-  }, [GetCategorySuccess, isSuccess]);
+  }, [GetCategorySuccess, isSuccess, data]);
 
 
   const handleMainFileInputClick = () => {
@@ -98,10 +100,12 @@ const EditBrand = () => {
   };
 
   const handleAddImage = () => {
-    if (currentIndex < 2) {
-      setCurrentIndex(currentIndex + 1);
+    const nextIndex = currentIndex + 1;
+    if (nextIndex < brandData.cover.length + 1 && nextIndex <= 2) {
+      setCurrentIndex(nextIndex);
     }
   };
+
 
   const handleRemoveImage = () => {
     const updatedCover = brandData.cover.filter((_, index) => index !== currentIndex);
@@ -144,18 +148,19 @@ const EditBrand = () => {
   const editorRef = useRef(null);
   const quillRef = useRef(null);
 
+
   useEffect(() => {
     if (quillRef.current) {
       quillRef.current = null;
     }
-
     setBrandData((prevState) => ({
       ...prevState,
-      brandTitle: brandData?.brandTitle,
+      brandTitle: prevState?.brandTitle,
     }));
 
     setIsEditorVisible(false);
   }, [activeTab]);
+
 
 
   useEffect(() => {
@@ -277,7 +282,6 @@ const EditBrand = () => {
     }
     setLoadingButton(status);
     try {
-      // console.log(brandData)
       await brand({ brandData: { ...brandData, status }, id: params?.brandId });
     } finally {
       setLoadingButton(null);
@@ -288,7 +292,13 @@ const EditBrand = () => {
   const HandleDraftSubmit = () => handleSubmit("DRAFT");
   const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
 
-  if (isLoading || GetCategoryLoading) {
+  const HandleSlideChange = (index) => {
+    if (index >= 0 && index <= brandData.cover.length) {
+      setCurrentIndex(index);
+    }
+  };
+
+  if (isLoading || GetCategoryLoading || isFetching) {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />
@@ -336,6 +346,7 @@ const EditBrand = () => {
           }
           onClick={HandleDraftSubmit}
           loading={loadingButton === "Draft"}
+          disabled={loadingButton && loadingButton !== "Draft"}
         >
           Save as Draft
         </LoadingButton>
@@ -352,6 +363,7 @@ const EditBrand = () => {
           }
           loading={loadingButton === "PUBLISH"}
           onClick={HandlePublishSubmit}
+          disabled={loadingButton && loadingButton !== "PUBLISH"}
         >
           Publish
         </LoadingButton>
@@ -367,6 +379,7 @@ const EditBrand = () => {
             <CircularProgress size={20} sx={{ color: "#FFFFFF" }} />
           }
           onClick={HandleArchiveSubmit}
+          disabled={loadingButton && loadingButton !== "ARCHIVE"}
         >
           Archive
         </LoadingButton>
@@ -390,6 +403,7 @@ const EditBrand = () => {
         handleAdd={handleAddImage}
         handleRemove={handleRemoveImage}
         currentIndex={currentIndex}
+        HandleSlideChange={HandleSlideChange}
       />
       <ImgInputWithCategories
         handleImgClick={HandleProfileFileInputClick}
@@ -532,6 +546,11 @@ const EditBrand = () => {
                     <Typography
                       variant="body1"
                       color={theme.palette.primary.main}
+                      sx={{
+                        "& ul, & ol": {
+                          paddingLeft: 2,
+                        },
+                      }}
                       dangerouslySetInnerHTML={{ __html: brandData?.brandTitle }}
                     />
                   </Box>
@@ -558,7 +577,11 @@ const EditBrand = () => {
         }
       </Box>
       <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-        <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[brandData?.location?.lat, brandData?.location?.long]} setBrandData={setBrandData} />
+        <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[brandData?.location?.lat, brandData?.location?.long]} setBrandData={setBrandData} instructionValue={brandData?.mapInstructions}
+          setInstructionValue={(e) => setBrandData((prev) => ({
+            ...prev,
+            mapInstructions: e.target.value
+          }))} />
       </ReusableModal>
     </Box>
   )
