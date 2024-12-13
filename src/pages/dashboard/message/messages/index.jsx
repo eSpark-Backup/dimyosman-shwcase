@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 
 import {
   Box,
@@ -137,9 +137,9 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
             {selectedGroup?.messageGroup?.messages
               ?.slice()
               .reverse()
-              ?.map((message) => {
+              ?.map((message, i) => {
                 return (
-                  <>
+                  <Fragment key={i}>
                     {message.text ? (
                       <Message
                         ActivityType={ActivityType}
@@ -147,7 +147,7 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
                         message={message}
                       />
                     ) : null}
-                  </>
+                  </Fragment>
                 );
               })}
           </Box>

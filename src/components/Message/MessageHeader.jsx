@@ -58,6 +58,7 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
 
           <Box marginLeft={"10px"}>
             <Typography
+              variant="h1"
               sx={{
                 fontWeight: 600,
                 fontSize: isLessThan1100
@@ -66,6 +67,7 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                   ? "28px"
                   : "32px",
                 lineHeight: isLessThan1280 ? "34px" : "45px",
+                textAlign: "left",
               }}
             >
               {selectedGroup?.messageGroup?.userName}

@@ -119,6 +119,9 @@ const Message = () => {
                   paddingRight: 0,
                   paddingLeft: 0,
                 },
+                "& input::placeholder": {
+                  color: "rgba(0, 20, 28, 0.5)",
+                },
               }}
               endAdornment={
                 <InputAdornment position="start">

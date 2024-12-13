@@ -28,11 +28,11 @@ const MessageItem = ({
           display: "none",
         },
         "&:last-child": {
-        marginBottom: 0,
-        }
+          marginBottom: 0,
+        },
       }}
       expanded={message?.messageGroups?.length ? expanded : false}
-      onChange={message?.messageGroups?.length && onChange}
+      onChange={message?.messageGroups?.length ? onChange : null}
     >
       <AccordionSummary
         sx={{
@@ -84,7 +84,15 @@ const MessageItem = ({
           <ActivityType type={message.activity} theme={theme} />
         </Box>
 
-        <Typography variant="h5" sx={{ fontWeight: 600 }}>
+        <Typography
+          variant="h2"
+          sx={{
+            fontWeight: 600,
+            lineHeight: "22px",
+            fontSize: "16px",
+            textAlign: "left",
+          }}
+        >
           {message.userName}
         </Typography>
 
@@ -112,12 +120,13 @@ const MessageItem = ({
         }}
       >
         {message.messageGroups.length
-          ? message.messageGroups.map((el) => {
+          ? message.messageGroups.map((el, i) => {
               const lastElInd = el.messages.length - 1;
               const lastEl = el.messages[lastElInd];
 
               return (
                 <Box
+                  key={i}
                   sx={{
                     display: "flex",
                     alignItems: lastEl?.creator ? "center" : "unset",
@@ -177,7 +186,15 @@ const MessageItem = ({
                       justifyContent: "space-between",
                     }}
                   >
-                    <Typography sx={{ fontWeight: 600, lineHeight: "22px" }}>
+                    <Typography
+                      variant="h2"
+                      sx={{
+                        fontWeight: 600,
+                        lineHeight: "22px",
+                        fontSize: "16px",
+                        textAlign: "left",
+                      }}
+                    >
                       {el.userName}
                     </Typography>
 
