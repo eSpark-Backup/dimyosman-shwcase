@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Box, Button, LinearProgress, Modal, Stack, Typography } from "@mui/material";
+import { Box, Button, LinearProgress, Modal, Stack, Tooltip, Typography } from "@mui/material";
 import DynamicPaginationSwiper from "../Slider";
 import OutlinedTabs from "../outlinedTabs";
 import Details from "./details";
@@ -183,16 +183,25 @@ const BESProfile = ({ spaceInquire, type, data }) => {
               justifyContent="center"
               alignItems="flex-start"
             >
-              <Typography
-                textAlign="left"
-                sx={{
-                  lineHeight: "100%",
-                  fontWeight: 600,
-                }}
-                variant="h1"
-              >
-                {myProfile?.profileName}
-              </Typography>
+              <Tooltip title={myProfile?.profileName?.length > 30 ? myProfile?.profileName : ""}>
+                <Typography
+                  textAlign="left"
+                  sx={{
+                    lineHeight: "normal",
+                    fontWeight: 600,
+                    maxWidth: "100%",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                  variant="h1"
+                >
+                  {myProfile?.profileName?.length > 30
+                    ? `${myProfile.profileName.slice(0, 29)}...`
+                    : myProfile?.profileName}
+                </Typography>
+              </Tooltip>
+
               <Typography
                 sx={{
                   fontSize: "16px",
@@ -305,8 +314,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
             transform: "translate(-50%, -50%)",
             width: "65%",
             ".swiper": {
-              height: "auto !important",
-              maxHeight: "80vh",
+              height: "80vh !important",
             },
             ":focus-visible": {
               outline: "none !important",
@@ -314,6 +322,9 @@ const BESProfile = ({ spaceInquire, type, data }) => {
             ".slide-content": {
               height: "100% !important",
               img: {
+                height: "100%",
+                width: "auto",
+                objectFit: "cover",
                 borderRadius: "10px",
               },
             },

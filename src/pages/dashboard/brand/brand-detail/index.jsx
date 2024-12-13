@@ -8,8 +8,7 @@ import { brandMain } from "../../../../assets";
 import { Box, LinearProgress } from "@mui/material";
 
 const BrandDetails = () => {
-  const { data, isError, isLoading, isSuccess, error } = useGetAllBrandsQuery({ page: 1, pageSize: 7 });
-  console.log(data)
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({ page: 1, pageSize: 7 }, { refetchOnMountOrArgChange: true });
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -62,16 +61,14 @@ const BrandDetails = () => {
         ],
       }));
 
-      console.log(updatedBrands)
-
 
       dispatch(updateBrands(updatedBrands));
     }
-  }, [isSuccess])
+  }, [isSuccess, data, dispatch])
 
 
   const { brands } = useSelector((state) => state.brand);
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />

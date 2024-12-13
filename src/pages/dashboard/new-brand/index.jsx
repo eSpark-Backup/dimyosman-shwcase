@@ -87,6 +87,11 @@ const NewBrand = () => {
             return false;
         }
 
+        if (!brandData?.mapInstructions || brandData?.mapInstructions.trim() === "") {
+            toast?.error("Map additional field is required");
+            return false;
+        }
+
         const strippedContent = brandData?.brandTitle?.replace(/<[^>]*>/g, "").trim();
         if (!strippedContent) {
             toast?.error("Brand title can not be empty.");

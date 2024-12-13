@@ -1,4 +1,4 @@
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, Tooltip, Typography } from "@mui/material";
 import { brandBadge } from "../assets";
 
 const myBrandColumns = (gotoDetail, handleAction) => {
@@ -51,9 +51,16 @@ const myBrandColumns = (gotoDetail, handleAction) => {
                 />
               </figure>
             </Box>
-            <Typography sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}>
-              {item?.brandName}
-            </Typography>
+            <Tooltip title={item?.brandName?.length > 30 ? item?.brandName : ""}>
+              <Typography
+                textAlign="left"
+                sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
+              >
+                {item?.brandName?.length > 30
+                  ? `${item?.brandName.slice(0, 29)}...`
+                  : item?.brandName}
+              </Typography>
+            </Tooltip>
           </Stack>
         );
       },

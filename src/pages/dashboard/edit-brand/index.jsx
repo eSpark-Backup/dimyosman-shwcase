@@ -35,7 +35,7 @@ const EditBrand = () => {
   const params = useParams();
 
   const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading } = useGetCategoriesQuery('BRANDS')
-  const { data, isError, isLoading, isSuccess, error,isFetching } = useGetAllBrandsQuery({
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({
     page: 1, pageSize: 7, id: params?.brandId
   }, { refetchOnMountOrArgChange: true });
 
@@ -262,6 +262,11 @@ const EditBrand = () => {
 
     if (!brandData?.brandTitle || brandData?.brandTitle.trim() === "") {
       toast?.error("Brand title can not be empty.");
+      return false;
+    }
+
+    if (!brandData?.mapInstructions || brandData?.mapInstructions.trim() === "") {
+      toast?.error("Map additional field is required");
       return false;
     }
 
