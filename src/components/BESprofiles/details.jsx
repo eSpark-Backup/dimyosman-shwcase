@@ -332,6 +332,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                 textAlign: "left",
                 marginTop: 2,
                 fontWeight: 400,
+                wordBreak:"break-word",
                 "& ul, & ol": {
                   paddingLeft: 2, 
                 },
