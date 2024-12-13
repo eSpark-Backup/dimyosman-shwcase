@@ -5,11 +5,11 @@ import facebook from "./Facbook-logo.svg";
 import apple from "./Apple-logo.svg";
 import user from "./user.svg";
 import eye from "./eye.svg";
-import search from "./search-icon.svg"
-import addIcon from "./add-icon.svg"
-import chatIcon from "./chats-icon.svg"
-import bellIcon from "./bell-icon.svg"
-import userProfile from "./user-icon.svg"
+import search from "./search-icon.svg";
+import addIcon from "./add-icon.svg";
+import chatIcon from "./chats-icon.svg";
+import bellIcon from "./bell-icon.svg";
+import userProfile from "./user-icon.svg";
 import activity from "./activity.svg";
 import brand from "./brand-1.svg";
 import event from "./event.svg";
@@ -28,54 +28,55 @@ import calendarHover from "./calendar-hover.svg";
 import messageHover from "./message-hover.svg";
 import settingsHover from "./settings-hover.svg";
 import logoutHover from "./logout-hover.svg";
-import activityLogo from "./activity-logo.svg"
-import flag from "./flag.svg"
-import eventMain from "./activity-main.svg"
-import eventMain2 from "./activity-main-2.svg"
-import eventMain3 from "./activity-main-3.svg"
-import miniMap from "./micro-map.svg"
-import like from "./like.svg"
-import comment from "./comment.svg"
-import share from "./share.svg"
-import brandIcon from "./brand.svg"
-import spaceIcon from "./space.svg"
-import calender from "./calender.svg"
-import eventUserImage from "./event-user-image.svg"
-import brandUserImage from "./brand-user-image.svg"
-import spaceUserImage from "./space-user-image.svg"
-import eventActivityImage from "./event-activity-image.svg"
-import brandActivityImage from "./brand-activity-image.svg"
-import spaceActivityImage from "./space-activity-image.svg"
-import arrow from "./arrow.svg"
-import wifi from "./wifi.svg"
-import accessibility from "./accessibility.svg"
-import sun from "./sun.svg"
-import storage from "./storage.svg"
-import security from "./security.svg"
-import spaceMain from "./space-main.svg"
-import spaceMain2 from "./space-main2.svg"
-import spaceMain3 from "./space-main3.svg"
-import brandMain from "./brandMain.svg"
+import activityLogo from "./activity-logo.svg";
+import flag from "./flag.svg";
+import eventMain from "./activity-main.svg";
+import eventMain2 from "./activity-main-2.svg";
+import eventMain3 from "./activity-main-3.svg";
+import miniMap from "./micro-map.svg";
+import like from "./like.svg";
+import comment from "./comment.svg";
+import share from "./share.svg";
+import brandIcon from "./brand.svg";
+import spaceIcon from "./space.svg";
+import calender from "./calender.svg";
+import eventUserImage from "./event-user-image.svg";
+import brandUserImage from "./brand-user-image.svg";
+import spaceUserImage from "./space-user-image.svg";
+import eventActivityImage from "./event-activity-image.svg";
+import brandActivityImage from "./brand-activity-image.svg";
+import spaceActivityImage from "./space-activity-image.svg";
+import arrow from "./arrow.svg";
+import wifi from "./wifi.svg";
+import accessibility from "./accessibility.svg";
+import sun from "./sun.svg";
+import storage from "./storage.svg";
+import security from "./security.svg";
+import spaceMain from "./space-main.svg";
+import spaceMain2 from "./space-main2.svg";
+import spaceMain3 from "./space-main3.svg";
+import brandMain from "./brandMain.svg";
 import brandMain2 from "./brand-main2.png";
 import spaceProfile from "./space-profile.png";
 import eventMainImage from "./event-main-image.png";
-import accountIcon from "./account.svg"
-import miniMap2 from "./micro-map2.svg"
-import logoIcon from "./logo-icon.svg"
-import logoText from "./logo-text.svg"
+import accountIcon from "./account.svg";
+import miniMap2 from "./micro-map2.svg";
+import logoIcon from "./logo-icon.svg";
+import logoText from "./logo-text.svg";
 import brandIconlight from "./brand-icon.png";
 import brandBadge from "./brand-badge.png";
-import activeItemIcon from './activeItemIcon.svg'
-import notActiveIcon from "./notActiveItemIcon.svg"
-import add from "./addIcon.svg"
-import subtract from "./subtractIcon.svg"
-import uploadIcon from "./upload-icon.svg"
-import close from "./close.svg"
-import checkedIcon from "./checkedIcon.svg"
-import uncheckedIcon from "./uncheckedIcon.svg"
-import locationIcon from "./locationIcon.svg"
-import modalMap from "./modalMap.svg"
-import addGrey from "./add-grey.svg"
+import eventIconLight from "./event-icon.png";
+import activeItemIcon from "./activeItemIcon.svg";
+import notActiveIcon from "./notActiveItemIcon.svg";
+import add from "./addIcon.svg";
+import subtract from "./subtractIcon.svg";
+import uploadIcon from "./upload-icon.svg";
+import close from "./close.svg";
+import checkedIcon from "./checkedIcon.svg";
+import uncheckedIcon from "./uncheckedIcon.svg";
+import locationIcon from "./locationIcon.svg";
+import modalMap from "./modalMap.svg";
+import addGrey from "./add-grey.svg";
 import eventBadge from "./event-badge.png";
 import spaceBadge from "./space-badge.png";
 import profileBadge from "./profile-badge.png";
@@ -88,6 +89,11 @@ import lineThrough from "./line-through.svg";
 import paperClip from "./paperclip.svg";
 import link from "./link.svg";
 import smile from "./smile.svg";
+import attachment from "./attachment.svg";
+import bigCalendar from "./big-calendar.svg";
+import mapMarker from "./map-marker.svg";
+import messageIcon from "./message-icon.svg";
+import profileIcon from "./profile-icon.svg";
 
 export {
   react,
@@ -157,6 +163,8 @@ export {
   logoText,
   brandIconlight,
   brandBadge,
+  eventIconLight,
+  eventBadge,
   activeItemIcon,
   notActiveIcon,
   add,
@@ -168,7 +176,6 @@ export {
   locationIcon,
   modalMap,
   addGrey,
-  eventBadge,
   spaceBadge,
   profileBadge,
   star,
@@ -180,4 +187,9 @@ export {
   paperClip,
   link,
   smile,
+  bigCalendar,
+  mapMarker,
+  messageIcon,
+  profileIcon,
+  attachment
 };

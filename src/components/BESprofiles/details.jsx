@@ -27,7 +27,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             <Typography
               key={overview}
               fontSize={16}
-              sx={{ textAlign: "left", marginTop: 2, fontWeight: 400 }}
+              sx={{ textAlign: "left", marginTop: 2, fontWeight: 400, wordBreak:"break-word" }}
             >
               {overview}
             </Typography>
@@ -161,8 +161,8 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               {myProfile?.type === "brand" && !myProfile.owned
                 ? "Located at:"
                 : myProfile?.type === "brand"
-                ? "Headqarters at:"
-                : "Hosted at:"}
+                  ? "Headqarters at:"
+                  : "Hosted at:"}
             </Typography>
             {myProfile?.type !== "brand" && (
               <Typography
@@ -288,7 +288,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         </Stack>
         {(myProfile.type === "space" || !myProfile?.owned) && (
           <Button
-            onClick={spaceInquire ? () => spaceInquire(myProfile?.id) : ()=>{}}
+            onClick={spaceInquire ? () => spaceInquire(myProfile?.id) : () => { }}
             sx={{
               background: (theme) => theme.palette.button.secondary,
               color: (theme) => theme.palette.primary.main,
@@ -314,8 +314,8 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             {myProfile?.type === "brand"
               ? "Follow"
               : myProfile?.type === "event"
-              ? "RSVP"
-              : "Inquire"}
+                ? "RSVP"
+                : "Inquire"}
           </Button>
         )}
       </Stack>
@@ -328,10 +328,17 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             <Typography
               key={point}
               fontSize={16}
-              sx={{ textAlign: "left", marginTop: 2, fontWeight: 400 }}
-            >
-              {point}
-            </Typography>
+              sx={{
+                textAlign: "left",
+                marginTop: 2,
+                fontWeight: 400,
+                wordBreak:"break-word",
+                "& ul, & ol": {
+                  paddingLeft: 2, 
+                },
+              }}
+              dangerouslySetInnerHTML={{ __html: point }}
+            />
           ))}
           <ul style={{ marginLeft: "16px" }}>
             {details?.expectedPoint?.ulPoints?.map((point) => {
@@ -458,7 +465,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         </Stack>
         {(myProfile.type === "space" || !myProfile?.owned) && (
           <Button
-            onClick={spaceInquire ? () => spaceInquire(myProfile?.id) : ()=>{}}
+            onClick={spaceInquire ? () => spaceInquire(myProfile?.id) : () => { }}
             sx={{
               background: (theme) => theme.palette.button.secondary,
               color: (theme) => theme.palette.primary.main,
@@ -484,8 +491,8 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             {myProfile?.type === "brand"
               ? "Follow"
               : myProfile?.type === "event"
-              ? "RSVP"
-              : "Inquire"}
+                ? "RSVP"
+                : "Inquire"}
           </Button>
         )}
       </Stack>

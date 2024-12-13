@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Box, Button, Modal, Stack, Typography } from "@mui/material";
+import { Box, Button, LinearProgress, Modal, Stack, Tooltip, Typography } from "@mui/material";
 import DynamicPaginationSwiper from "../Slider";
 import OutlinedTabs from "../outlinedTabs";
 import Details from "./details";
@@ -35,7 +35,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
   };
 
   const mapTabsToComponents = (myProfile, tabs) => {
-    return tabs.map((tab) => ({
+    return tabs?.map((tab) => ({
       label: tab.label,
       component: () => {
         const Component = componentsMap[tab.label];
@@ -51,11 +51,21 @@ const BESProfile = ({ spaceInquire, type, data }) => {
     }));
   };
 
-  const filteredProfile = data.find((profile) => profile.id === Number(id));
+  const filteredProfile = data.find((profile) => profile.id === id);
   const myProfile = {
     ...filteredProfile,
-    tabs: mapTabsToComponents(filteredProfile, filteredProfile.tabs),
+    tabs: mapTabsToComponents(filteredProfile, filteredProfile?.tabs),
   };
+
+  const transformedSlides = myProfile?.slides?.map((slide) => slide.url) || [];
+
+  if (!filteredProfile) {
+    return (
+      <Box sx={{ width: "100%" }}>
+        <LinearProgress />
+      </Box>
+    )
+  }
 
   return (
     <>
@@ -68,42 +78,42 @@ const BESProfile = ({ spaceInquire, type, data }) => {
           marginBottom: 2,
           ".swiper": {
             borderRadius: "5px 5px 0 0",
-          height: myProfile.type === "brand" ? "300px !important" : "500px !important",
+            height: myProfile.type === "brand" ? "300px !important" : "500px !important",
           },
           ".slide-content": {
-          height: myProfile.type === "brand" ? "300px !important" : "500px !important",
+            height: myProfile.type === "brand" ? "300px !important" : "500px !important",
           },
         }}
       >
         {myProfile?.owned && (
-            <Box
+          <Box
+            sx={{
+              position: "sticky",
+              top: "16px",
+              marginRight: "16px",
+              zIndex: 2,
+            }}
+            className="buttons-box"
+          >
+            <Button
+              onClick={editProfile}
               sx={{
-                position: "sticky",
-                top: "16px",
-                marginRight: "16px",
-                zIndex: 2,
+                padding: "10px 24px",
+                fontSize: "16px",
+                fontWeight: 600,
+                width: "77px",
+                height: "31px",
+                position: "absolute",
+                top: "0px",
+                right: "0px",
+                zIndex: 9,
+                textTransform: "capitalize",
               }}
-              className="buttons-box"
             >
-              <Button
-                onClick={editProfile}
-                sx={{
-                  padding: "10px 24px",
-                  fontSize: "16px",
-                  fontWeight: 600,
-                  width: "77px",
-                  height: "31px",
-                  position: "absolute",
-                  top: "0px",
-                  right: "0px",
-                  zIndex: 9,
-                  textTransform: "capitalize",
-                }}
-              >
-                Edit
-              </Button>
-            </Box>
-          )}
+              Edit
+            </Button>
+          </Box>
+        )}
         <Box
           sx={{
             width: "100%",
@@ -111,7 +121,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
         >
           <DynamicPaginationSwiper
             onClick={() => setOpenSliderModal(true)}
-            slides={myProfile?.slides}
+            slides={transformedSlides}
           />
         </Box>
         <Stack
@@ -132,7 +142,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
             <Box
               sx={{
                 borderRadius: "5px",
-                minWidth: "96px",
+                width: "96px",
                 height: "96px",
                 position: "relative",
               }}
@@ -160,8 +170,8 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                     myProfile?.type === "brand"
                       ? brandBadge
                       : myProfile?.type === "event"
-                      ? eventBadge
-                      : spaceBadge
+                        ? eventBadge
+                        : spaceBadge
                   }
                   alt={`${type}-badge`}
                 />
@@ -173,24 +183,37 @@ const BESProfile = ({ spaceInquire, type, data }) => {
               justifyContent="center"
               alignItems="flex-start"
             >
-              <Typography
-                textAlign="left"
-                sx={{
-                  lineHeight: "100%",
-                  fontWeight: 600,
-                }}
-                variant="h1"
-              >
-                {myProfile?.profileName}
-              </Typography>
+              <Tooltip title={myProfile?.profileName?.length > 30 ? myProfile?.profileName : ""}>
+                <Typography
+                  textAlign="left"
+                  sx={{
+                    lineHeight: "normal",
+                    fontWeight: 600,
+                    maxWidth: "100%",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                  variant="h1"
+                >
+                  {myProfile?.profileName?.length > 30
+                    ? `${myProfile.profileName.slice(0, 29)}...`
+                    : myProfile?.profileName}
+                </Typography>
+              </Tooltip>
+
               <Typography
                 sx={{
                   fontSize: "16px",
                   fontWeight: 300,
                 }}
               >
-                {myProfile?.category}
+                {filteredProfile?.category
+                  ?.map((item) => item?.name)
+                  .filter(Boolean)
+                  .join(', ')}
               </Typography>
+
               <Stack
                 component="section"
                 direction="row"
@@ -200,37 +223,36 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                 flexWrap={{ xs: "wrap", md: "nowrap" }}
               >
                 {Object.entries(myProfile?.details).map(([key, values], ind) => {
-                    return (
-                      <Typography
-                        onClick={
+                  return (
+                    <Typography
+                      onClick={
+                        myProfile?.by && key === "by"
+                          ? () => {
+                            navigate(
+                              `/${type === "brand" ? "profile" : "brand"}/${myProfile?.by
+                              }`
+                            );
+                          }
+                          : () => { }
+                      }
+                      key={ind}
+                      fontSize={12}
+                      sx={{
+                        cursor:
                           myProfile?.by && key === "by"
-                            ? () => {
-                                navigate(
-                                  `/${type === "brand" ? "profile" : "brand"}/${
-                                    myProfile?.by
-                                  }`
-                                );
-                              }
-                            : () => {}
-                        }
-                        key={ind}
-                        fontSize={12}
-                        sx={{
-                          cursor:
-                            myProfile?.by && key === "by"
-                              ? "pointer"
-                              : "default",
-                          fontWeight: 300,
-                          textTransform: "capitalize",
-                        }}
-                      >
-                        {key}:{" "}
-                        <span style={{ display: "inline-block", fontWeight: 600, textTransform: "none" }}>
-                          {values}
-                        </span>
-                      </Typography>
-                    );
-                  })}
+                            ? "pointer"
+                            : "default",
+                        fontWeight: 300,
+                        textTransform: "capitalize",
+                      }}
+                    >
+                      {key}:{" "}
+                      <span style={{ display: "inline-block", fontWeight: 600, textTransform: "none" }}>
+                        {values}
+                      </span>
+                    </Typography>
+                  );
+                })}
               </Stack>
             </Stack>
           </Stack>
@@ -292,8 +314,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
             transform: "translate(-50%, -50%)",
             width: "65%",
             ".swiper": {
-              height: "auto !important",
-              maxHeight: "80vh",
+              height: "80vh !important",
             },
             ":focus-visible": {
               outline: "none !important",
@@ -301,12 +322,15 @@ const BESProfile = ({ spaceInquire, type, data }) => {
             ".slide-content": {
               height: "100% !important",
               img: {
+                height: "100%",
+                width: "auto",
+                objectFit: "cover",
                 borderRadius: "10px",
               },
             },
           }}
         >
-          <DynamicPaginationSwiper slides={myProfile?.slides} />
+          <DynamicPaginationSwiper slides={transformedSlides} />
         </Box>
       </Modal>
     </>

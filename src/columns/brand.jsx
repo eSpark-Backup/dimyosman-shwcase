@@ -1,4 +1,4 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, Tooltip, Typography } from "@mui/material";
 import { brandBadge } from "../assets";
 
 const myBrandColumns = (gotoDetail, handleAction) => {
@@ -26,28 +26,41 @@ const myBrandColumns = (gotoDetail, handleAction) => {
               }}
             >
               {item?.brandImg && (
-                <img
-                  style={{ width: "100%" }}
-                  src={item?.brandImg}
-                  alt="brand-img"
-                />
+
+                <figure style={{ width: "100%", height: "100%" }} role="brand-image">
+                  <img
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    src={item?.brandImg}
+                    alt="brand-img"
+                  />
+                </figure>
               )}
-              <img
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  right: 0,
-                  zIndex: 99,
-                }}
-                width={16}
-                height={16}
-                src={brandBadge}
-                alt="brand-icon"
-              />
+
+              <figure style={{ width: "100%", height: "100%" }} role="brand-icon">
+                <img
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    zIndex: 99,
+                  }}
+                  width={16}
+                  height={16}
+                  src={brandBadge}
+                  alt="brand-icon"
+                />
+              </figure>
             </Box>
-            <Typography variant="h5" sx={{ fontWeight: 600, cursor: "pointer" }}>
-              {item?.brandName}
-            </Typography>
+            <Tooltip title={item?.brandName?.length > 30 ? item?.brandName : ""}>
+              <Typography
+                textAlign="left"
+                sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
+              >
+                {item?.brandName?.length > 30
+                  ? `${item?.brandName.slice(0, 29)}...`
+                  : item?.brandName}
+              </Typography>
+            </Tooltip>
           </Stack>
         );
       },
@@ -92,12 +105,21 @@ const myBrandColumns = (gotoDetail, handleAction) => {
       key: "action",
       component: (item) => {
         return (
-          <Typography
+          <Button
             onClick={() => handleAction(item)}
-            sx={{ fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+            sx={{
+              width: "56px",
+              maxHeight: "26px",
+              fontSize: "14px",
+              fontWeight: "600",
+              transition: "width 0.3s ease-in-out",
+              "&:hover": {
+                width: "100px",
+              },
+            }}
           >
             Edit
-          </Typography>
+          </Button>
         );
       },
     },
@@ -129,26 +151,32 @@ const followingBrandColumns = (gotoDetail, handleAction) => {
               }}
             >
               {item?.brandImg && (
-                <img
-                  style={{ width: "100%" }}
-                  src={item?.brandImg}
-                  alt="brand-img"
-                />
+
+                <figure style={{ width: "100%", height: "100%" }} role="brand-icon">
+                  <img
+                    style={{ width: "100%" }}
+                    src={item?.brandImg}
+                    alt="brand-img"
+                  />
+                </figure>
               )}
-              <img
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  right: 0,
-                  zIndex: 99,
-                }}
-                width={16}
-                height={16}
-                src={brandBadge}
-                alt="brand-icon"
-              />
+
+              <figure style={{ width: "100%", height: "100%" }} role="brand-icon">
+                <img
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    zIndex: 99,
+                  }}
+                  width={16}
+                  height={16}
+                  src={brandBadge}
+                  alt="brand-icon"
+                />
+              </figure>
             </Box>
-            <Typography variant="h5" sx={{ fontWeight: 600, cursor: "pointer" }}>
+            <Typography sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}>
               {item?.brandName}
             </Typography>
           </Stack>
@@ -167,12 +195,17 @@ const followingBrandColumns = (gotoDetail, handleAction) => {
       key: "action",
       component: (item) => {
         return (
-          <Typography
+          <Button
             onClick={() => handleAction(item)}
-            sx={{ fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+            sx={{
+              width: "89px",
+              maxHeight: "26px",
+              fontSize: "14px",
+              fontWeight: "600",
+            }}
           >
             Unfollow
-          </Typography>
+          </Button>
         );
       },
     },
@@ -204,26 +237,32 @@ const likedBrandColumns = (gotoDetail, handleAction) => {
               }}
             >
               {item?.brandImg && (
-                <img
-                  style={{ width: "100%" }}
-                  src={item?.brandImg}
-                  alt="brand-img"
-                />
+
+                <figure style={{ width: "100%", height: "100%" }} role="brand-image">
+                  <img
+                    style={{ width: "100%" }}
+                    src={item?.brandImg}
+                    alt="brand-img"
+                  />
+                </figure>
               )}
-              <img
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  right: 0,
-                  zIndex: 99,
-                }}
-                width={16}
-                height={16}
-                src={brandBadge}
-                alt="brand-icon"
-              />
+
+              <figure style={{ width: "100%", height: "100%" }} role="brand-icon">
+                <img
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    zIndex: 99,
+                  }}
+                  width={16}
+                  height={16}
+                  src={brandBadge}
+                  alt="brand-icon"
+                />
+              </figure>
             </Box>
-            <Typography variant="h5" sx={{ fontWeight: 600, cursor: "pointer" }}>
+            <Typography sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}>
               {item?.brandName}
             </Typography>
           </Stack>
@@ -242,12 +281,17 @@ const likedBrandColumns = (gotoDetail, handleAction) => {
       key: "action",
       component: (item) => {
         return (
-          <Typography
+          <Button
             onClick={() => handleAction(item)}
-            sx={{ fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+            sx={{
+              minWidth: "83px",
+              maxHeight: "26px",
+              fontSize: "14px",
+              fontWeight: "600",
+            }}
           >
             Remove
-          </Typography>
+          </Button>
         );
       },
     },
