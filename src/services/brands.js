@@ -31,9 +31,14 @@ export const brandApi = api.injectEndpoints({
 
 
                 if (brandData?.cover) {
+                    const coverOrder = [];
+
                     brandData.cover.forEach((file) => {
                         formData.append('cover', file);
+                        coverOrder.push(file.name);
                     });
+
+                    formData.append('coverOrder', JSON.stringify(coverOrder));
                 }
                 if (brandData?.profileImage) {
                     formData.append('image', brandData.profileImage);
@@ -91,19 +96,20 @@ export const brandApi = api.injectEndpoints({
 
                 if (brandData?.cover) {
                     const coverKeys = [];
-                
-                    brandData.cover.forEach((file) => {
+
+                    brandData.cover.forEach((file, index) => {
                         if (file?.public_id) {
-                            coverKeys.push(file.public_id);
+                            let indexes = index + 1;
+                            let newStr = file.public_id + "+" + indexes;
+                            coverKeys.push(newStr);
                         } else {
                             formData.append('cover', file);
                         }
                     });
-                
-                    formData.append('coverKeys', JSON.stringify(coverKeys));
-                    // formData.append('coverKeys', coverKeys.join(','));
+
+                    formData.append('coverKeys', coverKeys);
                 }
-                
+
 
                 if (brandData?.profileImage) {
                     if (brandData.profileImage instanceof File) {
@@ -111,7 +117,6 @@ export const brandApi = api.injectEndpoints({
                     }
                 }
                 formData.append("status", brandData?.status)
-
 
                 return {
                     url: `/brand/${id}`,
