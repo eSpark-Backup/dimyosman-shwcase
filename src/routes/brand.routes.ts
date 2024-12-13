@@ -75,6 +75,11 @@ const brandController = new BrandController(brandRepository, userRepository);
  *                   - PUBLISH
  *                   - DRAFT
  *                   - ARCHIVE
+ *               coverOrder:
+ *                  type: array
+ *                  items:
+ *                    type: string
+ *                  description: Array specifying the order of cover filenames.
  *               cover:
  *                 type: array
  *                 items:

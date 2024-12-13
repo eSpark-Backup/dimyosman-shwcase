@@ -35,7 +35,7 @@ export class BrandController {
     try {
       const coverFilesPath = path.join(process.cwd(), "uploads");
       const imageFilesPath = path.join(process.cwd(), "uploads");
-      const coverFiles = fs
+      let coverFiles = fs
         .readdirSync(coverFilesPath)
         .filter((file) => file.startsWith("cover")); // Filter for cover files
       const imageFiles = fs
@@ -49,7 +49,14 @@ export class BrandController {
         );
       }
 
-      const { brandName, brandCategory, details, location, status } = req.body;
+      const {
+        brandName,
+        brandCategory,
+        details,
+        location,
+        status,
+        coverOrder,
+      } = req.body;
       const checkName = await this.brandRepo.findOne({ where: { brandName } });
       if (checkName) {
         throw new ApiError(
@@ -57,6 +64,7 @@ export class BrandController {
           HTTP_STATUS.BAD_REQUEST
         );
       }
+      coverFiles = commonHelper.reorderCoverFiles(coverFiles, coverOrder);
 
       const coverFileObjects: IFileObject[] = coverFiles.map((file) =>
         commonHelper.createFileObject(path.join(coverFilesPath, file), "cover")

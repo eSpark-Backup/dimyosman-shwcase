@@ -70,6 +70,28 @@ export class CommonHelper {
     const currentDate = new Date();
     return new Date(currentDate.getTime() + days * 24 * 60 * 60 * 1000);
   }
+
+  reorderCoverFiles = (coverFiles: string[], coverOrder: string | string[]) => {
+    if (typeof coverOrder === "string" && !Array.isArray(coverOrder)) {
+      coverOrder = coverOrder.split(",").map((item) => item.trim());
+    }
+
+    const fileMap = coverFiles.reduce((map, file) => {
+      const originalName = file.split("-").slice(3).join("-");
+      map[originalName] = file;
+      return map;
+    }, {} as Record<string, string>);
+
+    const orderedFiles = coverOrder
+      .map((name) => fileMap[name])
+      .filter(Boolean);
+
+    const remainingFiles = coverFiles.filter(
+      (file) => !orderedFiles.includes(file)
+    );
+
+    return [...orderedFiles, ...remainingFiles];
+  };
 }
 
 export const commonHelper = new CommonHelper();

@@ -20,6 +20,9 @@ export class BrandValidation {
       lat: Joi.number().required(),
       additional: Joi.string().optional(),
     }).optional(),
+    coverOrder: Joi.alternatives()
+      .try(Joi.string(), Joi.array().items(Joi.string()))
+      .optional(),
     status: Joi.string()
       .valid(...Object.values(BRAND_STATUS))
       .required(),
@@ -34,6 +37,7 @@ export class BrandValidation {
         })
       )
       .optional(),
+    coverOrder: Joi.array().items(Joi.string()).optional(),
     details: Joi.object({
       description: Joi.string().optional(),
       htmlContent: Joi.string().optional(),
