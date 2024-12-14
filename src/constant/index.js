@@ -884,7 +884,7 @@ export const allMessages = [
         id: 3,
         userName: "Sophia Ramirez",
         activity: "profile",
-        icon: "",
+        icon: reviewer,
         read: false,
         messages: [
           {
