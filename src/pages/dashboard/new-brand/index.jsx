@@ -179,10 +179,11 @@ const NewBrand = () => {
 
     const handleAddImage = () => {
         const nextIndex = brandData.cover.length;
-        if (nextIndex >= 0 && nextIndex <= brandData.cover.length) {
+        if (nextIndex < 3) {
             setCurrentIndex(nextIndex);
         }
     };
+    
 
     const handleRemoveImage = () => {
         const updatedCover = brandData.cover.filter((_, index) => index !== currentIndex);
