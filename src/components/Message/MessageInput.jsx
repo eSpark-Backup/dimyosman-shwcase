@@ -79,7 +79,7 @@ const MessageInput = ({
   }, [emojiPickerVisible]);
 
   return (
-    <div ref={quillRef} style={{ height: "74px", border: "1px solid #ccc" }} />
+    <div ref={quillRef} style={{ height: "74px" }} />
   );
 };
 

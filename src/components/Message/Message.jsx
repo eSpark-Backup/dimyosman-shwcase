@@ -10,6 +10,7 @@ const Message = ({ ActivityType, theme, message }) => {
         bgcolor: "#ffffff",
         marginTop: 2,
         padding: 2,
+        border: "1px solid rgba(209, 219, 215, 0.5)",
         borderRadius: "5px",
       }}
     >
