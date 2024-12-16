@@ -10,6 +10,7 @@ import ReusableModal from '../../../components/Modal'
 import dayjs from 'dayjs'
 import { useGetAllBrandsQuery } from '../../../services/brands'
 import { useGetCategoriesQuery } from '../../../services/categories'
+import { useGetAllSpaceQuery } from '../../../services/space'
 
 const NewEvent = () => {
     const defaultTemplate = `<h2><strong>Event Blog Post Title</strong></h2><p><strong>Main Features:</strong> Highlight the key aspects of the event. This could include exclusive offers, workshops, activities, or special guests. Be sure to describe what attendees can expect and why it’s valuable to them. Adding images to this section can make it more visually appealing.</p><br/><p><strong>Interactive Elements:</strong> If there are any interactive experiences, such as displays or hands-on activities, explain how they will enhance the overall event experience. Keep the description clear and focused on what attendees will gain.</p><br/><p><strong>Venue & Atmosphere:</strong> Give a brief mention of the venue and how it contributes to the event’s overall vibe. If the event has a theme like sustainability, mention how it aligns with the venue or event practices. Adding a relevant image can help set the tone.</p><br/><p><strong>Conclusion:</strong> Wrap up with a call to action, encouraging readers to attend, register, or follow for more updates. Reiterate what makes the event special and why it’s a must-attend.</p>`;
@@ -23,11 +24,18 @@ const NewEvent = () => {
         location: { lat: 30.188760426055236, long: 70.22460937500001 },
         mapInstructions: "",
         eventDate: null,
-        brand: ""
+        selectedDate: [null, null],
+        brand: "",
+        space: ""
     });
     const { data: brandData, isError: isBrandError, isLoading: BrandLoading, isSuccess: isBrandSuccess, error: brandError, isFetching: isBrandFetching } = useGetAllBrandsQuery({}, {
         refetchOnMountOrArgChange: true,
     });
+
+    const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useGetAllSpaceQuery({}, {
+        refetchOnMountOrArgChange: true,
+    });
+
 
     const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading } = useGetCategoriesQuery('EVENTS')
 
@@ -61,8 +69,16 @@ const NewEvent = () => {
     const editorRef = useRef(null);
     const quillRef = useRef(null);
 
-    const options = brandData?.data?.groupedBrands?.publishedBrands?.map((brand) => ({
+    const options = brandData?.data?.groupedBrands?.draftBrands?.map((brand) => ({
         label: brand.brandName,
+        value: brand.id,
+        item: brand,
+    }));
+
+    console.log(brandData)
+
+    const spaceOptions = spaceData?.data?.spaces?.map((brand) => ({
+        label: brand.spaceName,
         value: brand.id,
         item: brand,
     }));
@@ -73,6 +89,15 @@ const NewEvent = () => {
         setEventData((prev) => ({
             ...prev,
             brand: selectedItem?.item,
+        }));
+    };
+
+    const handleSpaceSelect = (value) => {
+        const selectedItem = spaceOptions.find((option) => option.value === value);
+
+        setEventData((prev) => ({
+            ...prev,
+            space: selectedItem?.item,
         }));
     };
 
@@ -175,15 +200,23 @@ const NewEvent = () => {
         }
     }, [isEditorVisible, eventData?.eventTitle]);
 
-    const handleDateChange = (formattedDate) => {
-        const newDate = dayjs(formattedDate).format("DD.MM.YYYY");
+    const handleDateChange = (selectedDate) => {
+        const formattedStartDate = selectedDate[0]
+            ? dayjs(selectedDate[0]).format("DD.MM.YYYY")
+            : "dd.mm.yyyy";
+        const formattedEndDate = selectedDate[1]
+            ? dayjs(selectedDate[1]).format("DD.MM.YYYY")
+            : "dd.mm.yyyy";
+
         setEventData((prev) => ({
             ...prev,
-            eventDate: newDate,
+            selectedDate,
+            eventDate: `${formattedStartDate} - ${formattedEndDate}`,
         }));
     };
 
-    if (isBrandFetching || BrandLoading) {
+
+    if (isBrandFetching || BrandLoading || GetCategoryLoading || isSpaceFetching || SpaceLoading) {
         return (
             <Box sx={{ width: "100%" }}>
                 <LinearProgress />
@@ -298,7 +331,9 @@ const NewEvent = () => {
                     rowGap: "32px",
                 }}
             >
-                <InputWithMap inputLabel={"Event Overview:"} inputValue={eventData?.eventOverview} setInputValue={(value) => setEventData({ ...eventData, eventOverview: value })} mapDescription={"Address line will be filled automatically."} activity={"event"} eventName={"Space name"} eventAddress={"Brand name"} defaultDate={eventData.eventDate || "dd.mm.yyyy"} onDateChange={handleDateChange} handleClick={() => setMapModal(true)} />
+                <InputWithMap inputLabel={"Event Overview:"} inputValue={eventData?.eventOverview} setInputValue={(value) => setEventData({ ...eventData, eventOverview: value })} mapDescription={"Address line will be filled automatically."} activity={"event"} eventName={"Space name"} eventAddress={"Brand name"} defaultDate={eventData.selectedDate || [new Date(), new Date()]} onDateChange={handleDateChange} handleClick={() => setMapModal(true)} options={spaceOptions}
+                    onSpaceSelect={handleSpaceSelect}
+                    selectedValue={eventData?.space?.id || ''} />
                 <Box
                     sx={{
                         width: "98%",

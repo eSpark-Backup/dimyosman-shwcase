@@ -38,6 +38,7 @@
     "react-redux": "^9.0.4",
     "react-router-dom": "^6.27.0",
     "react-toastify": "^10.0.1",
+    "rsuite": "^5.75.0",
     "swiper": "^11.1.14",
     "yup": "^1.4.0"
   },

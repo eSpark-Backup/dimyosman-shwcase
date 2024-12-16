@@ -6,6 +6,9 @@ import { useClickOutside } from '../utils';
 import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
+import { DateRangePicker } from 'rsuite';
+import 'rsuite/dist/rsuite.min.css';
+import Dropdown from './Dropdown';
 
 const InputWithMap = ({
   edit,
@@ -18,56 +21,52 @@ const InputWithMap = ({
   eventName,
   eventAddress,
   defaultDate,
-  onDateChange
+  onDateChange,
+  options,
+  onSpaceSelect,
+  selectedValue
 }) => {
   const theme = useTheme();
   const datePickerRef = useRef(null);
   const [openDatePicker, setOpenDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(defaultDate);
-  const [dateToShow, setDateToShow] = useState("");
+  // Format start and end dates
+  const formatStartDate = (dateRange) =>
+    dateRange && dateRange[0] ? dayjs(dateRange[0]).format("DD.MM.YYYY") : "dd.mm.yyyy";
 
-  useClickOutside(datePickerRef, () => setOpenDatePicker(false));
+  const formatEndDate = (dateRange) =>
+    dateRange && dateRange[1] ? dayjs(dateRange[1]).format("DD.MM.YYYY") : "dd.mm.yyyy";
 
-  useEffect(() => {
-    if (typeof selectedDate === "string") {
-      if (edit) {
-        var splitedDate = selectedDate.split("-");
-        const formattedDate = `${splitedDate[2]}.${splitedDate[1]}.${splitedDate[0]}`;
-        setDateToShow(formattedDate);
-      } else {
-        setDateToShow(selectedDate);
-      }
-    } else {
-      setDateToShow(selectedDate?.format("DD.MM.YYYY"));
-    }
-    onDateChange&&onDateChange(selectedDate);
-  }, [selectedDate]);
+  const startDate = formatStartDate(selectedDate);
+  const endDate = formatEndDate(selectedDate);
 
   const datePickerStyle = {
     borderRadius: "5px",
-    border: "1px solid #D1DBD7 !important",
-    ".Mui-selected": {
+    border: "1px solid #D1DBD7",
+    ".rs-picker-toggle": {
+      color: "#00141C !important",
+      backgroundColor: "#e3e9e7 !important",
+      borderRadius: "5px",
+      fontSize: "14px",
+    },
+    ".rs-picker-toggle:hover": {
       color: "#00141C !important",
       backgroundColor: "#e3e9e7 !important",
     },
-    ".Mui-selected:hover": {
-      color: "#00141C !important",
-      backgroundColor: "#e3e9e7 !important",
-    },
-    ".MuiPickersLayout-toolbar": {
+    ".rs-picker-toolbar": {
       display: "none",
     },
-    ".MuiDialogActions-root>:not(style)~:not(style)": {
-      fontWeight: 700,
-    },
-    button: {
+    ".rs-btn": {
       background: "transparent",
-      color: (theme) => theme.palette.primary.main,
+      color: "#00141C",
       fontSize: "12px",
       ":hover": {
         background: "transparent",
       },
     },
+  };
+  const handleSelectChange = (selectedOption) => {
+    onSpaceSelect(selectedOption.target.value)
   };
   return (
     <Box
@@ -113,51 +112,11 @@ const InputWithMap = ({
         </Typography>
 
         {activity === "event" && (
-          <Box
-            sx={{
-              width: "100%",
-              minHeight: "60px",
-              border: "1px dashed rgba(0, 20, 28, 0.4)",
-              borderRadius: "3px",
-              display: "flex",
-              justifyContent: "center",
-              gap: 1,
-              alignItems: "flex-start",
-              backgroundColor: "rgba(209, 219, 215, 0.2)",
-              px: "10px",
-              py: "5px",
-            }}
-          >
-            <Box
-              sx={{ display: "flex", flexDirection: "column", rowGap: "5px" }}
-            >
-              <Typography
-                fontSize={16}
-                sx={{
-                  textAlign: "left",
-                  fontWeight: "600",
-                  color: theme.palette.primary.dark,
-                }}
-              >
-                {eventName}
-              </Typography>
-              <Typography
-                fontSize={12}
-                sx={{
-                  textAlign: "left",
-                  fontWeight: "300",
-                  color: theme.palette.primary.main,
-                }}
-              >
-                {eventAddress}
-              </Typography>
-            </Box>
-            <img
-              style={{ marginTop: "7px" }}
-              src={arrowDown}
-              alt="Down Arrow"
-            />
-          </Box>
+          <Dropdown
+            options={options}
+            onChange={handleSelectChange}
+            value={selectedValue}
+          />
         )}
         {(activity === "brand" && !edit) &&
           <Typography fontSize={14} fontWeight={300} sx={{ fontStyle: "italic" }}>Click on the map to select Address.</Typography>
@@ -218,13 +177,13 @@ const InputWithMap = ({
                 fontWeight={700}
                 sx={{ color: theme.palette.primary.main, textAlign: "left" }}
               >
-                {dateToShow}.
+                {startDate}
               </Typography>
               <Typography
                 fontSize={12}
                 sx={{ textAlign: "left", color: theme.palette.primary.main }}
               >
-                until 15.4.2025.
+                until {endDate}
               </Typography>
             </Box>
 
@@ -233,7 +192,7 @@ const InputWithMap = ({
                 ref={datePickerRef}
                 sx={{
                   position: "absolute",
-                  top: "-380px",
+                  top: "0px",
                   right: "0px",
                   zIndex: 10,
                   mt: 1,
@@ -243,11 +202,15 @@ const InputWithMap = ({
                 }}
               >
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <StaticDatePicker
-                    sx={datePickerStyle}
-                    onClose={() => setOpenDatePicker(false)}
-                    onChange={(date) => setSelectedDate(date)}
-                    defaultValue={dayjs(selectedDate) || dayjs()}
+                  <DateRangePicker
+                    value={selectedDate}
+                    style={datePickerStyle}
+                    onChange={(newValue) => {
+                      setSelectedDate(newValue);
+                      onDateChange(newValue);
+                    }}
+                    appearance="default"
+                    showOneCalendar
                   />
                 </LocalizationProvider>
               </Box>
