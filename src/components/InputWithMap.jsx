@@ -116,6 +116,7 @@ const InputWithMap = ({
             options={options}
             onChange={handleSelectChange}
             value={selectedValue}
+            placeholder={"Select Space"}
           />
         )}
         {(activity === "brand" && !edit) &&

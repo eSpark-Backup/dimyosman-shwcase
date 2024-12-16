@@ -1,4 +1,4 @@
-import { Box, Button, LinearProgress, Typography } from '@mui/material'
+import { Box, Button, CircularProgress, LinearProgress, Typography } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import { flag } from '../../../assets'
 import { FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs } from '../../../components'
@@ -11,6 +11,9 @@ import dayjs from 'dayjs'
 import { useGetAllBrandsQuery } from '../../../services/brands'
 import { useGetCategoriesQuery } from '../../../services/categories'
 import { useGetAllSpaceQuery } from '../../../services/space'
+import { LoadingButton } from '@mui/lab'
+import { toast } from 'react-toastify'
+import { useNewEventMutation } from '../../../services/events'
 
 const NewEvent = () => {
     const defaultTemplate = `<h2><strong>Event Blog Post Title</strong></h2><p><strong>Main Features:</strong> Highlight the key aspects of the event. This could include exclusive offers, workshops, activities, or special guests. Be sure to describe what attendees can expect and why it’s valuable to them. Adding images to this section can make it more visually appealing.</p><br/><p><strong>Interactive Elements:</strong> If there are any interactive experiences, such as displays or hands-on activities, explain how they will enhance the overall event experience. Keep the description clear and focused on what attendees will gain.</p><br/><p><strong>Venue & Atmosphere:</strong> Give a brief mention of the venue and how it contributes to the event’s overall vibe. If the event has a theme like sustainability, mention how it aligns with the venue or event practices. Adding a relevant image can help set the tone.</p><br/><p><strong>Conclusion:</strong> Wrap up with a call to action, encouraging readers to attend, register, or follow for more updates. Reiterate what makes the event special and why it’s a must-attend.</p>`;
@@ -75,8 +78,6 @@ const NewEvent = () => {
         item: brand,
     }));
 
-    console.log(brandData)
-
     const spaceOptions = spaceData?.data?.spaces?.map((brand) => ({
         label: brand.spaceName,
         value: brand.id,
@@ -132,7 +133,7 @@ const NewEvent = () => {
 
     const handleAddImage = () => {
         const nextIndex = eventData.cover.length;
-        if (nextIndex >= 0 && nextIndex <= eventData.cover.length) {
+        if (nextIndex < 3) {
             setCurrentIndex(nextIndex);
         }
     };
@@ -215,6 +216,92 @@ const NewEvent = () => {
         }));
     };
 
+    const validateBrandData = () => {
+        if (!eventData?.cover || eventData?.cover?.length <= 0) {
+            toast?.error("Please upload cover photo of brand");
+            return false;
+        }
+
+        if (!eventData?.profileImage) {
+            toast?.error("Please upload profile photo of brand");
+            return false;
+        }
+
+        if (!eventData?.eventName || eventData?.eventName.trim() === "") {
+            toast?.error("Brand name can not be empty.");
+            return false;
+        }
+
+        const selectedCategories = eventData?.eventCategories?.filter((item) => item?.selected);
+        if (!selectedCategories || selectedCategories.length <= 0) {
+            toast?.error("Please select at least one category.");
+            return false;
+        }
+
+        if (!eventData?.eventOverview || eventData?.eventOverview.trim() === "") {
+            toast?.error("Brand overview can not be empty.");
+            return false;
+        }
+
+        if (!eventData?.eventTitle || eventData?.eventTitle.trim() === "") {
+            toast?.error("Brand title can not be empty.");
+            return false;
+        }
+
+        if (!eventData?.mapInstructions || eventData?.mapInstructions.trim() === "") {
+            toast?.error("Map additional field is required");
+            return false;
+        }
+
+        const strippedContent = eventData?.eventTitle?.replace(/<[^>]*>/g, "").trim();
+        if (!strippedContent) {
+            toast?.error("Brand title can not be empty.");
+            return false;
+        }
+
+        if (!eventData?.brand || typeof eventData.brand !== "object" || Object.keys(eventData.brand).length === 0) {
+            toast?.error("Please select a brand");
+            return false;
+        }
+
+
+        if (!eventData?.space || typeof eventData.space !== "object" || Object.keys(eventData.space).length === 0) {
+            toast?.error("Please select space");
+            return false;
+        }
+
+        if (!eventData?.selectedDate || eventData?.selectedDate?.includes(null)) {
+            toast?.error("Please select date");
+            return false;
+        }
+        return true;
+    };
+
+    const [brand, { isSuccess: eventPostSuccess, isError: IsEventPostError, error: eventPostError, data: eventPostData, isLoading: EventPostingLoading }] = useNewEventMutation()
+
+    useEffect(() => {
+        if (eventPostSuccess) {
+            console.log(eventPostData)
+        }
+    }, [eventPostSuccess])
+
+    const handleSubmit = async (status) => {
+        if (!validateBrandData()) {
+            return;
+        }
+        setLoadingButton(status);
+        try {
+            await brand({ ...eventData, status });
+        } finally {
+            setLoadingButton(null);
+        }
+    };
+
+    const [loadingButton, setLoadingButton] = useState(null);
+    const HandlePublishSubmit = () => handleSubmit("PUBLISH");
+    const HandleDraftSubmit = () => handleSubmit("DRAFT");
+    const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
+
 
     if (isBrandFetching || BrandLoading || GetCategoryLoading || isSpaceFetching || SpaceLoading) {
         return (
@@ -245,24 +332,27 @@ const NewEvent = () => {
                     width: "max-content",
                     justifyContent: "center",
                     alignItems: "center",
-                    zIndex: 2,
+                    zIndex: 99,
                     right: 0,
                     marginRight: "16px",
                 }}
                 className="buttons-box"
             >
-                <Button
+                <LoadingButton
                     sx={{
                         fontSize: "16px",
                         width: "143px",
                         height: "31px",
                         textTransform: "none",
                     }}
-                    onClick={() => navigate(`/event`)}
+                    loading={loadingButton === "DRAFT"}
+                    onClick={HandleDraftSubmit}
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
+                    disabled={loadingButton && loadingButton !== "DRAFT"}
                 >
                     Save as Draft
-                </Button>
-                <Button
+                </LoadingButton>
+                <LoadingButton
                     sx={{
                         fontSize: "16px",
                         width: "103px",
@@ -270,21 +360,27 @@ const NewEvent = () => {
                         backgroundColor: "rgb(0, 20, 28, 0.9)",
                         textTransform: "none",
                     }}
-                    onClick={() => console.log(eventData)}
+                    loading={loadingButton === "PUBLISH"}
+                    onClick={HandlePublishSubmit}
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
+                    disabled={loadingButton && loadingButton !== "PUBLISH"}
                 >
                     Publish
-                </Button>
-                <Button
+                </LoadingButton>
+                <LoadingButton
                     sx={{
                         fontSize: "16px",
                         width: "102px",
                         height: "31px",
                         textTransform: "none",
                     }}
-                    onClick={() => navigate(`/event`)}
+                    loading={loadingButton === "ARCHIVE"}
+                    onClick={HandleArchiveSubmit}
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
+                    disabled={loadingButton && loadingButton !== "ARCHIVE"}
                 >
                     Archive
-                </Button>
+                </LoadingButton>
             </Box>
             <FullWidthImgInput
                 activity={"event"}

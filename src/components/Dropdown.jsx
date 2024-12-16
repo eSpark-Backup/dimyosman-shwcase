@@ -1,12 +1,9 @@
-import React, { useEffect } from 'react'
+import React from 'react';
 import { Box, FormControl, MenuItem, Select, Typography, useTheme } from '@mui/material';
+
 const Dropdown = ({ label, options, value, onChange, disable, placeholder }) => {
-    const theme = useTheme()
-    useEffect(() => {
-        if (!value && options?.length > 0) {
-            onChange({ target: { value: options[0].value } });
-        }
-    }, [value, options, onChange]);
+    const theme = useTheme();
+
     return (
         <Box sx={{ display: "flex", flexDirection: "column", rowGap: "8px" }}>
             {label && (
@@ -19,7 +16,7 @@ const Dropdown = ({ label, options, value, onChange, disable, placeholder }) => 
             )}
             <FormControl fullWidth variant="outlined">
                 <Select
-                    value={value || (options?.length > 0 ? options[0].value : "")}
+                    value={value || ""}
                     onChange={onChange}
                     label={label}
                     MenuProps={{
@@ -30,9 +27,13 @@ const Dropdown = ({ label, options, value, onChange, disable, placeholder }) => 
                         },
                     }}
                     disabled={disable}
-                    placeholder={placeholder}
-
+                    displayEmpty
                 >
+                    {placeholder && (
+                        <MenuItem value="" disabled>
+                            {placeholder}
+                        </MenuItem>
+                    )}
                     {options?.map((option) => (
                         <MenuItem key={option?.value} value={option?.value}>
                             {option?.label}
@@ -44,4 +45,4 @@ const Dropdown = ({ label, options, value, onChange, disable, placeholder }) => 
     );
 };
 
-export default Dropdown
+export default Dropdown;

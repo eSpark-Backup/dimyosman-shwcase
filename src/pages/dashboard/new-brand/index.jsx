@@ -305,10 +305,10 @@ const NewBrand = () => {
                         height: "31px",
                         textTransform: "none",
                     }}
-                    loading={loadingButton === "Draft"}
+                    loading={loadingButton === "DRAFT"}
                     onClick={HandleDraftSubmit}
                     loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
-                    disabled={loadingButton && loadingButton !== "Draft"}
+                    disabled={loadingButton && loadingButton !== "DRAFT"}
                 >
                     Save as Draft
                 </LoadingButton>

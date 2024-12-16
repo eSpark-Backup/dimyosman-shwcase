@@ -8,7 +8,7 @@ export const eventApi = api.injectEndpoints({
                 formData.append("brandId", eventData?.brand?.id)
                 formData.append("spaceId", eventData?.space?.id)
                 formData.append("eventName", eventData?.eventName)
-                formData.append("minLeaseDays", "Hello")
+                // formData.append("minLeaseDays", "Hello")
 
                 const selectedCategories = eventData?.eventCategories
                     ?.filter(item => item.selected)
@@ -16,16 +16,17 @@ export const eventApi = api.injectEndpoints({
 
                 formData.append('eventCategory', JSON.stringify(selectedCategories));
 
-                const eventDate = {
-                    startDate: eventData?.selectedDate[0],
-                    endDate: eventData?.selectedDate[1]
-                }
-                formData.append('eventDate', JSON.stringify(eventDate));
+
+                const formattedDates = [{
+                    startDate: eventData.selectedDate[0],
+                    endDate: eventData.selectedDate[1]
+                }];
+                formData.append('eventDate', JSON.stringify(formattedDates));
 
 
                 const details = {
-                    description: eventData?.brandOverview,
-                    htmlContent: eventData?.brandTitle,
+                    description: eventData?.eventOverview,
+                    htmlContent: eventData?.eventTitle,
                 };
                 formData.append('details', JSON.stringify(details));
 
@@ -38,29 +39,36 @@ export const eventApi = api.injectEndpoints({
                 formData.append('location', JSON.stringify(location));
 
 
-                if (brandData?.cover) {
-                    brandData.cover.forEach((file) => {
+                if (eventData?.cover) {
+                    const coverOrder = [];
+
+                    eventData.cover.forEach((file) => {
                         formData.append('cover', file);
+                        coverOrder.push(file.name);
                     });
+
+                    // formData.append('coverOrder', JSON.stringify(coverOrder));
                 }
-                if (brandData?.profileImage) {
-                    formData.append('image', brandData.profileImage);
+                if (eventData?.profileImage) {
+                    formData.append('image', eventData.profileImage);
                 }
-                formData.append("status", brandData?.status)
+                formData.append("status", eventData?.status)
+
+                const coverKeys = ["dummy"];
+                formData.append('coverKeys', JSON.stringify(coverKeys));                
 
 
                 return {
-                    url: '/brand',
+                    url: '/event',
                     method: 'POST',
                     body: formData,
                 };
             },
-            invalidatesTags: ['brand'],
         }),
 
     }),
 });
 
 export const {
-    useNewBrandMutation,
+    useNewEventMutation,
 } = eventApi;

@@ -150,6 +150,7 @@ const ImgInputWithCategories = ({
                                 onChange={handleSelectChange}
                                 value={selectedValue}
                                 label={'select brand:'}
+                                placeholder={"Select brand"}
                             />
                         </Box>
                     )}
