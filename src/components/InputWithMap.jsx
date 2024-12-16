@@ -18,6 +18,7 @@ const InputWithMap = ({
   eventName,
   eventAddress,
   defaultDate,
+  onDateChange
 }) => {
   const theme = useTheme();
   const datePickerRef = useRef(null);
@@ -39,6 +40,7 @@ const InputWithMap = ({
     } else {
       setDateToShow(selectedDate?.format("DD.MM.YYYY"));
     }
+    onDateChange&&onDateChange(selectedDate);
   }, [selectedDate]);
 
   const datePickerStyle = {

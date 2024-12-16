@@ -221,7 +221,7 @@ const NewBrand = () => {
                 },
             });
 
-            // Initialize Quill with brandTitle from brandData
+            
             quillRef.current.root.innerHTML = brandData.brandTitle || defaultTemplate;
 
             // Update brandData's brandTitle on text change
@@ -229,11 +229,11 @@ const NewBrand = () => {
                 const updatedContent = quillRef.current.root.innerHTML;
                 setBrandData((prevData) => ({
                     ...prevData,
-                    brandTitle: updatedContent, // Update the brandTitle in the state
+                    brandTitle: updatedContent,
                 }));
             });
         }
-    }, [isEditorVisible, brandData.brandTitle]); // Depend on brandData.brandTitle
+    }, [isEditorVisible, brandData.brandTitle]);
 
 
     const tabs = [

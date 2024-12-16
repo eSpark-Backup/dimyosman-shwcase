@@ -50,17 +50,21 @@ export const brandApi = api.injectEndpoints({
             invalidatesTags: ['brand'],
         }),
         getAllBrands: builder.query({
-            query: ({ id, page = 1, pageSize = 7 }) => {
-
-                const baseUrl = id ? `/brand/${id}` : `/brand`;
-                const queryParams = `?pageSize=${pageSize}&page=${page}`;
+            query: ({ id, page, pageSize } = {}) => {
+                const baseUrl = id ? `/brand/${id}` : '/brand';
+                const queryParams = new URLSearchParams();
+        
+                if (pageSize) queryParams.append('pageSize', pageSize);
+                if (page) queryParams.append('page', page);
+        
+                const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
                 return {
-                    url: `${baseUrl}${id ? "" : queryParams}`,
-                    method: "GET",
+                    url: `${baseUrl}${id ? '' : queryString}`,
+                    method: 'GET',
                 };
             },
             providesTags: ['brand'],
-        }),
+        }),        
         editBrand: builder.mutation({
             query: ({ brandData, id }) => {
                 const formData = new FormData();

@@ -1,11 +1,15 @@
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, LinearProgress, Typography } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import { flag } from '../../../assets'
-import { FullWidthImgInput, ImgInputWithCategories, InputWithMap, OutlinedTabs } from '../../../components'
+import { FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs } from '../../../components'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
 import { useTheme } from '@emotion/react'
 import { useNavigate } from 'react-router-dom'
+import ReusableModal from '../../../components/Modal'
+import dayjs from 'dayjs'
+import { useGetAllBrandsQuery } from '../../../services/brands'
+import { useGetCategoriesQuery } from '../../../services/categories'
 
 const NewEvent = () => {
     const defaultTemplate = `<h2><strong>Event Blog Post Title</strong></h2><p><strong>Main Features:</strong> Highlight the key aspects of the event. This could include exclusive offers, workshops, activities, or special guests. Be sure to describe what attendees can expect and why it’s valuable to them. Adding images to this section can make it more visually appealing.</p><br/><p><strong>Interactive Elements:</strong> If there are any interactive experiences, such as displays or hands-on activities, explain how they will enhance the overall event experience. Keep the description clear and focused on what attendees will gain.</p><br/><p><strong>Venue & Atmosphere:</strong> Give a brief mention of the venue and how it contributes to the event’s overall vibe. If the event has a theme like sustainability, mention how it aligns with the venue or event practices. Adding a relevant image can help set the tone.</p><br/><p><strong>Conclusion:</strong> Wrap up with a call to action, encouraging readers to attend, register, or follow for more updates. Reiterate what makes the event special and why it’s a must-attend.</p>`;
@@ -17,25 +21,60 @@ const NewEvent = () => {
         eventOverview: "Add a brief event overview that highlights the key aspects of the event.\n\nMake sure to clearly explain the purpose, what attendees can expect, and why it's valuable to them. Keep it informative, mentioning any special features like workshops, activities, or unique selling points of the products or services offered.\n\nAim to engage the reader by focusing on the most important details, while ensuring the description stays concise and easy to understand.\n\nThis description will be used as an excerpt.",
         eventTitle: defaultTemplate,
         location: { lat: 30.188760426055236, long: 70.22460937500001 },
-        mapInstructions: ""
+        mapInstructions: "",
+        eventDate: null,
+        brand: ""
     });
+    const { data: brandData, isError: isBrandError, isLoading: BrandLoading, isSuccess: isBrandSuccess, error: brandError, isFetching: isBrandFetching } = useGetAllBrandsQuery({}, {
+        refetchOnMountOrArgChange: true,
+    });
+
+    const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading } = useGetCategoriesQuery('EVENTS')
+
+    useEffect(() => {
+        if (GetCategorySuccess) {
+            const updatedCategories = GetCategoryData?.data.map((category) => ({
+                id: category.id,
+                name: category.name,
+                selected: false
+            }));
+
+
+            setEventData((prevState) => ({
+                ...prevState,
+                eventCategories: updatedCategories
+            }));
+        }
+    }, [GetCategorySuccess, GetCategoryData]);
+
     const navigate = useNavigate();
     const theme = useTheme();
     const mainImageRef = useRef(null)
     const profileImageRef = useRef(null)
     const [currentIndex, setCurrentIndex] = useState(0);
-    // const [categories, setCategories] = useState([
-    //     { name: 'Sustainable Fashion', selected: true, id: 1 },
-    //     { name: 'Real Estate', selected: false, id: 2 },
-    //     { name: 'Technology', selected: false, id: 3 },
-    //     { name: 'Health & Wellness', selected: false, id: 4 },
-    //     { name: 'Education', selected: false, id: 5 },
-    // ]);
     const [isEditorVisible, setIsEditorVisible] = useState(false);
+    const [openMapModal, setMapModal] = useState(false);
+    const [address, setAddress] = useState("")
+
+
 
     const editorRef = useRef(null);
     const quillRef = useRef(null);
 
+    const options = brandData?.data?.groupedBrands?.publishedBrands?.map((brand) => ({
+        label: brand.brandName,
+        value: brand.id,
+        item: brand,
+    }));
+
+    const handleBrandSelect = (value) => {
+        const selectedItem = options.find((option) => option.value === value);
+
+        setEventData((prev) => ({
+            ...prev,
+            brand: selectedItem?.item,
+        }));
+    };
 
 
 
@@ -121,13 +160,36 @@ const NewEvent = () => {
                     ],
                 },
             });
-            quillRef.current.root.innerHTML = eventTitle || defaultTemplate;
+
+
+            quillRef.current.root.innerHTML = eventData.eventTitle || defaultTemplate;
+
+            // Update brandData's brandTitle on text change
             quillRef.current.on('text-change', () => {
                 const updatedContent = quillRef.current.root.innerHTML;
-                setEventTitle(updatedContent);
+                setEventData((prevData) => ({
+                    ...prevData,
+                    eventTitle: updatedContent,
+                }));
             });
         }
-    }, [isEditorVisible]);
+    }, [isEditorVisible, eventData?.eventTitle]);
+
+    const handleDateChange = (formattedDate) => {
+        const newDate = dayjs(formattedDate).format("DD.MM.YYYY");
+        setEventData((prev) => ({
+            ...prev,
+            eventDate: newDate,
+        }));
+    };
+
+    if (isBrandFetching || BrandLoading) {
+        return (
+            <Box sx={{ width: "100%" }}>
+                <LinearProgress />
+            </Box>
+        )
+    }
 
     return (
         <Box
@@ -175,6 +237,7 @@ const NewEvent = () => {
                         backgroundColor: "rgb(0, 20, 28, 0.9)",
                         textTransform: "none",
                     }}
+                    onClick={() => console.log(eventData)}
                 >
                     Publish
                 </Button>
@@ -213,11 +276,14 @@ const NewEvent = () => {
                 }
                 inputlabel={"event name:"}
                 categoryLabel={"event category:"}
-                categories={categories}
+                categories={eventData?.eventCategories}
                 description={"1 min - 2 max. Checkbox on the categories will display them publicly."}
                 HandleCategoryChange={CategoryChangeHandler}
                 activity={"event"}
                 showDropDown={true}
+                options={options}
+                onBrandSelect={handleBrandSelect}
+                selectedValue={eventData?.brand?.id || ''}
             />
 
             <OutlinedTabs tabs={tabs} />
@@ -232,7 +298,7 @@ const NewEvent = () => {
                     rowGap: "32px",
                 }}
             >
-                <InputWithMap inputLabel={"Event Overview:"} inputValue={eventOverview} setInputValue={setEventOverview} mapDescription={"Address line will be filled automatically."} activity={"event"} eventName={"Space name"} eventAddress={"Brand name"} defaultDate={"dd.mm.yyyy"} />
+                <InputWithMap inputLabel={"Event Overview:"} inputValue={eventData?.eventOverview} setInputValue={(value) => setEventData({ ...eventData, eventOverview: value })} mapDescription={"Address line will be filled automatically."} activity={"event"} eventName={"Space name"} eventAddress={"Brand name"} defaultDate={eventData.eventDate || "dd.mm.yyyy"} onDateChange={handleDateChange} handleClick={() => setMapModal(true)} />
                 <Box
                     sx={{
                         width: "98%",
@@ -254,7 +320,7 @@ const NewEvent = () => {
                             <Typography
                                 variant="body1"
                                 color={theme.palette.primary.main}
-                                dangerouslySetInnerHTML={{ __html: eventTitle }}
+                                dangerouslySetInnerHTML={{ __html: eventData?.eventTitle }}
                             />
                         </Box>
                     }
@@ -277,7 +343,13 @@ const NewEvent = () => {
 
                 </Box>
             </Box>
-
+            <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
+                <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[eventData?.location?.lat, eventData?.location?.long]} setBrandData={setEventData} instructionValue={eventData?.mapInstructions}
+                    setInstructionValue={(e) => setEventData((prev) => ({
+                        ...prev,
+                        mapInstructions: e.target.value
+                    }))} />
+            </ReusableModal>
         </Box >
     )
 }
