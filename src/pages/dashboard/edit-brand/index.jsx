@@ -555,6 +555,11 @@ const EditBrand = () => {
                         "& ul, & ol": {
                           paddingLeft: 2,
                         },
+                        "& img": {
+                          maxWidth: "100%",
+                          height: "auto",
+                          objectFit: "contain",
+                        },
                       }}
                       dangerouslySetInnerHTML={{ __html: brandData?.brandTitle }}
                     />
