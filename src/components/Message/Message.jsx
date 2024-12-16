@@ -57,7 +57,15 @@ const Message = ({ ActivityType, theme, message }) => {
               alignItems: "center",
             }}
           >
-            <Typography sx={{ fontWeight: 600, lineHeight: "22px" }}>
+            <Typography
+              variant="h2"
+              sx={{
+                fontWeight: 600,
+                lineHeight: "22px",
+                fontSize: "16px",
+                textAlign: "left",
+              }}
+            >
               {message.userName}
             </Typography>
 
@@ -97,8 +105,8 @@ const Message = ({ ActivityType, theme, message }) => {
         sx={{
           marginTop: isLessThan1400 ? 2 : 3,
 
-          "& a":{
-            color:"#00141C !important"
+          "& a": {
+            color: "#00141C !important",
           },
         }}
         dangerouslySetInnerHTML={{
