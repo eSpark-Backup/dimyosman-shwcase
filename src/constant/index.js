@@ -961,7 +961,7 @@ export const allMessages = [
         ],
       },
       {
-        userName: "Memeber Name",
+        userName: "Member Name",
         activity: "profile",
         icon: "",
         messages: [
