@@ -3,10 +3,17 @@ import { Amenities, Category, CategoryType, User } from "../entity";
 import { ApiError } from "../errors";
 import { Repository } from "typeorm";
 import { handleResponse, logger } from "../utils";
-import { ICustomRequest, IFileRequest, UploadResult } from "../interfaces";
+import {
+  ICustomRequest,
+  IFileObject,
+  IFileRequest,
+  UploadResult,
+} from "../interfaces";
 import { CLOUD_FOLDERS, HTTP_STATUS } from "../constants";
 import { uploadService } from "../services";
-
+import fs from "fs";
+import path from "path";
+import { commonHelper } from "../helpers";
 export class AmenityController {
   constructor(
     private amenityRepo: Repository<Amenities>,
@@ -21,17 +28,19 @@ export class AmenityController {
   ): Promise<void> {
     try {
       const { amenityName } = req.body;
-      const { files } = file;
+      const imageFilesPath = path.join(process.cwd(), "uploads");
 
-      if (!files?.image) {
-        throw new ApiError(
-          "Missing required files:'image'",
-          HTTP_STATUS.BAD_REQUEST
-        );
-      }
+      const imageFiles = fs
+        .readdirSync(path.join(imageFilesPath))
+        .filter((file) => file.startsWith("image")); // Filter for image files
+
+      const imageFileObjects: IFileObject[] = imageFiles.map((file) =>
+        commonHelper.createFileObject(path.join(imageFilesPath, file), "image")
+      );
+
       const FolderName = `${CLOUD_FOLDERS.AMENITY}/${amenityName}`;
       const amenityUrls = (await uploadService.uploadMultipleFiles(
-        files.image,
+        imageFileObjects,
         FolderName
       )) as UploadResult[];
 

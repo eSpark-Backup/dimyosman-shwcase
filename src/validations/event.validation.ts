@@ -25,11 +25,14 @@ export class EventValidation {
       description: Joi.string().required(),
       htmlContent: Joi.string().required(),
     }).optional(),
-    minLeaseDays: Joi.string().required(),
     location: Joi.object({
       long: Joi.number().required(),
       lat: Joi.number().required(),
+      additional: Joi.string().optional(),
     }).optional(),
+    coverKeys: Joi.alternatives()
+      .try(Joi.string(), Joi.array().items(Joi.string()))
+      .required(),
     status: Joi.string()
       .valid(...Object.values(EVENT_STATUS))
       .required(),
@@ -44,7 +47,7 @@ export class EventValidation {
         })
       )
       .optional(),
-    minLeaseDays: Joi.string().optional(),
+    coverOrder: Joi.array().items(Joi.string()).optional(),
     eventDate: Joi.array()
       .items(
         Joi.object({
@@ -63,6 +66,7 @@ export class EventValidation {
     location: Joi.object({
       long: Joi.number().optional(),
       lat: Joi.number().optional(),
+      additional: Joi.string().optional(),
     }).optional(),
     status: Joi.string()
       .valid(...Object.values(EVENT_STATUS))

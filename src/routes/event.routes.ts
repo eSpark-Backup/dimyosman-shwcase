@@ -52,9 +52,6 @@ const eventController = new EventController(
  *               eventName:
  *                 type: string
  *                 description: Name of the event.
- *               minLeaseDays:
- *                 type: string
- *                 description: Number days of Lease.
  *               eventCategory:
  *                 type: array
  *                 items:
@@ -94,6 +91,9 @@ const eventController = new EventController(
  *                   lat:
  *                     type: number
  *                     description: Latitude of the event's location.
+ *                   additional:
+ *                     type: string
+ *                     description: Additional information about the location.
  *               status:
  *                 type: string
  *                 enum:
@@ -159,9 +159,6 @@ router.post(
  *             properties:
  *               eventName:
  *                 type: string
- *               minLeaseDays:
- *                 type: string
- *                 description: Number days of Lease.
  *               eventCategory:
  *                 type: array
  *                 items:
@@ -197,6 +194,8 @@ router.post(
  *                     type: number
  *                   lat:
  *                     type: number
+ *                   additional:
+ *                     type: string
  *               status:
  *                 type: string
  *                 enum:
