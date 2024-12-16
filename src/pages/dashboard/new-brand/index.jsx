@@ -87,6 +87,11 @@ const NewBrand = () => {
             return false;
         }
 
+        if (!brandData?.mapInstructions || brandData?.mapInstructions.trim() === "") {
+            toast?.error("Map additional field is required");
+            return false;
+        }
+
         const strippedContent = brandData?.brandTitle?.replace(/<[^>]*>/g, "").trim();
         if (!strippedContent) {
             toast?.error("Brand title can not be empty.");
@@ -174,10 +179,11 @@ const NewBrand = () => {
 
     const handleAddImage = () => {
         const nextIndex = brandData.cover.length;
-        if (nextIndex >= 0 && nextIndex <= brandData.cover.length) {
+        if (nextIndex < 3) {
             setCurrentIndex(nextIndex);
         }
     };
+    
 
     const handleRemoveImage = () => {
         const updatedCover = brandData.cover.filter((_, index) => index !== currentIndex);

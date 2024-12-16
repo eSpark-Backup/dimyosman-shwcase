@@ -35,7 +35,7 @@ const EditBrand = () => {
   const params = useParams();
 
   const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading } = useGetCategoriesQuery('BRANDS')
-  const { data, isError, isLoading, isSuccess, error } = useGetAllBrandsQuery({
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({
     page: 1, pageSize: 7, id: params?.brandId
   }, { refetchOnMountOrArgChange: true });
 
@@ -83,7 +83,7 @@ const EditBrand = () => {
         mapInstructions: data?.data?.location?.additional
       }));
     }
-  }, [GetCategorySuccess, isSuccess]);
+  }, [GetCategorySuccess, isSuccess, data]);
 
 
   const handleMainFileInputClick = () => {
@@ -147,7 +147,7 @@ const EditBrand = () => {
   const [isEditorVisible, setIsEditorVisible] = useState(false);
   const editorRef = useRef(null);
   const quillRef = useRef(null);
-  
+
 
   useEffect(() => {
     if (quillRef.current) {
@@ -157,10 +157,10 @@ const EditBrand = () => {
       ...prevState,
       brandTitle: prevState?.brandTitle,
     }));
-  
+
     setIsEditorVisible(false);
   }, [activeTab]);
-  
+
 
 
   useEffect(() => {
@@ -265,6 +265,11 @@ const EditBrand = () => {
       return false;
     }
 
+    if (!brandData?.mapInstructions || brandData?.mapInstructions.trim() === "") {
+      toast?.error("Map additional field is required");
+      return false;
+    }
+
     const strippedContent = brandData?.brandTitle?.replace(/<[^>]*>/g, "").trim();
     if (!strippedContent) {
       toast?.error("Brand title can not be empty.");
@@ -298,7 +303,7 @@ const EditBrand = () => {
     }
   };
 
-  if (isLoading || GetCategoryLoading) {
+  if (isLoading || GetCategoryLoading || isFetching) {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />
@@ -549,6 +554,11 @@ const EditBrand = () => {
                       sx={{
                         "& ul, & ol": {
                           paddingLeft: 2,
+                        },
+                        "& img": {
+                          maxWidth: "100%",
+                          height: "auto",
+                          objectFit: "contain",
                         },
                       }}
                       dangerouslySetInnerHTML={{ __html: brandData?.brandTitle }}

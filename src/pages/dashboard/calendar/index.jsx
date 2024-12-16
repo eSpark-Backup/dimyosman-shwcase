@@ -245,7 +245,7 @@ const Calendar = () => {
           },
         }}
         events={events}
-        editable={true}
+        editable={false}
         selectable={true}
         dateClick={(info) => console.log(`Clicked on date: ${info.dateStr}`)}
         eventClick={(info) => console.log(`Event: ${info.event.title}`)}
