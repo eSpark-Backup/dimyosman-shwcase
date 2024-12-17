@@ -106,12 +106,12 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
       <Box
         sx={{
           height: isLessThan1100
-            ? "calc(100vh - 208px)"
+            ? "calc(100vh - 210px)"
             : isLessThan1280
-            ? "calc(100vh - 218px)"
+            ? "calc(100vh - 220px)"
             : isLessThan1400
-            ? "calc(100vh - 252px)"
-            : "calc(100vh - 274px)",
+            ? "calc(100vh - 254px)"
+            : "calc(100vh - 276px)",
           marginTop: isLessThan1280 ? 1 : isLessThan1400 ? 1.5 : 2,
           overflowY: "auto",
           marginBottom: isLessThan1280 ? 2.5 : isLessThan1400 ? 4 : 6.25,
@@ -163,6 +163,7 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
               position: "relative",
               borderRadius: "5px",
               marginTop: isLessThan1400 ? "12px" : "16px",
+              border:"1px solid rgba(209, 219, 215, 0.5)"
             }}
           >
             <Stack

@@ -95,8 +95,9 @@ const NewSpace = () => {
                     toolbar: [
                         [{ 'header': [2, 3, 4, 5, 6, false] }],
                         ['bold', 'italic', 'strike'],
-                        [{ 'align': [] }],
+                        [{ 'header': 3 }],
                         [{ 'list': 'ordered' }],
+                        [{ 'align': [] }],
                         ['image', 'link'],
                     ],
                 },

@@ -12,6 +12,8 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
         bgcolor: "#FFFFFF",
         padding: isLessThan1280 ? 1.5 : 2,
         fontFamily: '"Segoe UI", "sans-serif"',
+        border: "1px solid rgba(209, 219, 215, 0.5)",
+        borderRadius: "5px",
       }}
     >
       <Box display={"flex"}>

@@ -332,9 +332,14 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                 textAlign: "left",
                 marginTop: 2,
                 fontWeight: 400,
-                wordBreak:"break-word",
+                wordBreak: "break-word",
                 "& ul, & ol": {
-                  paddingLeft: 2, 
+                  paddingLeft: 2,
+                },
+                "& img": {
+                  maxWidth: "100%",
+                  height: "auto",
+                  objectFit: "contain",
                 },
               }}
               dangerouslySetInnerHTML={{ __html: point }}
