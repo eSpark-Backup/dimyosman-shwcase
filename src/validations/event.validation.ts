@@ -28,11 +28,7 @@ export class EventValidation {
     coverOrder: Joi.alternatives()
       .try(Joi.string(), Joi.array().items(Joi.string()))
       .optional(),
-    location: Joi.object({
-      long: Joi.number().required(),
-      lat: Joi.number().required(),
-      additional: Joi.string().optional(),
-    }).optional(),
+
     status: Joi.string()
       .valid(...Object.values(EVENT_STATUS))
       .required(),
@@ -63,12 +59,7 @@ export class EventValidation {
     coverKeys: Joi.alternatives()
       .try(Joi.string(), Joi.array().items(Joi.string()))
       .optional(),
-
-    location: Joi.object({
-      long: Joi.number().optional(),
-      lat: Joi.number().optional(),
-      additional: Joi.string().optional(),
-    }).optional(),
+    spaceId: Joi.string().optional(),
     status: Joi.string()
       .valid(...Object.values(EVENT_STATUS))
       .optional(),

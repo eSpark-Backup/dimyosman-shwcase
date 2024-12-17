@@ -82,18 +82,6 @@ const eventController = new EventController(
  *                    htmlContent:
  *                       type: string
  *                       description: HTML content related to the event (e.g., description with HTML tags)
- *               location:
- *                 type: object
- *                 properties:
- *                   long:
- *                     type: number
- *                     description: Longitude of the event's location.
- *                   lat:
- *                     type: number
- *                     description: Latitude of the event's location.
- *                   additional:
- *                     type: string
- *                     description: Additional information about the location.
  *               status:
  *                 type: string
  *                 enum:
@@ -166,6 +154,9 @@ router.post(
  *                   properties:
  *                     name:
  *                       type: string
+ *               spaceId:
+ *                 type: string
+ *                 description: Id of the Space.
  *               eventDate:
  *                 type: array
  *                 items:
@@ -187,15 +178,6 @@ router.post(
  *                    htmlContent:
  *                       type: string
  *                       description: HTML content related to the event (e.g., description with HTML tags)
- *               location:
- *                 type: object
- *                 properties:
- *                   long:
- *                     type: number
- *                   lat:
- *                     type: number
- *                   additional:
- *                     type: string
  *               status:
  *                 type: string
  *                 enum:

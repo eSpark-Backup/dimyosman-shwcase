@@ -48,7 +48,6 @@ export class EventController {
         eventName,
         eventCategory,
         details,
-        location,
         status,
         brandId,
         spaceId,
@@ -62,6 +61,7 @@ export class EventController {
           HTTP_STATUS.BAD_REQUEST
         );
       }
+      coverOrder = coverOrder || [];
       coverFiles = commonHelper.reorderCoverFiles(coverFiles, coverOrder);
       const coverFileObjects: IFileObject[] = coverFiles.map((file) =>
         commonHelper.createFileObject(path.join(coverFilesPath, file), "cover")
@@ -97,7 +97,6 @@ export class EventController {
       newEvent.eventName = eventName;
       newEvent.eventCategory = eventCategory;
       newEvent.details = details;
-      newEvent.location = location;
       newEvent.status = status;
       newEvent.user = user as User;
       newEvent.brand = brand as Brand;
@@ -153,11 +152,16 @@ export class EventController {
         eventName,
         eventCategory,
         details,
-        location,
         status,
+        spaceId,
         eventDate,
         coverKeys,
       } = req.body;
+
+      const space = await this.spaceRepo.findOne({ where: { id: spaceId } });
+      if (!space) {
+        throw new ApiError("Space not found", HTTP_STATUS.NOT_FOUND);
+      }
 
       const coverFilesPath = path.join(process.cwd(), "uploads");
       const imageFilesPath = path.join(process.cwd(), "uploads");
@@ -285,8 +289,8 @@ export class EventController {
       existingEvent.eventCategory =
         eventCategory || existingEvent.eventCategory;
       existingEvent.details = details || existingEvent.details;
-      existingEvent.location = location || existingEvent.location;
       existingEvent.eventDate = eventDate || existingEvent.eventDate;
+      existingEvent.space = space || existingEvent.space;
       existingEvent.status = status || existingEvent.status;
       existingEvent.coverImages = JSON.stringify(coverUrls) as Object;
       existingEvent.eventImage = imageUrls[0].url;
