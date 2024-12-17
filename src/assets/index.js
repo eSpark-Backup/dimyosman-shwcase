@@ -94,6 +94,8 @@ import bigCalendar from "./big-calendar.svg";
 import mapMarker from "./map-marker.svg";
 import messageIcon from "./message-icon.svg";
 import profileIcon from "./profile-icon.svg";
+import settingsIcon from "./settings-icon.svg";
+import profilePicture from "./profile-picture.png";
 
 export {
   react,
@@ -191,5 +193,7 @@ export {
   mapMarker,
   messageIcon,
   profileIcon,
-  attachment
+  attachment,
+  settingsIcon,
+  profilePicture
 };
