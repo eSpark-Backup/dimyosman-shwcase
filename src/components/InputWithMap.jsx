@@ -122,7 +122,7 @@ const InputWithMap = ({
         {(activity === "brand" && !edit) &&
           <Typography fontSize={14} fontWeight={300} sx={{ fontStyle: "italic" }}>Click on the map to select Address.</Typography>
         }
-        <figure role="img" aria-labelledby="profile-map" onClick={handleClick} style={{ cursor: "pointer" }}>
+        <figure role="img" aria-labelledby="profile-map" onClick={selectedValue !== "" && handleClick} style={{ cursor: selectedValue !== "" ? "pointer" : "not-allowed" }}>
           <img width="100%" height="auto" src={miniMap} alt="map" />
           <figcaption
             style={activity === "brand" && !edit ?

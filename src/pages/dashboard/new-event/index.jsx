@@ -24,7 +24,7 @@ const NewEvent = () => {
         eventCategories: [],
         eventOverview: "Add a brief event overview that highlights the key aspects of the event.\n\nMake sure to clearly explain the purpose, what attendees can expect, and why it's valuable to them. Keep it informative, mentioning any special features like workshops, activities, or unique selling points of the products or services offered.\n\nAim to engage the reader by focusing on the most important details, while ensuring the description stays concise and easy to understand.\n\nThis description will be used as an excerpt.",
         eventTitle: defaultTemplate,
-        location: { lat: 30.188760426055236, long: 70.22460937500001 },
+        location: {},
         mapInstructions: "",
         eventDate: null,
         selectedDate: [null, null],
@@ -99,8 +99,17 @@ const NewEvent = () => {
         setEventData((prev) => ({
             ...prev,
             space: selectedItem?.item,
+            location: {
+                lat: selectedItem?.item?.location?.lat,
+                long: selectedItem?.item?.location?.long
+            },
+            mapInstructions:selectedItem?.item?.location?.additional
         }));
     };
+
+    useEffect(() => {
+        console.log(eventData)
+    }, [eventData])
 
 
 
@@ -245,11 +254,6 @@ const NewEvent = () => {
 
         if (!eventData?.eventTitle || eventData?.eventTitle.trim() === "") {
             toast?.error("Brand title can not be empty.");
-            return false;
-        }
-
-        if (!eventData?.mapInstructions || eventData?.mapInstructions.trim() === "") {
-            toast?.error("Map additional field is required");
             return false;
         }
 
@@ -437,7 +441,8 @@ const NewEvent = () => {
             >
                 <InputWithMap inputLabel={"Event Overview:"} inputValue={eventData?.eventOverview} setInputValue={(value) => setEventData({ ...eventData, eventOverview: value })} mapDescription={"Address line will be filled automatically."} activity={"event"} eventName={"Space name"} eventAddress={"Brand name"} defaultDate={eventData.selectedDate || [new Date(), new Date()]} onDateChange={handleDateChange} handleClick={() => setMapModal(true)} options={spaceOptions}
                     onSpaceSelect={handleSpaceSelect}
-                    selectedValue={eventData?.space?.id || ''} />
+                    selectedValue={eventData?.space?.id || ''}
+                />
                 <Box
                     sx={{
                         width: "98%",
@@ -483,7 +488,7 @@ const NewEvent = () => {
                 </Box>
             </Box>
             <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-                <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[eventData?.location?.lat, eventData?.location?.long]} setBrandData={setEventData} instructionValue={eventData?.mapInstructions}
+                <MapModal disabled={true} value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[eventData?.location?.lat, eventData?.location?.long]} setBrandData={setEventData} instructionValue={eventData?.mapInstructions}
                     setInstructionValue={(e) => setEventData((prev) => ({
                         ...prev,
                         mapInstructions: e.target.value

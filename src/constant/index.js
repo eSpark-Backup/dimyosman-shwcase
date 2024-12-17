@@ -698,7 +698,7 @@ export const brandTableData = (gotoDetail, handleAction, myBrandData) => [
   },
 ];
 
-export const eventTableData = (gotoDetail, handleAction) => [
+export const eventTableData = (gotoDetail, handleAction, myEventData) => [
   {
     data: myEventData,
     column: myEventsColumns(gotoDetail, (item) => handleAction(item, "edit")),

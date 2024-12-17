@@ -31,12 +31,12 @@ export const eventApi = api.injectEndpoints({
                 formData.append('details', JSON.stringify(details));
 
 
-                const location = {
-                    lat: eventData?.location?.lat,
-                    long: eventData?.location?.long,
-                    additional: eventData?.mapInstructions
-                };
-                formData.append('location', JSON.stringify(location));
+                // const location = {
+                //     lat: eventData?.location?.lat,
+                //     long: eventData?.location?.long,
+                //     additional: eventData?.mapInstructions
+                // };
+                // formData.append('location', JSON.stringify(location));
 
 
                 if (eventData?.cover) {
@@ -52,7 +52,7 @@ export const eventApi = api.injectEndpoints({
                 if (eventData?.profileImage) {
                     formData.append('image', eventData.profileImage);
                 }
-                formData.append("status", eventData?.status)            
+                formData.append("status", eventData?.status)
 
 
                 return {
@@ -62,10 +62,25 @@ export const eventApi = api.injectEndpoints({
                 };
             },
         }),
+        getAllEvents: builder.query({
+            query: ({ id, page, pageSize } = {}) => {
+                const baseUrl = id ? `/event/${id}` : '/event';
+                const queryParams = new URLSearchParams();
 
+                if (pageSize) queryParams.append('pageSize', pageSize);
+                if (page) queryParams.append('page', page);
+
+                const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+                return {
+                    url: `${baseUrl}${id ? '' : queryString}`,
+                    method: 'GET',
+                };
+            },
+        }),
     }),
 });
 
 export const {
     useNewEventMutation,
+    useGetAllEventsQuery
 } = eventApi;

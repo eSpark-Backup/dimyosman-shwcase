@@ -77,7 +77,7 @@ function App() {
           <Route path="/new-brand" element={<NewBrand />} />
           <Route path="/brand/:brandId/edit" element={<EditBrand />} />
           <Route path="/new-event" element={<NewEvent />} />
-          <Route path="/event/:event-id/edit" element={<EditEvent />} />
+          <Route path="/event/:eventId/edit" element={<EditEvent />} />
         </Route>
       </Routes>
       <ToastContainer

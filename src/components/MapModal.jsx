@@ -9,7 +9,7 @@ import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
 import 'leaflet-geosearch/dist/geosearch.css'
 
 const MapModal = ({
-    value, setValue, addressLine, address, handleClose, buttonVal, initialPosition, setBrandData, instructionValue, setInstructionValue
+    value, setValue, addressLine, address, handleClose, buttonVal, initialPosition, setBrandData, instructionValue, setInstructionValue, disabled
 }) => {
     const theme = useTheme()
 
@@ -26,8 +26,8 @@ const MapModal = ({
     const MapEvents = () => {
         useMapEvents({
             click(e) {
+                if (disabled) return;
                 const { lat, lng } = e.latlng
-                console.log("Map clicked at:", lat, lng)
                 setPosition([lat, lng])
 
                 
@@ -41,6 +41,7 @@ const MapModal = ({
     }
 
     const handleSearch = (e) => {
+        if(disabled) return;
         const query = e.target.value
         setValue(query)
 
@@ -90,6 +91,8 @@ const MapModal = ({
                         </IconButton>
                     </InputAdornment>
                 }
+                disabled={disabled}
+                
             />
 
             <Box sx={{ height: '300px', width: '100%' }}>
@@ -105,7 +108,7 @@ const MapModal = ({
                     <span style={{ fontWeight: "300" }}>{addressLine} </span>
                     {address}
                 </Typography>
-                <Input type={"text"} placeholder={"Additional instructions like entrances, floors..."} value={instructionValue} onInputChange={setInstructionValue} />
+                <Input disabled={disabled} type={"text"} placeholder={"Additional instructions like entrances, floors..."} value={instructionValue} onInputChange={setInstructionValue} />
             </Box>
 
             <Box sx={{ display: "flex", justifyContent: "flex-end" }}>

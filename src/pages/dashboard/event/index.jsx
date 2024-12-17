@@ -1,10 +1,17 @@
-import { useState } from "react";
-import { Box, Button, Card, Stack, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
+import { Box, Button, Card, LinearProgress, Stack, Typography } from "@mui/material";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { eventTableData } from "../../../constant";
 import { addIcon, eventIconLight, like } from "../../../assets";
+import { useGetAllEventsQuery } from "../../../services/events";
+import { toast } from "react-toastify";
+import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
 
 const Event = () => {
+  const [page, setPage] = useState(1)
+  const navigate = useNavigate()
+
   const tabs = [
     {
       label: "My Events",
@@ -21,6 +28,50 @@ const Event = () => {
   ];
   const [activeTab, setActiveTab] = useState(0);
 
+  const [myEventData, setMyEventData] = useState([]);
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllEventsQuery({ page, pageSize: 7 }, {
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true
+  });
+
+  const transformEventData = (apiData) => {
+    return apiData.map((event, index) => ({
+      id: event?.id,
+      type: "event",
+      eventName: event?.eventName,
+      eventImg: event?.eventImage,
+      brand: event?.brand?.brandName,
+      brandUrl: "-",
+      rsvp: "-",
+      startDate: dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
+      status: event?.status,
+      hostedIn: event?.space?.spaceName,
+      spaceUrl: "-",
+      action: "Cancel",
+    }));
+  };
+
+  const [hasShownErrorToast, setHasShownErrorToast] = useState(false);
+
+
+  useEffect(() => {
+    if (isError && !hasShownErrorToast) {
+      toast.error(error?.data?.message, { toastId: "error-toast" });
+      setHasShownErrorToast(true);
+      setMyEventData([]);
+    }
+
+    if (isSuccess) {
+      setMyEventData(transformEventData(data?.data?.events || []));
+      setHasShownErrorToast(false);
+      console.log(data)
+    }
+  }, [isError, isSuccess, error, hasShownErrorToast, page, data]);
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
+
   const handleChange = (event, newValue) => {
     setActiveTab(newValue);
   };
@@ -33,6 +84,9 @@ const Event = () => {
   const handleAction = (item, type) => {
     if (type === "edit") {
       //edit functionality
+      if (location?.pathname === "/event") {
+        navigate(`/event/${item?.id}/edit`)
+      }
     } else if (type === "remove") {
       //remove functionality
     } else {
@@ -42,8 +96,18 @@ const Event = () => {
   };
 
   const handleAdd = () => {
-    //add functionality
+    if (location?.pathname === "/event") {
+      navigate("/new-event")
+    }
   };
+
+  if (isLoading || isFetching) {
+    return (
+      <Box sx={{ width: "100%" }}>
+        <LinearProgress />
+      </Box>
+    )
+  }
 
   return (
     <Box>
@@ -57,11 +121,14 @@ const Event = () => {
           handleChange={handleChange}
           handleAdd={handleAdd}
         />
-        {eventTableData(gotoDetail, handleAction)[activeTab].data.length > 0 ? (
+        {eventTableData(gotoDetail, handleAction, myEventData)[activeTab].data.length > 0 ? (
           <DynamicTable
             isLoading={false}
-            data={eventTableData(gotoDetail, handleAction)[activeTab].data}
-            columns={eventTableData(gotoDetail, handleAction)[activeTab].column}
+            data={eventTableData(gotoDetail, handleAction, myEventData)[activeTab].data}
+            columns={eventTableData(gotoDetail, handleAction, myEventData)[activeTab].column}
+            total={data && data?.data?.pagination?.totalItems}
+            handlePageChange={handlePageChange}
+            page={page}
           />
         ) : (
           <Stack
