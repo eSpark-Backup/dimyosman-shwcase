@@ -1,3 +1,4 @@
+import { url } from "inspector";
 import { SwaggerDefinition, Options } from "swagger-jsdoc";
 
 const swaggerDefinition: SwaggerDefinition = {
@@ -10,11 +11,15 @@ const swaggerDefinition: SwaggerDefinition = {
   servers: [
     {
       url: `${process.env.DEV_SERVER_URL}/api/`,
-      description: "Development server",
+      description: "Local Development server",
     },
     {
       url: `${process.env.PROD_SERVER_URL}/api/`,
       description: "Production server",
+    },
+    {
+      url: "https://shwcase-dev.esparkconsultants.com/api/",
+      description: "Live Development server",
     },
   ],
   components: {
