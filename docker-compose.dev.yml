@@ -30,7 +30,7 @@ services:
         condition: service_healthy
 
   shwcase_db:
-    container_name: dev_shwcase_db
+    container_name: shwcase_db_dev
     image: mysql:8.0.0
     ports:
       - ${MYSQL_PORT}:${MYSQL_PORT}
@@ -43,7 +43,7 @@ services:
     volumes:
       - dev_shwcase_database:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysql", "-uroot", "-p${MYSQL_ROOT_PASSWORD}", "-h", "dev_shwcase_db", "-e", "USE ${MYSQL_DATABASE};"]
+      test: ["CMD", "mysql", "-uroot", "-p${MYSQL_ROOT_PASSWORD}", "-h", "shwcase_db_dev", "-e", "USE ${MYSQL_DATABASE};"]
       retries: 10
 
 volumes:
