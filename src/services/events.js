@@ -47,15 +47,12 @@ export const eventApi = api.injectEndpoints({
                         coverOrder.push(file.name);
                     });
 
-                    // formData.append('coverOrder', JSON.stringify(coverOrder));
+                    formData.append('coverOrder', JSON.stringify(coverOrder));
                 }
                 if (eventData?.profileImage) {
                     formData.append('image', eventData.profileImage);
                 }
-                formData.append("status", eventData?.status)
-
-                const coverKeys = ["dummy"];
-                formData.append('coverKeys', JSON.stringify(coverKeys));                
+                formData.append("status", eventData?.status)            
 
 
                 return {

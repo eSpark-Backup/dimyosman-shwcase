@@ -277,13 +277,21 @@ const NewEvent = () => {
         return true;
     };
 
-    const [brand, { isSuccess: eventPostSuccess, isError: IsEventPostError, error: eventPostError, data: eventPostData, isLoading: EventPostingLoading }] = useNewEventMutation()
+    const [event, { isSuccess: eventPostSuccess, isError: IsEventPostError, error: eventPostError, data: eventPostData, isLoading: EventPostingLoading }] = useNewEventMutation()
 
     useEffect(() => {
         if (eventPostSuccess) {
-            console.log(eventPostData)
+            toast.success(eventPostData?.message)
+            navigate("/event")
         }
     }, [eventPostSuccess])
+
+    useEffect(() => {
+        if (IsEventPostError) {
+            toast.error(eventPostError?.data?.message)
+            return
+        }
+    }, [IsEventPostError])
 
     const handleSubmit = async (status) => {
         if (!validateBrandData()) {
@@ -291,7 +299,7 @@ const NewEvent = () => {
         }
         setLoadingButton(status);
         try {
-            await brand({ ...eventData, status });
+            await event({ ...eventData, status });
         } finally {
             setLoadingButton(null);
         }
