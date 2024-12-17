@@ -33,9 +33,6 @@ export class EventValidation {
       lat: Joi.number().required(),
       additional: Joi.string().optional(),
     }).optional(),
-    coverKeys: Joi.alternatives()
-      .try(Joi.string(), Joi.array().items(Joi.string()))
-      .required(),
     status: Joi.string()
       .valid(...Object.values(EVENT_STATUS))
       .required(),
