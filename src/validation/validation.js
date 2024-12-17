@@ -36,3 +36,25 @@ export const loginSchema = Yup.object({
     .required("  Password is required")
     .min(8, "Password must contain at least 8 characters"),
 });
+
+export const nameSchema = Yup.object({
+  fName: Yup.reach(registerSchema, "fName"),
+  lName: Yup.reach(registerSchema, "lName"),
+});
+export const emailSchema = Yup.object({
+  email: Yup.reach(registerSchema, "email"),
+});
+export const passwordSchema = Yup.object({
+  password: Yup.reach(registerSchema, "password"), 
+  conPassword: Yup.reach(registerSchema, "conPassword"), 
+});
+export const imageValidationSchema = Yup.object().shape({
+  image: Yup.mixed()
+    .required("Image is required")
+    .test("fileFormat", "Unsupported file format", (value) => {
+      return value && value.type.startsWith("image/");
+    })
+    .test("fileSize", "File size is too large. Max size is 5MB", (value) => {
+      return value && value.size <= MAX_SIZE;
+    }),
+});
