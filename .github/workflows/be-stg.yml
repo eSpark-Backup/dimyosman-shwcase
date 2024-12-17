@@ -188,5 +188,5 @@ jobs:
       
       run: |
         docker compose pull
-        docker compose down -v
-        docker compose up -d
+        docker compose -p "shwcase_stack_stg" down -v
+        docker compose -p "shwcase_stack_stg" up -d
