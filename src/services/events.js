@@ -77,10 +77,69 @@ export const eventApi = api.injectEndpoints({
                 };
             },
         }),
+        editEvent: builder.mutation({
+            query: ({ eventData, id }) => {
+                const formData = new FormData();
+                formData.append('eventName', eventData?.eventName);
+                formData.append("spaceId", eventData?.space?.id)
+
+                const selectedCategories = eventData?.eventCategories
+                    ?.filter(item => item.selected)
+                    ?.map(item => ({ name: item.name }));
+
+                formData.append('eventCategory', JSON.stringify(selectedCategories));
+                const formattedDates = [{
+                    startDate: eventData.selectedDate[0],
+                    endDate: eventData.selectedDate[1]
+                }];
+                formData.append('eventDate', JSON.stringify(formattedDates));
+
+                const details = {
+                    description: eventData?.eventOverview,
+                    htmlContent: eventData?.eventTitle,
+                };
+                formData.append('details', JSON.stringify(details));
+
+
+                if (eventData?.cover) {
+                    const coverKeys = [];
+
+                    eventData.cover.forEach((file, index) => {
+                        if (file?.public_id) {
+                            let indexes = index + 1;
+                            let newStr = file.public_id + "+" + indexes;
+                            coverKeys.push(newStr);
+                        } else {
+                            formData.append('cover', file);
+                        }
+                    });
+
+                    if (coverKeys?.length > 0) {
+                        formData.append('coverKeys', coverKeys);
+                    }
+                }
+
+
+                if (eventData?.profileImage) {
+                    if (eventData.profileImage instanceof File) {
+                        formData.append('image', eventData.profileImage);
+                    }
+                }
+                formData.append("status", eventData?.status)
+
+                return {
+                    url: `/event/${id}`,
+                    method: 'PUT',
+                    body: formData,
+                };
+            },
+        }),
+
     }),
 });
 
 export const {
     useNewEventMutation,
-    useGetAllEventsQuery
+    useGetAllEventsQuery,
+    useEditEventMutation
 } = eventApi;

@@ -1,4 +1,4 @@
-import { Box, Button, LinearProgress, Typography, useTheme } from '@mui/material'
+import { Box, Button, CircularProgress, LinearProgress, Typography, useTheme } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import { FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs } from '../../../components'
 import { eventMain, flag } from '../../../assets'
@@ -8,11 +8,12 @@ import Reviews from '../../../components/BESprofiles/reviews'
 import { reviews as eventReviews } from '../../../constant'
 import { useNavigate, useParams } from 'react-router-dom'
 import dayjs from 'dayjs'
-import { useGetAllEventsQuery } from '../../../services/events'
+import { useEditEventMutation, useGetAllEventsQuery } from '../../../services/events'
 import { useGetCategoriesQuery } from '../../../services/categories'
 import { useGetAllSpaceQuery } from '../../../services/space'
 import { toast } from 'react-toastify'
 import ReusableModal from '../../../components/Modal'
+import { LoadingButton } from '@mui/lab'
 
 const EditEvent = () => {
     const navigate = useNavigate();
@@ -82,7 +83,6 @@ const EditEvent = () => {
                 eventName: data?.data?.eventName,
                 profileImage: data?.data?.eventImage,
                 eventOverview: data?.data?.details?.description,
-                brandTitle: data?.data?.details?.htmlContent,
                 cover: data?.data?.coverImages,
                 selectedDate: [
                     data?.data?.eventDate[0]?.startDate,
@@ -126,9 +126,13 @@ const EditEvent = () => {
     const HandleMainFileInputClick = () => {
         mainImageRef.current.click();
     }
-    const HandleMainImageChange = async (event) => {
+    const HandleMainImageChange = (event) => {
         const file = event.target.files[0];
-        console.log(file);
+        if (file) {
+            const updatedCover = [...eventData.cover];
+            updatedCover[currentIndex] = file;
+            setEventData((prev) => ({ ...prev, cover: updatedCover }));
+        }
     };
 
     const handleAddImage = () => {
@@ -152,11 +156,16 @@ const EditEvent = () => {
     };
 
     const HandleProfileFileInputClick = () => {
-        mainImageRef.current.click();
+        profileImageRef.current.click();
     }
     const HandleProfileImageChange = async (event) => {
         const file = event.target.files[0];
-        console.log(file);
+        if (file) {
+            setEventData((prev) => ({
+                ...prev,
+                profileImage: file,
+            }));
+        }
     };
 
     const CategoryChangeHandler = (index) => {
@@ -251,6 +260,89 @@ const EditEvent = () => {
         }));
     };
 
+    const [event, { isSuccess: eventPostSuccess, isError: IsEventPostError, error: eventPostError, data: eventPostData }] = useEditEventMutation()
+
+    useEffect(() => {
+        if (eventPostSuccess) {
+            toast.success(eventPostData?.message)
+            navigate("/event")
+        }
+    }, [eventPostSuccess])
+
+    useEffect(() => {
+        if (IsEventPostError) {
+            toast.error(eventPostError?.data?.message)
+        }
+    }, [IsEventPostError])
+    const validateBrandData = () => {
+        if (!eventData?.cover || eventData?.cover?.length <= 0) {
+            toast?.error("Please upload cover photo of event");
+            return false;
+        }
+
+        if (!eventData?.profileImage) {
+            toast?.error("Please upload profile photo of event");
+            return false;
+        }
+
+        if (!eventData?.eventName || eventData?.eventName.trim() === "") {
+            toast?.error("Event name can not be empty.");
+            return false;
+        }
+
+        const selectedCategories = eventData?.eventCategories?.filter((item) => item?.selected);
+        if (!selectedCategories || selectedCategories.length <= 0) {
+            toast?.error("Please select at least one category.");
+            return false;
+        }
+
+        if (!eventData?.eventOverview || eventData?.eventOverview.trim() === "") {
+            toast?.error("Event overview can not be empty.");
+            return false;
+        }
+
+        if (!eventData?.eventTitle || eventData?.eventTitle.trim() === "") {
+            toast?.error("Event title can not be empty.");
+            return false;
+        }
+
+        const strippedContent = eventData?.eventTitle?.replace(/<[^>]*>/g, "").trim();
+        if (!strippedContent) {
+            toast?.error("Event title can not be empty.");
+            return false;
+        }
+
+
+        if (!eventData?.space || typeof eventData.space !== "object" || Object.keys(eventData.space).length === 0) {
+            toast?.error("Please select space");
+            return false;
+        }
+
+        if (!eventData?.selectedDate || eventData?.selectedDate?.includes(null)) {
+            toast?.error("Please select date");
+            return false;
+        }
+        return true;
+    };
+
+    const handleSubmit = async (status) => {
+        if (!validateBrandData()) {
+            return;
+        }
+        console.log(eventData)
+        setLoadingButton(status);
+        try {
+            await event({ eventData: { ...eventData, status }, id: params?.eventId });
+        } finally {
+            setLoadingButton(null);
+        }
+    };
+
+    const [loadingButton, setLoadingButton] = useState(null);
+    const HandlePublishSubmit = () => handleSubmit("PUBLISH");
+    const HandleDraftSubmit = () => handleSubmit("DRAFT");
+    const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
+
     // useEffect(() => {
     //     if (isSuccess && isSpaceSuccess && spaceOptions?.length > 0) {
     //         const currentSpaceId = data?.data?.space?.id; // Get the space ID from the fetched event data
@@ -265,7 +357,6 @@ const EditEvent = () => {
 
     const handleSpaceSelect = (value) => {
         const selectedItem = spaceOptions.find((option) => option.value === value);
-        console.log(value)
 
         setEventData((prev) => ({
             ...prev,
@@ -308,24 +399,27 @@ const EditEvent = () => {
                     width: "max-content",
                     justifyContent: "center",
                     alignItems: "center",
-                    zIndex: 2,
+                    zIndex: 99,
                     right: 0,
                     marginRight: "16px",
                 }}
                 className="buttons-box"
             >
-                <Button
+                <LoadingButton
                     sx={{
                         fontSize: "16px",
                         width: "143px",
                         height: "31px",
                         textTransform: "none",
                     }}
-                    onClick={() => navigate(`/event`)}
+                    loading={loadingButton === "DRAFT"}
+                    onClick={HandleDraftSubmit}
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
+                    disabled={loadingButton && loadingButton !== "DRAFT"}
                 >
                     Save as Draft
-                </Button>
-                <Button
+                </LoadingButton>
+                <LoadingButton
                     sx={{
                         fontSize: "16px",
                         width: "103px",
@@ -333,20 +427,27 @@ const EditEvent = () => {
                         backgroundColor: "rgb(0, 20, 28, 0.9)",
                         textTransform: "none",
                     }}
+                    loading={loadingButton === "PUBLISH"}
+                    onClick={HandlePublishSubmit}
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
+                    disabled={loadingButton && loadingButton !== "PUBLISH"}
                 >
                     Publish
-                </Button>
-                <Button
+                </LoadingButton>
+                <LoadingButton
                     sx={{
                         fontSize: "16px",
                         width: "102px",
                         height: "31px",
                         textTransform: "none",
                     }}
-                    onClick={() => navigate(`/event`)}
+                    loading={loadingButton === "ARCHIVE"}
+                    onClick={HandleArchiveSubmit}
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
+                    disabled={loadingButton && loadingButton !== "ARCHIVE"}
                 >
                     Archive
-                </Button>
+                </LoadingButton>
             </Box>
             <FullWidthImgInput activity={"event"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={flag}
                 editImage={
@@ -379,6 +480,7 @@ const EditEvent = () => {
                 description={"1 min - 2 max. Checkbox on the categories will display them publicly."}
                 HandleCategoryChange={CategoryChangeHandler}
                 activity={"event"}
+                imgUrl={eventData?.profileImage}
             />
 
 
