@@ -25,7 +25,7 @@ const EventDetails = () => {
         slides: data?.data?.coverImages,
         profilePic: data?.data?.eventImage,
         profileName: data?.data?.eventName,
-        category: ["hey"],
+        category: data?.data?.eventCategory|| [],
         details: {
           by: "EcoLux Designs ",
           starting: dayjs(data?.data?.eventDate[0]?.startDate).format("DD.MM.YYYY"),

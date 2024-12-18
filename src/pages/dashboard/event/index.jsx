@@ -46,7 +46,7 @@ const Event = () => {
       startDate: dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
       status: event?.status,
       hostedIn: event?.space?.spaceName,
-      spaceUrl: "-",
+      spaceUrl: `/space/${event?.space?.id}`,
       action: "Cancel",
     }));
   };
@@ -77,14 +77,16 @@ const Event = () => {
 
   const gotoDetail = (item) => {
     //go to detail page functionality
-    console.log(item, "item");
     navigate(`/event/${item?.id}`)
   };
 
   const gotoBrand = (item) => {
     //go to detail page functionality
     navigate(item?.brandUrl)
-    console.log(item, "item");
+  };
+
+  const gotoSpace = (item) => {
+    navigate(item?.spaceUrl)
   };
 
   const handleAction = (item, type) => {
@@ -127,11 +129,11 @@ const Event = () => {
           handleChange={handleChange}
           handleAdd={handleAdd}
         />
-        {eventTableData(gotoDetail, handleAction, myEventData, gotoBrand)[activeTab].data.length > 0 ? (
+        {eventTableData(gotoDetail, handleAction, myEventData, gotoBrand, gotoSpace)[activeTab].data.length > 0 ? (
           <DynamicTable
             isLoading={false}
-            data={eventTableData(gotoDetail, handleAction, myEventData, gotoBrand)[activeTab].data}
-            columns={eventTableData(gotoDetail, handleAction, myEventData, gotoBrand)[activeTab].column}
+            data={eventTableData(gotoDetail, handleAction, myEventData, gotoBrand, gotoSpace)[activeTab].data}
+            columns={eventTableData(gotoDetail, handleAction, myEventData, gotoBrand, gotoSpace)[activeTab].column}
             total={data && data?.data?.pagination?.totalItems}
             handlePageChange={handlePageChange}
             page={page}

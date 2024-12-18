@@ -2,7 +2,7 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 import { eventBadge } from "../assets";
 import { useNavigate } from "react-router-dom";
 
-const myEventsColumns = (gotoDetail, handleAction, gotoBrand) => {
+const myEventsColumns = (gotoDetail, handleAction, gotoBrand, gotoSpace) => {
   return [
     {
       name: "Event Name",
@@ -93,6 +93,7 @@ const myEventsColumns = (gotoDetail, handleAction, gotoBrand) => {
               fontWeight: item?.spaceUrl ? 600 : 400,
               cursor: "pointer",
             }}
+            onClick={() => gotoSpace(item)}
           >
             {item?.hostedIn}
           </Typography>

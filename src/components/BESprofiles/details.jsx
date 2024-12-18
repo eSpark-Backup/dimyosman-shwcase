@@ -16,7 +16,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         alignItems="flex-start"
         gap={2}
       >
-        <Box component="section">
+        <Box component="section" sx={{ width: "100%" }}>
           <Typography
             variant="h2"
             fontSize={24}
@@ -32,7 +32,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             <Typography
               key={overview}
               fontSize={16}
-              sx={{ textAlign: "left", marginTop: 2, fontWeight: 400, wordBreak:"break-word" }}
+              sx={{ textAlign: "left", marginTop: 2, fontWeight: 400, wordBreak: "break-word" }}
             >
               {overview}
             </Typography>
@@ -188,7 +188,10 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   textAlign: "left",
                 }}
               >
-                {details?.spaceCategory}
+                {details?.spaceCategory
+                  ?.map((item) => item)
+                  .filter(Boolean)
+                  .join(', ')}
               </Typography>
             )}
           </header>
