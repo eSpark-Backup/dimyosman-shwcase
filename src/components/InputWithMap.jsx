@@ -23,8 +23,10 @@ const InputWithMap = ({
   defaultDate,
   onDateChange,
   options,
-  onSpaceSelect,
-  selectedValue
+  eventData,
+  updateEventData,
+  selectedValue,
+
 }) => {
   const theme = useTheme();
   const datePickerRef = useRef(null);
@@ -65,8 +67,16 @@ const InputWithMap = ({
       },
     },
   };
-  const handleSelectChange = (selectedOption) => {
-    onSpaceSelect(selectedOption.target.value)
+
+  const handleSelectChange = (e) => {
+    const selectedValue = e.target.value;
+    const selectedSpaceData = options.filter((item) => item.value === e.target.value)
+    const updatedLocation = { lat: selectedSpaceData[0]?.item?.location?.lat, long: selectedSpaceData[0]?.item?.location?.long }
+    if (eventData.space !== selectedValue) {
+      updateEventData("space", selectedValue);
+      updateEventData("location", updatedLocation);
+      updateEventData("mapInstructions", selectedSpaceData[0]?.item?.location?.additional);
+    }
   };
   return (
     <Box
@@ -122,7 +132,7 @@ const InputWithMap = ({
         {(activity === "brand" && !edit) &&
           <Typography fontSize={14} fontWeight={300} sx={{ fontStyle: "italic" }}>Click on the map to select Address.</Typography>
         }
-        <figure role="img" aria-labelledby="profile-map" onClick={selectedValue !== "" && handleClick} style={{ cursor: selectedValue !== "" ? "pointer" : "not-allowed" }}>
+        <figure role="img" aria-labelledby="profile-map" onClick={selectedValue !== "" ? handleClick : undefined} style={{ cursor: selectedValue !== "" ? "pointer" : "not-allowed" }}>
           <img width="100%" height="auto" src={miniMap} alt="map" />
           <figcaption
             style={activity === "brand" && !edit ?

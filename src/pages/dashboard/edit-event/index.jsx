@@ -99,10 +99,6 @@ const EditEvent = () => {
 
     const [openMapModal, setMapModal] = useState(false);
 
-    // useEffect(() => {
-    //     console.log(eventData)
-    // }, [eventData])
-
     const spaceOptions = spaceData?.data?.spaces?.map((brand) => ({
         label: brand.spaceName,
         value: brand.id,
@@ -329,7 +325,6 @@ const EditEvent = () => {
         if (!validateBrandData()) {
             return;
         }
-        console.log(eventData)
         setLoadingButton(status);
         try {
             await event({ eventData: { ...eventData, status }, id: params?.eventId });
@@ -343,30 +338,31 @@ const EditEvent = () => {
     const HandleDraftSubmit = () => handleSubmit("DRAFT");
     const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
 
-    // useEffect(() => {
-    //     if (isSuccess && isSpaceSuccess && spaceOptions?.length > 0) {
-    //         const currentSpaceId = data?.data?.space?.id; // Get the space ID from the fetched event data
-    //         const selectedSpace = spaceOptions.find((option) => option.value === currentSpaceId);
+    useEffect(() => {
+        if (spaceData && data) {
+            if (eventData.space !== data?.data?.space?.id) {
+                const selectedSpaceData = spaceOptions?.filter((item) => item.value === data?.data?.space?.id)
+                const updatedLocation = { lat: selectedSpaceData[0]?.item?.location?.lat, long: selectedSpaceData[0]?.item?.location?.long }
+                setEventData((prevState) => ({
+                    ...prevState,
+                    space: data?.data?.space?.id,
+                    location: updatedLocation,
+                    mapInstructions: selectedSpaceData[0]?.item?.location?.additional
+                }));
+            }
+        }
+    }, [isSuccess, isSpaceSuccess]);
 
-    //         setEventData((prevState) => ({
-    //             ...prevState,
-    //             space: selectedSpace?.item,
-    //         }));
-    //     }
-    // }, [isSuccess, isSpaceSuccess, data, spaceOptions]);
-
-    const handleSpaceSelect = (value) => {
-        const selectedItem = spaceOptions.find((option) => option.value === value);
-
-        setEventData((prev) => ({
-            ...prev,
-            space: selectedItem?.item,
-            location: {
-                lat: selectedItem?.item?.location?.lat,
-                long: selectedItem?.item?.location?.long
-            },
-            mapInstructions: selectedItem?.item?.location?.additional
-        }));
+    const updateEventData = (key, value) => {
+        setEventData((prev) => {
+            if (prev[key] === value) {
+                return prev;
+            }
+            return {
+                ...prev,
+                [key]: value,
+            };
+        });
     };
 
     if (isLoading || GetCategoryLoading || isFetching) {
@@ -502,8 +498,9 @@ const EditEvent = () => {
                         <>
                             <InputWithMap edit inputLabel={"Event Overview:"} inputValue={eventData?.eventOverview} setInputValue={(value) => setEventData({ ...eventData, eventOverview: value })} mapDescription={"123 Williamsburg Ave, Brooklyn, NY 11211"} activity={"event"} eventName={"Urban Pop-Up Studio 3B"} eventAddress={"Urban Pop-Up Pavilion"} defaultDate={eventData.selectedDate || [new Date(), new Date()]} onDateChange={handleDateChange}
                                 options={spaceOptions}
-                                selectedValue={eventData?.space?.id || ''}
-                                onSpaceSelect={handleSpaceSelect}
+                                selectedValue={eventData?.space || ''}
+                                eventData={eventData}
+                                updateEventData={updateEventData}
                                 handleClick={() => setMapModal(true)}
                             />
 
