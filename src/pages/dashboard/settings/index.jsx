@@ -2,13 +2,14 @@ import { useRef, useState } from "react";
 
 import { useFormik } from "formik";
 
-import { Box, Button, Stack, Typography, useTheme } from "@mui/material";
+import { Box, Button, IconButton, Stack, Typography, useTheme } from "@mui/material";
 
 import Input from "../../../components/Setting/SettingInput";
 import { CheckBox } from "../../../components";
 
 import {
   apple,
+  eye,
   facebook,
   google,
   profilePicture,
@@ -356,8 +357,9 @@ const Settings = () => {
           sx={{
             ...formGroupStyle,
             justifyContent: changePassword ? "space-between" : "inherit",
-            alignItems: changePassword ? "center" : "end",
+            alignItems: changePassword && "center",
             gap: !changePassword ? 3 : 2,
+            display: changePassword ? "flex" : "block",
           }}
         >
           {changePassword ? (
@@ -384,28 +386,68 @@ const Settings = () => {
             </>
           ) : (
             <>
-              {renderInputField({
-                label: "change password",
-                name: "password",
-                type: "password",
-                placeholder: "Type Your Password",
-                width: "300px",
-                mb: 1,
-                isEditable: false,
-              })}
+              <Typography component="label" sx={labelStyle}>
+                change password
+              </Typography>
+
+              <Box sx={{ display: "flex" }}>
+                <Typography
+                  style={{
+                    fontWeight: 300,
+                    lineHeight: "22px",
+                    fontFamily: `"Segoe UI", "sans-serif"`,
+                    padding: "16px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    opacity: 0.5,
+                    height: "50px",
+                    width: "300px",
+                  }}
+                >
+                  {"*".repeat(
+                    formikConfigs.passwordInputs.initialValues.password.length
+                  )}
+
+                  <IconButton
+                    sx={{
+                      margin: 0,
+                      padding: 0,
+                      cursor: "default",
+                      bgcolor: "transparent",
+                    }}
+                    disableRipple
+                  >
+                    <img src={eye} alt="eye" />
+                  </IconButton>
+                </Typography>
+
+                <Button
+                  sx={buttonStyle}
+                  onClick={() =>
+                    changePassword
+                      ? inputsState.password.handleSubmit()
+                      : setChangePassword(true)
+                  }
+                >
+                  {changePassword ? "Save Password" : "Change Password"}
+                </Button>
+              </Box>
             </>
           )}
 
-          <Button
-            sx={buttonStyle}
-            onClick={() =>
-              changePassword
-                ? inputsState.password.handleSubmit()
-                : setChangePassword(true)
-            }
-          >
-            {changePassword ? "Save Password" : "Change Password"}
-          </Button>
+          {changePassword ? (
+            <Button
+              sx={{ ...buttonStyle }}
+              onClick={() =>
+                changePassword
+                  ? inputsState.password.handleSubmit()
+                  : setChangePassword(true)
+              }
+            >
+              {changePassword ? "Save Password" : "Change Password"}
+            </Button>
+          ) : null}
         </Box>
 
         <Box sx={{ ...formGroupStyle, marginBottom: 1, gap: 4 }}>

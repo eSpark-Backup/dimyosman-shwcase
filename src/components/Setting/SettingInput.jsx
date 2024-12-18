@@ -83,35 +83,21 @@ const SettingInput = ({
           }}
         />
       ) : (
-        <Box
-          component={"span"}
+        <Typography
           style={{
-            fontSize: "16px",
-            fontWeight: type === "password" ? 300 : 600,
+            fontWeight: 600,
             lineHeight: "22px",
             fontFamily: `"Segoe UI", "sans-serif"`,
             paddingLeft: "16px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            opacity: type === "password" ? 0.5 : 1,
+            opacity: 1,
+            height: "43px",
           }}
         >
-          {type === "password" ? "*".repeat(value.length) : value}
-          {type === "password" ? (
-            <IconButton
-              sx={{
-                margin: 0,
-                padding: 0,
-                cursor: "default",
-                bgcolor: "transparent",
-              }}
-              disableRipple
-            >
-              <img src={eye} alt="eye" />
-            </IconButton>
-          ) : null}
-        </Box>
+          {value}
+        </Typography>
       )}
     </Stack>
   );
