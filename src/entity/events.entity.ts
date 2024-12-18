@@ -20,7 +20,7 @@ export class Events extends BaseEntity {
   id: string;
 
   @ManyToOne(() => User, (user) => user.events, { cascade: true })
-  @JoinColumn({ name: "userId" })
+  @JoinColumn({ name: "user" })
   user: User;
 
   @ManyToOne(() => Brand, (brand) => brand.id, { nullable: true })

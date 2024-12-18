@@ -4,3 +4,4 @@ export * from "./category.controller";
 export * from "./amenity.controller";
 export * from "./space.controller";
 export * from "./event.controller";
+export * from "./user.controller";
