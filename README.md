@@ -20,3 +20,6 @@
 ### Preferred Tech Stack
 - Frontend (ReactJS with MUI)
 - Backend (TBD)
+
+### Documentation of Changes
+- [Scope Change Requests and Approvals](https://docs.google.com/document/d/1fOlcam77cSzczKHC8ERw2A1YlfLoBeFnumV8YuCmypY/edit?tab=t.0)
