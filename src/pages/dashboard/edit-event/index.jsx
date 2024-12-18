@@ -270,7 +270,7 @@ const EditEvent = () => {
             toast.error(eventPostError?.data?.message)
         }
     }, [IsEventPostError])
-    const validateBrandData = () => {
+    const validateEventData = () => {
         if (!eventData?.cover || eventData?.cover?.length <= 0) {
             toast?.error("Please upload cover photo of event");
             return false;
@@ -309,7 +309,7 @@ const EditEvent = () => {
         }
 
 
-        if (!eventData?.space || typeof eventData.space !== "object" || Object.keys(eventData.space).length === 0) {
+        if (!eventData?.space || eventData?.space?.trim() === "") {
             toast?.error("Please select space");
             return false;
         }
@@ -322,7 +322,7 @@ const EditEvent = () => {
     };
 
     const handleSubmit = async (status) => {
-        if (!validateBrandData()) {
+        if (!validateEventData()) {
             return;
         }
         setLoadingButton(status);
@@ -525,6 +525,16 @@ const EditEvent = () => {
                                         <Typography
                                             variant="body1"
                                             color={theme.palette.primary.main}
+                                            sx={{
+                                                "& ul, & ol": {
+                                                    paddingLeft: 2,
+                                                },
+                                                "& img": {
+                                                    maxWidth: "100%",
+                                                    height: "auto",
+                                                    objectFit: "contain",
+                                                },
+                                            }}
                                             dangerouslySetInnerHTML={{ __html: eventData?.eventTitle }}
                                         />
                                     </Box>

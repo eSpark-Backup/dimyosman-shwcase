@@ -1,7 +1,12 @@
 import { Box, Button, Divider, Stack, Typography } from "@mui/material";
 import { calender, comment, like, miniMap, share } from "../../assets";
+import { useState } from "react";
+import ReusableModal from "../Modal";
+import MapModal from "../MapModal";
 
 const Details = ({ spaceInquire, details, myProfile }) => {
+  const [openMapModal, setMapModal] = useState(false);
+
   return (
     <Box>
       <Stack
@@ -194,7 +199,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               height: "auto",
             }}
           >
-            <figure style={{ width: "100%", height: "100%" }} role="img" aria-labelledby="profile-map">
+            <figure style={{ width: "100%", height: "100%", cursor: "pointer" }} role="img" aria-labelledby="profile-map" onClick={() => setMapModal(true)}>
               <img width="100%" height="100%" src={miniMap} alt="map" />
               <figcaption
                 style={{
@@ -345,7 +350,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               dangerouslySetInnerHTML={{ __html: point }}
             />
           ))}
-          <ul style={{ marginLeft: "16px" }}>
+          {/* <ul style={{ marginLeft: "16px" }}>
             {details?.expectedPoint?.ulPoints?.map((point) => {
               const newPoints = point.split(":");
               return (
@@ -375,7 +380,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                 </li>
               );
             })}
-          </ul>
+          </ul> */}
         </Box>
       )}
       {details?.otherPoints && (
@@ -501,6 +506,9 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           </Button>
         )}
       </Stack>
+      <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
+        <MapModal disabled={true} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[details?.mapLocation?.lat, details?.mapLocation?.long]} instructionValue={details?.mapLocation?.additional} />
+      </ReusableModal>
     </Box>
   );
 };

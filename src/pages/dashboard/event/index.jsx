@@ -41,7 +41,7 @@ const Event = () => {
       eventName: event?.eventName,
       eventImg: event?.eventImage,
       brand: event?.brand?.brandName,
-      brandUrl: "-",
+      brandUrl: `/brand/${event?.brand?.id}`,
       rsvp: "-",
       startDate: dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
       status: event?.status,
@@ -64,7 +64,6 @@ const Event = () => {
     if (isSuccess) {
       setMyEventData(transformEventData(data?.data?.events || []));
       setHasShownErrorToast(false);
-      console.log(data)
     }
   }, [isError, isSuccess, error, hasShownErrorToast, page, data]);
 
@@ -78,6 +77,13 @@ const Event = () => {
 
   const gotoDetail = (item) => {
     //go to detail page functionality
+    console.log(item, "item");
+    navigate(`/event/${item?.id}`)
+  };
+
+  const gotoBrand = (item) => {
+    //go to detail page functionality
+    navigate(item?.brandUrl)
     console.log(item, "item");
   };
 
@@ -121,11 +127,11 @@ const Event = () => {
           handleChange={handleChange}
           handleAdd={handleAdd}
         />
-        {eventTableData(gotoDetail, handleAction, myEventData)[activeTab].data.length > 0 ? (
+        {eventTableData(gotoDetail, handleAction, myEventData, gotoBrand)[activeTab].data.length > 0 ? (
           <DynamicTable
             isLoading={false}
-            data={eventTableData(gotoDetail, handleAction, myEventData)[activeTab].data}
-            columns={eventTableData(gotoDetail, handleAction, myEventData)[activeTab].column}
+            data={eventTableData(gotoDetail, handleAction, myEventData, gotoBrand)[activeTab].data}
+            columns={eventTableData(gotoDetail, handleAction, myEventData, gotoBrand)[activeTab].column}
             total={data && data?.data?.pagination?.totalItems}
             handlePageChange={handlePageChange}
             page={page}

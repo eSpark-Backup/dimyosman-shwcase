@@ -219,7 +219,7 @@ const NewEvent = () => {
         }));
     };
 
-    const validateBrandData = () => {
+    const validateEventData = () => {
         if (!eventData?.cover || eventData?.cover?.length <= 0) {
             toast?.error("Please upload cover photo of brand");
             return false;
@@ -263,7 +263,7 @@ const NewEvent = () => {
         }
 
 
-        if (!eventData?.space || typeof eventData.space !== "object" || Object.keys(eventData.space).length === 0) {
+        if (!eventData?.space || eventData?.space?.trim() === "") {
             toast?.error("Please select space");
             return false;
         }
@@ -292,7 +292,8 @@ const NewEvent = () => {
     }, [IsEventPostError])
 
     const handleSubmit = async (status) => {
-        if (!validateBrandData()) {
+        console.log(eventData)
+        if (!validateEventData()) {
             return;
         }
         setLoadingButton(status);

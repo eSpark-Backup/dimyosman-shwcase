@@ -698,10 +698,10 @@ export const brandTableData = (gotoDetail, handleAction, myBrandData) => [
   },
 ];
 
-export const eventTableData = (gotoDetail, handleAction, myEventData) => [
+export const eventTableData = (gotoDetail, handleAction, myEventData, gotoBrand) => [
   {
     data: myEventData,
-    column: myEventsColumns(gotoDetail, (item) => handleAction(item, "edit")),
+    column: myEventsColumns(gotoDetail, (item) => handleAction(item, "edit"), gotoBrand),
   },
   {
     data: rsvcEventData,

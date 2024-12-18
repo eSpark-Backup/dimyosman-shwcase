@@ -1,7 +1,8 @@
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { eventBadge } from "../assets";
+import { useNavigate } from "react-router-dom";
 
-const myEventsColumns = (gotoDetail, handleAction) => {
+const myEventsColumns = (gotoDetail, handleAction, gotoBrand) => {
   return [
     {
       name: "Event Name",
@@ -29,7 +30,7 @@ const myEventsColumns = (gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="event-image">
                   <img
-                    style={{ width: "100%" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     src={item?.eventImg}
                     alt="event-img"
                   />
@@ -70,6 +71,7 @@ const myEventsColumns = (gotoDetail, handleAction) => {
               fontWeight: item?.brandUrl ? 600 : 400,
               cursor: "pointer",
             }}
+            onClick={() => gotoBrand(item)}
           >
             {item?.brand}
           </Typography>
