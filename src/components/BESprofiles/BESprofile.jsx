@@ -16,6 +16,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
   const handleCloseModal = () => setOpenSliderModal(false);
   const navigate = useNavigate();
   const { id } = useParams();
+  console.log(data)
 
   const editProfile = () => {
     navigate(`/${type}/${id}/edit`);

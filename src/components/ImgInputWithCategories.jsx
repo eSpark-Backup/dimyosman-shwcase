@@ -19,7 +19,10 @@ const ImgInputWithCategories = ({
     activity,
     HandleCategoryChange,
     showDropDown,
-    imgUrl
+    imgUrl,
+    options,
+    onBrandSelect,
+    selectedValue
 }) => {
     const theme = useTheme();
     const [previewImage, setPreviewImage] = useState(imgUrl ? imgUrl : null);
@@ -40,9 +43,8 @@ const ImgInputWithCategories = ({
         }
     };
 
-    const [selectedValue, setSelectedValue] = useState("");
-    const handleSelectChange = (event) => {
-        setSelectedValue(event.target.value);
+    const handleSelectChange = (selectedOption) => {
+        onBrandSelect(selectedOption.target.value)
     };
 
     return (
@@ -144,9 +146,11 @@ const ImgInputWithCategories = ({
                             }}
                         >
                             <Dropdown
-                                options={[{ label: 'Brand name', value: 'Brandname' }]}
+                                options={options}
                                 onChange={handleSelectChange}
+                                value={selectedValue}
                                 label={'select brand:'}
+                                placeholder={"Select brand"}
                             />
                         </Box>
                     )}
