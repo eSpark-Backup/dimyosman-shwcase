@@ -9,14 +9,11 @@ import { Box, LinearProgress } from "@mui/material";
 
 const BrandDetails = () => {
   const params = useParams()
-  console.log(params)
   const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({ page: 1, pageSize: 7, id: params?.id }, { refetchOnMountOrArgChange: true });
   const dispatch = useDispatch()
 
-  console.log(data)
-
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && data?.data) {
 
       const brandData = {
         id: data?.data?.id,
@@ -69,7 +66,7 @@ const BrandDetails = () => {
 
       dispatch(updateBrands([brandData]));
     }
-  }, [isSuccess, data, dispatch])
+  }, [isSuccess, data, dispatch, params])
 
 
   const { brands } = useSelector((state) => state.brand);

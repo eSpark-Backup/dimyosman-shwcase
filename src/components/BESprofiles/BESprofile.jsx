@@ -16,6 +16,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
   const handleCloseModal = () => setOpenSliderModal(false);
   const navigate = useNavigate();
   const { id } = useParams();
+  console.log(data)
 
   const editProfile = () => {
     navigate(`/${type}/${id}/edit`);
@@ -62,7 +63,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
   if (!filteredProfile) {
     return (
       <Box sx={{ width: "100%" }}>
-        <Typography>No data found</Typography>
+        <LinearProgress />
       </Box>
     )
   }

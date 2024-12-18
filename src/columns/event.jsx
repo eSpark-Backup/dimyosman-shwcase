@@ -1,4 +1,4 @@
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, Tooltip, Typography } from "@mui/material";
 import { eventBadge } from "../assets";
 import { useNavigate } from "react-router-dom";
 
@@ -51,11 +51,16 @@ const myEventsColumns = (gotoDetail, handleAction, gotoBrand, gotoSpace) => {
                 />
               </figure>
             </Box>
-            <Typography
-              sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
-            >
-              {item?.eventName}
-            </Typography>
+            <Tooltip title={item?.eventName?.length > 30 ? item?.eventName : ""}>
+              <Typography
+                textAlign="left"
+                sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
+              >
+                {item?.eventName?.length > 30
+                  ? `${item?.eventName.slice(0, 29)}...`
+                  : item?.eventName}
+              </Typography>
+            </Tooltip>
           </Stack>
         );
       },

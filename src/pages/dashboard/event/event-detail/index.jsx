@@ -13,8 +13,6 @@ const EventDetails = () => {
   const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllEventsQuery({ page: 1, pageSize: 7, id }, { refetchOnMountOrArgChange: true });
   const dispatch = useDispatch()
 
-  console.log(data)
-
   useEffect(() => {
     if (isSuccess) {
       const updatedEvents = {
@@ -66,7 +64,7 @@ const EventDetails = () => {
 
       dispatch(updateEvents([updatedEvents]));
     }
-  }, [isSuccess, data])
+  }, [isSuccess, data,dispatch])
 
   const { events } = useSelector((state) => state?.event);
   if (isLoading || isFetching) {
