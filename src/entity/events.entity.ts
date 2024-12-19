@@ -19,7 +19,7 @@ export class Events extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @ManyToOne(() => User, (user) => user.events, { cascade: true })
+  @ManyToOne(() => User, (user) => user.events)
   @JoinColumn({ name: "user" })
   user: User;
 

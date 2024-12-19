@@ -52,7 +52,7 @@ export class SpaceController {
         status,
         brandId,
         amenity,
-        minLeaseDays,
+        pricing,
       } = req.body;
       const checkName = await this.spaceRepo.findOne({ where: { spaceName } });
       if (checkName) {
@@ -93,7 +93,7 @@ export class SpaceController {
       newSpace.details = details;
       newSpace.location = location;
       newSpace.status = status;
-      newSpace.minLeaseDays = minLeaseDays;
+      newSpace.pricing = pricing;
       newSpace.user = user as User;
       newSpace.brand = brand as Brand;
       newSpace.amenity = amenity;
@@ -167,7 +167,9 @@ export class SpaceController {
         location,
         status,
         amenity,
+        pricing,
         coverKeys,
+        brandId,
       } = req.body;
 
       if (Array.isArray(coverKeys)) {
@@ -176,6 +178,10 @@ export class SpaceController {
       const existingSpace = await this.spaceRepo.findOne({ where: { id } });
       if (!existingSpace) {
         return next(res.status(404).json({ message: "Space not found" }));
+      }
+      const brand = await this.brandRepo.findOne({ where: { id: brandId } });
+      if (!brand) {
+        throw new ApiError("Brand not found", HTTP_STATUS.NOT_FOUND);
       }
       if (spaceName) {
         const checkName = await this.spaceRepo.findOne({
@@ -251,6 +257,8 @@ export class SpaceController {
       existingSpace.location = location || existingSpace.location;
       existingSpace.amenity = amenity || existingSpace.amenity;
       existingSpace.status = status || existingSpace.status;
+      existingSpace.pricing = pricing || existingSpace.pricing;
+      existingSpace.brand = brand || existingSpace.brand;
       existingSpace.coverImages = JSON.stringify(coverUrls) as Object;
       existingSpace.spaceImage = imageUrls[0].url;
       existingSpace.imageKey = imageUrls[0].public_id;

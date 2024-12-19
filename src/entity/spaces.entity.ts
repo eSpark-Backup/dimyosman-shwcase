@@ -45,8 +45,8 @@ export class Spaces extends BaseEntity {
   @Column({ type: "json", nullable: true })
   details: object;
 
-  @Column({ type: "varchar", length: 256, nullable: true })
-  minLeaseDays: string;
+  @Column({ type: "json", nullable: true })
+  pricing: object;
 
   @Column({ type: "json", nullable: true })
   location: object;
