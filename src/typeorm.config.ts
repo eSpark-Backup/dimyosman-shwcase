@@ -25,6 +25,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // TypeORM Configuration
+console.log(__dirname);
 export const AppDataSource = new DataSource({
   type: "mysql",
   host: process.env.MYSQL_HOST,
@@ -33,8 +34,8 @@ export const AppDataSource = new DataSource({
   database: process.env.MYSQL_DATABASE,
   password: process.env.MYSQL_PASSWORD,
   synchronize: true,
-  logging: false,
+  logging: true,
   entities: [__dirname + "/entity/*.entity{.ts,.js}"],
-  migrations: [__dirname + "/*.entity{.ts,.js}"],
+  migrations: [__dirname + "/migrations/**/*.{.ts,.js}"],
   cache: false,
 });

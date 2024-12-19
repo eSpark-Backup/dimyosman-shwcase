@@ -36,16 +36,16 @@ export class AuthController {
           );
         }
 
-        const existingUser = await this.usersRepo.findOne({
-          where: { email },
-        });
+        const existingUser = (await this.usersRepo.findOne({
+          where: { email, loginType },
+        })) as User;
         if (existingUser && existingUser.isSocialLogin == false) {
           throw new ApiError(
             "Invalid Login Method or Email Already Exists",
             HTTP_STATUS.BAD_REQUEST
           );
         }
-        if (existingUser) {
+        if (existingUser && existingUser.loginType == loginType) {
           const token = jwt.sign(
             {
               id: existingUser.id,

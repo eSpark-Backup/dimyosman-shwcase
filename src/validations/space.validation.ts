@@ -24,7 +24,13 @@ export class SpaceValidation {
       description: Joi.string().required(),
       htmlContent: Joi.string().required(),
     }).optional(),
-    minLeaseDays: Joi.string().required(),
+    pricing: Joi.array().items(
+      Joi.object({
+        term: Joi.string().required(),
+        price: Joi.string().required(),
+        minimum: Joi.string().required(),
+      })
+    ),
     location: Joi.object({
       long: Joi.number().required(),
       lat: Joi.number().required(),
@@ -37,6 +43,7 @@ export class SpaceValidation {
 
   static UpdateSpace = Joi.object({
     spaceName: Joi.string().optional(),
+    brandId: Joi.string().optional(),
     spaceCategory: Joi.array()
       .items(
         Joi.object({
@@ -44,7 +51,13 @@ export class SpaceValidation {
         })
       )
       .optional(),
-    minLeaseDays: Joi.string().optional(),
+    pricing: Joi.array().items(
+      Joi.object({
+        term: Joi.string().required(),
+        price: Joi.string().required(),
+        minimum: Joi.string().required(),
+      })
+    ),
     amenity: Joi.array()
       .items(
         Joi.object({

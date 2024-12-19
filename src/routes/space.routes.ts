@@ -47,9 +47,18 @@ const spaceController = new SpaceController(
  *               spaceName:
  *                 type: string
  *                 description: Name of the space.
- *               minLeaseDays:
- *                 type: string
- *                 description: Number days of Lease.
+ *               pricing:
+ *                 type: object
+ *                 properties:
+ *                   term:
+ *                     type: string
+ *                     description: Weekly/Daily/Monthly/Yearly.
+ *                   price:
+ *                     type: string
+ *                     description: Price of that Term.
+ *                   minimum:
+ *                     type: string
+ *                     description: Minimum Days of Term.
  *               spaceCategory:
  *                 type: array
  *                 items:
@@ -127,7 +136,13 @@ router.post(
     { name: FILE_FIELDS.COVER, maxCount: 10 },
     { name: FILE_FIELDS.IMAGE, maxCount: 1 },
   ]),
-  parseJsonFields(["spaceCategory", "details", "location", "amenity"]),
+  parseJsonFields([
+    "spaceCategory",
+    "details",
+    "location",
+    "amenity",
+    "pricing",
+  ]),
   validate(SpaceValidation.CreateSpace, "body"),
   (req, res, next) => spaceController.createSpace(req, req as any, res, next)
 );
@@ -157,9 +172,21 @@ router.post(
  *             properties:
  *               spaceName:
  *                 type: string
- *               minLeaseDays:
+ *               brandId:
  *                 type: string
- *                 description: Number days of Lease.
+ *                 description: Id of the Brand.
+ *               pricing:
+ *                 type: object
+ *                 properties:
+ *                   term:
+ *                     type: string
+ *                     description: Weekly/Daily/Monthly/Yearly.
+ *                   price:
+ *                     type: string
+ *                     description: Price of that Term.
+ *                   minimum:
+ *                     type: string
+ *                     description: Minimum Days of Term.
  *               spaceCategory:
  *                 type: array
  *                 items:
@@ -236,7 +263,13 @@ router.put(
     { name: FILE_FIELDS.COVER, maxCount: 10 },
     { name: FILE_FIELDS.IMAGE, maxCount: 1 },
   ]),
-  parseJsonFields(["spaceCategory", "details", "location", "amenity"]),
+  parseJsonFields([
+    "spaceCategory",
+    "details",
+    "location",
+    "amenity",
+    "pricing",
+  ]),
   validate(SpaceValidation.UpdateSpace, "body"),
   (req, res, next) => spaceController.updateSpace(req, req as any, res, next)
 );
