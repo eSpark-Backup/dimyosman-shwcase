@@ -8,20 +8,21 @@ import { brandMain } from "../../../../assets";
 import { Box, LinearProgress } from "@mui/material";
 
 const BrandDetails = () => {
-  const { data, isError, isLoading, isSuccess, error } = useGetAllBrandsQuery({ page: 1, pageSize: 7 });
-  console.log(data)
+  const params = useParams()
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({ page: 1, pageSize: 7, id: params?.id }, { refetchOnMountOrArgChange: true });
   const dispatch = useDispatch()
 
   useEffect(() => {
-    if (isSuccess) {
-      const updatedBrands = data.data.brands.map((fetchedBrand) => ({
-        id: fetchedBrand?.id,
+    if (isSuccess && data?.data) {
+
+      const brandData = {
+        id: data?.data?.id,
         type: "brand",
         owned: true,
-        slides: fetchedBrand?.coverImages,
-        profilePic: fetchedBrand?.brandImage,
-        profileName: fetchedBrand?.brandName,
-        category: fetchedBrand?.brandCategory,
+        slides: data?.data?.coverImages,
+        profilePic: data?.data?.brandImage,
+        profileName: data?.data?.brandName,
+        category: data?.data?.brandCategory,
         details: {
           by: "Emily Thompson",
           events: "1234",
@@ -35,12 +36,13 @@ const BrandDetails = () => {
             label: "Details",
             props: {
               details: {
-                overview: [fetchedBrand?.details?.description || ""],
+                overview: [data?.data?.details?.description || ""],
                 location: "123 Williamsburg Ave, Brooklyn, NY 11211",
+                mapLocation: { lat: data?.data?.location?.lat, long: data?.data?.location?.long, additional: data?.data?.location?.additional },
                 expectedPoint: {
                   title: "What to Expect:",
                   points: [
-                    fetchedBrand?.details?.htmlContent
+                    data?.data?.details?.htmlContent
                     ||
                     ""],
                 },
@@ -60,18 +62,15 @@ const BrandDetails = () => {
             props: null,
           },
         ],
-      }));
+      };
 
-      console.log(updatedBrands)
-
-
-      dispatch(updateBrands(updatedBrands));
+      dispatch(updateBrands([brandData]));
     }
-  }, [isSuccess])
+  }, [isSuccess, data, dispatch, params])
 
 
   const { brands } = useSelector((state) => state.brand);
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />

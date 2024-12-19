@@ -1,4 +1,4 @@
-import { Box, Button, Typography, useTheme } from '@mui/material'
+import { Box, Button, CircularProgress, LinearProgress, Typography, useTheme } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import { accessibility, arrow, security, spaceIcon, storage, sun, wifi } from '../../../assets';
 import { ChoiceSelectionModal, FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs, PriceModal } from '../../../components';
@@ -8,6 +8,9 @@ import ReusableModal from '../../../components/Modal';
 import { useGetCategoriesQuery } from '../../../services/categories';
 import { useGetAllBrandsQuery } from '../../../services/brands';
 import { useGetAmenitiesQuery } from '../../../services/amenities';
+import { LoadingButton } from '@mui/lab';
+import { toast } from 'react-toastify';
+import { useNewSpaceMutation } from '../../../services/space';
 
 const NewSpace = () => {
     const theme = useTheme()
@@ -41,7 +44,7 @@ const NewSpace = () => {
     const [address, setAddress] = useState("")
     const [priceModal, setPriceModal] = useState(false)
 
-    const { isError, isSuccess, error, data, isLoading } = useGetCategoriesQuery('BRANDS')
+    const { isError, isSuccess, error, data, isLoading } = useGetCategoriesQuery('SPACES')
     const { isError: IsAmenitiesError, isSuccess: AmeitiesSuccess, error: AmenitiesError, data: AmenitiesData, isLoading: AmenitiesLoading } = useGetAmenitiesQuery()
     const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
 
@@ -122,7 +125,7 @@ const NewSpace = () => {
 
     const handleAddImage = () => {
         const nextIndex = spaceData.cover.length;
-        if (nextIndex >= 0 && nextIndex <= spaceData.cover.length) {
+        if (nextIndex < 3) {
             setCurrentIndex(nextIndex);
         }
     };
@@ -173,18 +176,13 @@ const NewSpace = () => {
                         [{ 'header': [2, 3, 4, 5, 6, false] }],
                         ['bold', 'italic', 'strike'],
                         [{ 'header': 3 }],
-                        ['bold', 'italic', 'strike'],
-                        [{ 'align': [] }],
                         [{ 'list': 'ordered' }],
+                        [{ 'align': [] }],
                         ['image', 'link'],
                     ],
                 },
             });
-
-            // Initialize Quill with brandTitle from brandData
             quillRef.current.root.innerHTML = spaceData?.spaceTitle || defaultTemplate;
-
-            // Update brandData's brandTitle on text change
             quillRef.current.on('text-change', () => {
                 const updatedContent = quillRef.current.root.innerHTML;
                 setSpaceData((prevData) => ({
@@ -196,6 +194,7 @@ const NewSpace = () => {
     }, [isEditorVisible, spaceData?.spaceTitle]);
 
     const CategoryChangeHandler2 = (index) => {
+        console.log(index)
         const amenitiesSelected = spaceData?.amenities?.filter((item) => item.selected).length;
         if (spaceData?.amenities?.find((item) => item.id === index)?.selected && amenitiesSelected === 1) {
             alert("At least one amenity should be selected.");
@@ -212,20 +211,11 @@ const NewSpace = () => {
     };
 
 
-    const options = brandData?.data?.brands?.map((brand) => ({
+    const options = brandData?.data?.groupedBrands?.publishedBrands?.map((brand) => ({
         label: brand.brandName,
         value: brand.id,
         item: brand,
     }));
-
-    const handleBrandSelect = (value) => {
-        const selectedItem = options.find((option) => option.value === value);
-
-        setSpaceData((prev) => ({
-            ...prev,
-            selectedBrand: selectedItem?.item,
-        }));
-    };
 
     const HandlePriceSelect = (item) => {
         setPriceModal(false)
@@ -245,6 +235,122 @@ const NewSpace = () => {
         }));
     };
 
+    const updateSpaceData = (key, value) => {
+        setSpaceData((prev) => {
+            if (prev[key] === value) {
+                return prev;
+            }
+            return {
+                ...prev,
+                [key]: value,
+            };
+        });
+    };
+
+    const [space, { isSuccess: spacePostSuccess, isError: IsSpacePostError, error: spacePostError, data: spacePostData, isLoading: SpacePostingLoading }] = useNewSpaceMutation()
+
+    useEffect(() => {
+        if (spacePostSuccess) {
+            toast.success(spacePostData?.message)
+        }
+    }, [spacePostSuccess])
+
+    useEffect(() => {
+        if (IsSpacePostError) {
+            toast.error(spacePostError?.data?.message)
+            return
+        }
+    }, [IsSpacePostError])
+
+    const validateSpaceData = () => {
+        if (!spaceData?.cover || spaceData?.cover?.length <= 0) {
+            toast?.error("Please upload cover photo of space");
+            return false;
+        }
+
+        if (!spaceData?.profileImage) {
+            toast?.error("Please upload profile photo of space");
+            return false;
+        }
+
+        if (!spaceData?.spaceName || spaceData?.spaceName.trim() === "") {
+            toast?.error("Space name can not be empty.");
+            return false;
+        }
+
+        const selectedCategories = spaceData?.spaceCategories
+            ?.filter((item) => item?.selected);
+        if (!selectedCategories || selectedCategories.length <= 0) {
+            toast?.error("Please select at least one category.");
+            return false;
+        }
+
+        const selectedAmenities = spaceData?.amenities
+            ?.filter((item) => item?.selected);
+        if (!selectedAmenities || selectedAmenities.length <= 0) {
+            toast?.error("Please select at least one amenity.");
+            return false;
+        }
+
+        if (!spaceData?.spaceOverview
+            || spaceData?.spaceOverview
+                .trim() === "") {
+            toast?.error("Space overview can not be empty.");
+            return false;
+        }
+
+        if (!spaceData?.spaceTitle || spaceData?.spaceTitle.trim() === "") {
+            toast?.error("Space title can not be empty.");
+            return false;
+        }
+
+        const strippedContent = spaceData?.spaceTitle?.replace(/<[^>]*>/g, "").trim();
+        if (!strippedContent) {
+            toast?.error("Space title can not be empty.");
+            return false;
+        }
+
+
+        if (!spaceData?.selectedBrand || spaceData?.selectedBrand?.trim() === "") {
+            toast?.error("Please select brand");
+            return false;
+        }
+
+        if (!spaceData?.
+            mapInstructions
+            || spaceData?.mapInstructions.trim() === "") {
+            toast?.error("Map additional field is required");
+            return false;
+        }
+        return true;
+    };
+
+    const handleSubmit = async (status) => {
+        console.log(spaceData)
+        if (!validateSpaceData()) {
+            return;
+        }
+        setLoadingButton(status);
+        try {
+            await space({ ...spaceData, status });
+        } finally {
+            setLoadingButton(null);
+        }
+    };
+
+    const [loadingButton, setLoadingButton] = useState(null);
+    const HandlePublishSubmit = () => handleSubmit("PUBLISH");
+    const HandleDraftSubmit = () => handleSubmit("DRAFT");
+    const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
+
+
+    if (IsBrandLoading || AmenitiesLoading || isLoading) {
+        return (
+            <Box sx={{ width: "100%" }}>
+                <LinearProgress />
+            </Box>
+        )
+    }
 
     return (
         <Box
@@ -273,17 +379,21 @@ const NewSpace = () => {
                 }}
                 className="buttons-box"
             >
-                <Button
+                <LoadingButton
                     sx={{
                         fontSize: "16px",
                         width: "143px",
                         height: "31px",
                         textTransform: "none",
                     }}
+                    loading={loadingButton === "DRAFT"}
+                    onClick={HandleDraftSubmit}
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
+                    disabled={loadingButton && loadingButton !== "DRAFT"}
                 >
                     Save as Draft
-                </Button>
-                <Button
+                </LoadingButton>
+                <LoadingButton
                     sx={{
                         fontSize: "16px",
                         width: "103px",
@@ -291,20 +401,27 @@ const NewSpace = () => {
                         backgroundColor: "rgb(0, 20, 28, 0.9)",
                         textTransform: "none",
                     }}
-                    onClick={() => console.log(spaceData)}
+                    loading={loadingButton === "PUBLISH"}
+                    onClick={HandlePublishSubmit}
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
+                    disabled={loadingButton && loadingButton !== "PUBLISH"}
                 >
                     Publish
-                </Button>
-                <Button
+                </LoadingButton>
+                <LoadingButton
                     sx={{
                         fontSize: "16px",
                         width: "102px",
                         height: "31px",
                         textTransform: "none",
                     }}
+                    loading={loadingButton === "ARCHIVE"}
+                    onClick={HandleArchiveSubmit}
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
+                    disabled={loadingButton && loadingButton !== "ARCHIVE"}
                 >
                     Archive
-                </Button>
+                </LoadingButton>
             </Box>
             <FullWidthImgInput activity={"space"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={spaceIcon} editImage={spaceData.cover[currentIndex] ? URL.createObjectURL(spaceData.cover[currentIndex]) : null} handleAdd={handleAddImage}
                 handleRemove={handleRemoveImage}
@@ -346,8 +463,9 @@ const NewSpace = () => {
                     HandleCategoryChange={CategoryChangeHandler2}
                     HandlePriceModal={() => setPriceModal(true)}
                     options={options}
-                    onBrandSelect={handleBrandSelect}
-                    selectedValue={spaceData?.selectedBrand?.id || ''}
+                    eventData={spaceData}
+                    updateEventData={updateSpaceData}
+                    selectedValue={spaceData?.selectedBrand || ''}
                 />
                 <Box
                     sx={{
@@ -410,7 +528,7 @@ const NewSpace = () => {
                     }))} />
             </ReusableModal>
             <ReusableModal open={priceModal} handleClose={() => setPriceModal(false)} heading={"Pricing and terms"}>
-                <PriceModal handleClose={HandlePriceSelect} />
+                <PriceModal handleClose={HandlePriceSelect} data={spaceData?.price} />
             </ReusableModal>
         </Box>
     )

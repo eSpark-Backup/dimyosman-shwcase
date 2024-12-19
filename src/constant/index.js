@@ -50,6 +50,7 @@ import {
   whatsAppIcon,
   emailIcon,
   shareIcon,
+  accountIcon,
 } from "../assets";
 import {
   followingBrandColumns,
@@ -61,7 +62,11 @@ import {
   myEventsColumns,
   rsvpEventColumns,
 } from "../columns/event";
-import { leasingSpaceColumns, likedSpaceColumns, mySpaceColumns } from "../columns/space";
+import {
+  leasingSpaceColumns,
+  likedSpaceColumns,
+  mySpaceColumns,
+} from "../columns/space";
 
 export const sidebarRoutes = [
   {
@@ -116,38 +121,47 @@ export const sidebarRoutes = [
 
 export const getSmallSidebar = (currentLink) => {
   const id = currentLink.split("/")[2];
-  const smallSidebarLink = ["/message", "/profile", `/brand/${id}`, `/brand/${id}/edit`, "/new-brand", `/event/${id}`, `/event/${id}/edit`, "/new-event","/new-space",`/profile/${id}`, `/profile/${id}/edit`];
+  const smallSidebarLink = [
+    "/message",
+    "/profile",
+    `/brand/${id}`,
+    `/brand/${id}/edit`,
+    "/new-brand",
+    `/event/${id}`,
+    `/event/${id}/edit`,
+    "/new-event",
+    `/space/${id}`,
+    "/new-space"
+  ];
   return smallSidebarLink.includes(currentLink);
 };
-
 
 export const spaceFeatures = [
   {
     icon: arrow,
-    description: "Flexible Layout"
+    description: "Flexible Layout",
   },
   {
     icon: wifi,
-    description: "WI-FI"
+    description: "WI-FI",
   },
   {
     icon: accessibility,
-    description: "Accessible Location"
+    description: "Accessible Location",
   },
   {
     icon: sun,
-    description: "Natural Lighting"
+    description: "Natural Lighting",
   },
   {
     icon: storage,
-    description: "Compact Storage Area"
+    description: "Compact Storage Area",
   },
   {
     icon: security,
-    description: "On-Site Security"
+    description: "On-Site Security",
   },
-]
-
+];
 
 export const activityItems = [
   {
@@ -160,7 +174,7 @@ export const activityItems = [
     content: [
       "A limited-time clothing pop-up store featuring EcoLux Designs' latest collection of eco-friendly luxury fashion.",
       "Shoppers can explore exclusive, high-end pieces crafted from organic and recycled materials, combining sustainability with modern style.",
-      "The event will also include workshops on sustainable fashion and personal styling sessions."
+      "The event will also include workshops on sustainable fashion and personal styling sessions.",
     ],
     activityLocation: "Urban Pop-Up Studio 3B",
     activityLocation2: "Urban Pop-Up Pavilion",
@@ -204,7 +218,7 @@ export const activityItems = [
     activityName: "EcoLux Designs",
     activityMaker: "Sustainable Fashion",
     content: [
-      "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials."
+      "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
     ],
     userRole: "profile",
     slides: [brandMain],
@@ -697,10 +711,10 @@ export const brandTableData = (gotoDetail, handleAction, myBrandData) => [
   },
 ];
 
-export const eventTableData = (gotoDetail, handleAction) => [
+export const eventTableData = (gotoDetail, handleAction, myEventData, gotoBrand, gotoSpace) => [
   {
     data: myEventData,
-    column: myEventsColumns(gotoDetail, (item) => handleAction(item, "edit")),
+    column: myEventsColumns(gotoDetail, (item) => handleAction(item, "edit"), gotoBrand, gotoSpace),
   },
   {
     data: rsvcEventData,
@@ -717,7 +731,7 @@ export const eventTableData = (gotoDetail, handleAction) => [
 ];
 export const spaceTableData = (gotoDetail, handleAction) => [
   {
-    data:  mySpaceData,
+    data: mySpaceData,
     column: mySpaceColumns(gotoDetail, (item) => handleAction(item, "edit")),
   },
   {
@@ -765,7 +779,6 @@ export const reviews = [
       helpful! Overall, this event exceeded my expectations in every
       way. Highly recommend!"`,
     approved: false,
-
   },
   {
     reviewerPRofile: reviewer,
@@ -1159,3 +1172,215 @@ export const socialShareOptions = [
   },
 ]
 
+
+
+export const allMessages = [
+  {
+    id: 1,
+    activity: "brand",
+    userName: "EcoLux Designs",
+    icon: eventUserImage,
+    read: false,
+    creator: "Michael Harrison",
+    spaces: 1234,
+    followers: 234566,
+    saved: "789k",
+    reviews: 12345,
+    leases: 12345,
+    rating: 5,
+    messageGroups: [
+      {
+        id: 1,
+        userName: "Urban Pop-Up Pavilion",
+        activity: "brand",
+        icon: spaceUserImage,
+        read: true,
+        messages: [
+          {
+            id: 1,
+            userName: "Urban Pop-Up Pavilion",
+            activity: "brand",
+            creator: "Michael Harrison",
+            icon: spaceUserImage,
+            date: "07/11/24",
+            time: "4:34PM",
+            text: "Hi Emily, thanks for reaching out! The Pavilion is available, but for a more intimate setting, I’d actually recommend our Urban Pop-Up Studio 3B, which is located inside the Pavilion. It’s an 800 sq. ft. space, perfect for a focused and personalized shopping experience, especially for luxury brands like yours. The studio still includes all the amenities—Wi-Fi, security, and a flexible layout—but in a smaller, more manageable footprint.",
+          },
+          {
+            id: 2,
+            userName: "EcoLux Designs",
+            activity: "brand",
+            creator: "Emily Thompson",
+            icon: eventUserImage,
+            date: "07/11/24",
+            time: "4:34PM",
+            text: "That sounds great! I actually like the idea of a smaller, more intimate space for the pop-up. Could you send me some photos and more details about Studio 3B? Also, I’m free Tuesday or Thursday afternoon next week to come by for a tour.",
+          },
+          {
+            id: 3,
+            userName: "Urban Pop-Up Pavilion",
+            activity: "brand",
+            creator: "Michael Harrison",
+            icon: spaceUserImage,
+            date: "07/11/24",
+            time: "4:34PM",
+            text: `
+            <p>Glad to hear that, Emily!</p>
+            <p>You can see all on the following link: </p>
+            <a href="">shwcase.co/urban-pop-up-pavilion/urban-pop-up-studio-3b</a>
+            <br />
+            <br />
+            <p> Let’s set up a tour for Thursday at 2 PM. I think Studio 3B will work perfectly for your event, especially given its cozy atmosphere and premium feel. Looking forward to showing you the space!</p>
+            `,
+          },
+        ],
+      },
+      {
+        id: 2,
+        userName: "Urban Pop-Up Studio 3B",
+        activity: "space",
+        icon: spaceActivityImage,
+        read: false,
+        messages: [
+          {
+            id: 1,
+            userName: "EcoLux Designs",
+            activity: "brand",
+            creator: "Emily Thompson",
+            icon: eventUserImage,
+            date: "07/11/24",
+            time: "4:34PM",
+            text: `
+            <p>Inquiry for: <strong>Urban Pop-Up Studio 3B</strong></p>
+            <p>Date Range: <strong>dd.mm.yyyy. - dd.mm.yyyy.</strong></p>
+            <p>Lease Total: <strong>$2000</strong></p>
+            <p>Thursday at 2 PM works for me! Thanks for the quick response</p>
+            `,
+          },
+          {
+            id: 2,
+            userName: "Urban Pop-Up Pavilion",
+            activity: "brand",
+            creator: "Michael Harrison",
+            icon: spaceUserImage,
+            date: "07/11/24",
+            time: "4:34PM",
+            text: "Great! See you on Thursday!",
+          },
+        ],
+      },
+      {
+        id: 3,
+        userName: "Sophia Ramirez",
+        activity: "profile",
+        icon: reviewer,
+        read: false,
+        messages: [
+          {
+            id: 1,
+            userName: "",
+            activity: "",
+            creator: "",
+            icon: "",
+            date: "07/11/24",
+            time: "4:34PM",
+            text: "",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 2,
+    activity: "brand",
+    userName: "Brand Name 2",
+    icon: "",
+    read: true,
+    creator: "",
+    spaces: 1234,
+    followers: 234566,
+    saved: "789k",
+    reviews: 12345,
+    leases: 12345,
+    rating: 5,
+    messageGroups: [
+      {
+        userName: "Brand Name 4",
+        activity: "brand",
+        icon: "",
+        read: true,
+        messages: [
+          {
+            id: 1,
+            userName: "Brand Name 2",
+            activity: "brand",
+            creator: "Emily Thompson",
+            icon: "",
+            date: "07/11/24",
+            time: "4:34PM",
+            text: "Hi Michael! I’m interested in booking Urban Pop-Up Pavilion for an upcoming event in February. We’re planning a limited-time pop-up for our new eco-friendly luxury fashion collection, and I think your space would be perfect. Could you let me know what availability you have around the end of February?",
+          },
+          {
+            id: 2,
+            userName: "Brand Name 4",
+            activity: "brand",
+            creator: "Member Name",
+            icon: "",
+            date: "07/11/24",
+            time: "4:34PM",
+            text: "Hi Emily, thanks for reaching out! The Pavilion is available, but for a more intimate setting, I’d actually recommend our Urban Pop-Up Studio 3B, which is located inside the Pavilion. It’s an 800 sq. ft. space, perfect for a focused and personalized shopping experience, especially for luxury brands like yours. The studio still includes all the amenities—Wi-Fi, security, and a flexible layout—but in a smaller, more manageable footprint.",
+          },
+        ],
+      },
+      {
+        userName: "Space name 5",
+        activity: "space",
+        icon: "",
+        messages: [
+          {
+            id: 1,
+            userName: "",
+            activity: "",
+            creator: "Brand Name",
+            icon: "",
+            date: "07/11/24",
+            time: "4:34PM",
+            text: "",
+          },
+        ],
+      },
+      {
+        userName: "Member Name",
+        activity: "profile",
+        icon: "",
+        messages: [
+          {
+            id: 1,
+            userName: "",
+            activity: "",
+            creator: "",
+            icon: "",
+            date: "07/11/24",
+            time: "4:34PM",
+            text: "",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 3,
+    activity: "event",
+    userName: "Ecolux Chic Pop-Up",
+    icon: eventActivityImage,
+    read: true,
+    creator: "",
+    spaces: 1234,
+    followers: 234566,
+    saved: "789k",
+    reviews: 12345,
+    leases: 12345,
+    rating: 5,
+    messageGroups: [],
+  },
+];

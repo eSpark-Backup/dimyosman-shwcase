@@ -33,7 +33,6 @@ const Brand = () => {
 
   const gotoDetail = (item) => {
     //go to detail page functionality
-    console.log(item, "item");
     if (location?.pathname === "/brand") {
       navigate(`/brand/${item?.id}`)
     }
@@ -51,7 +50,6 @@ const Brand = () => {
       [
         //remove functionality
       ];
-    console.log(item, "item", type);
   };
 
   const handleAdd = () => {
@@ -64,6 +62,7 @@ const Brand = () => {
   const [myBrandData, setMyBrandData] = useState([]);
   const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({ page, pageSize: 7 }, {
     refetchOnMountOrArgChange: true,
+    refetchOnFocus: true
   });
 
 
@@ -95,12 +94,12 @@ const Brand = () => {
     if (isError && !hasShownErrorToast) {
       toast.error(error?.data?.message, { toastId: "error-toast" });
       setHasShownErrorToast(true);
+      setMyBrandData([]);
     }
 
     if (isSuccess) {
-      setMyBrandData(transformBrandData(data?.data?.brands || []));
+      setMyBrandData(transformBrandData(data?.data?.groupedBrands?.publishedBrands || []));
       setHasShownErrorToast(false);
-      console.log(data)
     }
   }, [isError, isSuccess, error, hasShownErrorToast, page, data]);
 
@@ -108,7 +107,7 @@ const Brand = () => {
     setPage(newPage);
   };
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />

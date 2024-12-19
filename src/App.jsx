@@ -23,18 +23,36 @@ import {
 } from "./pages";
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css';
+import { jwtDecode } from "jwt-decode";
 
 function App() {
   const { pathname } = useLocation();
   const token = window.localStorage.getItem("token");
   const navigate = useNavigate();
 
+  function isTokenExpired(token) {
+    if (!token) return true;
+    try {
+      const decodedToken = jwtDecode(token);
+      const now = Date.now() / 1000;
+      return decodedToken.exp < now;
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return true; // If decoding fails, treat as expired
+    }
+  }
+
   useEffect(() => {
-    if (token && pathname === "/auth") {
+    const tokenExpired = isTokenExpired(token);
+
+    if (token && !tokenExpired && pathname === "/auth") {
       navigate("/activity");
     }
-    if (!token && pathname !== "/auth") {
-      navigate("/auth?type=login");
+    if (!token || tokenExpired) {
+      window.localStorage.removeItem("token");
+      if (pathname !== "/auth") {
+        navigate("/auth?type=login");
+      }
     }
   }, [token, pathname, navigate]);
 
@@ -61,8 +79,8 @@ function App() {
           <Route path="/new-brand" element={<NewBrand />} />
           <Route path="/brand/:brandId/edit" element={<EditBrand />} />
           <Route path="/new-event" element={<NewEvent />} />
-          <Route path='/event/:event-id/edit' element={<EditEvent />} />
           <Route path="/new-space" element={<NewSpace />} />
+          <Route path="/event/:eventId/edit" element={<EditEvent />} />
         </Route>
       </Routes>
       <ToastContainer

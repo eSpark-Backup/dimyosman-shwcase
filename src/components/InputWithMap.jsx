@@ -11,51 +11,67 @@ import { useClickOutside } from '../utils';
 import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
+import { DateRangePicker } from 'rsuite';
+import 'rsuite/dist/rsuite.min.css';
 import Dropdown from './Dropdown';
 
-const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapDescription, activity, eventName, eventAddress, defaultDate, mapInstruction, categories, HandleCategoryChange, handleModalOpen, defaultPrice, HandlePriceModal, edit, options, onBrandSelect, selectedValue }) => {
+const InputWithMap = ({
+  edit,
+  inputLabel,
+  inputValue,
+  setInputValue,
+  handleClick,
+  mapDescription,
+  activity,
+  eventName,
+  eventAddress,
+  defaultDate,
+  onDateChange,
+  options,
+  eventData,
+  updateEventData,
+  selectedValue,
+  categories,
+  handleModalOpen,
+  defaultPrice,
+  HandlePriceModal,
+  mapInstruction,
+  HandleCategoryChange
+
+}) => {
   const theme = useTheme();
   const datePickerRef = useRef(null);
   const [openDatePicker, setOpenDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(defaultDate && defaultDate);
-  const [dateToShow, setDateToShow] = useState("");
+  const [selectedDate, setSelectedDate] = useState(defaultDate);
+  // Format start and end dates
+  const formatStartDate = (dateRange) =>
+    dateRange && dateRange[0] ? dayjs(dateRange[0]).format("DD.MM.YYYY") : "dd.mm.yyyy";
 
-  useClickOutside(datePickerRef, () => setOpenDatePicker(false));
+  const formatEndDate = (dateRange) =>
+    dateRange && dateRange[1] ? dayjs(dateRange[1]).format("DD.MM.YYYY") : "dd.mm.yyyy";
 
-  useEffect(() => {
-    if (typeof selectedDate === "string") {
-      if (edit) {
-        var splitedDate = selectedDate.split("-");
-        const formattedDate = `${splitedDate[2]}.${splitedDate[1]}.${splitedDate[0]}`;
-        setDateToShow(formattedDate);
-      } else {
-        setDateToShow(selectedDate);
-      }
-    } else {
-      setDateToShow(selectedDate?.format("DD.MM.YYYY"));
-    }
-  }, [selectedDate]);
+  const startDate = formatStartDate(selectedDate);
+  const endDate = formatEndDate(selectedDate);
 
   const datePickerStyle = {
     borderRadius: "5px",
-    border: "1px solid #D1DBD7 !important",
-    ".Mui-selected": {
+    border: "1px solid #D1DBD7",
+    ".rs-picker-toggle": {
+      color: "#00141C !important",
+      backgroundColor: "#e3e9e7 !important",
+      borderRadius: "5px",
+      fontSize: "14px",
+    },
+    ".rs-picker-toggle:hover": {
       color: "#00141C !important",
       backgroundColor: "#e3e9e7 !important",
     },
-    ".Mui-selected:hover": {
-      color: "#00141C !important",
-      backgroundColor: "#e3e9e7 !important",
-    },
-    ".MuiPickersLayout-toolbar": {
+    ".rs-picker-toolbar": {
       display: "none",
     },
-    ".MuiDialogActions-root>:not(style)~:not(style)": {
-      fontWeight: 700,
-    },
-    button: {
+    ".rs-btn": {
       background: "transparent",
-      color: (theme) => theme.palette.primary.main,
+      color: "#00141C",
       fontSize: "12px",
       ":hover": {
         background: "transparent",
@@ -63,10 +79,22 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
     },
   };
 
-  const handleSelectChange = (selectedOption) => {
-    onBrandSelect(selectedOption.target.value)
-  };
+  const handleSelectChange = (e) => {
+    const selectedValue = e.target.value;
+    const selectedSpaceData = options.filter((item) => item.value === e.target.value)
+    const updatedLocation = { lat: selectedSpaceData[0]?.item?.location?.lat, long: selectedSpaceData[0]?.item?.location?.long }
+    if (activity === "event") {
+      if (eventData.space !== selectedValue) {
+        updateEventData("space", selectedValue);
+        updateEventData("location", updatedLocation);
+        updateEventData("mapInstructions", selectedSpaceData[0]?.item?.location?.additional);
+      }
+    }
 
+    else {
+      updateEventData("selectedBrand", selectedValue);
+    }
+  };
   return (
     <Box
       sx={{
@@ -125,7 +153,7 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
                     <Box key={cat.name} display="flex" alignItems="center" marginRight={2} columnGap={1.5} sx={{ width: { xs: "100%", sm: "45%", lg: "30%" } }}>
                       <CheckBox checked={cat.selected} onChange={() => HandleCategoryChange(cat?.id)} />
                       <Box sx={{ display: "flex", columnGap: "8px" }}>
-                        <img src={cat.icon} alt="" />
+                        <img src={cat.icon} alt="Amenity Icon" style={{ width: "16px", height: "16px" }} />
                         <Typography sx={{ fontSize: "12px", fontWeight: "300", color: theme.palette.primary.main }}>{cat.name}</Typography>
                       </Box>
                     </Box>
@@ -157,63 +185,19 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
           {activity === "brand" ? "Headquarters at:" : activity === "event" ? "Hosted at:" : "Located at:"}
         </Typography>
 
-        {activity === "space" ? (
+        {(activity === "event" || activity === "space") && (
           <Dropdown
             options={options}
             onChange={handleSelectChange}
-            label={'Select brand:'}
             value={selectedValue}
+            placeholder={activity === "event" ? "Select Space" : "Select Your Brand"}
           />
-        ) : (
-          // Default content for "event" activity
-          <Box
-            sx={{
-              width: "100%",
-              minHeight: "60px",
-              border: "1px dashed rgba(0, 20, 28, 0.4)",
-              borderRadius: "3px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              backgroundColor: "rgba(209, 219, 215, 0.2)",
-              px: "10px",
-            }}
-          >
-            <Box sx={{ display: "flex", flexDirection: "column", rowGap: "5px" }}>
-              <Typography
-                variant="h5"
-                sx={{
-                  textAlign: "left",
-                  fontWeight: "600",
-                  color: theme.palette.primary.dark,
-                }}
-              >
-                {eventName}
-              </Typography>
-              {eventAddress && (
-                <Typography
-                  variant="h6"
-                  sx={{
-                    textAlign: "left",
-                    fontWeight: "300",
-                    color: theme.palette.primary.main,
-                  }}
-                >
-                  {eventAddress}
-                </Typography>
-              )}
-            </Box>
-            <img
-              style={{ marginTop: "7px" }}
-              src={arrowDown}
-              alt="Down Arrow"
-            />
-          </Box>
         )}
+        {mapInstruction && <Typography fontSize={14} fontWeight={300} sx={{ fontStyle: "italic" }}>{mapInstruction}</Typography>}
         {(activity === "brand" && !edit) &&
           <Typography fontSize={14} fontWeight={300} sx={{ fontStyle: "italic" }}>Click on the map to select Address.</Typography>
         }
-        <figure role="img" aria-labelledby="profile-map" onClick={handleClick} style={{ cursor: "pointer" }}>
+        <figure role="img" aria-labelledby="profile-map" onClick={(activity === 'event' && selectedValue !== "") || activity === 'space' ? handleClick : undefined} style={{ cursor: activity === 'space' || selectedValue !== "" ? 'pointer' : 'default' }}>
           <img width="100%" height="auto" src={miniMap} alt="map" />
           <figcaption
             style={activity === "brand" && !edit ?
@@ -269,13 +253,13 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
                 fontWeight={700}
                 sx={{ color: theme.palette.primary.main, textAlign: "left" }}
               >
-                {defaultDate ? dateToShow + "." : defaultPrice}
+                {activity === "event" ? startDate : defaultDate ? dateToShow + "." : defaultPrice}
               </Typography>
               <Typography
                 fontSize={12}
                 sx={{ textAlign: "left", color: theme.palette.primary.main }}
               >
-                until 15.4.2025.
+                until {endDate}
               </Typography>
             </Box>
 
@@ -284,7 +268,7 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
                 ref={datePickerRef}
                 sx={{
                   position: "absolute",
-                  top: "-380px",
+                  top: "0px",
                   right: "0px",
                   zIndex: 10,
                   mt: 1,
@@ -294,11 +278,15 @@ const InputWithMap = ({ inputLabel, inputValue, setInputValue, handleClick, mapD
                 }}
               >
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <StaticDatePicker
-                    sx={datePickerStyle}
-                    onClose={() => setOpenDatePicker(false)}
-                    onChange={(date) => setSelectedDate(date)}
-                    defaultValue={dayjs(selectedDate) || dayjs()}
+                  <DateRangePicker
+                    value={selectedDate}
+                    style={datePickerStyle}
+                    onChange={(newValue) => {
+                      setSelectedDate(newValue);
+                      onDateChange(newValue);
+                    }}
+                    appearance="default"
+                    showOneCalendar
                   />
                 </LocalizationProvider>
               </Box>

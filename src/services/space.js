@@ -5,54 +5,78 @@ export const spaceApi = api.injectEndpoints({
         newSpace: builder.mutation({
             query: (spaceData) => {
                 const formData = new FormData();
-                formData.append('spaceName', spaceData?.spaceName);
+                formData.append("brandId", spaceData?.selectedBrand)
+                formData.append("spaceName", spaceData?.spaceName)
+                formData.append("minLeaseDays", "Day")
 
-                const selectedCategories = brandData?.brandCategories
+                const selectedCategories = spaceData?.spaceCategories
                     ?.filter(item => item.selected)
                     ?.map(item => ({ name: item.name }));
 
-                formData.append('brandCategory', JSON.stringify(selectedCategories));
+                formData.append('spaceCategory', JSON.stringify(selectedCategories));
 
+                const selectedAmenities = spaceData?.amenities
+                    ?.filter(item => item.selected)
+                    ?.map(item => ({ name: item.name, iconUrl: item?.icon }));
 
+                formData.append('amenity', JSON.stringify(selectedAmenities));
 
                 const details = {
-                    description: brandData?.brandOverview,
-                    htmlContent: brandData?.brandTitle,
+                    description: spaceData?.spaceOverview,
+                    htmlContent: spaceData?.spaceTitle,
                 };
                 formData.append('details', JSON.stringify(details));
 
 
                 const location = {
-                    lat: brandData?.location?.lat,
-                    long: brandData?.location?.long,
-                    additional: brandData?.mapInstructions
+                    lat: spaceData?.location?.lat,
+                    long: spaceData?.location?.long,
+                    additional: spaceData?.mapInstructions
                 };
                 formData.append('location', JSON.stringify(location));
 
+                if (spaceData?.cover) {
+                    const coverOrder = [];
 
-                if (brandData?.cover) {
-                    brandData.cover.forEach((file) => {
+                    spaceData.cover.forEach((file) => {
                         formData.append('cover', file);
+                        coverOrder.push(file.name);
                     });
+
+                    // formData.append('coverOrder', JSON.stringify(coverOrder));
                 }
-                if (brandData?.profileImage) {
-                    formData.append('image', brandData.profileImage);
+                if (spaceData?.profileImage) {
+                    formData.append('image', spaceData.profileImage);
                 }
-                formData.append("status", brandData?.status)
+                formData.append("status", spaceData?.status)
 
 
                 return {
-                    url: '/brand',
+                    url: '/space',
                     method: 'POST',
                     body: formData,
                 };
             },
-            invalidatesTags: ['brand'],
         }),
+        getAllSpace: builder.query({
+            query: ({ id, page, pageSize } = {}) => {
+                const baseUrl = id ? `/space/${id}` : '/space';
+                const queryParams = new URLSearchParams();
 
+                if (pageSize) queryParams.append('pageSize', pageSize);
+                if (page) queryParams.append('page', page);
+
+                const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+                return {
+                    url: `${baseUrl}${id ? '' : queryString}`,
+                    method: 'GET',
+                };
+            },
+        }),
     }),
 });
 
 export const {
-    useNewSpaceMutation
+    useNewSpaceMutation,
+    useGetAllSpaceQuery,
 } = spaceApi;

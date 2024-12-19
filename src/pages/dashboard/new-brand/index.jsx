@@ -87,6 +87,11 @@ const NewBrand = () => {
             return false;
         }
 
+        if (!brandData?.mapInstructions || brandData?.mapInstructions.trim() === "") {
+            toast?.error("Map additional field is required");
+            return false;
+        }
+
         const strippedContent = brandData?.brandTitle?.replace(/<[^>]*>/g, "").trim();
         if (!strippedContent) {
             toast?.error("Brand title can not be empty.");
@@ -174,10 +179,11 @@ const NewBrand = () => {
 
     const handleAddImage = () => {
         const nextIndex = brandData.cover.length;
-        if (nextIndex >= 0 && nextIndex <= brandData.cover.length) {
+        if (nextIndex < 3) {
             setCurrentIndex(nextIndex);
         }
     };
+    
 
     const handleRemoveImage = () => {
         const updatedCover = brandData.cover.filter((_, index) => index !== currentIndex);
@@ -215,15 +221,14 @@ const NewBrand = () => {
                         [{ 'header': [2, 3, 4, 5, 6, false] }],
                         ['bold', 'italic', 'strike'],
                         [{ 'header': 3 }],
-                        ['bold', 'italic', 'strike'],
-                        [{ 'align': [] }],
                         [{ 'list': 'ordered' }],
+                        [{ 'align': [] }],
                         ['image', 'link'],
                     ],
                 },
             });
 
-            // Initialize Quill with brandTitle from brandData
+            
             quillRef.current.root.innerHTML = brandData.brandTitle || defaultTemplate;
 
             // Update brandData's brandTitle on text change
@@ -231,11 +236,11 @@ const NewBrand = () => {
                 const updatedContent = quillRef.current.root.innerHTML;
                 setBrandData((prevData) => ({
                     ...prevData,
-                    brandTitle: updatedContent, // Update the brandTitle in the state
+                    brandTitle: updatedContent,
                 }));
             });
         }
-    }, [isEditorVisible, brandData.brandTitle]); // Depend on brandData.brandTitle
+    }, [isEditorVisible, brandData.brandTitle]);
 
 
     const tabs = [
@@ -301,10 +306,10 @@ const NewBrand = () => {
                         height: "31px",
                         textTransform: "none",
                     }}
-                    loading={loadingButton === "Draft"}
+                    loading={loadingButton === "DRAFT"}
                     onClick={HandleDraftSubmit}
                     loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
-                    disabled={loadingButton && loadingButton !== "Draft"}
+                    disabled={loadingButton && loadingButton !== "DRAFT"}
                 >
                     Save as Draft
                 </LoadingButton>
