@@ -7,6 +7,7 @@ import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import { errorHandler } from "./middleware/errorHandler";
 import express, { Request, Response, NextFunction } from "express";
+import { clearUploadsFolder } from "./middleware";
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ console.log(__dirname);
 AppDataSource.initialize()
   .then(() => {
     console.log("Database connection established successfully.");
+    app.use(clearUploadsFolder);
     app.use("/api", router);
     app.use(errorHandler);
   })

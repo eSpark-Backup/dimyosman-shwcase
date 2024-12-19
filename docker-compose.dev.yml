@@ -1,0 +1,50 @@
+services:
+  shwcase_api:
+    container_name: dev_shwcase_api
+    image: "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+    environment:
+      - NODE_ENV=production
+      - PORT_BE
+      - JWT_SECRET
+      - DEV_SERVER_URL
+      - PROD_SERVER_URL
+      - MYSQL_HOST
+      - MYSQL_DATABASE
+      - MYSQL_PORT
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+      - CLOUD_NAME
+      - CLOUD_SECRET
+      - CLOUD_API_KEY
+      - EXPIRES_IN
+      - SALT
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - ${DOCKER_EXPOSED_PORT}:${DOCKER_APPLICATION_PORT}
+  
+    depends_on:
+      shwcase_db:
+        condition: service_healthy
+
+  shwcase_db:
+    container_name: shwcase_db_dev
+    image: mysql:8.0.0
+    ports:
+      - ${MYSQL_PORT}:${MYSQL_PORT}
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_TCP_PORT=${MYSQL_PORT}
+    volumes:
+      - dev_shwcase_database:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysql", "-uroot", "-p${MYSQL_ROOT_PASSWORD}", "-h", "shwcase_db_dev", "-e", "USE ${MYSQL_DATABASE};"]
+      retries: 10
+
+volumes:
+  dev_shwcase_database:
