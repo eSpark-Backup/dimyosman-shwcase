@@ -1,8 +1,8 @@
 import { Box, Button, useTheme } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PriceColumns } from '../columns/price';
 
-const PriceModal = ({handleClose}) => {
+const PriceModal = ({ handleClose, data }) => {
     const theme = useTheme();
     const [items, setItems] = useState([
         { id: 1, price: "$200", term: "Day", minimum: "7", select: false },
@@ -12,7 +12,14 @@ const PriceModal = ({handleClose}) => {
     ]);
 
     const columns = PriceColumns({ items, setItems });
-    
+    useEffect(() => {
+        const updatedItems = items.map((item) => ({
+            ...item,
+            select: item.id === data?.id
+        }));
+        setItems(updatedItems);
+    }, [data]);
+
     const handleSelectClick = () => {
         const selectedItems = items.filter((item) => item.select);
         handleClose(selectedItems);

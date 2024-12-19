@@ -25,12 +25,12 @@ export const PriceColumns = ({ items, setItems }) => {
             key: "select",
             // width: "56px",
             width: "20%",
-            headerComponent: (
-                <CheckBox
-                    checked={selectAll}
-                    onChange={handleSelectAllChange}
-                />
-            ),
+            // headerComponent: (
+            //     <CheckBox
+            //         checked={selectAll}
+            //         onChange={handleSelectAllChange}
+            //     />
+            // ),
             component: (item, index) => (
                 <CheckBox
                     checked={item || false}
