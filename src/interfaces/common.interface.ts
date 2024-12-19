@@ -32,6 +32,21 @@ export interface IQueryObject {
   page?: number;
   pageSize?: number;
 }
+export type EventDate = {
+  startDate: string;
+  endDate: string;
+};
+
+export type PricingTerm = {
+  term: "Day" | "Week" | "Month" | "Year";
+  price: string;
+  minimum: string;
+};
+
+export type Space = {
+  id: string;
+  pricing: PricingTerm[];
+};
 
 export interface IFileObject {
   fieldname: string;

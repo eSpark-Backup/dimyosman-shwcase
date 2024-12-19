@@ -2,13 +2,14 @@ import { NextFunction, Request, RequestHandler, Response } from "express";
 import { Brand, Spaces, User } from "../entity";
 import { ApiError } from "../errors";
 import { Repository } from "typeorm";
-import { handleResponse, logger } from "../utils";
+import { calculatePricing, handleResponse, logger } from "../utils";
 import { CLOUD_FOLDERS, HTTP_STATUS, PAGINATION } from "../constants";
 import { uploadService } from "../services";
 import {
   ICustomRequest,
   IFileObject,
   IFileRequest,
+  PricingTerm,
   UploadResult,
 } from "../interfaces";
 import fs from "fs";
@@ -231,11 +232,36 @@ export class SpaceController {
       ) as UploadResult[];
 
       for (const oldCoverImage of oldCoverImages) {
-        if (coverKeys.length > 0) {
-          if (!coverKeys.includes(oldCoverImage.public_id)) {
+        if (coverKeys && coverKeys.length > 0) {
+          const coverKeyNumbers = coverKeys
+            .map((key: any) => {
+              const splitKey = key.split("+");
+              return {
+                key: splitKey[0],
+                order: parseInt(splitKey[1], 10),
+              };
+            })
+            .filter((keyData: any) => !isNaN(keyData.order)); // Filter out invalid or undefined numbers
+
+          const matchingKey = coverKeyNumbers.find(
+            (keyData: any) => oldCoverImage.public_id.includes(keyData.key) // Match based on the key part of the public_id
+          );
+
+          if (!matchingKey) {
             await uploadService.deleteFile(oldCoverImage.public_id);
           } else {
-            coverUrls.push(oldCoverImage);
+            const { order } = matchingKey;
+
+            const validOrder = Math.max(
+              1,
+              Math.min(order, coverUrls.length + 1)
+            );
+
+            if (validOrder === coverUrls.length + 1) {
+              coverUrls.push(oldCoverImage);
+            } else {
+              coverUrls.splice(validOrder - 1, 0, oldCoverImage);
+            }
           }
         } else {
           if (
@@ -345,9 +371,20 @@ export class SpaceController {
         }
       });
 
+      const spacesWithPricing = spaces.map((space) => {
+        const totalPricing = calculatePricing(
+          space.pricing as PricingTerm[],
+          1
+        );
+        return {
+          ...space,
+          totalPricing,
+        };
+      });
+
       res.status(200).json(
         handleResponse("Spaces Fetched Successfully", {
-          spaces,
+          spacesWithPricing,
           pagination: {
             totalItems,
             currentPage: parseInt(page as string, 10),
