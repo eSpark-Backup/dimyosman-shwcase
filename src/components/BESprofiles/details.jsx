@@ -3,9 +3,28 @@ import { calender, comment, like, miniMap, share } from "../../assets";
 import { useState } from "react";
 import ReusableModal from "../Modal";
 import MapModal from "../MapModal";
+import { useSelector } from "react-redux";
+import { useLocation, useParams } from "react-router-dom";
 
 const Details = ({ spaceInquire, details, myProfile }) => {
   const [openMapModal, setMapModal] = useState(false);
+  const { events } = useSelector((state) => state?.event);
+  const { brands } = useSelector((state) => state?.brand);
+  const { spaces } = useSelector((state) => state?.space);
+  // const { spaces } = useSelector((state) => state?.event);
+  const location = useLocation();
+  const pathname = location.pathname;
+  const activity = `/${pathname.split("/")[1]}`;
+  
+  if (activity === "/brand") {
+    details = brands[0]?.tabs[0]?.props?.details;
+  } else if (activity === "/event") {
+    details = events[0]?.tabs[0]?.props?.details;
+  } else if (activity === "/space") {
+    details = spaces[0]?.tabs[0]?.props?.details;
+  } else {
+    details = null; // Default case if `activity` doesn't match any
+  }
 
   return (
     <Box>
