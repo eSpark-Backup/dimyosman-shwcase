@@ -131,7 +131,8 @@ export const getSmallSidebar = (currentLink) => {
     `/event/${id}/edit`,
     "/new-event",
     `/space/${id}`,
-    "/new-space"
+    "/new-space",
+    `/space/${id}/edit`,
   ];
   return smallSidebarLink.includes(currentLink);
 };
@@ -560,7 +561,19 @@ export const likedEventData = [
   },
 ];
 
-const mySpaceData = [];
+const mySpaceData = [
+  {
+    id: 1,
+    type: "space",
+    eventName: "Urban Pop-Up Studio 3B",
+    eventImg: spaceActivityImage,
+    price: "$1000",
+    term: "Monthly",
+    brand: "Urban Pop-Up Pavilion",
+    brandUrl: "-",
+    action: "Edit"
+  },
+];
 
 export const leaseSpaceData = [
   {
@@ -729,10 +742,10 @@ export const eventTableData = (gotoDetail, handleAction, myEventData, gotoBrand,
     ),
   },
 ];
-export const spaceTableData = (gotoDetail, handleAction) => [
+export const spaceTableData = (gotoDetail, handleAction, mySpaceData,gotoBrand) => [
   {
     data: mySpaceData,
-    column: mySpaceColumns(gotoDetail, (item) => handleAction(item, "edit")),
+    column: mySpaceColumns(gotoDetail, (item) => handleAction(item, "edit"), gotoBrand),
   },
   {
     data: leaseSpaceData,

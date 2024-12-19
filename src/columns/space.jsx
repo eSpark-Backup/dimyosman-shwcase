@@ -1,10 +1,10 @@
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { eventBadge, spaceBadge } from "../assets";
 
-const mySpaceColumns = (gotoDetail, handleAction) => {
+const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
   return [
     {
-      name: "Event Name",
+      name: "Space Name",
       key: "eventName",
       component: (item) => {
         return (
@@ -60,6 +60,14 @@ const mySpaceColumns = (gotoDetail, handleAction) => {
       },
     },
     {
+      name: "Price",
+      key: "price",
+    },
+    {
+      name: "Term",
+      key: "term",
+    },
+    {
       name: "Brand",
       key: "brand",
       component: (item) => {
@@ -70,29 +78,9 @@ const mySpaceColumns = (gotoDetail, handleAction) => {
               fontWeight: item?.brandUrl ? 600 : 400,
               cursor: "pointer",
             }}
+            onClick={() => gotoBrand(item)}
           >
             {item?.brand}
-          </Typography>
-        );
-      },
-    },
-
-    { name: "RSVP", key: "rsvp" },
-    { name: "Start Date", key: "startDate" },
-    { name: "Status", key: "status" },
-    {
-      name: "Hosted in",
-      key: "hostedIn",
-      component: (item) => {
-        return (
-          <Typography
-            sx={{
-              fontSize: "14px",
-              fontWeight: item?.spaceUrl ? 600 : 400,
-              cursor: "pointer",
-            }}
-          >
-            {item?.hostedIn}
           </Typography>
         );
       },
@@ -113,6 +101,7 @@ const mySpaceColumns = (gotoDetail, handleAction) => {
               "&:hover": {
                 width: "100px",
               },
+              textTransform: "none"
             }}
           >
             Edit

@@ -17,6 +17,7 @@ import NewEvent from "./dashboard/new-event";
 import EditEvent from "./dashboard/edit-event";
 import EditProfile from "./dashboard/edit-profile";
 import NewSpace from "./dashboard/new-space";
+import EditSpace from "./dashboard/edit-space";
 
 export {
   Login,
@@ -37,5 +38,6 @@ export {
   NewEvent,
   EditEvent,
   EditProfile,
-  NewSpace
+  NewSpace,
+  EditSpace
 };
