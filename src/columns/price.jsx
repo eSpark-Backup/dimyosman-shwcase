@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
-import { CheckBox } from "../components";
-import { useState } from "react";
+import { CheckBox, Input } from "../components";
+import { useEffect, useState } from "react";
 
 export const PriceColumns = ({ items, setItems }) => {
     const [selectAll, setSelectAll] = useState(false);
@@ -17,6 +17,13 @@ export const PriceColumns = ({ items, setItems }) => {
         );
         setItems(updatedItems);
         setSelectAll(updatedItems.every(item => item.select));
+    };
+
+    const handleInputChange = (index, key, value) => {
+        const updatedItems = items.map((item, idx) =>
+            idx === index ? { ...item, [key]: value } : item
+        );
+        setItems(updatedItems);
     };
 
     return [
@@ -41,26 +48,19 @@ export const PriceColumns = ({ items, setItems }) => {
         {
             name: "Price",
             key: "price",
-            // width: "180px",
             width: "30%",
-            component: (item) => (
-                <Box
-                    sx={{
-                        // width: "180px",
-                        width: "100%",
-                        py: "16px",
-                        px: "16px",
-                        backgroundColor: "rgb(209, 219, 215, 0.2)",
-                        border: "1px dashed rgb(0, 20, 28, 0.4)",
-                        borderRadius: "3px",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center"
-                    }}
-                >
-                    {item}
-                </Box>
-            )
+            component: (item, index) => {
+                return (
+                    <Input
+                        onInputChange={(e) => handleInputChange(index, "price", e.target.value)}
+                        value={item ? item : ""}  // Bind value to item.price
+                        placeholder={"Enter Price"}
+                        name={"price"}
+                        type={"number"}
+                        sx={{ height: "60px" }}
+                    />
+                );
+            }
         },
         {
             name: "Term",
@@ -73,23 +73,15 @@ export const PriceColumns = ({ items, setItems }) => {
             key: "minimum",
             // width: "100px",
             width: "25%",
-            component: (item) => (
-                <Box
-                    sx={{
-                        // width: "100px",
-                        width: "100%",
-                        py: "16px",
-                        px: "16px",
-                        backgroundColor: "rgb(209, 219, 215, 0.2)",
-                        border: "1px dashed rgb(0, 20, 28, 0.4)",
-                        borderRadius: "3px",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center"
-                    }}
-                >
-                    {item}
-                </Box>
+            component: (item, index) => (
+                <Input
+                    onInputChange={(e) => handleInputChange(index, "minimum", e.target.value)}
+                    value={item ? item : ""}  // Bind value to item.minimum
+                    placeholder={"Enter Minimum"}
+                    name={"minimum"}
+                    type={"number"}
+                    sx={{ height: "60px" }}
+                />
             )
         }
     ];

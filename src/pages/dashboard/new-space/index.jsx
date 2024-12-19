@@ -28,7 +28,7 @@ const NewSpace = () => {
         spaceTitle: defaultTemplate,
         location: { lat: 30.188760426055236, long: 70.22460937500001 },
         selectedBrand: "",
-        price: "",
+        price: [],
         amenities: [],
         mapInstructions: ""
     });
@@ -218,12 +218,13 @@ const NewSpace = () => {
     }));
 
     const HandlePriceSelect = (item) => {
-        setPriceModal(false)
+        console.log(item);  // item is now an array of selected items
+        setPriceModal(false);
         setSpaceData((prevState) => ({
             ...prevState,
-            price: item[0]
+            price: item  // Replace price array with the item array
         }));
-    }
+    };
 
     const setfeatures = (selectedAmenities) => {
         setSpaceData((prevState) => ({
@@ -339,7 +340,8 @@ const NewSpace = () => {
     };
 
     const [loadingButton, setLoadingButton] = useState(null);
-    const HandlePublishSubmit = () => handleSubmit("PUBLISH");
+    // const HandlePublishSubmit = () => handleSubmit("PUBLISH");
+    const HandlePublishSubmit = () => console.log(spaceData);
     const HandleDraftSubmit = () => handleSubmit("DRAFT");
     const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
 
@@ -456,7 +458,11 @@ const NewSpace = () => {
                 }}
             >
                 <InputWithMap inputLabel={"Space Overview:"} inputValue={spaceData?.spaceOverview} setInputValue={(value) => setSpaceData({ ...spaceData, spaceOverview: value })} mapInstruction={"Click on the map to change/adjust."} mapDescription={"Brand Address is displayed automatically"} activity={"space"} eventName={"Select your Brand"}
-                    defaultPrice={spaceData?.price === "" ? "$xxx/day" : spaceData?.price?.price + "/" + spaceData?.price?.term}
+                    // defaultPrice={spaceData?.price === "" ? "$xxx/day" : spaceData?.price?.price + "/" + spaceData?.price?.term}
+                    defaultPrice={
+                        spaceData?.price?.length > 0
+                            ? spaceData.price : "xxx/day"
+                    }
                     handleModalOpen={handleModalOpen}
                     handleClick={() => setMapModal(true)}
                     categories={spaceData?.amenities}

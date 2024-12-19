@@ -1,29 +1,67 @@
 import { Box, Button, useTheme } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { PriceColumns } from '../columns/price';
+import { toast } from 'react-toastify';
 
 const PriceModal = ({ handleClose, data }) => {
     const theme = useTheme();
     const [items, setItems] = useState([
-        { id: 1, price: "$200", term: "Day", minimum: "7", select: false },
-        { id: 2, price: "$1000", term: "Week", minimum: "2", select: false },
-        { id: 3, price: "$4000", term: "Month", minimum: "3", select: false },
-        { id: 4, price: "$400000", term: "Year", minimum: "2", select: false },
+        { id: 1, price: undefined, term: "Day", minimum: undefined, select: false },
+        { id: 2, price: undefined, term: "Week", minimum: undefined, select: false },
+        { id: 3, price: undefined, term: "Month", minimum: undefined, select: false },
+        { id: 4, price: undefined, term: "Year", minimum: undefined, select: false },
     ]);
 
     const columns = PriceColumns({ items, setItems });
+
     useEffect(() => {
-        const updatedItems = items.map((item) => ({
-            ...item,
-            select: item.id === data?.id
-        }));
-        setItems(updatedItems);
+        if (data) {
+            const updatedItems = items.map(item => {
+                const matchingData = data.find(d => d.id === item.id);
+                if (matchingData) {
+                    return {
+                        ...item,
+                        price: Number(matchingData.price),
+                        minimum: Number(matchingData.minimum),
+                        select: true
+                    };
+                }
+                return item;
+            });
+            setItems(updatedItems);
+        }
     }, [data]);
+
 
     const handleSelectClick = () => {
         const selectedItems = items.filter((item) => item.select);
+
+        const dayFilter = selectedItems.filter((item) => item.term === "Day");
+        if (dayFilter.length === 0) {
+            toast.error("Selecting price & minimum lease days for Day is required.");
+            return;
+        }
+
+        const incompleteItems = selectedItems.filter(
+            (item) =>
+                !item.price ||
+                !Number.isInteger(Number(item.price)) ||
+                Number(item.price) < 1 ||
+                !item.minimum ||
+                !Number.isInteger(Number(item.minimum)) ||
+                Number(item.minimum) < 1
+        );
+
+        console.log(incompleteItems)
+
+        if (incompleteItems.length > 0) {
+            toast.error("Please fill out price and minimum with whole numbers greater than or equal to 1 for all selected items.");
+            return;
+        }
+
         handleClose(selectedItems);
     };
+
     return (
         <>
             <Box

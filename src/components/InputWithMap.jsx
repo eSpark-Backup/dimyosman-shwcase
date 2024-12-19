@@ -43,6 +43,7 @@ const InputWithMap = ({
   const datePickerRef = useRef(null);
   const [openDatePicker, setOpenDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(defaultDate);
+  const [priceToShow, setPriceToShow] = useState(defaultDate);
   // Format start and end dates
   const formatStartDate = (dateRange) =>
     dateRange && dateRange[0] ? dayjs(dateRange[0]).format("DD.MM.YYYY") : "dd.mm.yyyy";
@@ -52,6 +53,17 @@ const InputWithMap = ({
 
   const startDate = formatStartDate(selectedDate);
   const endDate = formatEndDate(selectedDate);
+
+  useEffect(() => {
+    if (activity === "space" && Array.isArray(defaultPrice)) {
+      console.log(defaultPrice);
+      const dayItem = defaultPrice.filter((item) => item.term == "Day");
+      setPriceToShow(dayItem[0]?.price + "/" + dayItem[0]?.term)
+    }
+    else {
+      setPriceToShow(defaultPrice)
+    }
+  }, [defaultPrice])
 
   const datePickerStyle = {
     borderRadius: "5px",
@@ -253,7 +265,8 @@ const InputWithMap = ({
                 fontWeight={700}
                 sx={{ color: theme.palette.primary.main, textAlign: "left" }}
               >
-                {activity === "event" ? startDate : defaultDate ? dateToShow + "." : defaultPrice}
+                
+                {activity === "event" ? startDate : defaultDate ? dateToShow + "." : "$"+priceToShow}
               </Typography>
               <Typography
                 fontSize={12}
