@@ -11,14 +11,17 @@
     "strict": true,
     "skipLibCheck": true,
      "outDir": "./build",
+    "baseUrl": "./src",
     "allowJs": true,
     "sourceMap": true,
     
     "noImplicitAny": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
+      "paths": {
+      "@/*": ["./*"]
+    }
   },
-   "include": ["src/**/*.ts"],
-   "exclude": ["node_modules", "build"]
-
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }
