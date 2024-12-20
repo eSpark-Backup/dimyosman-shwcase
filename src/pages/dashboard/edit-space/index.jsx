@@ -191,7 +191,7 @@ const EditSpace = () => {
     const handleModalOpen = () => {
         setModalOpen(true);
         // setSelectedInModal(feature.map(feat => ({ ...feat })));
-        setSelectedInModal(spaceData?.amenities.map(feat => ({ ...feat })));
+        // setSelectedInModal(spaceData?.amenities.map(feat => ({ ...feat })));
     };
 
     const handleModalClose = () => {
@@ -363,7 +363,6 @@ const EditSpace = () => {
     };
 
     const handleSubmit = async (status) => {
-        console.log(spaceData)
         if (!validateSpaceData()) {
             return;
         }
@@ -585,7 +584,7 @@ const EditSpace = () => {
                     setInstructionValue={(e) => setSpaceData((prev) => ({
                         ...prev,
                         mapInstructions: e.target.value
-                    }))} />
+                    }))} setBrandData={setSpaceData} />
             </ReusableModal>
             <ReusableModal open={priceModal} handleClose={() => setPriceModal(false)} heading={"Pricing and terms"}>
                 <PriceModal handleClose={HandlePriceSelect} data={spaceData?.price} />

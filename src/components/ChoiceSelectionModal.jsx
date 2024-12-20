@@ -27,7 +27,6 @@ const ChoiceSelectionModal = ({
 
     const handleSelectClick = () => {
         const selectedCategories = selectedItems.filter(cat => cat.selected);
-        console.log(selectedCategories, "MODAL")
         if (selectedCategories.length < minSelections) {
             alert(`Please select at least ${minSelections} category`);
             return;

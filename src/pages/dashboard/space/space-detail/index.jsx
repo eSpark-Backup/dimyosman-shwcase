@@ -13,8 +13,6 @@ const SpaceDetails = () => {
   const { id: spaceId } = useParams()
   const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllSpaceQuery({ page: 1, pageSize: 7, id: spaceId }, { refetchOnMountOrArgChange: true });
 
-  console.log(data)
-
   const dispatch = useDispatch()
 
   useEffect(() => {
