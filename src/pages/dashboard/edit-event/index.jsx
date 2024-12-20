@@ -46,7 +46,7 @@ const EditEvent = () => {
         eventCategories: [],
         eventOverview: "",
         eventTitle: null,
-        location: {},
+        location: { lat: 0, long: 0 },
         mapInstructions: "",
         eventDate: "",
         selectedDate: [],
@@ -57,6 +57,8 @@ const EditEvent = () => {
     const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useGetAllSpaceQuery({}, {
         refetchOnMountOrArgChange: true,
     });
+
+    console.log(data)
 
     useEffect(() => {
         if (GetCategorySuccess && isSuccess) {
@@ -89,7 +91,8 @@ const EditEvent = () => {
                     new Date(data?.data?.eventDate[0]?.endDate)
                 ],
                 eventTitle: data?.data?.details?.htmlContent,
-                space: data?.data?.space?.id
+                space: data?.data?.space?.id,
+                location: { lat: data?.data?.space?.location?.lat, long: data?.data?.space?.location?.long }
             }));
         }
     }, [GetCategorySuccess, isSuccess, data]);
