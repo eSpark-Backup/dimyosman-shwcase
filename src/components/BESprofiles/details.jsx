@@ -1,7 +1,31 @@
-import { Box, Button, Divider, Stack, Typography } from "@mui/material";
+import { Box, Button, Divider, Stack, Tooltip, Typography } from "@mui/material";
 import { calender, comment, like, miniMap, share } from "../../assets";
+import { useState } from "react";
+import ReusableModal from "../Modal";
+import MapModal from "../MapModal";
+import { useSelector } from "react-redux";
+import { useLocation, useParams } from "react-router-dom";
 
 const Details = ({ spaceInquire, details, myProfile }) => {
+  const [openMapModal, setMapModal] = useState(false);
+  const { events } = useSelector((state) => state?.event);
+  const { brands } = useSelector((state) => state?.brand);
+  const { spaces } = useSelector((state) => state?.space);
+  // const { spaces } = useSelector((state) => state?.event);
+  const location = useLocation();
+  const pathname = location.pathname;
+  const activity = `/${pathname.split("/")[1]}`;
+
+  if (activity === "/brand") {
+    details = brands[0]?.tabs[0]?.props?.details;
+  } else if (activity === "/event") {
+    details = events[0]?.tabs[0]?.props?.details;
+  } else if (activity === "/space") {
+    details = spaces[0]?.tabs[0]?.props?.details;
+  } else {
+    details = null; // Default case if `activity` doesn't match any
+  }
+
   return (
     <Box>
       <Stack
@@ -11,7 +35,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         alignItems="flex-start"
         gap={2}
       >
-        <Box component="section">
+        <Box component="section" sx={{ width: "100%" }}>
           <Typography
             variant="h2"
             fontSize={24}
@@ -27,7 +51,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             <Typography
               key={overview}
               fontSize={16}
-              sx={{ textAlign: "left", marginTop: 2, fontWeight: 400, wordBreak:"break-word" }}
+              sx={{ textAlign: "left", marginTop: 2, fontWeight: 400, wordBreak: "break-word" }}
             >
               {overview}
             </Typography>
@@ -65,9 +89,9 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   sx={{
                     display: "flex",
                     flexWrap: "wrap",
-                    justifyContent: "space-between",
                     rowGap: "15px",
                     flexDirection: { xs: "column", md: "row" },
+                    justifyContent:"space-between"
                   }}
                 >
                   {details?.feature?.points?.map(
@@ -165,15 +189,16 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   : "Hosted at:"}
             </Typography>
             {myProfile?.type !== "brand" && (
-              <Typography
-                sx={{
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  textAlign: "left",
-                }}
-              >
-                {details?.space}
-              </Typography>
+              <Tooltip title={details?.space?.length > 30 ? details?.space : ""}>
+                <Typography
+                  textAlign="left"
+                  sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
+                >
+                  {details?.space?.length > 30
+                    ? `${details?.space.slice(0, 29)}...`
+                    : details?.space}
+                </Typography>
+              </Tooltip>
             )}
             {myProfile?.type !== "brand" && (
               <Typography
@@ -183,7 +208,10 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   textAlign: "left",
                 }}
               >
-                {details?.spaceCategory}
+                {details?.spaceCategory && details?.spaceCategory?.length > 0 && details?.spaceCategory
+                  ?.map((item) => item)
+                  .filter(Boolean)
+                  .join(', ')}
               </Typography>
             )}
           </header>
@@ -194,7 +222,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               height: "auto",
             }}
           >
-            <figure style={{ width: "100%", height: "100%" }} role="img" aria-labelledby="profile-map">
+            <figure style={{ width: "100%", height: "100%", cursor: "pointer" }} role="img" aria-labelledby="profile-map" onClick={() => setMapModal(true)}>
               <img width="100%" height="100%" src={miniMap} alt="map" />
               <figcaption
                 style={{
@@ -345,7 +373,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               dangerouslySetInnerHTML={{ __html: point }}
             />
           ))}
-          <ul style={{ marginLeft: "16px" }}>
+          {/* <ul style={{ marginLeft: "16px" }}>
             {details?.expectedPoint?.ulPoints?.map((point) => {
               const newPoints = point.split(":");
               return (
@@ -375,7 +403,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                 </li>
               );
             })}
-          </ul>
+          </ul> */}
         </Box>
       )}
       {details?.otherPoints && (
@@ -501,6 +529,9 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           </Button>
         )}
       </Stack>
+      <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
+        <MapModal disabled={true} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[details?.mapLocation?.lat, details?.mapLocation?.long]} instructionValue={details?.mapLocation?.additional} />
+      </ReusableModal>
     </Box>
   );
 };

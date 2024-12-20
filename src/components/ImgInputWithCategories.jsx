@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
-import { add, subtract, uploadIcon } from '../assets';
+import { add, uploadIcon } from '../assets';
 import Input from './input';
 import Dropdown from './Dropdown';
 import CheckBox from './CheckBox';
@@ -19,7 +19,10 @@ const ImgInputWithCategories = ({
     activity,
     HandleCategoryChange,
     showDropDown,
-    imgUrl
+    imgUrl,
+    options,
+    onBrandSelect,
+    selectedValue
 }) => {
     const theme = useTheme();
     const [previewImage, setPreviewImage] = useState(imgUrl ? imgUrl : null);
@@ -29,7 +32,7 @@ const ImgInputWithCategories = ({
     }, [imgUrl]);
 
     const handleImageChange = (event) => {
-        handleChange(event); // Call the parent handler
+        handleChange(event);
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
@@ -40,9 +43,8 @@ const ImgInputWithCategories = ({
         }
     };
 
-    const [selectedValue, setSelectedValue] = useState("");
-    const handleSelectChange = (event) => {
-        setSelectedValue(event.target.value);
+    const handleSelectChange = (selectedOption) => {
+        onBrandSelect(selectedOption.target.value)
     };
 
     return (
@@ -86,7 +88,7 @@ const ImgInputWithCategories = ({
                                 width: '100%',
                                 height: '100%',
                                 objectFit: 'cover',
-                                opacity: 0.5, // Set opacity for the image
+                                opacity: 0.5,
                                 borderRadius: '5px',
                             }}
                         />
@@ -97,7 +99,7 @@ const ImgInputWithCategories = ({
                             flexDirection: 'column',
                             rowGap: '0px',
                             cursor: 'pointer',
-                            zIndex: 1, // Ensure the text and icon are above the image
+                            zIndex: 1,
                         }}
                         onClick={handleImgClick}
                     >
@@ -144,9 +146,11 @@ const ImgInputWithCategories = ({
                             }}
                         >
                             <Dropdown
-                                options={[{ label: 'Brand name', value: 'Brandname' }]}
+                                options={options}
                                 onChange={handleSelectChange}
+                                value={selectedValue}
                                 label={'select brand:'}
+                                placeholder={"Brand name"}
                             />
                         </Box>
                     )}
@@ -182,35 +186,19 @@ const ImgInputWithCategories = ({
                         >
                             <Box
                                 sx={{
-                                    width: '95%',
-                                    display: 'flex',
-                                    flexWrap: 'wrap',
-                                    px: '20px',
-                                    py: '5px',
+                                    width: "95%",
+                                    display: "flex",
+                                    flexWrap: "wrap",
+                                    px: "20px",
+                                    py: "5px",
+                                    rowGap: "15px"
                                 }}
                             >
                                 {categories?.length > 0 ? (
-                                    categories.map((cat, index) => (
-                                        <Box
-                                            key={index}
-                                            display="flex"
-                                            alignItems="center"
-                                            marginRight={2}
-                                            columnGap={1}
-                                        >
-                                            <CheckBox
-                                                checked={cat?.selected}
-                                                onChange={() => HandleCategoryChange(cat?.id)}
-                                            />
-                                            <Typography
-                                                sx={{
-                                                    fontSize: '20px',
-                                                    fontWeight: '300',
-                                                    color: theme.palette.primary.main,
-                                                }}
-                                            >
-                                                {cat?.name}
-                                            </Typography>
+                                    categories?.map((cat, index) => (
+                                        <Box key={cat.name} display="flex" alignItems="center" marginRight={2} columnGap={1} sx={{ width: { xs: "100%", sm: "45%", lg: "23%" } }}>
+                                            <CheckBox checked={cat?.selected} readOnly={activity === "brand" ? true : false} onChange={() => HandleCategoryChange(cat?.id)} />
+                                            <Typography sx={{ fontSize: "20px", fontWeight: "300", color: theme.palette.primary.main }}>{cat?.name}</Typography>
                                         </Box>
                                     ))
                                 ) : (

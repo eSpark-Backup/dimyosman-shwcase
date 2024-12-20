@@ -147,7 +147,7 @@ const NewBrand = () => {
     const [address, setAddress] = useState("")
 
     const handleMainFileInputClick = () => {
-        if (brandData.cover.length < 3) mainImageRef.current.click();
+        mainImageRef.current.click();
     };
 
     const handleMainImageChange = (event) => {
@@ -228,7 +228,7 @@ const NewBrand = () => {
                 },
             });
 
-            // Initialize Quill with brandTitle from brandData
+            
             quillRef.current.root.innerHTML = brandData.brandTitle || defaultTemplate;
 
             // Update brandData's brandTitle on text change
@@ -236,11 +236,11 @@ const NewBrand = () => {
                 const updatedContent = quillRef.current.root.innerHTML;
                 setBrandData((prevData) => ({
                     ...prevData,
-                    brandTitle: updatedContent, // Update the brandTitle in the state
+                    brandTitle: updatedContent,
                 }));
             });
         }
-    }, [isEditorVisible, brandData.brandTitle]); // Depend on brandData.brandTitle
+    }, [isEditorVisible, brandData.brandTitle]);
 
 
     const tabs = [
@@ -306,10 +306,10 @@ const NewBrand = () => {
                         height: "31px",
                         textTransform: "none",
                     }}
-                    loading={loadingButton === "Draft"}
+                    loading={loadingButton === "DRAFT"}
                     onClick={HandleDraftSubmit}
                     loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
-                    disabled={loadingButton && loadingButton !== "Draft"}
+                    disabled={loadingButton && loadingButton !== "DRAFT"}
                 >
                     Save as Draft
                 </LoadingButton>

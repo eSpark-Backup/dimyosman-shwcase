@@ -87,7 +87,19 @@ const FullWidthImgInput = ({
             {/* Top-left icon */}
             <Box
                 sx={{
-                    background: activity === "brand" ? "rgb(196, 119, 127, 0.2)" : "",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: editImage ? "#d3d3d3c4" : "transparent",
+                    borderRadius: "5px 5px 0 0",
+                    zIndex: 1
+                }}
+            />
+            <Box
+                sx={{
+                    background: activity === "brand" ? "rgb(196, 119, 127, 0.2)" : activity === "event" ? "rgb(148, 185, 134, 0.3)" : "rgba(120, 150, 195, 0.3)",
                     width: "48px",
                     height: "48px",
                     position: "absolute",

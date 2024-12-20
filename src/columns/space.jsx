@@ -1,10 +1,10 @@
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, Tooltip, Typography } from "@mui/material";
 import { eventBadge, spaceBadge } from "../assets";
 
-const mySpaceColumns = (gotoDetail, handleAction) => {
+const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
   return [
     {
-      name: "Event Name",
+      name: "Space Name",
       key: "eventName",
       component: (item) => {
         return (
@@ -29,7 +29,7 @@ const mySpaceColumns = (gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="event-image">
                   <img
-                    style={{ width: "100%" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     src={item?.eventImg}
                     alt="event-img"
                   />
@@ -50,14 +50,27 @@ const mySpaceColumns = (gotoDetail, handleAction) => {
                 />
               </figure>
             </Box>
-            <Typography
-              sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
-            >
-              {item?.eventName}
-            </Typography>
+            <Tooltip title={item?.eventName?.length > 30 ? item?.eventName : ""}>
+              <Typography
+                textAlign="left"
+                sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
+              >
+                {item?.eventName?.length > 30
+                  ? `${item?.eventName.slice(0, 29)}...`
+                  : item?.eventName}
+              </Typography>
+            </Tooltip>
           </Stack>
         );
       },
+    },
+    {
+      name: "Price",
+      key: "price",
+    },
+    {
+      name: "Term",
+      key: "term",
     },
     {
       name: "Brand",
@@ -70,29 +83,9 @@ const mySpaceColumns = (gotoDetail, handleAction) => {
               fontWeight: item?.brandUrl ? 600 : 400,
               cursor: "pointer",
             }}
+            onClick={() => gotoBrand(item)}
           >
             {item?.brand}
-          </Typography>
-        );
-      },
-    },
-
-    { name: "RSVP", key: "rsvp" },
-    { name: "Start Date", key: "startDate" },
-    { name: "Status", key: "status" },
-    {
-      name: "Hosted in",
-      key: "hostedIn",
-      component: (item) => {
-        return (
-          <Typography
-            sx={{
-              fontSize: "14px",
-              fontWeight: item?.spaceUrl ? 600 : 400,
-              cursor: "pointer",
-            }}
-          >
-            {item?.hostedIn}
           </Typography>
         );
       },
@@ -109,10 +102,8 @@ const mySpaceColumns = (gotoDetail, handleAction) => {
               maxHeight: "26px",
               fontSize: "14px",
               fontWeight: "600",
-              transition: "width 0.3s ease-in-out",
-              "&:hover": {
-                width: "100px",
-              },
+              
+              textTransform: "none"
             }}
           >
             Edit

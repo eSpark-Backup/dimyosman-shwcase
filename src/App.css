@@ -13,7 +13,7 @@
 }
 
 body {
-  background-color: #F2F3F4;
+  background-color: #F2F3F4 !important;
 }
 
 *::-webkit-scrollbar {
@@ -34,6 +34,16 @@ input[data-autocompleted] {
   background-color: transparent !important;
 }
 
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
 /* Auth Page */
 .auth-main {
   display: flex;
@@ -425,6 +435,45 @@ input[data-autocompleted] {
 }
 
 /* Calendar */
+
+/* input Calendar  */
+.rs-calendar-table-cell-selected .rs-calendar-table-cell-content{
+  background-color: #00141C !important;
+}
+
+.rs-calendar-table-cell-in-range:before{
+  background-color: #e6e6e6 !important;
+}
+
+.rs-picker-popup .rs-calendar .rs-calendar-table-cell:hover .rs-calendar-table-cell-content{
+  background-color: #00141C !important;
+  color: white !important;
+}
+
+.rs-calendar-table-cell-is-today .rs-calendar-table-cell-content {
+  box-shadow: inset 0 0 0 1px #00141C !important;
+}
+
+.rs-btn-primary{
+  background-color: #00141C !important;
+}
+
+.rs-picker-daterange-header.rs-picker-tab-active-end:after, .rs-picker-daterange-header.rs-picker-tab-active-start:after {
+  border-bottom: 2px solid #353739 !important;
+}
+
+.rs-btn-close:focus, .rs-btn-close:hover{
+  color: #00141C !important;
+}
+
+.rs-btn-primary.rs-btn-disabled, .rs-btn-primary:disabled{
+  background-color: #a4a5a5 !important;
+}
+
+.rs-btn-link{
+  color: #00141C !important;
+}
+/* input Calendar  */
 
 
 /* Media Query Starts */

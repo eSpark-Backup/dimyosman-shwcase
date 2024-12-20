@@ -11,6 +11,7 @@ import { useGetCategoriesQuery } from '../../../services/categories'
 import { useEditBrandMutation, useGetAllBrandsQuery } from '../../../services/brands'
 import { toast } from 'react-toastify'
 import { LoadingButton } from '@mui/lab'
+import { profileContent } from '../../../constant'
 
 const EditBrand = () => {
   const navigate = useNavigate();
@@ -511,7 +512,7 @@ const EditBrand = () => {
                 rowGap={4}
                 columnGap={0}
               >
-                {myEvents.map((event, ind) => {
+                {profileContent[0].eventSection.map((event, ind) => {
                   return (
                     <Box
                       key={`event-${ind + 1}`}

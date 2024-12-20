@@ -1,27 +1,113 @@
-import { Box, Button, Typography, useTheme } from '@mui/material'
+import { Box, Button, CircularProgress, LinearProgress, Typography, useTheme } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
-import { FullWidthImgInput, ImgInputWithCategories, InputWithMap, OutlinedTabs } from '../../../components'
+import { FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs } from '../../../components'
 import { eventMain, flag } from '../../../assets'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
 import Reviews from '../../../components/BESprofiles/reviews'
 import { reviews as eventReviews } from '../../../constant'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import dayjs from 'dayjs'
+import { useEditEventMutation, useGetAllEventsQuery } from '../../../services/events'
+import { useGetCategoriesQuery } from '../../../services/categories'
+import { useGetAllSpaceQuery } from '../../../services/space'
+import { toast } from 'react-toastify'
+import ReusableModal from '../../../components/Modal'
+import { LoadingButton } from '@mui/lab'
 
 const EditEvent = () => {
     const navigate = useNavigate();
     const theme = useTheme()
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const params = useParams();
+
+    const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading } = useGetCategoriesQuery('EVENTS')
+
+    const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllEventsQuery({
+        page: 1, pageSize: 7, id: params?.eventId
+    }, { refetchOnMountOrArgChange: true });
+
+    useEffect(() => {
+        if (isError) {
+            toast.error(error)
+        }
+    }, [isError])
+
+    useEffect(() => {
+        if (IsGetCategoryError) {
+            toast.error(GetCategoryError?.message)
+        }
+    }, [IsGetCategoryError])
+
+    const [eventData, setEventData] = useState({
+        cover: [],
+        profileImage: null,
+        eventName: "",
+        eventCategories: [],
+        eventOverview: "",
+        eventTitle: null,
+        location: { lat: 0, long: 0 },
+        mapInstructions: "",
+        eventDate: "",
+        selectedDate: [],
+        brand: "",
+        space: ""
+    });
+
+    const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useGetAllSpaceQuery({}, {
+        refetchOnMountOrArgChange: true,
+    });
+
+    console.log(data)
+
+    useEffect(() => {
+        if (GetCategorySuccess && isSuccess) {
+            const allCategories = GetCategoryData?.data?.map((cat, index) => ({
+                id: index,
+                name: cat?.name,
+                selected: false,
+            }));
+
+            const selectedCategories = data?.data?.eventCategory?.map((cat) => cat?.name);
+
+            const mergedCategories = allCategories.map((category) => ({
+                ...category,
+                selected: selectedCategories?.includes(category.name),
+            }));
+
+            setEventData((prevState) => ({
+                ...prevState,
+                eventCategories: mergedCategories,
+            }));
+            setEventData((prevState) => ({
+                ...prevState,
+                eventCategories: mergedCategories,
+                eventName: data?.data?.eventName,
+                profileImage: data?.data?.eventImage,
+                eventOverview: data?.data?.details?.description,
+                cover: data?.data?.coverImages,
+                selectedDate: [
+                    new Date(data?.data?.eventDate[0]?.startDate),
+                    new Date(data?.data?.eventDate[0]?.endDate)
+                ],
+                eventTitle: data?.data?.details?.htmlContent,
+                space: data?.data?.space?.id,
+                location: { lat: data?.data?.space?.location?.lat, long: data?.data?.space?.location?.long }
+            }));
+        }
+    }, [GetCategorySuccess, isSuccess, data]);
     // States and Ref
     const mainImageRef = useRef(null)
     const profileImageRef = useRef(null)
-    const [eventName, setEventName] = useState("Ecolux Chic Pop-Up")
-    const [categories, setCategories] = useState([
-        { name: 'Sustainable Fashion', selected: true, id: 1 },
-        { name: 'Real Estate', selected: false, id: 2 },
-        { name: 'Technology', selected: false, id: 3 },
-        { name: 'Health & Wellness', selected: false, id: 4 },
-        { name: 'Education', selected: false, id: 5 },
-    ]);
+
+    const [openMapModal, setMapModal] = useState(false);
+
+    const spaceOptions = spaceData?.data?.spaces?.map((brand) => ({
+        label: brand.spaceName,
+        value: brand.id,
+        item: brand,
+    }));
+
     const [activeTab, setActiveTab] = useState("Details");
 
     const tabs = [
@@ -31,59 +117,91 @@ const EditEvent = () => {
 
     const [reviews, setReviews] = useState(eventReviews);
 
-    const [eventOverview, setEventOverview] = useState("A limited-time clothing pop-up store featuring EcoLux Designs' latest collection of eco-friendly luxury fashion.\n\nShoppers can explore exclusive, high-end pieces crafted from organic and recycled materials, combining sustainability with modern style.\n\nThe event will also include workshops on sustainable fashion and personal styling sessions.\n\nVisitors will immerse themselves in a unique shopping experience, discovering the intersection of luxury and eco-conscious fashion. This pop-up is perfect for those looking to elevate their wardrobe while supporting sustainable and ethical design practices.")
-
     const [isEditorVisible, setIsEditorVisible] = useState(false);
     const editorRef = useRef(null);
     const quillRef = useRef(null);
-    const defaultTemplate = `<h2>What to Expect</h2><p><strong>Exclusive Collection:</strong>  Shoppers will have the first opportunity to explore and purchase limited-edition, high-end clothing and accessories. Each piece is thoughtfully crafted from organic cotton, recycled fabrics, and other eco-conscious materials. The collection combines timeless elegance with modern trends, offering a perfect blend of luxury and environmental responsibility.</p><br/><p><strong>Workshops & Events:</strong> In addition to shopping, attendees can participate in a series of workshops focused on sustainable fashion. Learn from industry experts about eco-friendly design practices, circular fashion, and how to build a more sustainable wardrobe. Personal styling sessions will also be available, allowing guests to get tailored advice on how to incorporate sustainable pieces into their everyday looks.</p><br/><p><strong>Interactive Displays:</strong> The pop-up will feature interactive displays showcasing the journey of each garment—from the sourcing of raw materials to the sustainable manufacturing processes. Attendees can gain insight into the environmental impact of their fashion choices and discover ways to make more conscious decisions.</p><br/><p><strong>Eco-Friendly Environment:</strong>  The venue itself will reflect the brand’s commitment to sustainability, with eco-friendly decor, recycled packaging for purchases, and zero-waste event practices.</p><br/><h3>Why Attend</h3>This is more than just a shopping event-it's a celebration of sustainable fashion and an opportunity to connect with like-minded individuals who value ethical practices and luxury design. Whether you're a fashion enthusiast, an eco-conscious shopper, or just who curious about sustainable fashion, this pop-up store offers something for everyone.`;
-    const [eventTitle, setEventTitle] = useState(defaultTemplate);
 
     // Functions
     const HandleMainFileInputClick = () => {
         mainImageRef.current.click();
     }
-    const HandleMainImageChange = async (event) => {
+    const HandleMainImageChange = (event) => {
         const file = event.target.files[0];
-        console.log(file);
+        if (file) {
+            const updatedCover = [...eventData.cover];
+            updatedCover[currentIndex] = file;
+            setEventData((prev) => ({ ...prev, cover: updatedCover }));
+        }
+    };
+
+    const handleAddImage = () => {
+        const nextIndex = currentIndex + 1;
+        if (nextIndex < eventData.cover.length + 1 && nextIndex <= 2) {
+            setCurrentIndex(nextIndex);
+        }
+    };
+
+    const HandleSlideChange = (index) => {
+        if (index >= 0 && index <= eventData.cover.length) {
+            setCurrentIndex(index);
+        }
+    };
+
+
+    const handleRemoveImage = () => {
+        const updatedCover = eventData.cover.filter((_, index) => index !== currentIndex);
+        setEventData((prev) => ({ ...prev, cover: updatedCover }));
+        setCurrentIndex((prev) => Math.max(0, prev - 1));
     };
 
     const HandleProfileFileInputClick = () => {
-        mainImageRef.current.click();
+        profileImageRef.current.click();
     }
     const HandleProfileImageChange = async (event) => {
         const file = event.target.files[0];
-        console.log(file);
+        if (file) {
+            setEventData((prev) => ({
+                ...prev,
+                profileImage: file,
+            }));
+        }
     };
 
     const CategoryChangeHandler = (index) => {
-        console.log(index)
-        const categoriesSelected = categories?.filter((item) => item?.selected).length;
+        const categoriesSelected = eventData?.eventCategories?.filter((item) => item?.selected).length;
 
-        if (categoriesSelected === 1 && categories.find((cat) => cat.id === index).selected) {
+        if (categoriesSelected === 1 && eventData?.eventCategories.find((cat) => cat.id === index).selected) {
             alert("Atleast one category should be selected");
             return;
         }
 
-        else if (!categories.find((cat) => cat.id === index).selected && categoriesSelected >= 2) {
+        else if (!eventData?.eventCategories.find((cat) => cat.id === index).selected && categoriesSelected >= 2) {
             alert("You can select 2 categories at max.")
             return;
         }
 
-        const updatedCategories = categories.map((item, i) =>
+        const updatedCategories = eventData?.eventCategories.map((item, i) =>
             item?.id === index ? { ...item, selected: !item?.selected } : item
         )
-        setCategories(updatedCategories);
+        setEventData((prevState) => ({
+            ...prevState,
+            eventCategories: updatedCategories
+        }));
     }
 
     useEffect(() => {
-
         if (quillRef.current) {
             quillRef.current = null;
         }
-        setEventTitle(defaultTemplate);
+        setEventData((prevState) => ({
+            ...prevState,
+            eventTitle: prevState?.eventTitle,
+        }));
+
         setIsEditorVisible(false);
     }, [activeTab]);
+
+
 
     useEffect(() => {
 
@@ -100,16 +218,16 @@ const EditEvent = () => {
                     ],
                 },
             });
-
-
-            quillRef.current.root.innerHTML = eventTitle;
-
+            quillRef.current.root.innerHTML = eventData?.eventTitle;
             quillRef.current.on('text-change', () => {
                 const updatedContent = quillRef.current.root.innerHTML;
-                setEventTitle(updatedContent);
+                setEventData((prevData) => ({
+                    ...prevData,
+                    eventTitle: updatedContent,
+                }));
             });
         }
-    }, [isEditorVisible, eventTitle]);
+    }, [isEditorVisible, eventData?.eventTitle]);
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
@@ -125,6 +243,140 @@ const EditEvent = () => {
             )
         );
     };
+
+    const handleDateChange = (selectedDate) => {
+        if (selectedDate?.length > 0) {
+            const formattedStartDate = selectedDate[0]
+                ? dayjs(selectedDate[0]).format("DD.MM.YYYY")
+                : "dd.mm.yyyy";
+            const formattedEndDate = selectedDate[1]
+                ? dayjs(selectedDate[1]).format("DD.MM.YYYY")
+                : "dd.mm.yyyy";
+
+            setEventData((prev) => ({
+                ...prev,
+                selectedDate,
+                eventDate: `${formattedStartDate} - ${formattedEndDate}`,
+            }));
+        }
+    };
+
+    const [event, { isSuccess: eventPostSuccess, isError: IsEventPostError, error: eventPostError, data: eventPostData }] = useEditEventMutation()
+
+    useEffect(() => {
+        if (eventPostSuccess) {
+            toast.success(eventPostData?.message)
+            navigate("/event")
+        }
+    }, [eventPostSuccess])
+
+    useEffect(() => {
+        if (IsEventPostError) {
+            toast.error(eventPostError?.data?.message)
+        }
+    }, [IsEventPostError])
+    const validateEventData = () => {
+        if (!eventData?.cover || eventData?.cover?.length <= 0) {
+            toast?.error("Please upload cover photo of event");
+            return false;
+        }
+
+        if (!eventData?.profileImage) {
+            toast?.error("Please upload profile photo of event");
+            return false;
+        }
+
+        if (!eventData?.eventName || eventData?.eventName.trim() === "") {
+            toast?.error("Event name can not be empty.");
+            return false;
+        }
+
+        const selectedCategories = eventData?.eventCategories?.filter((item) => item?.selected);
+        if (!selectedCategories || selectedCategories.length <= 0) {
+            toast?.error("Please select at least one category.");
+            return false;
+        }
+
+        if (!eventData?.eventOverview || eventData?.eventOverview.trim() === "") {
+            toast?.error("Event overview can not be empty.");
+            return false;
+        }
+
+        if (!eventData?.eventTitle || eventData?.eventTitle.trim() === "") {
+            toast?.error("Event title can not be empty.");
+            return false;
+        }
+
+        const strippedContent = eventData?.eventTitle?.replace(/<[^>]*>/g, "").trim();
+        if (!strippedContent) {
+            toast?.error("Event title can not be empty.");
+            return false;
+        }
+
+
+        if (!eventData?.space || eventData?.space?.trim() === "") {
+            toast?.error("Please select space");
+            return false;
+        }
+
+        if (!eventData?.selectedDate || eventData?.selectedDate?.includes(null)) {
+            toast?.error("Please select date");
+            return false;
+        }
+        return true;
+    };
+
+    const handleSubmit = async (status) => {
+        if (!validateEventData()) {
+            return;
+        }
+        setLoadingButton(status);
+        try {
+            await event({ eventData: { ...eventData, status }, id: params?.eventId });
+        } finally {
+            setLoadingButton(null);
+        }
+    };
+
+    const [loadingButton, setLoadingButton] = useState(null);
+    const HandlePublishSubmit = () => handleSubmit("PUBLISH");
+    const HandleDraftSubmit = () => handleSubmit("DRAFT");
+    const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
+
+    useEffect(() => {
+        if (spaceData && data) {
+            if (eventData.space !== data?.data?.space?.id) {
+                const selectedSpaceData = spaceOptions?.filter((item) => item.value === data?.data?.space?.id)
+                const updatedLocation = { lat: selectedSpaceData[0]?.item?.location?.lat, long: selectedSpaceData[0]?.item?.location?.long }
+                setEventData((prevState) => ({
+                    ...prevState,
+                    space: data?.data?.space?.id,
+                    location: updatedLocation,
+                    mapInstructions: selectedSpaceData[0]?.item?.location?.additional
+                }));
+            }
+        }
+    }, [isSuccess, isSpaceSuccess]);
+
+    const updateEventData = (key, value) => {
+        setEventData((prev) => {
+            if (prev[key] === value) {
+                return prev;
+            }
+            return {
+                ...prev,
+                [key]: value,
+            };
+        });
+    };
+
+    if (isLoading || GetCategoryLoading || isFetching) {
+        return (
+            <Box sx={{ width: "100%" }}>
+                <LinearProgress />
+            </Box>
+        )
+    }
 
     return (
         <Box
@@ -148,60 +400,88 @@ const EditEvent = () => {
                     width: "max-content",
                     justifyContent: "center",
                     alignItems: "center",
-                    zIndex: 2,
+                    zIndex: 99,
                     right: 0,
                     marginRight: "16px",
                 }}
                 className="buttons-box"
             >
-                <Button
-                  sx={{
-                    fontSize: "16px",
-                    width: "143px",
-                    height: "31px",
-                    textTransform: "none",
-                  }}
-                  onClick={() => navigate(`/event`)}
+                <LoadingButton
+                    sx={{
+                        fontSize: "16px",
+                        width: "143px",
+                        height: "31px",
+                        textTransform: "none",
+                    }}
+                    loading={loadingButton === "DRAFT"}
+                    onClick={HandleDraftSubmit}
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
+                    disabled={loadingButton && loadingButton !== "DRAFT"}
                 >
-                  Save as Draft
-                </Button>
-                <Button
-                  sx={{
-                  fontSize: "16px",
-                  width: "103px",
-                  height: "31px",
-                  backgroundColor: "rgb(0, 20, 28, 0.9)",
-                  textTransform: "none",
-                  }}
+                    Save as Draft
+                </LoadingButton>
+                <LoadingButton
+                    sx={{
+                        fontSize: "16px",
+                        width: "103px",
+                        height: "31px",
+                        backgroundColor: "rgb(0, 20, 28, 0.9)",
+                        textTransform: "none",
+                    }}
+                    loading={loadingButton === "PUBLISH"}
+                    onClick={HandlePublishSubmit}
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
+                    disabled={loadingButton && loadingButton !== "PUBLISH"}
                 >
-                  Publish
-                </Button>
-                <Button
-                  sx={{
-                    fontSize: "16px",
-                    width: "102px",
-                    height: "31px",
-                    textTransform: "none",
-                  }}
-                  onClick={() => navigate(`/event`)}
+                    Publish
+                </LoadingButton>
+                <LoadingButton
+                    sx={{
+                        fontSize: "16px",
+                        width: "102px",
+                        height: "31px",
+                        textTransform: "none",
+                    }}
+                    loading={loadingButton === "ARCHIVE"}
+                    onClick={HandleArchiveSubmit}
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
+                    disabled={loadingButton && loadingButton !== "ARCHIVE"}
                 >
-                  Archive
-                </Button>
+                    Archive
+                </LoadingButton>
             </Box>
-            <FullWidthImgInput activity={"event"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={flag} editImage={eventMain} />
+            <FullWidthImgInput activity={"event"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={flag}
+                editImage={
+                    eventData.cover[currentIndex]?.url
+                        ?
+                        eventData.cover[currentIndex]?.url
+                        :
+                        eventData.cover[currentIndex] ?
+                            URL.createObjectURL(eventData.cover[currentIndex])
+                            :
+                            null
+                }
+                handleAdd={handleAddImage}
+                handleRemove={handleRemoveImage}
+                currentIndex={currentIndex}
+                HandleSlideChange={HandleSlideChange}
+            />
 
             <ImgInputWithCategories
                 handleImgClick={HandleProfileFileInputClick}
                 imgRef={profileImageRef}
                 handleChange={HandleProfileImageChange}
-                inputVal={eventName}
-                onChange={(e) => setEventName(e.target.value)}
+                inputVal={eventData?.eventName}
+                onChange={(e) =>
+                    setEventData((prev) => ({ ...prev, eventName: e.target.value }))
+                }
                 inputlabel={"event name:"}
                 categoryLabel={"event category:"}
-                categories={categories}
+                categories={eventData?.eventCategories}
                 description={"1 min - 2 max. Checkbox on the categories will display them publicly."}
                 HandleCategoryChange={CategoryChangeHandler}
                 activity={"event"}
+                imgUrl={eventData?.profileImage}
             />
 
 
@@ -221,7 +501,13 @@ const EditEvent = () => {
                     activeTab?.label === "Details"
                         ?
                         <>
-                            <InputWithMap edit inputLabel={"Event Overview:"} inputValue={eventOverview} setInputValue={setEventOverview} mapDescription={"123 Williamsburg Ave, Brooklyn, NY 11211"} activity={"event"} eventName={"Urban Pop-Up Studio 3B"} eventAddress={"Urban Pop-Up Pavilion"} defaultDate={"2025-02-28"} />
+                            <InputWithMap edit inputLabel={"Event Overview:"} inputValue={eventData?.eventOverview} setInputValue={(value) => setEventData({ ...eventData, eventOverview: value })} mapDescription={"123 Williamsburg Ave, Brooklyn, NY 11211"} activity={"event"} eventName={"Urban Pop-Up Studio 3B"} eventAddress={"Urban Pop-Up Pavilion"} defaultDate={eventData.selectedDate || [new Date(), new Date()]} onDateChange={handleDateChange}
+                                options={spaceOptions}
+                                selectedValue={eventData?.space || ''}
+                                eventData={eventData}
+                                updateEventData={updateEventData}
+                                handleClick={() => setMapModal(true)}
+                            />
 
                             <Box
                                 sx={{
@@ -244,7 +530,17 @@ const EditEvent = () => {
                                         <Typography
                                             variant="body1"
                                             color={theme.palette.primary.main}
-                                            dangerouslySetInnerHTML={{ __html: eventTitle }}
+                                            sx={{
+                                                "& ul, & ol": {
+                                                    paddingLeft: 2,
+                                                },
+                                                "& img": {
+                                                    maxWidth: "100%",
+                                                    height: "auto",
+                                                    objectFit: "contain",
+                                                },
+                                            }}
+                                            dangerouslySetInnerHTML={{ __html: eventData?.eventTitle }}
                                         />
                                     </Box>
                                 }
@@ -281,6 +577,13 @@ const EditEvent = () => {
                         </Box>
                 }
             </Box>
+            <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
+                <MapModal disabled={true} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[eventData?.location?.lat, eventData?.location?.long]} setBrandData={setEventData} instructionValue={eventData?.mapInstructions}
+                    setInstructionValue={(e) => setEventData((prev) => ({
+                        ...prev,
+                        mapInstructions: e.target.value
+                    }))} />
+            </ReusableModal>
         </Box>
     )
 }
