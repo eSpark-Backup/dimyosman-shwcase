@@ -33,10 +33,10 @@ export const AppDataSource = new DataSource({
   username: process.env.MYSQL_USER,
   database: process.env.MYSQL_DATABASE,
   password: process.env.MYSQL_PASSWORD,
-  synchronize: false,
+  synchronize: true,
   logging: true,
   entities: [__dirname + "/entity/*.entity{.ts,.js}"],
-  migrations: [__dirname + "/database/migrations/*.{ts,js}"],
+  migrations: [__dirname + "/entity/*.entity{.ts,.js}"],
   migrationsTableName: "_migrations",
 
   cache: false,
