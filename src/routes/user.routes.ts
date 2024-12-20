@@ -21,7 +21,7 @@ const userController = new UserController(userRepository, eventRepository);
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Space
+ *       - User
  *     parameters:
  *       - in: path
  *         name: id
