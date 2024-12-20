@@ -20,7 +20,7 @@ export class Spaces extends BaseEntity {
   id: string;
 
   @ManyToOne(() => User, (user) => user.spaces, { cascade: true })
-  @JoinColumn()
+  @JoinColumn({ name: "user" })
   user: User;
 
   @ManyToOne(() => Brand, (brand) => brand.id, { nullable: true })

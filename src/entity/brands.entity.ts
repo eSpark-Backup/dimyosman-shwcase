@@ -20,7 +20,7 @@ export class Brand extends BaseEntity {
   id: string;
 
   @ManyToOne(() => User, (user) => user.brands, { cascade: true })
-  @JoinColumn()
+  @JoinColumn({ name: "user" })
   user: User;
 
   @Column({ type: "varchar", length: 100, nullable: false })
