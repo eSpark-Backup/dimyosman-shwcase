@@ -56,12 +56,12 @@ export const brandApi = api.injectEndpoints({
         }),
         getAllBrands: builder.query({
             query: ({ id, page, pageSize } = {}) => {
-                const baseUrl = id ? `/brand/${id}` : '/brand';
+                const baseUrl = id ? `/brand/${id}` : `/brand`;
                 const queryParams = new URLSearchParams();
-        
+
                 if (pageSize) queryParams.append('pageSize', pageSize);
                 if (page) queryParams.append('page', page);
-        
+
                 const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
                 return {
                     url: `${baseUrl}${id ? '' : queryString}`,

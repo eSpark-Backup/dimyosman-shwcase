@@ -38,6 +38,18 @@ import {
   brandMain2,
   spaceProfile,
   eventMainImage,
+  profileBanner,
+  profileBanner2,
+  profileImage2,
+  brandCardImage,
+  spaceImage,
+  profileAbout,
+  fbIcon,
+  telegramIcon,
+  twitterIcon,
+  whatsAppIcon,
+  emailIcon,
+  shareIcon,
   accountIcon,
 } from "../assets";
 import {
@@ -85,7 +97,7 @@ export const sidebarRoutes = [
     icon: profile,
     hoverIcon: profileHover,
     title: "Profile",
-    link: "/profile",
+    link: "/profile/emily",
   },
   {
     icon: calendar,
@@ -111,7 +123,8 @@ export const getSmallSidebar = (currentLink) => {
   const id = currentLink.split("/")[2];
   const smallSidebarLink = [
     "/message",
-    "/profile",
+    `/profile/${id}`,
+    `/profile/${id}/edit`,
     `/brand/${id}`,
     `/brand/${id}/edit`,
     "/new-brand",
@@ -119,6 +132,8 @@ export const getSmallSidebar = (currentLink) => {
     `/event/${id}/edit`,
     "/new-event",
     `/space/${id}`,
+    "/new-space",
+    `/space/${id}/edit`,
   ];
   return smallSidebarLink.includes(currentLink);
 };
@@ -547,7 +562,19 @@ export const likedEventData = [
   },
 ];
 
-const mySpaceData = [];
+const mySpaceData = [
+  {
+    id: 1,
+    type: "space",
+    eventName: "Urban Pop-Up Studio 3B",
+    eventImg: spaceActivityImage,
+    price: "$1000",
+    term: "Monthly",
+    brand: "Urban Pop-Up Pavilion",
+    brandUrl: "-",
+    action: "Edit"
+  },
+];
 
 export const leaseSpaceData = [
   {
@@ -716,10 +743,10 @@ export const eventTableData = (gotoDetail, handleAction, myEventData, gotoBrand,
     ),
   },
 ];
-export const spaceTableData = (gotoDetail, handleAction) => [
+export const spaceTableData = (gotoDetail, handleAction, mySpaceData,gotoBrand) => [
   {
     data: mySpaceData,
-    column: mySpaceColumns(gotoDetail, (item) => handleAction(item, "edit")),
+    column: mySpaceColumns(gotoDetail, (item) => handleAction(item, "edit"), gotoBrand),
   },
   {
     data: leaseSpaceData,
@@ -783,7 +810,407 @@ export const reviews = [
       way. Highly recommend!"`,
     approved: false,
   },
-];
+]
+
+
+export const profileStats = [
+  {
+    name: "Brands:",
+    value: 1234
+  },
+  {
+    name: "Events:",
+    value: 1234
+  },
+  {
+    name: "Spaces:",
+    value: 1234
+  },
+  {
+    name: "Member since:",
+    value: "mm.yyyy."
+  }
+]
+
+
+
+export const profileAboutSection = [
+  {
+    type: "heading",
+    content: "A Passion for Sustainable Fashion"
+  },
+  {
+    type: "paragraph",
+    content: "Hi, I'm Emily Thompson, founder and designer at EcoLux Designs. For as long as I can remember, I've been passionate about creating beautiful clothing that doesn't come at the expense of our planet. My goal has always been to merge the world of luxury fashion with sustainable practices, offering high-end pieces that not only look incredible but are also made with care for the environment."
+  },
+  {
+    type: "breaker"
+  },
+  {
+    type: "paragraph",
+    content: "At EcoLux Designs, I work with organic fabrics and recycled materials to ensure every garment is as eco-friendly as it is stylish. I believe that fashion can be both timeless and responsible, and my collections reflect that balance. From the design process to production, I’m committed to reducing waste and promoting ethical practices in every step."
+  },
+  {
+    type: "image",
+    content: brandMain
+  },
+  {
+    type: "heading",
+    content: "Leading the Movement Toward Eco-Conscious Fashion"
+  },
+  {
+    type: "paragraph",
+    content: "Sustainability isn’t just a trend for me—it’s at the core of everything I do. My hope is to inspire others to make more conscious choices in their wardrobes while still enjoying the luxury and elegance that fashion can bring. I love collaborating with like-minded individuals and brands, and I’m always exploring new ways to push the boundaries of what sustainable fashion can achieve."
+  }
+]
+
+
+export const brandCardContent = [
+  {
+    profileImage: eventUserImage,
+    brandName: "EcoLux Designs",
+    brandCategory: "Sustainable Fashion",
+    description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+    brandImage: brandMain
+  },
+  {
+    profileImage: eventUserImage,
+    brandName: "EcoLux Designs",
+    brandCategory: "Sustainable Fashion",
+    description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+    brandImage: brandMain
+  },
+  {
+    profileImage: eventUserImage,
+    brandName: "EcoLux Designs",
+    brandCategory: "Sustainable Fashion",
+    description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+    brandImage: brandMain
+  },
+
+]
+
+
+export const profileContent = [
+  {
+    name: "Emily Thompson",
+    bannerImage: profileBanner,
+    userImage: brandUserImage,
+    tabs: ["About", "Brands", "Events", "Spaces"],
+    aboutSection: [
+      {
+        type: "heading",
+        content: "A Passion for Sustainable Fashion"
+      },
+      {
+        type: "paragraph",
+        content: "Hi, I'm Emily Thompson, founder and designer at EcoLux Designs. For as long as I can remember, I've been passionate about creating beautiful clothing that doesn't come at the expense of our planet. My goal has always been to merge the world of luxury fashion with sustainable practices, offering high-end pieces that not only look incredible but are also made with care for the environment."
+      },
+      {
+        type: "breaker"
+      },
+      {
+        type: "paragraph",
+        content: "At EcoLux Designs, I work with organic fabrics and recycled materials to ensure every garment is as eco-friendly as it is stylish. I believe that fashion can be both timeless and responsible, and my collections reflect that balance. From the design process to production, I’m committed to reducing waste and promoting ethical practices in every step."
+      },
+      {
+        type: "image",
+        content: brandMain
+      },
+      {
+        type: "heading2",
+        content: "Leading the Movement Toward Eco-Conscious Fashion"
+      },
+      {
+        type: "paragraph",
+        content: "Sustainability isn’t just a trend for me—it’s at the core of everything I do. My hope is to inspire others to make more conscious choices in their wardrobes while still enjoying the luxury and elegance that fashion can bring. I love collaborating with like-minded individuals and brands, and I’m always exploring new ways to push the boundaries of what sustainable fashion can achieve."
+      }
+    ],
+    brandSection: [
+      {
+        id: 1,
+        profileImage: eventUserImage,
+        brandName: "EcoLux Designs",
+        brandCategory: "Sustainable Fashion",
+        description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+        brandImage: brandMain
+      },
+      {
+        id: 2,
+        profileImage: eventUserImage,
+        brandName: "EcoLux Designs",
+        brandCategory: "Sustainable Fashion",
+        description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+        brandImage: brandMain
+      },
+      {
+        id: 3,
+        profileImage: eventUserImage,
+        brandName: "EcoLux Designs",
+        brandCategory: "Sustainable Fashion",
+        description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+        brandImage: brandMain
+      },
+
+    ],
+    spaceSection: [
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+    ],
+    eventSection:[
+       {
+      id: 3,
+      by: 1,
+      type: "event",
+      owned: true,
+      slides: [eventMain, eventMain2, eventMain3],
+      profilePic: eventActivityImage,
+      profileName: "Ecolux Chic Pop-Up",
+      category: "Sustainable Fashion",
+      details: {
+        by: "EcoLux Designs ",
+        starting: "28.02.2025.",
+        RSVP: "234566",
+        saved: "789k",
+      },
+      rating: 5,
+      ratingBased: "Based on 12345 reviews from 12345 Events",
+      tabs: [
+        {
+          label: "Details",
+          props: {
+            details: {
+              overview: [
+                `A limited-time clothing pop-up store featuring EcoLux Designs' latest collection of eco-friendly luxury fashion.`,
+                `Shoppers can explore exclusive, high-end pieces crafted from organic and recycled materials, combining sustainability with modern style.`,
+                `The event will also include workshops on sustainable fashion and personal styling sessions.`,
+                `Visitors will immerse themselves in a unique shopping experience, discovering the intersection of luxury and eco-conscious fashion. This pop-up is perfect for those looking to elevate their wardrobe while supporting sustainable and ethical design practices.`,
+              ],
+              location: "123 Williamsburg Ave, Brooklyn, NY 11211",
+              space: "Urban Pop-Up Studio 3B",
+              spaceCategory: "Urban Pop-Up Pavilion",
+              startingDate: "28.02.2025.",
+              endingDate: "15.4.2025.",
+              expectedPoint: {
+                title: "What to Expect:",
+                ulPoints: [
+                  `Exclusive Collection: Shoppers will have the first opportunity to explore and purchase limited-edition, high-end clothing and accessories. Each piece is thoughtfully crafted from organic cotton, recycled fabrics, and other eco-conscious materials. The collection combines timeless elegance with modern trends, offering a perfect blend of luxury and environmental responsibility.`,
+                  `Workshops & Events: In addition to shopping, attendees can participate in a series of workshops focused on sustainable fashion. Learn from industry experts about eco-friendly design practices, circular fashion, and how to build a more sustainable wardrobe. Personal styling sessions will also be available, allowing guests to get tailored advice on how to incorporate sustainable pieces into their everyday looks.`,
+                  `Interactive Displays: The pop-up will feature interactive displays showcasing the journey of each garment—from the sourcing of raw materials to the sustainable manufacturing processes. Attendees can gain insight into the environmental impact of their fashion choices and discover ways to make more conscious decisions.`,
+                  `Eco-Friendly Environment: The venue itself will reflect the brand’s commitment to sustainability, with eco-friendly decor, recycled packaging for purchases, and zero-waste event practices.`,
+                ],
+              },
+              overviewImage: eventMainImage,
+              otherPoints2: {
+                title: "Why Attend:",
+                points: [
+                  `This is more than just a shopping event—it’s a celebration of sustainable fashion and an opportunity to connect with like-minded individuals who value ethical practices and luxury design. Whether you're a fashion enthusiast, an eco-conscious shopper, or just curious about sustainable fashion, this pop-up store offers something for everyone.`,
+                ],
+              },
+            },
+          },
+        },
+        {
+          label: "Stats",
+          props: null,
+        },
+        {
+          label: "Reviews",
+          props: null,
+        },
+      ],
+    },
+    ]
+  },
+  {
+    name: "Michael Harrison",
+    bannerImage: profileBanner2,
+    userImage: profileImage2,
+    tabs: ["About", "Brands", "Events", "Spaces"],
+    aboutSection: [
+      {
+        type: "heading",
+        content: "Creating Spaces for Innovation and Community"
+      },
+      {
+        type: "paragraph",
+        content: "Hi, I’m Michael Harrison, founder of Urban Pop-Up Pavilion. My passion lies in transforming spaces into platforms for creativity, innovation, and community connection. I’ve always believed that a great space can do more than just house events—it can inspire new ideas, bring people together, and offer unique experiences."
+      },
+      {
+        type: "breaker"
+      },
+      {
+        type: "paragraph",
+        content: "With Urban Pop-Up Pavilion, I wanted to create a versatile venue that could adapt to a wide range of uses, from retail pop-ups to art installations and beyond. Located in the heart of Brooklyn, our space is designed to be both functional and flexible, providing the perfect backdrop for brands, artists, and event organizers to bring their visions to life."
+      },
+      {
+        type: "image",
+        content: profileAbout
+      },
+      {
+        type: "heading",
+        content: "Leading the Movement Toward Eco-Conscious Fashion"
+      },
+      {
+        type: "paragraph",
+        content: "Sustainability isn’t just a trend for me—it’s at the core of everything I do. My hope is to inspire others to make more conscious choices in their wardrobes while still enjoying the luxury and elegance that fashion can bring. I love collaborating with like-minded individuals and brands, and I’m always exploring new ways to push the boundaries of what sustainable fashion can achieve."
+      }
+    ],
+    brandSection: [
+      {
+        id: 1,
+        profileImage: eventUserImage,
+        brandName: "Urban Pop-Up Pavilion",
+        brandCategory: "Real Estate",
+        description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+        brandImage: brandCardImage
+      },
+      {
+        id: 2,
+        profileImage: eventUserImage,
+        brandName: "Urban Pop-Up Pavilion",
+        brandCategory: "Real Estate",
+        description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+        brandImage: brandCardImage
+      },
+      {
+        id: 3,
+        profileImage: eventUserImage,
+        brandName: "Urban Pop-Up Pavilion",
+        brandCategory: "Real Estate",
+        description: "EcoLux Designs is a sustainable fashion brand that merges luxury with eco-friendly materials. It specializes in creating high-end clothing and accessories made from organic and recycled materials.",
+        brandImage: brandCardImage
+      },
+
+    ],
+    spaceSection: [
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+      {
+        spaceName: "Urban Pop-Up Studio 3B",
+        spaceAddress: "Urban Pop-Up Pavilion",
+        spaceDescription: "Urban Pop-Up Studio 3B is an 800 sq. ft. venue, designed for intimate retail pop-ups, small art installations, or product launches.",
+        spacePrice: "$200/day",
+        spaceDeadline: "miniumum lease: 7 days",
+        spacePic: spaceImage
+      },
+    ]
+  },
+]
+
+
+export const socialShareOptions = [
+  {
+    name: "Facebook",
+    icon: fbIcon,
+  },
+  {
+    name: "Telegram",
+    icon: telegramIcon,
+  },
+  {
+    name: "Twitter",
+    icon: twitterIcon,
+  },
+  {
+    name: "Whatsapp",
+    icon: whatsAppIcon,
+  },
+  {
+    name: "E-mail",
+    icon: emailIcon,
+  },
+  {
+    name: "More",
+    icon: shareIcon,
+  },
+]
+
+
 
 export const allMessages = [
   {

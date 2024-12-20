@@ -1,7 +1,12 @@
 import { Box, Divider, Typography, useTheme } from '@mui/material';
-import { useEffect, useRef, useState } from 'react';
-import { arrowDown, miniMap } from '../assets';
+import React, { useEffect, useState, useRef } from 'react';
+import { add, arrowDown, miniMap, subtract } from '../assets';
 import Input from './input';
+import DatePicker from 'react-date-picker';
+import 'react-date-picker/dist/DatePicker.css';
+import 'react-calendar/dist/Calendar.css';
+import { formatDate } from '../utils';
+import CheckBox from './CheckBox';
 import { useClickOutside } from '../utils';
 import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -26,6 +31,12 @@ const InputWithMap = ({
   eventData,
   updateEventData,
   selectedValue,
+  categories,
+  handleModalOpen,
+  defaultPrice,
+  HandlePriceModal,
+  mapInstruction,
+  HandleCategoryChange
 
 }) => {
   const theme = useTheme();
@@ -33,6 +44,7 @@ const InputWithMap = ({
   const containerRef = useRef(null);
   const [openDatePicker, setOpenDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(defaultDate);
+  const [priceToShow, setPriceToShow] = useState(defaultDate);
   // Format start and end dates
   const formatStartDate = (dateRange) =>
     dateRange && dateRange[0] ? dayjs(dateRange[0]).format("DD.MM.YYYY") : "dd.mm.yyyy";
@@ -42,6 +54,16 @@ const InputWithMap = ({
 
   const startDate = formatStartDate(selectedDate);
   const endDate = formatEndDate(selectedDate);
+
+  useEffect(() => {
+    if (activity === "space" && Array.isArray(defaultPrice)) {
+      const dayItem = defaultPrice.filter((item) => item.term == "Day");
+      setPriceToShow(dayItem[0]?.price + "/" + dayItem[0]?.term)
+    }
+    else {
+      setPriceToShow(defaultPrice)
+    }
+  }, [defaultPrice])
 
   const datePickerStyle = {
     borderRadius: "5px",
@@ -73,10 +95,16 @@ const InputWithMap = ({
     const selectedValue = e.target.value;
     const selectedSpaceData = options.filter((item) => item.value === e.target.value)
     const updatedLocation = { lat: selectedSpaceData[0]?.item?.location?.lat, long: selectedSpaceData[0]?.item?.location?.long }
-    if (eventData.space !== selectedValue) {
-      updateEventData("space", selectedValue);
-      updateEventData("location", updatedLocation);
-      updateEventData("mapInstructions", selectedSpaceData[0]?.item?.location?.additional);
+    if (activity === "event") {
+      if (eventData.space !== selectedValue) {
+        updateEventData("space", selectedValue);
+        updateEventData("location", updatedLocation);
+        updateEventData("mapInstructions", selectedSpaceData[0]?.item?.location?.additional);
+      }
+    }
+
+    else {
+      updateEventData("selectedBrand", selectedValue);
     }
   };
 
@@ -92,7 +120,7 @@ const InputWithMap = ({
         flexDirection: { xs: "column", md: "row" },
       }}
     >
-      <Box sx={{ width: { xs: "100%", md: "70%" } }}>
+      <Box sx={{ width: { xs: "100%", md: "65%" }, display: "flex", flexDirection: "column", rowGap: "20px" }}>
         <Box sx={{ display: "flex", flexDirection: "column", rowGap: "3px" }}>
           <Typography
             variant="h2"
@@ -111,32 +139,80 @@ const InputWithMap = ({
             sx={{ height: "auto", fontWeight: "400", py: "10px", px: "10px" }}
           />
         </Box>
+        {
+          activity === "space" &&
+          <Box
+            sx={{
+              height: "112px",
+              border: "1px dashed rgb(0, 20, 28, 0.4)",
+              backgroundColor: "rgb(209, 219, 215, 0.2)",
+              position: "relative",
+              p: "10px 0px",
+              overflowY: "auto"
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                flexWrap: "wrap",
+                px: "20px",
+                py: "5px",
+                rowGap: '15px'
+              }}
+            >
+              {categories?.filter(cat => cat.selected).length > 0 ? (
+                categories
+                  ?.filter(cat => cat.selected)
+                  .map((cat, index) => (
+                    <Box key={cat.name} display="flex" alignItems="center" marginRight={2} columnGap={1.5} sx={{ width: { xs: "100%", sm: "45%", lg: "30%" } }}>
+                      <CheckBox checked={cat.selected} onChange={() => HandleCategoryChange(cat?.id)} />
+                      <Box sx={{ display: "flex", columnGap: "8px" }}>
+                        <img src={cat.icon} alt="Amenity Icon" style={{ width: "16px", height: "16px" }} />
+                        <Typography sx={{ fontSize: "12px", fontWeight: "300", color: theme.palette.primary.main }}>{cat.name}</Typography>
+                      </Box>
+                    </Box>
+                  ))
+              ) : (
+                <Typography>No amenities selected.</Typography>
+              )}
+
+            </Box>
+            <Box
+              sx={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                display: "flex",
+                columnGap: "10px"
+              }}
+            >
+              <img src={add} alt="Add Icon" style={{ cursor: "pointer" }} onClick={handleModalOpen} />
+            </Box>
+
+          </Box>
+        }
       </Box>
 
-      <Box
-        sx={{
-          width: { xs: "100%", md: "25%" },
-          display: "flex",
-          flexDirection: "column",
-          rowGap: "10px",
-        }}
-      >
-        <Typography variant="h3" fontSize={12} fontWeight={600} sx={{ textAlign: "left" }}>
-          {activity === "brand" ? "Headquarters at:" : "Hosted at:"}
+
+      <Box sx={{ width: { xs: "100%", md: "25%" }, display: "flex", flexDirection: "column", rowGap: "10px" }}>
+        <Typography variant='h6' sx={{ textAlign: "left" }}>
+          {activity === "brand" ? "Headquarters at:" : activity === "event" ? "Hosted at:" : "Located at:"}
         </Typography>
 
-        {activity === "event" && (
+        {(activity === "event" || activity === "space") && (
           <Dropdown
             options={options}
             onChange={handleSelectChange}
             value={selectedValue}
-            placeholder={"Select Space"}
+            placeholder={activity === "event" ? "Select Space" : "Select Your Brand"}
           />
         )}
+        {mapInstruction && <Typography fontSize={14} fontWeight={300} sx={{ fontStyle: "italic" }}>{mapInstruction}</Typography>}
         {(activity === "brand" && !edit) &&
           <Typography fontSize={14} fontWeight={300} sx={{ fontStyle: "italic" }}>Click on the map to select Address.</Typography>
         }
-        <figure role="img" aria-labelledby="profile-map" onClick={selectedValue !== "" ? handleClick : undefined} style={{ cursor: selectedValue !== "" ? "pointer" : "not-allowed" }}>
+        <figure role="img" aria-labelledby="profile-map" onClick={(activity === 'event' && selectedValue !== "") || activity === 'space' || activity === 'brand' ? handleClick : undefined} style={{ cursor: activity === 'space' || selectedValue !== "" ? 'pointer' : 'default' }}>
           <img width="100%" height="auto" src={miniMap} alt="map" />
           <figcaption
             style={activity === "brand" && !edit ?
@@ -161,7 +237,7 @@ const InputWithMap = ({
             {mapDescription}
           </figcaption>
         </figure>
-        {activity === "event" && (
+        {(activity === "event" || activity === "space") && (
           <Box sx={{ position: "relative" }}>
             <Divider sx={{ marginY: 2 }} />
             <Typography
@@ -174,7 +250,7 @@ const InputWithMap = ({
             </Typography>
 
             <Box
-              onClick={() => setOpenDatePicker(!openDatePicker)}
+              onClick={() => activity === "event" ? setOpenDatePicker(!openDatePicker) : HandlePriceModal()}
               sx={{
                 width: "100%",
                 border: "1px dashed rgba(0, 20, 28, 0.4)",
@@ -193,7 +269,8 @@ const InputWithMap = ({
                 fontWeight={700}
                 sx={{ color: theme.palette.primary.main, textAlign: "left" }}
               >
-                {startDate}
+                
+                {activity === "event" ? startDate : defaultDate ? dateToShow + "." : "$"+priceToShow}
               </Typography>
               <Typography
                 fontSize={12}

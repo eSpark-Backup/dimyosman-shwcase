@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Stack, Typography } from "@mui/material";
+import { Box, Button, Divider, Stack, Tooltip, Typography } from "@mui/material";
 import { calender, comment, like, miniMap, share } from "../../assets";
 import { useState } from "react";
 import ReusableModal from "../Modal";
@@ -15,7 +15,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
   const location = useLocation();
   const pathname = location.pathname;
   const activity = `/${pathname.split("/")[1]}`;
-  
+
   if (activity === "/brand") {
     details = brands[0]?.tabs[0]?.props?.details;
   } else if (activity === "/event") {
@@ -89,7 +89,6 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   sx={{
                     display: "flex",
                     flexWrap: "wrap",
-                    justifyContent: "space-between",
                     rowGap: "15px",
                     flexDirection: { xs: "column", md: "row" },
                   }}
@@ -189,15 +188,16 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   : "Hosted at:"}
             </Typography>
             {myProfile?.type !== "brand" && (
-              <Typography
-                sx={{
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  textAlign: "left",
-                }}
-              >
-                {details?.space}
-              </Typography>
+              <Tooltip title={details?.space?.length > 30 ? details?.space : ""}>
+                <Typography
+                  textAlign="left"
+                  sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
+                >
+                  {details?.space?.length > 30
+                    ? `${details?.space.slice(0, 29)}...`
+                    : details?.space}
+                </Typography>
+              </Tooltip>
             )}
             {myProfile?.type !== "brand" && (
               <Typography
@@ -207,7 +207,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   textAlign: "left",
                 }}
               >
-                {details?.spaceCategory
+                {details?.spaceCategory && details?.spaceCategory?.length > 0 && details?.spaceCategory
                   ?.map((item) => item)
                   .filter(Boolean)
                   .join(', ')}

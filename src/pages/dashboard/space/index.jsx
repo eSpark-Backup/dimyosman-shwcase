@@ -1,8 +1,11 @@
-import { Box, Button, Card, Stack, Typography } from "@mui/material";
-import { useState } from "react";
+import { Box, Button, Card, LinearProgress, Stack, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { spaceTableData } from "../../../constant";
 import { addIcon, eventIconLight, like, spaceIcon } from "../../../assets";
+import { useNavigate } from "react-router-dom";
+import { useGetAllSpaceQuery } from "../../../services/space";
+import { toast } from "react-toastify";
 
 const Space = () => {
   const tabs = [
@@ -20,6 +23,53 @@ const Space = () => {
     },
   ];
   const [activeTab, setActiveTab] = useState(0);
+  const [page, setPage] = useState(1)
+
+  const [mySpaceData, setMySpaceData] = useState([]);
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllSpaceQuery({ page, pageSize: 7 }, {
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true
+  });
+
+  const navigate = useNavigate()
+
+
+  const transformSpaceData = (apiData) => {
+    return apiData.map((space, index) => {
+      const dayFilter = space?.pricing?.filter((item) => item?.term === "Day");
+      return {
+        id: space?.id,
+        type: "space",
+        eventName: space?.spaceName,
+        eventImg: space?.spaceImage,
+        price: dayFilter?.length > 0 ? dayFilter[0]?.price : "-",
+        term: dayFilter?.length > 0 ? dayFilter[0]?.term : "-",
+        brand: space?.brand?.brandName,
+        brandUrl: `/brand/${space?.brand?.id}`,
+        action: "Edit"
+      }
+    });
+  };
+
+  const [hasShownErrorToast, setHasShownErrorToast] = useState(false);
+
+
+  useEffect(() => {
+    if (isError && !hasShownErrorToast) {
+      toast.error(error?.data?.message, { toastId: "error-toast" });
+      setHasShownErrorToast(true);
+      setMySpaceData([]);
+    }
+
+    if (isSuccess) {
+      setMySpaceData(transformSpaceData(data?.data?.spaces || []));
+      setHasShownErrorToast(false);
+    }
+  }, [isError, isSuccess, error, hasShownErrorToast, page, data]);
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -28,22 +78,39 @@ const Space = () => {
   const gotoDetail = (item) => {
     //go to detail page functionality
     console.log(item, "item");
+    navigate(`/space/${item?.id}`)
   };
 
   const handleAction = (item, type) => {
     if (type === "edit") {
       //edit functionality
+      if (location?.pathname === "/space") {
+        navigate(`/space/${item?.id}/edit`)
+      }
     } else if (type === "remove") {
       //remove functionality
     } else {
       // other action functionality
     }
-    console.log(item, "item", type);
+  };
+
+  const gotoBrand = (item) => {
+    //go to detail page functionality
+    navigate(item?.brandUrl)
   };
 
   const handleAdd = () => {
     //add functionality
+    navigate("/new-space")
   };
+
+  if (isLoading || isFetching) {
+    return (
+      <Box sx={{ width: "100%" }}>
+        <LinearProgress />
+      </Box>
+    )
+  }
   return (
     <Box>
       <Stack direction="row" justifyContent="flex-end">
@@ -71,11 +138,15 @@ const Space = () => {
           handleChange={handleChange}
           handleAdd={handleAdd}
         />
-        {spaceTableData(gotoDetail, handleAction)[activeTab].data.length > 0 ? (
+        {spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand)[activeTab].data.length > 0 ? (
           <DynamicTable
             isLoading={false}
-            data={spaceTableData(gotoDetail, handleAction)[activeTab].data}
-            columns={spaceTableData(gotoDetail, handleAction)[activeTab].column}
+            data={spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand)[activeTab].data}
+            columns={spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand)[activeTab].column}
+
+            total={data && data?.data?.pagination?.totalItems}
+            handlePageChange={handlePageChange}
+            page={page}
           />
         ) : (
           <Stack

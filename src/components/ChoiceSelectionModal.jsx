@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, Checkbox, Button } from '@mui/material';
 import SearchBar from './SearchBar';
 import { useTheme } from '@emotion/react';
@@ -18,15 +18,16 @@ const ChoiceSelectionModal = ({
     const [searchValue, setSearchValue] = useState("");
     const [selectedItems, setSelectedItems] = useState(categories);
 
-    const handleCheckboxChange = (index) => {
+    const handleCheckboxChange = (id) => {
         const updatedSelection = selectedItems.map((cat, i) =>
-            cat?.id === index ? { ...cat, selected: !cat.selected } : cat
+            cat?.id === id ? { ...cat, selected: !cat.selected } : cat
         );
         setSelectedItems(updatedSelection);
     };
 
     const handleSelectClick = () => {
         const selectedCategories = selectedItems.filter(cat => cat.selected);
+        console.log(selectedCategories, "MODAL")
         if (selectedCategories.length < minSelections) {
             alert(`Please select at least ${minSelections} category`);
             return;
@@ -44,7 +45,7 @@ const ChoiceSelectionModal = ({
         : selectedItems;
 
     return (
-        <Box sx={{ padding: "0px", display: "flex", flexDirection: "column", rowGap:"10px" }}>
+        <Box sx={{ padding: "0px", display: "flex", flexDirection: "column", rowGap: "10px" }}>
             <SearchBar placeholder={placeholder} value={searchValue} onInputChange={(e) => setSearchValue(e.target.value)} />
 
             <Box
@@ -59,7 +60,7 @@ const ChoiceSelectionModal = ({
                     overflowY: "auto"
                 }}
             >
-                {filteredItems.map((cat, index) => (
+                {filteredItems.map((cat) => (
                     <Box key={cat.name} display="flex" alignItems="center" marginBottom={1} columnGap={1}>
                         <CheckBox
                             checked={cat.selected}
@@ -70,9 +71,12 @@ const ChoiceSelectionModal = ({
                 ))}
             </Box>
 
-            <Typography sx={{ fontSize: "14px", color: theme.palette.primary.main, fontStyle: "italic" }}>
-                {minSelections}min - {maxSelections}max.
-            </Typography>
+            {
+                maxSelections !== Infinity &&
+                <Typography sx={{ fontSize: "14px", color: theme.palette.primary.main, fontStyle: "italic" }}>
+                    {minSelections}min - {maxSelections}max.
+                </Typography>
+            }
             <Typography sx={{ fontSize: "14px", color: theme.palette.primary.main, fontStyle: "italic" }}>
                 {description}
             </Typography>

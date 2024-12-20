@@ -9,11 +9,14 @@ import {
   Calendar,
   EditBrand,
   EditEvent,
+  EditProfile,
+  EditSpace,
   Event,
   EventDetails,
   Message,
   NewBrand,
   NewEvent,
+  NewSpace,
   Profile,
   Settings,
   Space,
@@ -68,15 +71,18 @@ function App() {
           <Route path="/brand/:id" element={<BrandDetails />} />
           <Route path="/event" element={<Event />} />
           <Route path="/event/:id" element={<EventDetails />} />
-          <Route path="/space" element={<Space />} />
           <Route path="/space/:id" element={<SpaceDetails />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/space" element={<Space />} />
+          <Route path="/profile/:id" element={<Profile />} />
+          <Route path="/profile/:id/edit" element={<EditProfile />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/message" element={<Message />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/new-brand" element={<NewBrand />} />
           <Route path="/brand/:brandId/edit" element={<EditBrand />} />
           <Route path="/new-event" element={<NewEvent />} />
+          <Route path="/new-space" element={<NewSpace />} />
+          <Route path="/space/:spaceId/edit" element={<EditSpace />} />
           <Route path="/event/:eventId/edit" element={<EditEvent />} />
         </Route>
       </Routes>

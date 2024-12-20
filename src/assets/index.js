@@ -82,7 +82,23 @@ import spaceBadge from "./space-badge.png";
 import profileBadge from "./profile-badge.png";
 import star from "./star.svg";
 import reviewer from "./reviewer.png";
-import arrowDown from "./arrow_down.svg";
+import arrowDown from "./arrow_down.svg"
+import profileBanner from "./profile-banner.svg"
+import profileBanner2 from "./profile-banner2.svg"
+import profileImage2 from "./profileImage2.svg"
+import brandCardImage from "./brandCardImage.svg"
+import spaceImage from "./space-image.svg"
+import profileAbout from "./profileAbout.svg"
+import fbIcon from "./fbIcon.svg"
+import telegramIcon from "./telegramIcon.svg"
+import twitterIcon from "./twitterIcon.svg"
+import whatsAppIcon from "./whatsappIcon.svg"
+import emailIcon from "./emailIcon.svg"
+import shareIcon from "./shareIcon.svg"
+import copyIcon from "./copyIcon.svg"
+import shareNotHovered from "./shareNotHovered.svg"
+import shareHovered from "./sharehovered.svg"
+// import arrowDown from "./arrow_down.svg";
 import bold from "./bold.svg";
 import italic from "./italic.svg";
 import lineThrough from "./line-through.svg";
@@ -183,6 +199,21 @@ export {
   star,
   reviewer,
   arrowDown,
+  profileBanner,
+  profileBanner2,
+  profileImage2,
+  brandCardImage,
+  spaceImage,
+  profileAbout,
+  shareIcon,
+  emailIcon,
+  whatsAppIcon,
+  twitterIcon,
+  telegramIcon,
+  fbIcon,
+  copyIcon,
+  shareHovered,
+  shareNotHovered,
   bold,
   italic,
   lineThrough,
