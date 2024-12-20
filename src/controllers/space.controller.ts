@@ -311,7 +311,7 @@ export class SpaceController {
         });
 
         if (!space) {
-          res.status(404).json(handleResponse("Space not found"));
+          res.status(200).json(handleResponse("Space not found"));
           return next();
         }
 
@@ -335,7 +335,7 @@ export class SpaceController {
       });
 
       if (spaces.length === 0) {
-        res.status(404).json(handleResponse("No Spaces Found"));
+        res.status(200).json(handleResponse("No Spaces Found"));
         return next();
       }
 
