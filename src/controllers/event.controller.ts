@@ -345,7 +345,7 @@ export class EventController {
         });
 
         if (!event) {
-          res.status(404).json(handleResponse("Event not found"));
+          res.status(200).json(handleResponse("Event not found"));
           return next();
         }
 
@@ -369,7 +369,7 @@ export class EventController {
       });
 
       if (events.length === 0) {
-        res.status(404).json(handleResponse("No Events Found"));
+        res.status(200).json(handleResponse("No Events Found"));
         return next();
       }
 

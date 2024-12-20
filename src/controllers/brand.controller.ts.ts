@@ -316,7 +316,7 @@ export class BrandController {
         });
 
         if (!brand) {
-          res.status(404).json(handleResponse("Brand not found"));
+          res.status(200).json(handleResponse("Brand not found"));
           return next();
         }
 
@@ -338,7 +338,7 @@ export class BrandController {
       });
 
       if (brands.length === 0) {
-        res.status(404).json(handleResponse("No Brands Found"));
+        res.status(200).json(handleResponse("No Brands Found"));
         return next();
       }
 
@@ -391,7 +391,7 @@ export class BrandController {
 
       if (!brand) {
         res
-          .status(404)
+          .status(200)
           .json(handleResponse("Brand not found or does not belong to user"));
         return;
       }
