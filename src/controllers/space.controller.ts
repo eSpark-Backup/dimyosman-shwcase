@@ -176,6 +176,9 @@ export class SpaceController {
       if (Array.isArray(coverKeys)) {
         coverKeys = coverKeys.filter((key) => typeof key === "string");
       }
+      if (typeof coverKeys === "string" && !Array.isArray(coverKeys)) {
+        coverKeys = coverKeys.split(",").map((item) => item.trim());
+      }
       const existingSpace = await this.spaceRepo.findOne({ where: { id } });
       if (!existingSpace) {
         return next(res.status(404).json({ message: "Space not found" }));
