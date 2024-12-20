@@ -103,7 +103,20 @@ const InputWithMap = ({
         background: "transparent",
       },
     },
+    // Change the blue color to dark grey for the selected date range and buttons
+    ".rsCalendarSelected": {
+      backgroundColor: "#4B4B4B !important", // Dark grey
+      color: "#FFFFFF !important", // Ensure text is readable
+    },
+    ".rsBtn.rsBtn-primary": {
+      backgroundColor: "#4B4B4B !important", // Dark grey for the primary button
+      color: "#FFFFFF !important", // White text for contrast
+    },
+    ".rsBtn.rsBtn-primary:hover": {
+      backgroundColor: "#3B3B3B !important", // Slightly darker grey on hover
+    },
   };
+  
 
   const handleSelectChange = (e) => {
     const selectedValue = e.target.value;
