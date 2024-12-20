@@ -102,10 +102,7 @@ const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
               maxHeight: "26px",
               fontSize: "14px",
               fontWeight: "600",
-              transition: "width 0.3s ease-in-out",
-              "&:hover": {
-                width: "100px",
-              },
+              
               textTransform: "none"
             }}
           >
