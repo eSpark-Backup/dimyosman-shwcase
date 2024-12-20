@@ -110,7 +110,7 @@ const NewEvent = () => {
 
     // Functions
     const handleMainFileInputClick = () => {
-        if (eventData.cover.length < 3) mainImageRef.current.click();
+        mainImageRef.current.click();
     };
     const handleMainImageChange = (event) => {
         const file = event.target.files[0];

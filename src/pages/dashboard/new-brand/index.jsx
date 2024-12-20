@@ -147,7 +147,7 @@ const NewBrand = () => {
     const [address, setAddress] = useState("")
 
     const handleMainFileInputClick = () => {
-        if (brandData.cover.length < 3) mainImageRef.current.click();
+        mainImageRef.current.click();
     };
 
     const handleMainImageChange = (event) => {

@@ -48,10 +48,10 @@ const EditSpace = () => {
     const [priceModal, setPriceModal] = useState(false)
     const navigate = useNavigate()
 
-    const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading } = useGetCategoriesQuery('SPACES')
+    const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading, isFetching: CategoryFetching } = useGetCategoriesQuery('SPACES')
 
-    const { isError: IsAmenitiesError, isSuccess: AmeitiesSuccess, error: AmenitiesError, data: AmenitiesData, isLoading: AmenitiesLoading } = useGetAmenitiesQuery()
-    const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
+    const { isError: IsAmenitiesError, isSuccess: AmeitiesSuccess, error: AmenitiesError, data: AmenitiesData, isLoading: AmenitiesLoading, isFetching: AmenitiesFetching } = useGetAmenitiesQuery()
+    const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError, isFetching: IsBrandFetching } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
 
     useEffect(() => {
         if (isError) {
@@ -66,7 +66,7 @@ const EditSpace = () => {
     }, [IsGetCategoryError])
 
     useEffect(() => {
-        if (GetCategorySuccess && isSuccess && AmeitiesSuccess) {
+        if (GetCategorySuccess && isSuccess && AmeitiesSuccess && IsBrandSuccess) {
             const allCategories = GetCategoryData?.data?.map((cat, index) => ({
                 id: index,
                 name: cat?.name,
@@ -191,7 +191,7 @@ const EditSpace = () => {
     const handleModalOpen = () => {
         setModalOpen(true);
         // setSelectedInModal(feature.map(feat => ({ ...feat })));
-        setSelectedInModal(spaceData?.amenities.map(feat => ({ ...feat })));
+        // setSelectedInModal(spaceData?.amenities.map(feat => ({ ...feat })));
     };
 
     const handleModalClose = () => {
@@ -224,7 +224,6 @@ const EditSpace = () => {
     }, [isEditorVisible, spaceData?.spaceTitle]);
 
     const CategoryChangeHandler2 = (index) => {
-        console.log(index)
         const amenitiesSelected = spaceData?.amenities?.filter((item) => item.selected).length;
         if (spaceData?.amenities?.find((item) => item.id === index)?.selected && amenitiesSelected === 1) {
             alert("At least one amenity should be selected.");
@@ -363,7 +362,6 @@ const EditSpace = () => {
     };
 
     const handleSubmit = async (status) => {
-        console.log(spaceData)
         if (!validateSpaceData()) {
             return;
         }
@@ -381,7 +379,7 @@ const EditSpace = () => {
     const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
 
 
-    if (IsBrandLoading || AmenitiesLoading || isLoading) {
+    if (IsBrandLoading || AmenitiesLoading || isLoading || GetCategoryLoading || isFetching || IsBrandFetching || AmenitiesFetching || CategoryFetching) {
         return (
             <Box sx={{ width: "100%" }}>
                 <LinearProgress />
@@ -585,7 +583,7 @@ const EditSpace = () => {
                     setInstructionValue={(e) => setSpaceData((prev) => ({
                         ...prev,
                         mapInstructions: e.target.value
-                    }))} />
+                    }))} setBrandData={setSpaceData} />
             </ReusableModal>
             <ReusableModal open={priceModal} handleClose={() => setPriceModal(false)} heading={"Pricing and terms"}>
                 <PriceModal handleClose={HandlePriceSelect} data={spaceData?.price} />
