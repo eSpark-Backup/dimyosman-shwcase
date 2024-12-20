@@ -4,6 +4,7 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 import { addIcon } from "../../assets";
 import { useState } from "react";
 import EventCard from "../EventCard";
+import { profileContent } from "../../constant";
 
 const Events = ({ myProfile, addNewEvent }) => {
   const navigate = useNavigate();
@@ -91,7 +92,7 @@ const Events = ({ myProfile, addNewEvent }) => {
         rowGap={4}
         columnGap={2}
       >
-        {myEvents.map((event, ind) => {
+        {profileContent[0].eventSection.map((event, ind) => {
           return (
             <Box
               key={`event-${ind + 1}`}

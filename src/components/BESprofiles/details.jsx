@@ -207,7 +207,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   textAlign: "left",
                 }}
               >
-                {details?.spaceCategory
+                {details?.spaceCategory && details?.spaceCategory?.length > 0 && details?.spaceCategory
                   ?.map((item) => item)
                   .filter(Boolean)
                   .join(', ')}

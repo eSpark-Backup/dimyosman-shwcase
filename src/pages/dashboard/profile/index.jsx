@@ -18,7 +18,7 @@ const Profile = () => {
     },
     {
       label: profileData[0].tabs[2],
-      component: <ProfileEvents filter1={"All"} filter2={"Upcoming"} filter3={"Past"} cardsData={events} />
+      component: <ProfileEvents filter1={"All"} filter2={"Upcoming"} filter3={"Past"} cardsData={profileData[0].eventSection} />
     },
     {
       label: profileData[0].tabs[3],
