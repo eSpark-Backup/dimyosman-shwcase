@@ -206,18 +206,20 @@ const NewEvent = () => {
     }, [isEditorVisible, eventData?.eventTitle]);
 
     const handleDateChange = (selectedDate) => {
-        const formattedStartDate = selectedDate[0]
-            ? dayjs(selectedDate[0]).format("DD.MM.YYYY")
-            : "dd.mm.yyyy";
-        const formattedEndDate = selectedDate[1]
-            ? dayjs(selectedDate[1]).format("DD.MM.YYYY")
-            : "dd.mm.yyyy";
+        if (selectedDate?.length > 0) {
+            const formattedStartDate = selectedDate[0]
+                ? dayjs(selectedDate[0]).format("DD.MM.YYYY")
+                : "dd.mm.yyyy";
+            const formattedEndDate = selectedDate[1]
+                ? dayjs(selectedDate[1]).format("DD.MM.YYYY")
+                : "dd.mm.yyyy";
 
-        setEventData((prev) => ({
-            ...prev,
-            selectedDate,
-            eventDate: `${formattedStartDate} - ${formattedEndDate}`,
-        }));
+            setEventData((prev) => ({
+                ...prev,
+                selectedDate,
+                eventDate: `${formattedStartDate} - ${formattedEndDate}`,
+            }));
+        }
     };
 
     const validateEventData = () => {
@@ -293,7 +295,6 @@ const NewEvent = () => {
     }, [IsEventPostError])
 
     const handleSubmit = async (status) => {
-        console.log(eventData)
         if (!validateEventData()) {
             return;
         }
@@ -436,10 +437,10 @@ const NewEvent = () => {
                 }}
             >
                 <InputWithMap inputLabel={"Event Overview:"} inputValue={eventData?.eventOverview} setInputValue={(value) => setEventData({ ...eventData, eventOverview: value })} mapDescription={"Address line will be filled automatically."} activity={"event"} eventName={"Space name"} eventAddress={"Brand name"} defaultDate={eventData.selectedDate || [new Date(), new Date()]} onDateChange={handleDateChange} handleClick={() => setMapModal(true)}
-                   options={spaceOptions}
-                   selectedValue={eventData?.space || ''}
-                   eventData={eventData}
-                   updateEventData={updateEventData}
+                    options={spaceOptions}
+                    selectedValue={eventData?.space || ''}
+                    eventData={eventData}
+                    updateEventData={updateEventData}
                 />
                 <Box
                     sx={{
