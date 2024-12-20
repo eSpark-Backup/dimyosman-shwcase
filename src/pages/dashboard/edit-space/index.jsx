@@ -224,7 +224,6 @@ const EditSpace = () => {
     }, [isEditorVisible, spaceData?.spaceTitle]);
 
     const CategoryChangeHandler2 = (index) => {
-        console.log(index)
         const amenitiesSelected = spaceData?.amenities?.filter((item) => item.selected).length;
         if (spaceData?.amenities?.find((item) => item.id === index)?.selected && amenitiesSelected === 1) {
             alert("At least one amenity should be selected.");
@@ -380,7 +379,7 @@ const EditSpace = () => {
     const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
 
 
-    if (IsBrandLoading || AmenitiesLoading || isLoading) {
+    if (IsBrandLoading || AmenitiesLoading || isLoading || GetCategoryLoading) {
         return (
             <Box sx={{ width: "100%" }}>
                 <LinearProgress />
