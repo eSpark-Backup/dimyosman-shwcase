@@ -35,17 +35,20 @@ const Space = () => {
 
 
   const transformSpaceData = (apiData) => {
-    return apiData.map((space, index) => ({
-      id: space?.id,
-      type: "space",
-      eventName: space?.spaceName,
-      eventImg: space?.spaceImage,
-      price: "$1000",
-      term: space?.minLeaseDays,
-      brand: space?.brand?.brandName,
-      brandUrl: `/brand/${space?.brand?.id}`,
-      action: "Edit"
-    }));
+    return apiData.map((space, index) => {
+      const dayFilter = space?.pricing?.filter((item) => item?.term === "Day");
+      return {
+        id: space?.id,
+        type: "space",
+        eventName: space?.spaceName,
+        eventImg: space?.spaceImage,
+        price: dayFilter?.length > 0 ? dayFilter[0]?.price : "-",
+        term: dayFilter?.length > 0 ? dayFilter[0]?.term : "-",
+        brand: space?.brand?.brandName,
+        brandUrl: `/brand/${space?.brand?.id}`,
+        action: "Edit"
+      }
+    });
   };
 
   const [hasShownErrorToast, setHasShownErrorToast] = useState(false);

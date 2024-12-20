@@ -70,7 +70,6 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   sx={{
                     display: "flex",
                     flexWrap: "wrap",
-                    justifyContent: "space-between",
                     rowGap: "15px",
                     flexDirection: { xs: "column", md: "row" },
                   }}

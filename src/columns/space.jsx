@@ -1,4 +1,4 @@
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, Tooltip, Typography } from "@mui/material";
 import { eventBadge, spaceBadge } from "../assets";
 
 const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
@@ -29,7 +29,7 @@ const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="event-image">
                   <img
-                    style={{ width: "100%" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     src={item?.eventImg}
                     alt="event-img"
                   />
@@ -50,11 +50,16 @@ const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
                 />
               </figure>
             </Box>
-            <Typography
-              sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
-            >
-              {item?.eventName}
-            </Typography>
+            <Tooltip title={item?.eventName?.length > 30 ? item?.eventName : ""}>
+              <Typography
+                textAlign="left"
+                sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
+              >
+                {item?.eventName?.length > 30
+                  ? `${item?.eventName.slice(0, 29)}...`
+                  : item?.eventName}
+              </Typography>
+            </Tooltip>
           </Stack>
         );
       },

@@ -17,7 +17,7 @@ const PriceModal = ({ handleClose, data }) => {
     useEffect(() => {
         if (data) {
             const updatedItems = items.map(item => {
-                const matchingData = data.find(d => d.id === item.id);
+                const matchingData = data.find(d => d.term === item.term);
                 if (matchingData) {
                     return {
                         ...item,
@@ -51,8 +51,6 @@ const PriceModal = ({ handleClose, data }) => {
                 !Number.isInteger(Number(item.minimum)) ||
                 Number(item.minimum) < 1
         );
-
-        console.log(incompleteItems)
 
         if (incompleteItems.length > 0) {
             toast.error("Please fill out price and minimum with whole numbers greater than or equal to 1 for all selected items.");

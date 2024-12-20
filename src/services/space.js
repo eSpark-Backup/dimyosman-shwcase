@@ -7,7 +7,14 @@ export const spaceApi = api.injectEndpoints({
                 const formData = new FormData();
                 formData.append("brandId", spaceData?.selectedBrand)
                 formData.append("spaceName", spaceData?.spaceName)
-                formData.append("minLeaseDays", "Day")
+
+                const pricing = spaceData?.price?.map((item) => ({
+                    price: String(item?.price),
+                    term: item?.term,
+                    minimum: String(item?.minimum)
+                }))
+
+                formData.append("pricing", JSON.stringify(pricing));
 
                 const selectedCategories = spaceData?.spaceCategories
                     ?.filter(item => item.selected)
@@ -78,7 +85,14 @@ export const spaceApi = api.injectEndpoints({
                 const formData = new FormData();
                 formData.append("brandId", spaceData?.selectedBrand)
                 formData.append("spaceName", spaceData?.spaceName)
-                formData.append("minLeaseDays", "Day")
+                
+                const pricing = spaceData?.price?.map((item) => ({
+                    price: String(item?.price),
+                    term: item?.term,
+                    minimum: String(item?.minimum)
+                }))
+
+                formData.append("pricing", JSON.stringify(pricing));
 
                 const selectedCategories = spaceData?.spaceCategories
                     ?.filter(item => item.selected)
@@ -124,7 +138,9 @@ export const spaceApi = api.injectEndpoints({
                     }
                 }
                 if (spaceData?.profileImage) {
-                    formData.append('image', spaceData.profileImage);
+                    if (spaceData.profileImage instanceof File) {
+                        formData.append('image', spaceData.profileImage);
+                    }
                 }
                 formData.append("status", spaceData?.status)
 

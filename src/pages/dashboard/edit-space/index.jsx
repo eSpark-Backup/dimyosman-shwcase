@@ -11,7 +11,7 @@ import { useGetAmenitiesQuery } from '../../../services/amenities';
 import { LoadingButton } from '@mui/lab';
 import { toast } from 'react-toastify';
 import { useEditSpaceMutation, useGetAllSpaceQuery, useNewSpaceMutation } from '../../../services/space';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const EditSpace = () => {
     const theme = useTheme()
@@ -31,7 +31,7 @@ const EditSpace = () => {
         spaceTitle: null,
         location: {},
         selectedBrand: "",
-        price: "",
+        price: [],
         amenities: [],
         mapInstructions: ""
     });
@@ -46,6 +46,7 @@ const EditSpace = () => {
     const [openMapModal, setMapModal] = useState(false);
     const [address, setAddress] = useState("")
     const [priceModal, setPriceModal] = useState(false)
+    const navigate = useNavigate()
 
     const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading } = useGetCategoriesQuery('SPACES')
 
@@ -111,13 +112,12 @@ const EditSpace = () => {
                 spaceTitle: data?.data?.details?.htmlContent,
                 location: { lat: data?.data?.location?.lat, long: data?.data?.location?.long },
                 selectedBrand: data?.data?.brand?.id,
-                price: { id: 1, price: "$200", term: "Day", minimum: "7", select: false },
+                price: data?.data?.pricing,
                 amenities: mergedAmenities,
                 mapInstructions: data?.data?.location?.additional
             }));
         }
     }, [GetCategorySuccess, isSuccess, data]);
-
 
 
     // Functions
@@ -251,7 +251,7 @@ const EditSpace = () => {
         setPriceModal(false)
         setSpaceData((prevState) => ({
             ...prevState,
-            price: item[0]
+            price: item
         }));
     }
 
@@ -282,6 +282,7 @@ const EditSpace = () => {
     useEffect(() => {
         if (spacePostSuccess) {
             toast.success(spacePostData?.message)
+            navigate("/space")
         }
     }, [spacePostSuccess])
 
@@ -343,6 +344,12 @@ const EditSpace = () => {
 
         if (!spaceData?.selectedBrand || spaceData?.selectedBrand?.trim() === "") {
             toast?.error("Please select brand");
+            return false;
+        }
+
+        const dayFilter = spaceData?.price?.filter((item) => item?.term === "Day")
+        if (!spaceData?.price || spaceData?.price?.length === 0 || dayFilter?.length === 0) {
+            toast.error("Please fill out price and minimum with whole numbers greater than or equal to 1 for all selected items.");
             return false;
         }
 
@@ -496,7 +503,10 @@ const EditSpace = () => {
                 }}
             >
                 <InputWithMap inputLabel={"Space Overview:"} inputValue={spaceData?.spaceOverview} setInputValue={(value) => setSpaceData({ ...spaceData, spaceOverview: value })} mapInstruction={"Click on the map to change/adjust."} mapDescription={"Brand Address is displayed automatically"} activity={"space"} eventName={"Select your Brand"}
-                    defaultPrice={spaceData?.price === "" ? "$xxx/day" : spaceData?.price?.price + "/" + spaceData?.price?.term}
+                    defaultPrice={
+                        spaceData?.price?.length > 0
+                            ? spaceData.price : "xxx/day"
+                    }
                     handleModalOpen={handleModalOpen}
                     handleClick={() => setMapModal(true)}
                     categories={spaceData?.amenities}
@@ -528,6 +538,16 @@ const EditSpace = () => {
                             <Typography
                                 variant="body1"
                                 color={theme.palette.primary.main}
+                                sx={{
+                                    "& ul, & ol": {
+                                        paddingLeft: 2,
+                                    },
+                                    "& img": {
+                                        maxWidth: "100%",
+                                        height: "auto",
+                                        objectFit: "contain",
+                                    },
+                                }}
                                 dangerouslySetInnerHTML={{ __html: spaceData?.spaceTitle }}
                             />
                         </Box>

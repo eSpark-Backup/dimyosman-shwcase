@@ -11,6 +11,7 @@ import { useGetAmenitiesQuery } from '../../../services/amenities';
 import { LoadingButton } from '@mui/lab';
 import { toast } from 'react-toastify';
 import { useNewSpaceMutation } from '../../../services/space';
+import { useNavigate } from 'react-router-dom';
 
 const NewSpace = () => {
     const theme = useTheme()
@@ -43,6 +44,7 @@ const NewSpace = () => {
     const [openMapModal, setMapModal] = useState(false);
     const [address, setAddress] = useState("")
     const [priceModal, setPriceModal] = useState(false)
+    const navigate = useNavigate()
 
     const { isError, isSuccess, error, data, isLoading } = useGetCategoriesQuery('SPACES')
     const { isError: IsAmenitiesError, isSuccess: AmeitiesSuccess, error: AmenitiesError, data: AmenitiesData, isLoading: AmenitiesLoading } = useGetAmenitiesQuery()
@@ -194,7 +196,6 @@ const NewSpace = () => {
     }, [isEditorVisible, spaceData?.spaceTitle]);
 
     const CategoryChangeHandler2 = (index) => {
-        console.log(index)
         const amenitiesSelected = spaceData?.amenities?.filter((item) => item.selected).length;
         if (spaceData?.amenities?.find((item) => item.id === index)?.selected && amenitiesSelected === 1) {
             alert("At least one amenity should be selected.");
@@ -218,11 +219,10 @@ const NewSpace = () => {
     }));
 
     const HandlePriceSelect = (item) => {
-        console.log(item);  // item is now an array of selected items
         setPriceModal(false);
         setSpaceData((prevState) => ({
             ...prevState,
-            price: item  // Replace price array with the item array
+            price: item
         }));
     };
 
@@ -253,6 +253,7 @@ const NewSpace = () => {
     useEffect(() => {
         if (spacePostSuccess) {
             toast.success(spacePostData?.message)
+            navigate("/space")
         }
     }, [spacePostSuccess])
 
@@ -323,11 +324,23 @@ const NewSpace = () => {
             toast?.error("Map additional field is required");
             return false;
         }
+
+        const dayFilter = spaceData?.price?.filter((item) => item?.term === "Day")
+        if (spaceData?.price?.length === 0 || dayFilter?.length === 0) {
+            toast.error("Please fill out price and minimum with whole numbers greater than or equal to 1 for all selected items.");
+            return false;
+        }
+
+        if (!spaceData?.
+            mapInstructions
+            || spaceData?.mapInstructions.trim() === "") {
+            toast?.error("Map additional field is required");
+            return false;
+        }
         return true;
     };
 
     const handleSubmit = async (status) => {
-        console.log(spaceData)
         if (!validateSpaceData()) {
             return;
         }
@@ -340,8 +353,7 @@ const NewSpace = () => {
     };
 
     const [loadingButton, setLoadingButton] = useState(null);
-    // const HandlePublishSubmit = () => handleSubmit("PUBLISH");
-    const HandlePublishSubmit = () => console.log(spaceData);
+    const HandlePublishSubmit = () => handleSubmit("PUBLISH");
     const HandleDraftSubmit = () => handleSubmit("DRAFT");
     const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
 

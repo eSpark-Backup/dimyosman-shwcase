@@ -56,7 +56,6 @@ const InputWithMap = ({
 
   useEffect(() => {
     if (activity === "space" && Array.isArray(defaultPrice)) {
-      console.log(defaultPrice);
       const dayItem = defaultPrice.filter((item) => item.term == "Day");
       setPriceToShow(dayItem[0]?.price + "/" + dayItem[0]?.term)
     }
@@ -171,7 +170,7 @@ const InputWithMap = ({
                     </Box>
                   ))
               ) : (
-                <Typography>No categories selected.</Typography>
+                <Typography>No amenities selected.</Typography>
               )}
 
             </Box>
@@ -209,7 +208,7 @@ const InputWithMap = ({
         {(activity === "brand" && !edit) &&
           <Typography fontSize={14} fontWeight={300} sx={{ fontStyle: "italic" }}>Click on the map to select Address.</Typography>
         }
-        <figure role="img" aria-labelledby="profile-map" onClick={(activity === 'event' && selectedValue !== "") || activity === 'space' ? handleClick : undefined} style={{ cursor: activity === 'space' || selectedValue !== "" ? 'pointer' : 'default' }}>
+        <figure role="img" aria-labelledby="profile-map" onClick={(activity === 'event' && selectedValue !== "") || activity === 'space' || activity === 'brand' ? handleClick : undefined} style={{ cursor: activity === 'space' || selectedValue !== "" ? 'pointer' : 'default' }}>
           <img width="100%" height="auto" src={miniMap} alt="map" />
           <figcaption
             style={activity === "brand" && !edit ?
