@@ -41,6 +41,7 @@ const InputWithMap = ({
 }) => {
   const theme = useTheme();
   const datePickerRef = useRef(null);
+  const containerRef = useRef(null);
   const [openDatePicker, setOpenDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(defaultDate);
   const [priceToShow, setPriceToShow] = useState(defaultDate);
@@ -67,20 +68,20 @@ const InputWithMap = ({
   const datePickerStyle = {
     borderRadius: "5px",
     border: "1px solid #D1DBD7",
-    ".rs-picker-toggle": {
+    ".rsPickerToggle": {
       color: "#00141C !important",
       backgroundColor: "#e3e9e7 !important",
       borderRadius: "5px",
       fontSize: "14px",
     },
-    ".rs-picker-toggle:hover": {
+    ".rsPickerToggle:hover": {
       color: "#00141C !important",
       backgroundColor: "#e3e9e7 !important",
     },
-    ".rs-picker-toolbar": {
+    ".rsPickerToolbar": {
       display: "none",
     },
-    ".rs-btn": {
+    ".rsBtn": {
       background: "transparent",
       color: "#00141C",
       fontSize: "12px",
@@ -106,6 +107,9 @@ const InputWithMap = ({
       updateEventData("selectedBrand", selectedValue);
     }
   };
+
+  useClickOutside(datePickerRef, () => setOpenDatePicker(false));
+  useClickOutside(containerRef, () => setOpenDatePicker(false));
   return (
     <Box
       sx={{
@@ -258,6 +262,7 @@ const InputWithMap = ({
                 flexDirection: "column",
                 cursor: "pointer",
               }}
+              ref={containerRef}
             >
               <Typography
                 fontSize={32}
@@ -278,6 +283,7 @@ const InputWithMap = ({
             {openDatePicker && (
               <Box
                 ref={datePickerRef}
+                onMouseDown={(event) => event.stopPropagation()}
                 sx={{
                   position: "absolute",
                   top: "0px",
