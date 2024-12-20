@@ -85,8 +85,8 @@ const EditEvent = () => {
                 eventOverview: data?.data?.details?.description,
                 cover: data?.data?.coverImages,
                 selectedDate: [
-                    data?.data?.eventDate[0]?.startDate,
-                    data?.data?.eventDate[0]?.endDate,
+                    new Date(data?.data?.eventDate[0]?.startDate),
+                    new Date(data?.data?.eventDate[0]?.endDate)
                 ],
                 eventTitle: data?.data?.details?.htmlContent,
                 space: data?.data?.space?.id
@@ -242,18 +242,20 @@ const EditEvent = () => {
     };
 
     const handleDateChange = (selectedDate) => {
-        const formattedStartDate = selectedDate[0]
-            ? dayjs(selectedDate[0]).format("DD.MM.YYYY")
-            : "dd.mm.yyyy";
-        const formattedEndDate = selectedDate[1]
-            ? dayjs(selectedDate[1]).format("DD.MM.YYYY")
-            : "dd.mm.yyyy";
+        if (selectedDate?.length > 0) {
+            const formattedStartDate = selectedDate[0]
+                ? dayjs(selectedDate[0]).format("DD.MM.YYYY")
+                : "dd.mm.yyyy";
+            const formattedEndDate = selectedDate[1]
+                ? dayjs(selectedDate[1]).format("DD.MM.YYYY")
+                : "dd.mm.yyyy";
 
-        setEventData((prev) => ({
-            ...prev,
-            selectedDate,
-            eventDate: `${formattedStartDate} - ${formattedEndDate}`,
-        }));
+            setEventData((prev) => ({
+                ...prev,
+                selectedDate,
+                eventDate: `${formattedStartDate} - ${formattedEndDate}`,
+            }));
+        }
     };
 
     const [event, { isSuccess: eventPostSuccess, isError: IsEventPostError, error: eventPostError, data: eventPostData }] = useEditEventMutation()

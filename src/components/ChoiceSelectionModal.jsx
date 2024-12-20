@@ -60,8 +60,8 @@ const ChoiceSelectionModal = ({
                     overflowY: "auto"
                 }}
             >
-                {filteredItems.map((cat) => (
-                    <Box key={cat.name} display="flex" alignItems="center" marginBottom={1} columnGap={1}>
+                {filteredItems.map((cat, index) => (
+                    <Box key={index} display="flex" alignItems="center" marginBottom={1} columnGap={1}>
                         <CheckBox
                             checked={cat.selected}
                             onChange={() => handleCheckboxChange(cat?.id)}
