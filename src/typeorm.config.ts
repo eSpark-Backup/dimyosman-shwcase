@@ -36,11 +36,8 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   logging: true,
   entities: [__dirname + "/entity/*.entity{.ts,.js}"],
-  migrations: ["src/database/migrations/*-migration.ts"],
+  migrations: [__dirname + "/database/migrations/*.{ts,js}"],
   migrationsTableName: "_migrations",
-  migrationsRun: true,
-
-  migrationsTransactionMode: "all",
 
   cache: false,
 });
