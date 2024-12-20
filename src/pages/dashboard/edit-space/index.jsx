@@ -66,7 +66,15 @@ const EditSpace = () => {
     }, [IsGetCategoryError])
 
     useEffect(() => {
-        if (GetCategorySuccess && isSuccess && AmeitiesSuccess && IsBrandSuccess) {
+        if (
+            GetCategorySuccess &&
+            isSuccess &&
+            AmeitiesSuccess &&
+            IsBrandSuccess &&
+            GetCategoryData?.data &&
+            AmenitiesData?.data &&
+            data?.data
+        ) {
             const allCategories = GetCategoryData?.data?.map((cat, index) => ({
                 id: index,
                 name: cat?.name,
@@ -86,38 +94,30 @@ const EditSpace = () => {
                 selected: selectedCategories?.includes(category.name),
             }));
 
-            setSpaceData((prevState) => ({
-                ...prevState,
-                spaceCategories: mergedCategories,
-            }));
-
             const selectedAmenity = data?.data?.amenity?.map((amenity) => amenity?.name);
 
             const mergedAmenities = allAmenities.map((amenity) => ({
                 ...amenity,
                 selected: selectedAmenity?.includes(amenity.name),
             }));
-
-            setSpaceData((prevState) => ({
-                ...prevState,
-                amenities: mergedAmenities,
-            }));
-            setSpaceData((prevState) => ({
-                ...prevState,
-                cover: data?.data?.coverImages,
-                profileImage: data?.data?.spaceImage,
-                spaceName: data?.data?.spaceName,
-                spaceCategories: mergedCategories,
-                spaceOverview: data?.data?.details?.description,
-                spaceTitle: data?.data?.details?.htmlContent,
-                location: { lat: data?.data?.location?.lat, long: data?.data?.location?.long },
-                selectedBrand: data?.data?.brand?.id,
-                price: data?.data?.pricing,
-                amenities: mergedAmenities,
-                mapInstructions: data?.data?.location?.additional
-            }));
+            setSpaceData({
+                cover: data?.data?.coverImages || [],
+                profileImage: data?.data?.spaceImage || null,
+                spaceName: data?.data?.spaceName || "",
+                spaceCategories: mergedCategories || [],
+                spaceOverview: data?.data?.details?.description || "",
+                spaceTitle: data?.data?.details?.htmlContent || null,
+                location: {
+                    lat: data?.data?.location?.lat || null,
+                    long: data?.data?.location?.long || null,
+                },
+                selectedBrand: data?.data?.brand?.id || "",
+                price: data?.data?.pricing || [],
+                amenities: mergedAmenities || [],
+                mapInstructions: data?.data?.location?.additional || "",
+            });
         }
-    }, [GetCategorySuccess, isSuccess, data]);
+    }, [GetCategorySuccess, isSuccess, AmeitiesSuccess, IsBrandSuccess, GetCategoryData, AmenitiesData, data]);
 
 
     // Functions
@@ -378,6 +378,9 @@ const EditSpace = () => {
     const HandleDraftSubmit = () => handleSubmit("DRAFT");
     const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
 
+    useEffect(() => {
+        console.log(spaceData)
+    }, [spaceData])
 
     if (IsBrandLoading || AmenitiesLoading || isLoading || GetCategoryLoading || isFetching || IsBrandFetching || AmenitiesFetching || CategoryFetching) {
         return (
