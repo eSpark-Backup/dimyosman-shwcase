@@ -2,62 +2,129 @@ import { Router } from "express";
 import Joi from "joi";
 import { AuthValidation, validate } from "../validations";
 import { UserController } from "../controllers";
-import { User } from "../entity";
+import { Events, User } from "../entity";
 import { getRepository } from "typeorm";
 import { AppDataSource } from "../typeorm.config";
+import { setPagination } from "../middleware";
 
 const router = Router();
 const userRepository = AppDataSource.getRepository(User);
-const userController = new UserController(userRepository);
+const eventRepository = AppDataSource.getRepository(Events);
+const userController = new UserController(userRepository, eventRepository);
 
 /**
  * @swagger
  * /user/calender:
- *   post:
- *     summary: Register a new user
- *     description: This endpoint registers a new user.
+ *   get:
+ *     summary: Get a specific space by ID or all spaces for the authenticated user
+ *     description: This endpoint retrieves a specific space by its ID (if provided) or all spaces associated with the authenticated user. Pagination is supported for retrieving multiple spaces.
+ *     security:
+ *       - bearerAuth: []
  *     tags:
- *      - User
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               firstName:
- *                 type: string
- *               lastName:
- *                 type: string
- *               email:
- *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *                 minLength: 8
- *               loginType:
- *                 type: string
- *                 enum: [local, facebook, google, apple]
- *               isSocialLogin:
- *                 type: boolean
- *               profileImage:
- *                 type: string
- *               socialId:
- *                 type: string
- *               role:
- *                 type: string
+ *       - User
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: false
+ *         description: ID of the space to retrieve (optional).
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: pageSize
+ *         required: false
+ *         description: Number of items per page (for paginated results).
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         description: Page number to retrieve (for paginated results).
+ *         schema:
+ *           type: integer
+ *           example: 1
  *     responses:
- *       201:
- *         description: User registered successfully
- *       400:
- *         description: Validation error
+ *       200:
+ *         description: space found by ID or all spaces for the authenticated user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 spaces:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       spaceName:
+ *                         type: string
+ *                         description: Name of the space.
+ *                       spaceCategory:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             name:
+ *                               type: string
+ *                               description: Name of the category.
+ *                             description:
+ *                               type: string
+ *                               description: Description of the category.
+ *                         description: Categories of the space.
+ *                       details:
+ *                         type: object
+ *                         description: Details about the space.
+ *                       location:
+ *                         type: object
+ *                         properties:
+ *                           long:
+ *                             type: number
+ *                             description: Longitude of the space's location.
+ *                           lat:
+ *                             type: number
+ *                             description: Latitude of the space's location.
+ *                           additional:
+ *                             type: string
+ *                             description: Additional information about the location.
+ *                       status:
+ *                         type: string
+ *                         enum:
+ *                           - PUBLISH
+ *                           - DRAFT
+ *                           - ARCHIVE
+ *                       coverImages:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             url:
+ *                               type: string
+ *                               description: URL of the cover image.
+ *                             public_id:
+ *                               type: string
+ *                               description: Public ID of the cover image.
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     totalItems:
+ *                       type: integer
+ *                       description: Total number of items.
+ *                     currentPage:
+ *                       type: integer
+ *                       description: Current page number.
+ *                     pageSize:
+ *                       type: integer
+ *                       description: Number of items per page.
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages.
+ *       404:
+ *         description: space not found (if ID is provided) or no spaces found for the user.
  *       500:
- *         description: Server error
+ *         description: Server error.
  */
-router.post(
-  "/register",
-  validate(AuthValidation.signupUser, "body"),
-  (req, res, next) => userController.registerUser(req, res, next)
+router.get("/calender", setPagination, (req, res, next) =>
+  userController.getCalender(req, res, next)
 );
 
 export { router };

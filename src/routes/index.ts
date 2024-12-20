@@ -6,6 +6,7 @@ import { router as AmenitiesRoutes } from "./amenities.routes";
 import { router as spaceRoutes } from "./space.routes";
 import { router as eventRoutes } from "./event.routes";
 import { checkJwt, validateRoles } from "../middleware";
+import { router as UserRoutes } from "./user.routes";
 import { ROLES } from "../constants";
 const router = Router();
 
@@ -13,7 +14,7 @@ router.get("/", (req, res) => {
   res.json({ message: "Welcome to the API!" });
 });
 router.use("/auth", authRoutes);
-router.use("/user", checkJwt, validateRoles([ROLES.USER]), brandRoutes);
+router.use("/user", checkJwt, validateRoles([ROLES.USER]), UserRoutes);
 router.use("/brand", brandRoutes);
 router.use("/category", categoryRoutes);
 router.use("/amenities", AmenitiesRoutes);
