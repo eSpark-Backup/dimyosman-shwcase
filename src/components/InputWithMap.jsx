@@ -43,8 +43,22 @@ const InputWithMap = ({
   const datePickerRef = useRef(null);
   const containerRef = useRef(null);
   const [openDatePicker, setOpenDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(defaultDate);
+
+  const [selectedDate, setSelectedDate] = useState(
+    defaultDate && defaultDate[0] === null && defaultDate[1] === null
+      ? [null, null]
+      : defaultDate && defaultDate?.map((date) => (date ? new Date(date) : null))
+  );
   const [priceToShow, setPriceToShow] = useState(defaultDate);
+
+  useEffect(() => {
+    setSelectedDate(
+      defaultDate && defaultDate[0] === null && defaultDate[1] === null
+        ? [null, null]
+        : defaultDate && defaultDate?.map((date) => (date ? new Date(date) : null))
+    )
+
+  }, [defaultDate])
   // Format start and end dates
   const formatStartDate = (dateRange) =>
     dateRange && dateRange[0] ? dayjs(dateRange[0]).format("DD.MM.YYYY") : "dd.mm.yyyy";
@@ -282,8 +296,8 @@ const InputWithMap = ({
                 fontWeight={700}
                 sx={{ color: theme.palette.primary.main, textAlign: "left" }}
               >
-                
-                {activity === "event" ? startDate : defaultDate ? dateToShow + "." : "$"+priceToShow}
+
+                {activity === "event" ? startDate : defaultDate ? dateToShow + "." : "$" + priceToShow}
               </Typography>
               <Typography
                 fontSize={12}

@@ -100,7 +100,6 @@ const Event = () => {
     } else {
       // other action functionality
     }
-    console.log(item, "item", type);
   };
 
   const handleAdd = () => {
