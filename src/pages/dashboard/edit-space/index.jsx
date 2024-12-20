@@ -48,10 +48,10 @@ const EditSpace = () => {
     const [priceModal, setPriceModal] = useState(false)
     const navigate = useNavigate()
 
-    const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading } = useGetCategoriesQuery('SPACES')
+    const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading, isFetching: CategoryFetching } = useGetCategoriesQuery('SPACES')
 
-    const { isError: IsAmenitiesError, isSuccess: AmeitiesSuccess, error: AmenitiesError, data: AmenitiesData, isLoading: AmenitiesLoading } = useGetAmenitiesQuery()
-    const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
+    const { isError: IsAmenitiesError, isSuccess: AmeitiesSuccess, error: AmenitiesError, data: AmenitiesData, isLoading: AmenitiesLoading, isFetching: AmenitiesFetching } = useGetAmenitiesQuery()
+    const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError, isFetching: IsBrandFetching } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
 
     useEffect(() => {
         if (isError) {
@@ -66,7 +66,7 @@ const EditSpace = () => {
     }, [IsGetCategoryError])
 
     useEffect(() => {
-        if (GetCategorySuccess && isSuccess && AmeitiesSuccess) {
+        if (GetCategorySuccess && isSuccess && AmeitiesSuccess && IsBrandSuccess) {
             const allCategories = GetCategoryData?.data?.map((cat, index) => ({
                 id: index,
                 name: cat?.name,
@@ -379,7 +379,7 @@ const EditSpace = () => {
     const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
 
 
-    if (IsBrandLoading || AmenitiesLoading || isLoading || GetCategoryLoading) {
+    if (IsBrandLoading || AmenitiesLoading || isLoading || GetCategoryLoading || isFetching || IsBrandFetching || AmenitiesFetching || CategoryFetching) {
         return (
             <Box sx={{ width: "100%" }}>
                 <LinearProgress />
