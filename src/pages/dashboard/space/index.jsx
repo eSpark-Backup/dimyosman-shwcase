@@ -42,7 +42,7 @@ const Space = () => {
         type: "space",
         eventName: space?.spaceName,
         eventImg: space?.spaceImage,
-        price: dayFilter?.length > 0 ? dayFilter[0]?.price : "-",
+        price: dayFilter?.length > 0 ? "$"+dayFilter[0]?.price : "-",
         term: dayFilter?.length > 0 ? dayFilter[0]?.term : "-",
         brand: space?.brand?.brandName,
         brandUrl: `/brand/${space?.brand?.id}`,

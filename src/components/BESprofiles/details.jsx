@@ -91,6 +91,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                     flexWrap: "wrap",
                     rowGap: "15px",
                     flexDirection: { xs: "column", md: "row" },
+                    justifyContent:"space-between"
                   }}
                 >
                   {details?.feature?.points?.map(
