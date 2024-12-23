@@ -51,4 +51,5 @@ export enum RESPONSE_TYPES {
   RESPONSE = "response",
 }
 
+export const CHAT_COOKIE = "chat_token";
 export const ONE_MINUTE_MILLISECONDS = 1000 * 60;

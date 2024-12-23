@@ -1,19 +1,19 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { Amenities, Category, CategoryType, User } from "../entity";
-import { ApiError } from "../errors";
+import { Amenities, Category, CategoryType, User } from "../../entity";
+import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { handleResponse, logger } from "../utils";
+import { handleResponse, logger } from "../../utils";
 import {
   ICustomRequest,
   IFileObject,
   IFileRequest,
   UploadResult,
-} from "../interfaces";
-import { CLOUD_FOLDERS, HTTP_STATUS } from "../constants";
-import { uploadService } from "../services";
+} from "../../interfaces";
+import { CLOUD_FOLDERS, HTTP_STATUS } from "../../constants";
+import { uploadService } from "../../services";
 import fs from "fs";
 import path from "path";
-import { commonHelper } from "../helpers";
+import { commonHelper } from "../../helpers";
 export class AmenityController {
   constructor(
     private amenityRepo: Repository<Amenities>,

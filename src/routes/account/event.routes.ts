@@ -1,39 +1,41 @@
 import { Router } from "express";
-import { SpaceValidation, validate } from "../validations";
-import { Brand, Spaces, User } from "../entity";
-import { AppDataSource } from "../typeorm.config";
-import { SpaceController } from "../controllers";
+import { EventValidation, SpaceValidation, validate } from "../../validations";
+import { Brand, Events, Spaces, User } from "../../entity";
+import { AppDataSource } from "../../typeorm.config";
+import { EventController } from "../../controllers/account";
 import {
   checkJwt,
   handleMultipleFiles,
   handleSingleFile,
   setPagination,
   validateRoles,
-} from "../middleware";
-import { FILE_FIELDS, ROLES } from "../constants";
-import { parseJsonFields } from "../utils";
-import { IFileRequest } from "../interfaces";
+} from "../../middleware";
+import { FILE_FIELDS, ROLES } from "../../constants";
+import { parseJsonFields } from "../../utils";
+import { IFileRequest } from "../../interfaces";
 
 const router = Router();
 const spaceRepository = AppDataSource.getRepository(Spaces);
 const userRepository = AppDataSource.getRepository(User);
 const brandRepository = AppDataSource.getRepository(Brand);
-const spaceController = new SpaceController(
+const eventRepository = AppDataSource.getRepository(Events);
+const eventController = new EventController(
   spaceRepository,
   userRepository,
-  brandRepository
+  brandRepository,
+  eventRepository
 );
 
 /**
  * @swagger
- * /space:
+ * /event:
  *   post:
- *     summary: Create a new space
- *     description: This endpoint allows users with the USER role to create a new space.
+ *     summary: Create a new event
+ *     description: This endpoint allows users with the USER role to create a new event.
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Space
+ *       - Event
  *     requestBody:
  *       required: true
  *       content:
@@ -43,64 +45,43 @@ const spaceController = new SpaceController(
  *             properties:
  *               brandId:
  *                 type: string
- *                 description: Name of the space.
- *               spaceName:
+ *                 description: Id of the Brand.
+ *               spaceId:
  *                 type: string
- *                 description: Name of the space.
- *               pricing:
- *                 type: object
- *                 properties:
- *                   term:
- *                     type: string
- *                     description: Weekly/Daily/Monthly/Yearly.
- *                   price:
- *                     type: string
- *                     description: Price of that Term.
- *                   minimum:
- *                     type: string
- *                     description: Minimum Days of Term.
- *               spaceCategory:
+ *                 description: Id of the Space.
+ *               eventName:
+ *                 type: string
+ *                 description: Name of the event.
+ *               eventCategory:
  *                 type: array
  *                 items:
  *                   type: object
  *                   properties:
  *                     name:
  *                       type: string
- *                       description: Name of the space category.
- *                 description: The category of the space.
- *               amenity:
+ *                       description: Name of the event category.
+ *                 description: The category of the event.
+ *               eventDate:
  *                 type: array
  *                 items:
  *                   type: object
  *                   properties:
- *                     name:
+ *                     startDate:
  *                       type: string
  *                       description: Name of the Amenity.
- *                     iconUrl:
+ *                     endDate:
  *                       type: string
  *                       description: URL of the icon image.
- *                 description: The Amenities and Features of the space.
+ *                 description: The Amenities and Features of the event.
  *               details:
  *                  type: object
  *                  properties:
  *                    description:
  *                       type: string
- *                       description: A brief description of the space
+ *                       description: A brief description of the event
  *                    htmlContent:
  *                       type: string
- *                       description: HTML content related to the space (e.g., description with HTML tags)
- *               location:
- *                 type: object
- *                 properties:
- *                   long:
- *                     type: number
- *                     description: Longitude of the space's location.
- *                   lat:
- *                     type: number
- *                     description: Latitude of the space's location.
- *                   additional:
- *                     type: string
- *                     description: Additional information about the location.
+ *                       description: HTML content related to the event (e.g., description with HTML tags)
  *               status:
  *                 type: string
  *                 enum:
@@ -112,14 +93,14 @@ const spaceController = new SpaceController(
  *                 items:
  *                   type: string
  *                   format: binary
- *                 description: Array of cover images for the space.
+ *                 description: Array of cover images for the event.
  *               image:
  *                 type: string
  *                 format: binary
- *                 description: Additional image of the space.
+ *                 description: Additional image of the event.
  *     responses:
  *       201:
- *         description: space created successfully.
+ *         description: event created successfully.
  *       400:
  *         description: Validation error.
  *       403:
@@ -136,32 +117,26 @@ router.post(
     { name: FILE_FIELDS.COVER, maxCount: 10 },
     { name: FILE_FIELDS.IMAGE, maxCount: 1 },
   ]),
-  parseJsonFields([
-    "spaceCategory",
-    "details",
-    "location",
-    "amenity",
-    "pricing",
-  ]),
-  validate(SpaceValidation.CreateSpace, "body"),
-  (req, res, next) => spaceController.createSpace(req, req as any, res, next)
+  parseJsonFields(["eventCategory", "details", "location", "eventDate"]),
+  validate(EventValidation.CreateEvent, "body"),
+  (req, res, next) => eventController.createEvent(req, req as any, res, next)
 );
 
 /**
  * @swagger
- * /space/{id}:
+ * /event/{id}:
  *   put:
- *     summary: Update an existing space
- *     description: This endpoint allows users with the USER role to update an existing space.
+ *     summary: Update an existing event
+ *     description: This endpoint allows users with the USER role to update an existing event.
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Space
+ *       - Event
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID of the space to update
+ *         description: ID of the event to update
  *         schema:
  *           type: string
  *     requestBody:
@@ -170,60 +145,39 @@ router.post(
  *           schema:
  *             type: object
  *             properties:
- *               spaceName:
+ *               eventName:
  *                 type: string
- *               brandId:
- *                 type: string
- *                 description: Id of the Brand.
- *               pricing:
- *                 type: object
- *                 properties:
- *                   term:
- *                     type: string
- *                     description: Weekly/Daily/Monthly/Yearly.
- *                   price:
- *                     type: string
- *                     description: Price of that Term.
- *                   minimum:
- *                     type: string
- *                     description: Minimum Days of Term.
- *               spaceCategory:
+ *               eventCategory:
  *                 type: array
  *                 items:
  *                   type: object
  *                   properties:
  *                     name:
  *                       type: string
- *               amenity:
+ *               spaceId:
+ *                 type: string
+ *                 description: Id of the Space.
+ *               eventDate:
  *                 type: array
  *                 items:
  *                   type: object
  *                   properties:
- *                     name:
+ *                     startDate:
  *                       type: string
  *                       description: Name of the Amenity.
- *                     iconUrl:
+ *                     endDate:
  *                       type: string
  *                       description: URL of the icon image.
- *                 description: The Amenities and Features of the space.
+ *                 description: The Amenities and Features of the event.
  *               details:
  *                  type: object
  *                  properties:
  *                    description:
  *                       type: string
- *                       description: A brief description of the space
+ *                       description: A brief description of the event
  *                    htmlContent:
  *                       type: string
- *                       description: HTML content related to the space (e.g., description with HTML tags)
- *               location:
- *                 type: object
- *                 properties:
- *                   long:
- *                     type: number
- *                   lat:
- *                     type: number
- *                   additional:
- *                     type: string
+ *                       description: HTML content related to the event (e.g., description with HTML tags)
  *               status:
  *                 type: string
  *                 enum:
@@ -239,19 +193,19 @@ router.post(
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: Array of cover keys for the space.
+ *                 description: Array of cover keys for the event.
  *               image:
  *                 type: string
  *                 format: binary
  *     responses:
  *       200:
- *         description: space updated successfully.
+ *         description: event updated successfully.
  *       400:
  *         description: Validation error.
  *       403:
  *         description: Forbidden.
  *       404:
- *         description: space not found.
+ *         description: event not found.
  *       500:
  *         description: Server error.
  */
@@ -263,32 +217,26 @@ router.put(
     { name: FILE_FIELDS.COVER, maxCount: 10 },
     { name: FILE_FIELDS.IMAGE, maxCount: 1 },
   ]),
-  parseJsonFields([
-    "spaceCategory",
-    "details",
-    "location",
-    "amenity",
-    "pricing",
-  ]),
-  validate(SpaceValidation.UpdateSpace, "body"),
-  (req, res, next) => spaceController.updateSpace(req, req as any, res, next)
+  parseJsonFields(["eventCategory", "details", "location", "eventDate"]),
+  validate(EventValidation.UpdateEvent, "body"),
+  (req, res, next) => eventController.updateEvent(req, req as any, res, next)
 );
 
 /**
  * @swagger
- * /space/{id}:
+ * /event/{id}:
  *   get:
- *     summary: Get a specific space by ID or all spaces for the authenticated user
- *     description: This endpoint retrieves a specific space by its ID (if provided) or all spaces associated with the authenticated user. Pagination is supported for retrieving multiple spaces.
+ *     summary: Get a specific event by ID or all events for the authenticated user
+ *     description: This endpoint retrieves a specific event by its ID (if provided) or all events associated with the authenticated user. Pagination is supported for retrieving multiple spaces.
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Space
+ *       - Event
  *     parameters:
  *       - in: path
  *         name: id
  *         required: false
- *         description: ID of the space to retrieve (optional).
+ *         description: ID of the event to retrieve (optional).
  *         schema:
  *           type: string
  *       - in: query
@@ -307,21 +255,21 @@ router.put(
  *           example: 1
  *     responses:
  *       200:
- *         description: space found by ID or all spaces for the authenticated user.
+ *         description: event found by ID or all events for the authenticated user.
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 spaces:
+ *                 events:
  *                   type: array
  *                   items:
  *                     type: object
  *                     properties:
- *                       spaceName:
+ *                       eventName:
  *                         type: string
- *                         description: Name of the space.
- *                       spaceCategory:
+ *                         description: Name of the event.
+ *                       eventCategory:
  *                         type: array
  *                         items:
  *                           type: object
@@ -332,22 +280,19 @@ router.put(
  *                             description:
  *                               type: string
  *                               description: Description of the category.
- *                         description: Categories of the space.
+ *                         description: Categories of the event.
  *                       details:
  *                         type: object
- *                         description: Details about the space.
+ *                         description: Details about the event.
  *                       location:
  *                         type: object
  *                         properties:
  *                           long:
  *                             type: number
- *                             description: Longitude of the space's location.
+ *                             description: Longitude of the event's location.
  *                           lat:
  *                             type: number
- *                             description: Latitude of the space's location.
- *                           additional:
- *                             type: string
- *                             description: Additional information about the location.
+ *                             description: Latitude of the event's location.
  *                       status:
  *                         type: string
  *                         enum:
@@ -381,7 +326,7 @@ router.put(
  *                       type: integer
  *                       description: Total number of pages.
  *       404:
- *         description: space not found (if ID is provided) or no spaces found for the user.
+ *         description: event not found (if ID is provided) or no events found for the user.
  *       500:
  *         description: Server error.
  */
@@ -390,38 +335,7 @@ router.get(
   checkJwt,
   validateRoles([ROLES.USER]),
   setPagination,
-  (req, res, next) => spaceController.getAllSpaces(req, res, next)
-);
-
-/**
- * @swagger
- * /space/{id}:
- *   delete:
- *     summary: Delete a specific space by ID
- *     description: This endpoint allows users with the USER role to delete a space by its ID.
- *     security:
- *       - bearerAuth: []
- *     tags:
- *       - Space
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: ID of the space to delete
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: space deleted successfully.
- *       403:
- *         description: Forbidden.
- *       404:
- *         description: space not found.
- *       500:
- *         description: Server error.
- */
-router.delete("/:id", checkJwt, validateRoles([ROLES.USER]), (req, res, next) =>
-  spaceController.deleteSpace(req, res, next)
+  (req, res, next) => eventController.getAllEvents(req, res, next)
 );
 
 export { router };

@@ -1,20 +1,20 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { Brand, Spaces, User } from "../entity";
-import { ApiError } from "../errors";
+import { Brand, Spaces, User } from "../../entity";
+import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { calculatePricing, handleResponse, logger } from "../utils";
-import { CLOUD_FOLDERS, HTTP_STATUS, PAGINATION } from "../constants";
-import { uploadService } from "../services";
+import { calculatePricing, handleResponse, logger } from "../../utils";
+import { CLOUD_FOLDERS, HTTP_STATUS, PAGINATION } from "../../constants";
+import { uploadService } from "../../services";
 import {
   ICustomRequest,
   IFileObject,
   IFileRequest,
   PricingTerm,
   UploadResult,
-} from "../interfaces";
+} from "../../interfaces";
 import fs from "fs";
 import path from "path";
-import { commonHelper } from "../helpers";
+import { commonHelper } from "../../helpers";
 export class SpaceController {
   constructor(
     private spaceRepo: Repository<Spaces>,

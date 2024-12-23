@@ -40,6 +40,9 @@ export class User extends BaseEntity {
   @Column({ type: "varchar", length: 255, nullable: true })
   password: string;
 
+  @Column({ type: "varchar", length: 100, nullable: true })
+  userChatId: string;
+
   @Column({ type: "varchar", length: 50, nullable: true, default: "user" })
   role: string;
   @Column({

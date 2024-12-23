@@ -1,34 +1,39 @@
 import { Router } from "express";
-import { BrandValidation, validate } from "../validations";
-import { Brand, User } from "../entity";
-import { AppDataSource } from "../typeorm.config";
-import { BrandController } from "../controllers";
+import { SpaceValidation, validate } from "../../validations";
+import { Brand, Spaces, User } from "../../entity";
+import { AppDataSource } from "../../typeorm.config";
+import { SpaceController } from "../../controllers/account";
 import {
   checkJwt,
   handleMultipleFiles,
   handleSingleFile,
   setPagination,
   validateRoles,
-} from "../middleware";
-import { FILE_FIELDS, ROLES } from "../constants";
-import { parseJsonFields } from "../utils";
-import { IFileRequest } from "../interfaces";
+} from "../../middleware";
+import { FILE_FIELDS, ROLES } from "../../constants";
+import { parseJsonFields } from "../../utils";
+import { IFileRequest } from "../../interfaces";
 
 const router = Router();
-const brandRepository = AppDataSource.getRepository(Brand);
+const spaceRepository = AppDataSource.getRepository(Spaces);
 const userRepository = AppDataSource.getRepository(User);
-const brandController = new BrandController(brandRepository, userRepository);
+const brandRepository = AppDataSource.getRepository(Brand);
+const spaceController = new SpaceController(
+  spaceRepository,
+  userRepository,
+  brandRepository
+);
 
 /**
  * @swagger
- * /brand:
+ * /space:
  *   post:
- *     summary: Create a new brand
- *     description: This endpoint allows users with the USER role to create a new brand.
+ *     summary: Create a new space
+ *     description: This endpoint allows users with the USER role to create a new space.
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Brand
+ *       - Space
  *     requestBody:
  *       required: true
  *       content:
@@ -36,36 +41,63 @@ const brandController = new BrandController(brandRepository, userRepository);
  *           schema:
  *             type: object
  *             properties:
- *               brandName:
+ *               brandId:
  *                 type: string
- *                 description: Name of the brand.
- *               brandCategory:
+ *                 description: Name of the space.
+ *               spaceName:
+ *                 type: string
+ *                 description: Name of the space.
+ *               pricing:
+ *                 type: object
+ *                 properties:
+ *                   term:
+ *                     type: string
+ *                     description: Weekly/Daily/Monthly/Yearly.
+ *                   price:
+ *                     type: string
+ *                     description: Price of that Term.
+ *                   minimum:
+ *                     type: string
+ *                     description: Minimum Days of Term.
+ *               spaceCategory:
  *                 type: array
  *                 items:
  *                   type: object
  *                   properties:
  *                     name:
  *                       type: string
- *                       description: Name of the brand category.
- *                 description: The category of the brand.
+ *                       description: Name of the space category.
+ *                 description: The category of the space.
+ *               amenity:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                       description: Name of the Amenity.
+ *                     iconUrl:
+ *                       type: string
+ *                       description: URL of the icon image.
+ *                 description: The Amenities and Features of the space.
  *               details:
  *                  type: object
  *                  properties:
  *                    description:
  *                       type: string
- *                       description: A brief description of the brand
+ *                       description: A brief description of the space
  *                    htmlContent:
  *                       type: string
- *                       description: HTML content related to the brand (e.g., description with HTML tags)
+ *                       description: HTML content related to the space (e.g., description with HTML tags)
  *               location:
  *                 type: object
  *                 properties:
  *                   long:
  *                     type: number
- *                     description: Longitude of the brand's location.
+ *                     description: Longitude of the space's location.
  *                   lat:
  *                     type: number
- *                     description: Latitude of the brand's location.
+ *                     description: Latitude of the space's location.
  *                   additional:
  *                     type: string
  *                     description: Additional information about the location.
@@ -75,24 +107,19 @@ const brandController = new BrandController(brandRepository, userRepository);
  *                   - PUBLISH
  *                   - DRAFT
  *                   - ARCHIVE
- *               coverOrder:
- *                  type: array
- *                  items:
- *                    type: string
- *                  description: Array specifying the order of cover filenames.
  *               cover:
  *                 type: array
  *                 items:
  *                   type: string
  *                   format: binary
- *                 description: Array of cover images for the brand.
+ *                 description: Array of cover images for the space.
  *               image:
  *                 type: string
  *                 format: binary
- *                 description: Additional image of the brand.
+ *                 description: Additional image of the space.
  *     responses:
  *       201:
- *         description: Brand created successfully.
+ *         description: space created successfully.
  *       400:
  *         description: Validation error.
  *       403:
@@ -109,26 +136,32 @@ router.post(
     { name: FILE_FIELDS.COVER, maxCount: 10 },
     { name: FILE_FIELDS.IMAGE, maxCount: 1 },
   ]),
-  parseJsonFields(["brandCategory", "details", "location"]),
-  validate(BrandValidation.CreateBrand, "body"),
-  (req, res, next) => brandController.createBrand(req, req as any, res, next)
+  parseJsonFields([
+    "spaceCategory",
+    "details",
+    "location",
+    "amenity",
+    "pricing",
+  ]),
+  validate(SpaceValidation.CreateSpace, "body"),
+  (req, res, next) => spaceController.createSpace(req, req as any, res, next)
 );
 
 /**
  * @swagger
- * /brand/{id}:
+ * /space/{id}:
  *   put:
- *     summary: Update an existing brand
- *     description: This endpoint allows users with the USER role to update an existing brand.
+ *     summary: Update an existing space
+ *     description: This endpoint allows users with the USER role to update an existing space.
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Brand
+ *       - Space
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID of the brand to update
+ *         description: ID of the space to update
  *         schema:
  *           type: string
  *     requestBody:
@@ -137,24 +170,51 @@ router.post(
  *           schema:
  *             type: object
  *             properties:
- *               brandName:
+ *               spaceName:
  *                 type: string
- *               brandCategory:
+ *               brandId:
+ *                 type: string
+ *                 description: Id of the Brand.
+ *               pricing:
+ *                 type: object
+ *                 properties:
+ *                   term:
+ *                     type: string
+ *                     description: Weekly/Daily/Monthly/Yearly.
+ *                   price:
+ *                     type: string
+ *                     description: Price of that Term.
+ *                   minimum:
+ *                     type: string
+ *                     description: Minimum Days of Term.
+ *               spaceCategory:
  *                 type: array
  *                 items:
  *                   type: object
  *                   properties:
  *                     name:
  *                       type: string
+ *               amenity:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                       description: Name of the Amenity.
+ *                     iconUrl:
+ *                       type: string
+ *                       description: URL of the icon image.
+ *                 description: The Amenities and Features of the space.
  *               details:
  *                  type: object
  *                  properties:
  *                    description:
  *                       type: string
- *                       description: A brief description of the brand
+ *                       description: A brief description of the space
  *                    htmlContent:
  *                       type: string
- *                       description: HTML content related to the brand (e.g., description with HTML tags)
+ *                       description: HTML content related to the space (e.g., description with HTML tags)
  *               location:
  *                 type: object
  *                 properties:
@@ -164,7 +224,6 @@ router.post(
  *                     type: number
  *                   additional:
  *                     type: string
- *
  *               status:
  *                 type: string
  *                 enum:
@@ -186,13 +245,13 @@ router.post(
  *                 format: binary
  *     responses:
  *       200:
- *         description: Brand updated successfully.
+ *         description: space updated successfully.
  *       400:
  *         description: Validation error.
  *       403:
  *         description: Forbidden.
  *       404:
- *         description: Brand not found.
+ *         description: space not found.
  *       500:
  *         description: Server error.
  */
@@ -204,26 +263,32 @@ router.put(
     { name: FILE_FIELDS.COVER, maxCount: 10 },
     { name: FILE_FIELDS.IMAGE, maxCount: 1 },
   ]),
-  parseJsonFields(["brandCategory", "details", "location"]),
-  validate(BrandValidation.UpdateBrand, "body"),
-  (req, res, next) => brandController.updateBrand(req, req as any, res, next)
+  parseJsonFields([
+    "spaceCategory",
+    "details",
+    "location",
+    "amenity",
+    "pricing",
+  ]),
+  validate(SpaceValidation.UpdateSpace, "body"),
+  (req, res, next) => spaceController.updateSpace(req, req as any, res, next)
 );
 
 /**
  * @swagger
- * /brand/{id}:
+ * /space/{id}:
  *   get:
- *     summary: Get a specific brand by ID or all brands for the authenticated user
- *     description: This endpoint retrieves a specific brand by its ID (if provided) or all brands associated with the authenticated user. Pagination is supported for retrieving multiple brands.
+ *     summary: Get a specific space by ID or all spaces for the authenticated user
+ *     description: This endpoint retrieves a specific space by its ID (if provided) or all spaces associated with the authenticated user. Pagination is supported for retrieving multiple spaces.
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Brand
+ *       - Space
  *     parameters:
  *       - in: path
  *         name: id
  *         required: false
- *         description: ID of the brand to retrieve (optional).
+ *         description: ID of the space to retrieve (optional).
  *         schema:
  *           type: string
  *       - in: query
@@ -242,21 +307,21 @@ router.put(
  *           example: 1
  *     responses:
  *       200:
- *         description: Brand found by ID or all brands for the authenticated user.
+ *         description: space found by ID or all spaces for the authenticated user.
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 brands:
+ *                 spaces:
  *                   type: array
  *                   items:
  *                     type: object
  *                     properties:
- *                       brandName:
+ *                       spaceName:
  *                         type: string
- *                         description: Name of the brand.
- *                       brandCategory:
+ *                         description: Name of the space.
+ *                       spaceCategory:
  *                         type: array
  *                         items:
  *                           type: object
@@ -267,19 +332,19 @@ router.put(
  *                             description:
  *                               type: string
  *                               description: Description of the category.
- *                         description: Categories of the brand.
+ *                         description: Categories of the space.
  *                       details:
  *                         type: object
- *                         description: Details about the brand.
+ *                         description: Details about the space.
  *                       location:
  *                         type: object
  *                         properties:
  *                           long:
  *                             type: number
- *                             description: Longitude of the brand's location.
+ *                             description: Longitude of the space's location.
  *                           lat:
  *                             type: number
- *                             description: Latitude of the brand's location.
+ *                             description: Latitude of the space's location.
  *                           additional:
  *                             type: string
  *                             description: Additional information about the location.
@@ -316,7 +381,7 @@ router.put(
  *                       type: integer
  *                       description: Total number of pages.
  *       404:
- *         description: Brand not found (if ID is provided) or no brands found for the user.
+ *         description: space not found (if ID is provided) or no spaces found for the user.
  *       500:
  *         description: Server error.
  */
@@ -325,38 +390,38 @@ router.get(
   checkJwt,
   validateRoles([ROLES.USER]),
   setPagination,
-  (req, res, next) => brandController.getAllBrands(req, res, next)
+  (req, res, next) => spaceController.getAllSpaces(req, res, next)
 );
 
 /**
  * @swagger
- * /brand/{id}:
+ * /space/{id}:
  *   delete:
- *     summary: Delete a specific brand by ID
- *     description: This endpoint allows users with the USER role to delete a brand by its ID.
+ *     summary: Delete a specific space by ID
+ *     description: This endpoint allows users with the USER role to delete a space by its ID.
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Brand
+ *       - Space
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID of the brand to delete
+ *         description: ID of the space to delete
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Brand deleted successfully.
+ *         description: space deleted successfully.
  *       403:
  *         description: Forbidden.
  *       404:
- *         description: Brand not found.
+ *         description: space not found.
  *       500:
  *         description: Server error.
  */
 router.delete("/:id", checkJwt, validateRoles([ROLES.USER]), (req, res, next) =>
-  brandController.deleteBrand(req, res, next)
+  spaceController.deleteSpace(req, res, next)
 );
 
 export { router };

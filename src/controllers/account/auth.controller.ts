@@ -1,11 +1,23 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { User } from "../entity";
-import { ApiError } from "../errors";
+import { User } from "../../entity";
+import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { handleResponse, logger } from "../utils";
-import { HTTP_STATUS } from "../constants";
+import { handleResponse, logger } from "../../utils";
+import { CHAT_COOKIE, HTTP_STATUS } from "../../constants";
 import jwt from "jsonwebtoken";
+import { UserForChat } from "../../models";
 import bcrypt from "bcryptjs";
+const cookieOptions: {
+  maxAge: number;
+  sameSite: "none" | "lax" | "strict";
+  httpOnly: boolean;
+  secure: boolean;
+} = {
+  maxAge: 3600000,
+  sameSite: "lax",
+  httpOnly: true,
+  secure: true,
+};
 
 export class AuthController {
   constructor(private usersRepo: Repository<User>) {}
@@ -39,29 +51,52 @@ export class AuthController {
         const existingUser = (await this.usersRepo.findOne({
           where: { email, loginType },
         })) as User;
+
         if (existingUser && existingUser.isSocialLogin == false) {
           throw new ApiError(
             "Invalid Login Method or Email Already Exists",
             HTTP_STATUS.BAD_REQUEST
           );
         }
+
         if (existingUser && existingUser.loginType == loginType) {
+          const userChat = await UserForChat.findById(existingUser.userChatId);
+          let socketUser = userChat;
+          if (!userChat) {
+            const newUserChat = await UserForChat.create({
+              name: firstName + " " + lastName,
+              accountId: existingUser.id,
+              username: email,
+              password: "",
+              bio: "",
+              avatar: profileImage,
+            });
+            socketUser = newUserChat;
+            const usersocketId = socketUser._id;
+            existingUser.userChatId = usersocketId.toString();
+            await this.usersRepo.save(existingUser);
+          }
+
           const token = jwt.sign(
             {
               id: existingUser.id,
               email: existingUser.email,
               role: existingUser.role,
+              _id: socketUser._id,
             },
             process.env.JWT_SECRET!,
             { expiresIn: "24h" }
           );
 
-          res.status(HTTP_STATUS.OK).json(
-            handleResponse("Social Login successful", {
-              token,
-              user: existingUser,
-            })
-          );
+          res
+            .status(HTTP_STATUS.OK)
+            .cookie(CHAT_COOKIE, token, cookieOptions)
+            .json(
+              handleResponse("Social Login successful", {
+                token,
+                user: existingUser,
+              })
+            );
           return next();
         }
 
@@ -72,24 +107,48 @@ export class AuthController {
         user.loginType = loginType;
         user.isSocialLogin = true;
         user.role = role;
+        user.userChatId = "";
 
         user.socialId = socialId;
 
         const newUser = await this.usersRepo.save(user);
 
+        let socketUser;
+
+        const newUserChat = await UserForChat.create({
+          name: firstName + " " + lastName,
+          accountId: newUser.id,
+          username: email,
+          password: "",
+          bio: "",
+          avatar: profileImage,
+        });
+        socketUser = newUserChat;
+
+        const usersocketId = socketUser._id;
+        newUser.userChatId = usersocketId.toString();
+        await this.usersRepo.save(newUser);
         // Generate JWT for new social login user
         const token = jwt.sign(
-          { id: newUser.id, email: newUser.email, role: newUser.role },
+          {
+            id: newUser.id,
+            email: newUser.email,
+            role: newUser.role,
+            _id: socketUser._id,
+          },
           process.env.JWT_SECRET!,
           { expiresIn: "24h" }
         );
 
-        res.status(HTTP_STATUS.CREATED).json(
-          handleResponse("Social Sign Up Successfully", {
-            token,
-            user: newUser,
-          })
-        );
+        res
+          .status(HTTP_STATUS.CREATED)
+          .cookie(CHAT_COOKIE, token, cookieOptions)
+          .json(
+            handleResponse("Social Sign Up Successfully", {
+              token,
+              user: newUser,
+            })
+          );
         return next();
       }
 
@@ -120,19 +179,46 @@ export class AuthController {
 
       const newUser = await this.usersRepo.save(user);
 
+      const userChat = await UserForChat.findOne({
+        where: { accountId: newUser.id },
+      });
+      let socketUser = userChat;
+      if (!userChat) {
+        const newUserChat = await UserForChat.create({
+          name: firstName + " " + lastName,
+          accountId: newUser.id,
+          username: email,
+          password: "",
+          bio: "",
+          avatar: profileImage,
+        });
+        socketUser = newUserChat;
+        const usersocketId = socketUser._id;
+        newUser.userChatId = usersocketId.toString();
+        await this.usersRepo.save(newUser);
+      }
+
       const token = jwt.sign(
-        { id: newUser.id, email: newUser.email, role: newUser.role },
+        {
+          id: newUser.id,
+          email: newUser.email,
+          role: newUser.role,
+          _id: socketUser._id,
+        },
         process.env.JWT_SECRET!,
         { expiresIn: "24h" }
       );
       const { password: _, ...userWithoutPassword } = newUser;
 
-      res.status(HTTP_STATUS.CREATED).json(
-        handleResponse("Sign Up Successfully", {
-          token,
-          user: userWithoutPassword,
-        })
-      );
+      res
+        .status(HTTP_STATUS.CREATED)
+        .cookie(CHAT_COOKIE, token, cookieOptions)
+        .json(
+          handleResponse("Sign Up Successfully", {
+            token,
+            user: userWithoutPassword,
+          })
+        );
     } catch (error) {
       logger.error(
         `AuthController :: registerUser :: ${(error as Error)?.message}`
@@ -204,9 +290,15 @@ export class AuthController {
           HTTP_STATUS.UN_AUTHORIZED
         );
       }
-
+      const userChat = await UserForChat.findById(user.userChatId);
+      let socketUser = userChat;
       const token = jwt.sign(
-        { id: user.id, email: user.email, role: user.role },
+        {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          _id: socketUser._id,
+        },
         process.env.JWT_SECRET!,
         { expiresIn: "24h" }
       );
@@ -214,6 +306,7 @@ export class AuthController {
 
       res
         .status(HTTP_STATUS.OK)
+        .cookie(CHAT_COOKIE, token, cookieOptions)
         .json(
           handleResponse("Login successful", { token, userWithoutPassword })
         );
