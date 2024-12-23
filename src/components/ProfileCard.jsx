@@ -48,7 +48,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
             <Box
                 sx={{
                     position: "relative",
-                    minHeight: { xs: "400px", lg: "180px" },
+                    minHeight: { xs: "400px", md: "180px" },
                     flex: 1,
                     backgroundImage: isEdit && coverPreview
                         ? `linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url(${coverPreview})`
@@ -75,6 +75,8 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                             backgroundColor: "rgba(0, 0, 0, 0.4)",
                             zIndex: 1,
                             pointerEvents: "none",
+                            borderTopLeftRadius: "5px",
+                            borderTopRightRadius: "5px",
                         }}
                     />
                 )}
@@ -136,7 +138,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                     sx={{
                         position: "absolute",
                         width: { xs: "90%", md: "70%", lg: "50%", xl: "35%" },
-                        top: { xs: "50%", md: "0px" },
+                        top: { xs: "50%", md: "10px", lg: "10px", xl: "20px" },
                         left: "50%",
                         transform: "translate(-50%, -50%)",
                         zIndex: 99
@@ -152,8 +154,6 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                             justifyContent: "center",
                             alignItems: "center",
                             borderRadius: "5px",
-                            borderTopLeftRadius: !isEdit && { md: "12px" },
-                            borderTopRightRadius: !isEdit &&  { md: "12px" },
                         }}
                     >
                         {
@@ -170,7 +170,8 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                                         alignItems: "center",
                                         pt: "15px",
                                         overflow: "hidden",
-                                        position: "relative"
+                                        position: "relative",
+                                        borderRadius: "5px"
                                     }}
                                 >
                                     {previewImage && (
@@ -346,7 +347,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                                 upload image:
                             </Typography>
                             <figure
-                                style={{ width: "100%", height: "100%" }}
+                                style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "centers" }}
                                 role="img"
 
                             >
