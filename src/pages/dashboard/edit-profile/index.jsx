@@ -75,6 +75,8 @@ const EditProfile = () => {
                 rowGap: "20px",
                 flexDirection: "column",
                 backgroundColor: "white",
+                borderTopLeftRadius: "5px",
+                borderTopRightRadius: "5px",
                 pb: "5px"
             }}
         >
@@ -109,7 +111,16 @@ const EditProfile = () => {
                                 height: "auto",
                                 p: "10px",
                                 backgroundColor: "rgb(209, 219, 215, 0.2)",
-                                cursor: "text"
+                                cursor: "text",
+                                "& ul, & ol": {
+                                    paddingLeft: 2,
+                                },
+                                "& img": {
+                                    maxWidth: "100%",
+                                    height: "auto",
+                                    objectFit: "contain",
+                                    borderRadius: "5px"
+                                },
                             }}
                             onClick={() => setIsEditorVisible(true)}
                         >
