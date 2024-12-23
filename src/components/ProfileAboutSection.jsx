@@ -27,7 +27,7 @@ const ProfileAboutSection = ({ content }) => {
                                             textAlign: "left",
                                             color: theme.palette.primary.main,
                                             fontWeight: "600",
-
+                                            fontSize: "24px"
                                         }}
                                     >
                                         {item?.content}
@@ -53,7 +53,7 @@ const ProfileAboutSection = ({ content }) => {
                                                     textAlign: "left",
                                                     color: theme.palette.primary.main,
                                                     fontWeight: "600",
-
+                                                    fontSize: "20px"
                                                 }}
                                             >
                                                 {item?.content}
@@ -68,7 +68,7 @@ const ProfileAboutSection = ({ content }) => {
                                                     role="img"
 
                                                 >
-                                                    <img src={item?.content} style={{ width: "100%" }} />
+                                                    <img src={item?.content} style={{ width: "100%", borderRadius: "5px" }} />
                                                 </figure>
                             }
                         </React.Fragment>
@@ -187,6 +187,7 @@ const ProfileAboutSection = ({ content }) => {
                                         justifyContent: "center",
                                         alignItems: "center"
                                     }}
+                                    key={index}
                                 >
                                     <Box
                                         sx={{

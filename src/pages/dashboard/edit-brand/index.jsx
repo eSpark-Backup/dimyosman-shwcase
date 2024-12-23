@@ -312,6 +312,14 @@ const EditBrand = () => {
     )
   }
 
+  if (!data?.data) {
+    return (
+      <Box sx={{ width: "100%" }}>
+        <h1>No Data Found</h1>
+      </Box>
+    )
+  }
+
   return (
     <Box
       sx={{

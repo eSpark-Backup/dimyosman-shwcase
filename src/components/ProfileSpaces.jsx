@@ -51,7 +51,8 @@ const ProfileSpaces = ({ filter1, filter2, filter3, cardsData }) => {
                         alignItems: "center",
                         "&:hover": {
                             backgroundColor: "rgb(209, 219, 215, 0.4)",
-                        }
+                        },
+                        textTransform: "none"
                     }}
                     onClick={()=>navigate("/new-space")}
                 >

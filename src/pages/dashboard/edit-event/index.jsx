@@ -58,8 +58,6 @@ const EditEvent = () => {
         refetchOnMountOrArgChange: true,
     });
 
-    console.log(data)
-
     useEffect(() => {
         if (GetCategorySuccess && isSuccess) {
             const allCategories = GetCategoryData?.data?.map((cat, index) => ({
@@ -374,6 +372,14 @@ const EditEvent = () => {
         return (
             <Box sx={{ width: "100%" }}>
                 <LinearProgress />
+            </Box>
+        )
+    }
+
+    if (!data?.data) {
+        return (
+            <Box sx={{ width: "100%" }}>
+                <h1>No Data Found</h1>
             </Box>
         )
     }
