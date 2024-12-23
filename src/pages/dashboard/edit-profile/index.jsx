@@ -77,7 +77,8 @@ const EditProfile = () => {
                 backgroundColor: "white",
                 borderTopLeftRadius: "5px",
                 borderTopRightRadius: "5px",
-                pb: "5px"
+                pb: "10px",
+                marginBottom: "10px"
             }}
         >
             <ProfileCard
