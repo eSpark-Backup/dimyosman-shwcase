@@ -469,7 +469,7 @@ export class SpaceController {
         }
         const events = await this.eventsRepo
           .createQueryBuilder("event")
-          .where("event.spaceId = :spaceId", { spaceId: space.id })
+          .where("event.space = :spaceId", { spaceId: space.id })
           .getMany();
 
         const calendarEvents = events.flatMap((event) => {
@@ -516,7 +516,7 @@ export class SpaceController {
       for (const space of spaces) {
         const events = await this.eventsRepo
           .createQueryBuilder("event")
-          .where("event.spaceId = :spaceId", { spaceId: space.id })
+          .where("event.space = :spaceId", { spaceId: space.id })
           .getMany();
 
         const calendarEvents = events.flatMap((event) => {
