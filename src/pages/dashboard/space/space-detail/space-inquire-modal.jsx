@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
 import { LocalizationProvider, StaticDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -16,9 +16,87 @@ import {
   spaceActivityImage,
   spaceBadge,
 } from "../../../../assets";
+import { DateRangePicker } from "rsuite";
+import { toast } from "react-toastify";
+import { useSpacePriceMutation } from "../../../../services/space";
 
-const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
-  const [selectedDate, setSelectedDate] = useState(new Date());
+const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDates, brandName, spaceImage, pricing }) => {
+  const [selectedDate, setSelectedDate] = useState([]);
+  const selectedDateRef = useRef([]);
+  const [bookedRanges, setBookedRanges] = useState([]);
+  const [bookingDetails, setBookingDetails] = useState({
+    pricing: [],
+    days: 0
+  })
+  const [price, { data, isLoading, isError, error, isSuccess }] = useSpacePriceMutation()
+
+  useEffect(() => {
+    const bookedEventsDate = bookedDates?.map((item) => ({
+      start: new Date(item?.start),
+      end: new Date(item?.end),
+    }))
+
+    setBookedRanges(bookedEventsDate)
+  }, [bookedDates])
+
+  const isDateInRanges = (date, ranges) => {
+    return ranges.some(
+      (range) => date >= range.start && date <= range.end
+    );
+  };
+
+  const isRangeValid = (range, ranges) => {
+    if (!range || range.length < 2) return false;
+    const [startDate, endDate] = range;
+
+    for (
+      let d = new Date(startDate);
+      d <= endDate;
+      d.setDate(d.getDate() + 1)
+    ) {
+      if (isDateInRanges(new Date(d), ranges)) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const handleOk = () => {
+    const start = dayjs(selectedDateRef.current[0]);
+    const end = dayjs(selectedDateRef.current[1]);
+    const totalDays = end.diff(start, "day") + 1;
+
+    const updatedBookingDetails = {
+      pricing: pricing,
+      days: totalDays,
+    };
+    console.log(updatedBookingDetails)
+
+    setBookingDetails(updatedBookingDetails);
+    price({ priceData: updatedBookingDetails });
+  };
+
+
+  const handleDateChange = (newValue) => {
+    if (newValue === null) {
+      setSelectedDate([]);
+      selectedDateRef.current = [];
+      return;
+    }
+
+    if (isRangeValid(newValue, bookedRanges)) {
+      setSelectedDate(newValue);
+      selectedDateRef.current = newValue;
+    } else {
+      alert("Selected range includes disabled dates. Please choose a valid range.");
+      setSelectedDate([]);
+      selectedDateRef.current = [];
+    }
+  };
+
+  // useEffect(())
+
 
   return (
     <Modal
@@ -66,7 +144,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
               >
                 <img
                   style={{ width: "48px", height: "48px" }}
-                  src={spaceActivityImage}
+                  src={spaceImage}
                   alt="brand-profile"
                 />
                 <img
@@ -90,7 +168,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
                   fontSize={24}
                   variant="h2"
                 >
-                  Urban Pop-Up Studio 3B{" "}
+                  {spaceName}
                 </Typography>
                 <Typography
                   marginTop="10px"
@@ -98,7 +176,8 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
                   fontWeight={600}
                   fontSize={12}
                 >
-                  Urban Pop-Up Pavilion{" "}
+                  {brandName}
+
                 </Typography>
               </Box>
             </Stack>
@@ -117,55 +196,24 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
             alignItems="flex-start"
             gap="28px"
           >
-            <Box
-              sx={{
-                backgroundColor: "white",
-                borderRadius: "5px",
-              }}
-            >
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <StaticDatePicker
-                  sx={{
-                    width: "296px",
-                    minWidth: "296px",
-                    borderRadius: "5px",
-                    border: (theme) => theme.palette.border.primary,
-                    ".MuiDateCalendar-root": {
-                      width: "296px",
-                      minWidth: "296px",
-                    },
-                    ".Mui-selected": {
-                      color: (theme) =>
-                        `${theme.palette.primary.main} !important`,
-                      backgroundColor: (theme) =>
-                        `${theme.palette.secondary.main} !important`,
-                    },
-                    ".Mui-selected:hover": {
-                      color: (theme) =>
-                        `${theme.palette.primary.main} !important`,
-                      backgroundColor: (theme) =>
-                        `${theme.palette.secondary.main} !important`,
-                    },
-                    ".MuiPickersLayout-toolbar": {
-                      display: "none",
-                    },
-                    ".MuiDialogActions-root>:not(style)~:not(style)": {
-                      fontWeight: 700,
-                    },
-                    button: {
-                      background: "transparent",
-                      color: (theme) => theme.palette.primary.main,
-                      fontSize: "12px",
-                      ":hover": {
-                        background: "transparent",
-                      },
-                    },
-                  }}
-                  onChange={(date) => setSelectedDate(date)}
-                  defaultValue={dayjs(selectedDate) || dayjs()}
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <Box
+                sx={{
+                  width: '100%',
+                  minHeight: '300px',
+                }}
+              >
+                <DateRangePicker
+                  value={selectedDate}
+                  onChange={handleDateChange}
+                  onOk={handleOk}
+                  appearance="default"
+                  showOneCalendar
+                  menuStyle={{ zIndex: 1300 }}
+                  shouldDisableDate={(date) => isDateInRanges(date, bookedRanges)}
                 />
-              </LocalizationProvider>
-            </Box>
+              </Box>
+            </LocalizationProvider>
             <Stack
               direction="column"
               justifyContent="space-between"
@@ -175,7 +223,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
             >
               <Box>
                 <Typography textAlign="left" fontWeight={600} fontSize={12}>
-                  Selected Date Range:
+                  {selectedDate?.length === 0 ? "Please select date" : "Selected Date Range:"}
                 </Typography>
                 <time
                   style={{
@@ -186,7 +234,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
                     lineHeight: "140%",
                   }}
                 >
-                  24.02.2024 -
+                  {selectedDate?.length >= 1 ? dayjs(selectedDate[0]).format("DD.MM.YYYY") : "Start Date"}
                 </time>
                 <time
                   style={{
@@ -198,7 +246,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
                     display: "inline-block",
                   }}
                 >
-                  15-03.2024
+                  {selectedDate?.length >= 1 ? dayjs(selectedDate[1]).format("DD.MM.YYYY") : "End Date"}
                 </time>
               </Box>
               <Box>
