@@ -29,7 +29,7 @@ import { getSockets } from "./lib";
 import { socketAuthenticator } from "./middleware";
 import { Message } from "./models";
 import { connectDb } from "./utils/";
-const mongoURI = process.env.MONGO_URI;
+const mongoURI = process.env.ME_CONFIG_MONGODB_URL;
 const app = express();
 app.use(cookieParser());
 const corsOptions = {

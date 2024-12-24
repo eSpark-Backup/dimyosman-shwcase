@@ -13,15 +13,32 @@ const cookieOptions = {
   secure: true,
 };
 
-const connectDb = (uri: any) => {
-  mongoose
-    .connect(uri, { dbName: "ShwCase" })
-    .then((data) => {
+const connectDb = async (
+  uri: string,
+  retries: number = 5,
+  delay: number = 2000
+) => {
+  let attempt = 0;
+
+  while (attempt < retries) {
+    try {
+      const data = await mongoose.connect(uri, { dbName: "ShwCase" });
       console.log(`Connected to the database: ${data.connection.host}`);
-    })
-    .catch((err) => {
-      console.log(`Error connecting to the database. \n${err}`);
-    });
+      return;
+    } catch (err) {
+      attempt++;
+      console.log(
+        `Attempt ${attempt} failed. Error connecting to the database. \n${err}`
+      );
+      if (attempt < retries) {
+        console.log(`Retrying in ${delay / 1000} seconds...`);
+        await new Promise((res) => setTimeout(res, delay));
+      } else {
+        console.log("All retry attempts failed. Exiting...");
+        throw err;
+      }
+    }
+  }
 };
 const sendToken = (res: any, user: any, code: any, message: any) => {
   const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
