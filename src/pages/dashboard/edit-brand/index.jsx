@@ -55,13 +55,13 @@ const EditBrand = () => {
 
   useEffect(() => {
     if (GetCategorySuccess && isSuccess) {
-      const allCategories = GetCategoryData?.data?.map((cat, index) => ({
+      const allCategories = Array.isArray(GetCategoryData?.data) ? GetCategoryData?.data?.map((cat, index) => ({
         id: index,
         name: cat?.name,
         selected: false,
-      }));
-
-      const selectedCategories = data?.data?.brandCategory?.map((cat) => cat?.name);
+      })) : [];
+      
+      const selectedCategories = Array.isArray(data?.data?.brandCategory) ? data?.data?.brandCategory?.map((cat) => cat?.name) : [];
 
       const mergedCategories = allCategories.map((category) => ({
         ...category,
