@@ -60,13 +60,17 @@ const EditEvent = () => {
 
     useEffect(() => {
         if (GetCategorySuccess && isSuccess) {
-            const allCategories = GetCategoryData?.data?.map((cat, index) => ({
-                id: index,
-                name: cat?.name,
-                selected: false,
-            }));
+            const allCategories = Array.isArray(GetCategoryData?.data)
+                ? GetCategoryData.data.map((cat, index) => ({
+                    id: index,
+                    name: cat?.name,
+                    selected: false,
+                }))
+                : [];
 
-            const selectedCategories = data?.data?.eventCategory?.map((cat) => cat?.name);
+            const selectedCategories = Array.isArray(data?.data?.eventCategory)
+                ? data?.data?.eventCategory.map((cat) => cat?.name)
+                : [];
 
             const mergedCategories = allCategories.map((category) => ({
                 ...category,
@@ -84,10 +88,12 @@ const EditEvent = () => {
                 profileImage: data?.data?.eventImage,
                 eventOverview: data?.data?.details?.description,
                 cover: data?.data?.coverImages,
-                selectedDate: [
-                    new Date(data?.data?.eventDate[0]?.startDate),
-                    new Date(data?.data?.eventDate[0]?.endDate)
-                ],
+                selectedDate: Array.isArray(data?.data?.eventDate) && data?.data?.eventDate[0]
+                    ? [
+                        new Date(data.data.eventDate[0]?.startDate),
+                        new Date(data.data.eventDate[0]?.endDate)
+                    ]
+                    : [],
                 eventTitle: data?.data?.details?.htmlContent,
                 space: data?.data?.space?.id,
                 location: { lat: data?.data?.space?.location?.lat, long: data?.data?.space?.location?.long }
@@ -100,11 +106,13 @@ const EditEvent = () => {
 
     const [openMapModal, setMapModal] = useState(false);
 
-    const spaceOptions = spaceData?.data?.spaces?.map((brand) => ({
-        label: brand.spaceName,
-        value: brand.id,
-        item: brand,
-    }));
+    const spaceOptions = Array.isArray(spaceData?.data?.spaces)
+        ? spaceData.data.spaces.map((brand) => ({
+            label: brand.spaceName,
+            value: brand.id,
+            item: brand,
+        }))
+        : [];
 
     const [activeTab, setActiveTab] = useState("Details");
 
