@@ -137,7 +137,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                 <Box
                     sx={{
                         position: "absolute",
-                        width: { xs: "90%", md: "70%", lg: "50%", xl: "35%" },
+                        width: { xs: "90%", md: "70%", lg: "50%", xl: "40%" },
                         top: { xs: "50%", md: "10px", lg: "10px", xl: "20px" },
                         left: "50%",
                         transform: "translate(-50%, -50%)",
