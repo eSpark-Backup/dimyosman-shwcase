@@ -469,7 +469,7 @@ export class SpaceController {
         return next();
       }
 
-      const [spaces, totalItems] = await this.spaceRepo.findAndCount({
+      let [spaces, totalItems] = await this.spaceRepo.findAndCount({
         where: { user: { id: req.user?.id } },
         relations: ["brand"],
 
@@ -491,7 +491,7 @@ export class SpaceController {
         }
       });
 
-      const spacesWithPricing = spaces.map((space) => {
+      spaces = spaces.map((space) => {
         const totalPricing = calculatePricing(
           space.pricing as PricingTerm[],
           1
@@ -504,7 +504,7 @@ export class SpaceController {
 
       res.status(200).json(
         handleResponse("Spaces Fetched Successfully", {
-          spacesWithPricing,
+          spaces,
           pagination: {
             totalItems,
             currentPage: parseInt(page as string, 10),
