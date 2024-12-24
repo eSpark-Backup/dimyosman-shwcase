@@ -1,41 +1,34 @@
 import { Router } from "express";
-import { EventValidation, SpaceValidation, validate } from "../validations";
-import { Brand, Events, Spaces, User } from "../entity";
-import { AppDataSource } from "../typeorm.config";
-import { EventController } from "../controllers";
+import { BrandValidation, validate } from "../../validations";
+import { Brand, User } from "../../entity";
+import { AppDataSource } from "../../typeorm.config";
+import { BrandController } from "../../controllers/account";
 import {
   checkJwt,
   handleMultipleFiles,
   handleSingleFile,
   setPagination,
   validateRoles,
-} from "../middleware";
-import { FILE_FIELDS, ROLES } from "../constants";
-import { parseJsonFields } from "../utils";
-import { IFileRequest } from "../interfaces";
+} from "../../middleware";
+import { FILE_FIELDS, ROLES } from "../../constants";
+import { parseJsonFields } from "../../utils";
+import { IFileRequest } from "../../interfaces";
 
 const router = Router();
-const spaceRepository = AppDataSource.getRepository(Spaces);
-const userRepository = AppDataSource.getRepository(User);
 const brandRepository = AppDataSource.getRepository(Brand);
-const eventRepository = AppDataSource.getRepository(Events);
-const eventController = new EventController(
-  spaceRepository,
-  userRepository,
-  brandRepository,
-  eventRepository
-);
+const userRepository = AppDataSource.getRepository(User);
+const brandController = new BrandController(brandRepository, userRepository);
 
 /**
  * @swagger
- * /event:
+ * /brand:
  *   post:
- *     summary: Create a new event
- *     description: This endpoint allows users with the USER role to create a new event.
+ *     summary: Create a new brand
+ *     description: This endpoint allows users with the USER role to create a new brand.
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Event
+ *       - Brand
  *     requestBody:
  *       required: true
  *       content:
@@ -43,64 +36,63 @@ const eventController = new EventController(
  *           schema:
  *             type: object
  *             properties:
- *               brandId:
+ *               brandName:
  *                 type: string
- *                 description: Id of the Brand.
- *               spaceId:
- *                 type: string
- *                 description: Id of the Space.
- *               eventName:
- *                 type: string
- *                 description: Name of the event.
- *               eventCategory:
+ *                 description: Name of the brand.
+ *               brandCategory:
  *                 type: array
  *                 items:
  *                   type: object
  *                   properties:
  *                     name:
  *                       type: string
- *                       description: Name of the event category.
- *                 description: The category of the event.
- *               eventDate:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     startDate:
- *                       type: string
- *                       description: Name of the Amenity.
- *                     endDate:
- *                       type: string
- *                       description: URL of the icon image.
- *                 description: The Amenities and Features of the event.
+ *                       description: Name of the brand category.
+ *                 description: The category of the brand.
  *               details:
  *                  type: object
  *                  properties:
  *                    description:
  *                       type: string
- *                       description: A brief description of the event
+ *                       description: A brief description of the brand
  *                    htmlContent:
  *                       type: string
- *                       description: HTML content related to the event (e.g., description with HTML tags)
+ *                       description: HTML content related to the brand (e.g., description with HTML tags)
+ *               location:
+ *                 type: object
+ *                 properties:
+ *                   long:
+ *                     type: number
+ *                     description: Longitude of the brand's location.
+ *                   lat:
+ *                     type: number
+ *                     description: Latitude of the brand's location.
+ *                   additional:
+ *                     type: string
+ *                     description: Additional information about the location.
  *               status:
  *                 type: string
  *                 enum:
  *                   - PUBLISH
  *                   - DRAFT
  *                   - ARCHIVE
+ *               coverOrder:
+ *                  type: array
+ *                  items:
+ *                    type: string
+ *                  description: Array specifying the order of cover filenames.
  *               cover:
  *                 type: array
  *                 items:
  *                   type: string
  *                   format: binary
- *                 description: Array of cover images for the event.
+ *                 description: Array of cover images for the brand.
  *               image:
  *                 type: string
  *                 format: binary
- *                 description: Additional image of the event.
+ *                 description: Additional image of the brand.
  *     responses:
  *       201:
- *         description: event created successfully.
+ *         description: Brand created successfully.
  *       400:
  *         description: Validation error.
  *       403:
@@ -117,26 +109,26 @@ router.post(
     { name: FILE_FIELDS.COVER, maxCount: 10 },
     { name: FILE_FIELDS.IMAGE, maxCount: 1 },
   ]),
-  parseJsonFields(["eventCategory", "details", "location", "eventDate"]),
-  validate(EventValidation.CreateEvent, "body"),
-  (req, res, next) => eventController.createEvent(req, req as any, res, next)
+  parseJsonFields(["brandCategory", "details", "location"]),
+  validate(BrandValidation.CreateBrand, "body"),
+  (req, res, next) => brandController.createBrand(req, req as any, res, next)
 );
 
 /**
  * @swagger
- * /event/{id}:
+ * /brand/{id}:
  *   put:
- *     summary: Update an existing event
- *     description: This endpoint allows users with the USER role to update an existing event.
+ *     summary: Update an existing brand
+ *     description: This endpoint allows users with the USER role to update an existing brand.
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Event
+ *       - Brand
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID of the event to update
+ *         description: ID of the brand to update
  *         schema:
  *           type: string
  *     requestBody:
@@ -145,39 +137,34 @@ router.post(
  *           schema:
  *             type: object
  *             properties:
- *               eventName:
+ *               brandName:
  *                 type: string
- *               eventCategory:
+ *               brandCategory:
  *                 type: array
  *                 items:
  *                   type: object
  *                   properties:
  *                     name:
  *                       type: string
- *               spaceId:
- *                 type: string
- *                 description: Id of the Space.
- *               eventDate:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     startDate:
- *                       type: string
- *                       description: Name of the Amenity.
- *                     endDate:
- *                       type: string
- *                       description: URL of the icon image.
- *                 description: The Amenities and Features of the event.
  *               details:
  *                  type: object
  *                  properties:
  *                    description:
  *                       type: string
- *                       description: A brief description of the event
+ *                       description: A brief description of the brand
  *                    htmlContent:
  *                       type: string
- *                       description: HTML content related to the event (e.g., description with HTML tags)
+ *                       description: HTML content related to the brand (e.g., description with HTML tags)
+ *               location:
+ *                 type: object
+ *                 properties:
+ *                   long:
+ *                     type: number
+ *                   lat:
+ *                     type: number
+ *                   additional:
+ *                     type: string
+ *
  *               status:
  *                 type: string
  *                 enum:
@@ -193,19 +180,19 @@ router.post(
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: Array of cover keys for the event.
+ *                 description: Array of cover keys for the space.
  *               image:
  *                 type: string
  *                 format: binary
  *     responses:
  *       200:
- *         description: event updated successfully.
+ *         description: Brand updated successfully.
  *       400:
  *         description: Validation error.
  *       403:
  *         description: Forbidden.
  *       404:
- *         description: event not found.
+ *         description: Brand not found.
  *       500:
  *         description: Server error.
  */
@@ -217,26 +204,26 @@ router.put(
     { name: FILE_FIELDS.COVER, maxCount: 10 },
     { name: FILE_FIELDS.IMAGE, maxCount: 1 },
   ]),
-  parseJsonFields(["eventCategory", "details", "location", "eventDate"]),
-  validate(EventValidation.UpdateEvent, "body"),
-  (req, res, next) => eventController.updateEvent(req, req as any, res, next)
+  parseJsonFields(["brandCategory", "details", "location"]),
+  validate(BrandValidation.UpdateBrand, "body"),
+  (req, res, next) => brandController.updateBrand(req, req as any, res, next)
 );
 
 /**
  * @swagger
- * /event/{id}:
+ * /brand/{id}:
  *   get:
- *     summary: Get a specific event by ID or all events for the authenticated user
- *     description: This endpoint retrieves a specific event by its ID (if provided) or all events associated with the authenticated user. Pagination is supported for retrieving multiple spaces.
+ *     summary: Get a specific brand by ID or all brands for the authenticated user
+ *     description: This endpoint retrieves a specific brand by its ID (if provided) or all brands associated with the authenticated user. Pagination is supported for retrieving multiple brands.
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Event
+ *       - Brand
  *     parameters:
  *       - in: path
  *         name: id
  *         required: false
- *         description: ID of the event to retrieve (optional).
+ *         description: ID of the brand to retrieve (optional).
  *         schema:
  *           type: string
  *       - in: query
@@ -255,21 +242,21 @@ router.put(
  *           example: 1
  *     responses:
  *       200:
- *         description: event found by ID or all events for the authenticated user.
+ *         description: Brand found by ID or all brands for the authenticated user.
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 events:
+ *                 brands:
  *                   type: array
  *                   items:
  *                     type: object
  *                     properties:
- *                       eventName:
+ *                       brandName:
  *                         type: string
- *                         description: Name of the event.
- *                       eventCategory:
+ *                         description: Name of the brand.
+ *                       brandCategory:
  *                         type: array
  *                         items:
  *                           type: object
@@ -280,19 +267,22 @@ router.put(
  *                             description:
  *                               type: string
  *                               description: Description of the category.
- *                         description: Categories of the event.
+ *                         description: Categories of the brand.
  *                       details:
  *                         type: object
- *                         description: Details about the event.
+ *                         description: Details about the brand.
  *                       location:
  *                         type: object
  *                         properties:
  *                           long:
  *                             type: number
- *                             description: Longitude of the event's location.
+ *                             description: Longitude of the brand's location.
  *                           lat:
  *                             type: number
- *                             description: Latitude of the event's location.
+ *                             description: Latitude of the brand's location.
+ *                           additional:
+ *                             type: string
+ *                             description: Additional information about the location.
  *                       status:
  *                         type: string
  *                         enum:
@@ -326,7 +316,7 @@ router.put(
  *                       type: integer
  *                       description: Total number of pages.
  *       404:
- *         description: event not found (if ID is provided) or no events found for the user.
+ *         description: Brand not found (if ID is provided) or no brands found for the user.
  *       500:
  *         description: Server error.
  */
@@ -335,7 +325,38 @@ router.get(
   checkJwt,
   validateRoles([ROLES.USER]),
   setPagination,
-  (req, res, next) => eventController.getAllEvents(req, res, next)
+  (req, res, next) => brandController.getAllBrands(req, res, next)
+);
+
+/**
+ * @swagger
+ * /brand/{id}:
+ *   delete:
+ *     summary: Delete a specific brand by ID
+ *     description: This endpoint allows users with the USER role to delete a brand by its ID.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - Brand
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the brand to delete
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Brand deleted successfully.
+ *       403:
+ *         description: Forbidden.
+ *       404:
+ *         description: Brand not found.
+ *       500:
+ *         description: Server error.
+ */
+router.delete("/:id", checkJwt, validateRoles([ROLES.USER]), (req, res, next) =>
+  brandController.deleteBrand(req, res, next)
 );
 
 export { router };

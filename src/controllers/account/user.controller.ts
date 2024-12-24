@@ -1,12 +1,12 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { Events, User } from "../entity";
-import { ApiError } from "../errors";
+import { Events, User } from "../../entity";
+import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { handleResponse, logger } from "../utils";
-import { HTTP_STATUS } from "../constants";
+import { handleResponse, logger } from "../../utils";
+import { HTTP_STATUS } from "../../constants";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import { EventDate, ICustomRequest } from "../interfaces";
+import { EventDate, ICustomRequest } from "../../interfaces";
 
 export class UserController {
   constructor(

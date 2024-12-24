@@ -1,10 +1,10 @@
 import { Router } from "express";
 import Joi from "joi";
-import { AuthValidation, validate } from "../validations";
-import { AuthController } from "../controllers";
-import { User } from "../entity";
+import { AuthValidation, validate } from "../../validations";
+import { AuthController } from "../../controllers/account";
+import { User } from "../../entity";
 import { getRepository } from "typeorm";
-import { AppDataSource } from "../typeorm.config";
+import { AppDataSource } from "../../typeorm.config";
 
 const router = Router();
 const userRepository = AppDataSource.getRepository(User);

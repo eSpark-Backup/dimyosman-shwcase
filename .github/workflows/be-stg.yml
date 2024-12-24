@@ -113,6 +113,7 @@ jobs:
           echo "CLOUD_API_KEY: ${{ secrets.CLOUD_API_KEY }}" >> .env
           echo "EXPIRES_IN: ${{ secrets.EXPIRES_IN }}" >> .env        
           echo "SALT: ${{ secrets.SALT }}" >> .env
+          echo "ME_CONFIG_MONGODB_URL: ${{ secrets.ME_CONFIG_MONGODB_URL }}" >> .env
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-publish
@@ -181,8 +182,9 @@ jobs:
           CLOUD_API_KEY: ${{ secrets.CLOUD_API_KEY }}
           EXPIRES_IN: ${{ secrets.EXPIRES_IN }}
           SALT: ${{ secrets.SALT }}
+          ME_CONFIG_MONGODB_URL: ${{ secrets.ME_CONFIG_MONGODB_URL }}
 
         run: |
           docker compose pull
-          docker compose -p "shwcase_stack_stg" down 
+          docker compose -p "shwcase_stack_stg" down -v
           docker compose -p "shwcase_stack_stg" up -d

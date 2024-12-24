@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { CategoryValidation, validate } from "../validations";
-import { Category, User } from "../entity";
-import { AppDataSource } from "../typeorm.config";
-import { BrandController, CategoryController } from "../controllers";
-import { checkJwt, setPagination, validateRoles } from "../middleware";
-import { ROLES } from "../constants";
+import { CategoryValidation, validate } from "../../validations";
+import { Category, User } from "../../entity";
+import { AppDataSource } from "../../typeorm.config";
+import { BrandController, CategoryController } from "../../controllers/account";
+import { checkJwt, setPagination, validateRoles } from "../../middleware";
+import { ROLES } from "../../constants";
 
 const router = Router();
 const categoryRepository = AppDataSource.getRepository(Category);

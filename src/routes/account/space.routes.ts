@@ -1,18 +1,18 @@
 import { Router } from "express";
-import { SpaceValidation, validate } from "../validations";
-import { Brand, Spaces, User } from "../entity";
-import { AppDataSource } from "../typeorm.config";
-import { SpaceController } from "../controllers";
+import { SpaceValidation, validate } from "../../validations";
+import { Brand, Spaces, User } from "../../entity";
+import { AppDataSource } from "../../typeorm.config";
+import { SpaceController } from "../../controllers/account";
 import {
   checkJwt,
   handleMultipleFiles,
   handleSingleFile,
   setPagination,
   validateRoles,
-} from "../middleware";
-import { FILE_FIELDS, ROLES } from "../constants";
-import { parseJsonFields } from "../utils";
-import { IFileRequest } from "../interfaces";
+} from "../../middleware";
+import { FILE_FIELDS, ROLES } from "../../constants";
+import { parseJsonFields } from "../../utils";
+import { IFileRequest } from "../../interfaces";
 
 const router = Router();
 const spaceRepository = AppDataSource.getRepository(Spaces);
@@ -391,6 +391,65 @@ router.get(
   validateRoles([ROLES.USER]),
   setPagination,
   (req, res, next) => spaceController.getAllSpaces(req, res, next)
+);
+
+/**
+ * @swagger
+ * /space/price:
+ *   post:
+ *     summary: Calculate total price for a space based on pricing and date range
+ *     description: Calculate the total price dynamically for a given date range and pricing structure.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - Space
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               pricing:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     term:
+ *                       type: string
+ *                       enum: [Day, Week, Month, Year]
+ *                       description: The pricing term.
+ *                     price:
+ *                       type: string
+ *                       description: The price for the term.
+ *                     minimum:
+ *                       type: integer
+ *                       description: Minimum number of terms required.
+ *               days:
+ *                 type: integer
+ *                 description: The number of days for the calculation.
+ *                 example: 38
+ *     responses:
+ *       200:
+ *         description: Price calculation completed successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalPrice:
+ *                   type: string
+ *                   description: Calculated total price.
+ *                 termDetails:
+ *                   type: object
+ *                   description: The term used for calculation.
+ *       400:
+ *         description: Invalid request data.
+ *       500:
+ *         description: Server error.
+ */
+router.post("/price", checkJwt, validateRoles([ROLES.USER]), (req, res, next) =>
+  spaceController.getSpacePrice(req, res, next)
 );
 
 /**

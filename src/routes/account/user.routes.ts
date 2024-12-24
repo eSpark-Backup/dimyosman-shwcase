@@ -1,11 +1,11 @@
 import { Router } from "express";
 import Joi from "joi";
-import { AuthValidation, validate } from "../validations";
-import { UserController } from "../controllers";
-import { Events, User } from "../entity";
+import { AuthValidation, validate } from "../../validations";
+import { UserController } from "../../controllers/account";
+import { Events, User } from "../../entity";
 import { getRepository } from "typeorm";
-import { AppDataSource } from "../typeorm.config";
-import { setPagination } from "../middleware";
+import { AppDataSource } from "../../typeorm.config";
+import { setPagination } from "../../middleware";
 
 const router = Router();
 const userRepository = AppDataSource.getRepository(User);

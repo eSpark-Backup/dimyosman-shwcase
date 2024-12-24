@@ -3,21 +3,21 @@ import {
   AmenityValidation,
   CategoryValidation,
   validate,
-} from "../validations";
-import { Amenities, User } from "../entity";
-import { AppDataSource } from "../typeorm.config";
+} from "../../validations";
+import { Amenities, User } from "../../entity";
+import { AppDataSource } from "../../typeorm.config";
 import {
   AmenityController,
   BrandController,
   CategoryController,
-} from "../controllers";
+} from "../../controllers/account";
 import {
   checkJwt,
   handleMultipleFiles,
   setPagination,
   validateRoles,
-} from "../middleware";
-import { FILE_FIELDS, ROLES } from "../constants";
+} from "../../middleware";
+import { FILE_FIELDS, ROLES } from "../../constants";
 
 const router = Router();
 const amenityRepository = AppDataSource.getRepository(Amenities);

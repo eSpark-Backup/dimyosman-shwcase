@@ -1,19 +1,19 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { Brand, Events, Spaces, User } from "../entity";
-import { ApiError } from "../errors";
+import { Brand, Events, Spaces, User } from "../../entity";
+import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { handleResponse, logger, parseCoverImages } from "../utils";
-import { CLOUD_FOLDERS, HTTP_STATUS, PAGINATION } from "../constants";
-import { uploadService } from "../services";
+import { handleResponse, logger, parseCoverImages } from "../../utils";
+import { CLOUD_FOLDERS, HTTP_STATUS, PAGINATION } from "../../constants";
+import { uploadService } from "../../services";
 import {
   ICustomRequest,
   IFileObject,
   IFileRequest,
   UploadResult,
-} from "../interfaces";
+} from "../../interfaces";
 import fs from "fs";
 import path from "path";
-import { commonHelper } from "../helpers";
+import { commonHelper } from "../../helpers";
 export class EventController {
   constructor(
     private spaceRepo: Repository<Spaces>,

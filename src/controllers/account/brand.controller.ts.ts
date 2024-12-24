@@ -1,23 +1,23 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { Brand, BrandStatus, User } from "../entity";
-import { ApiError } from "../errors";
+import { Brand, BrandStatus, User } from "../../entity";
+import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { handleResponse, logger } from "../utils";
-import { commonHelper } from "../helpers";
+import { handleResponse, logger } from "../../utils";
+import { commonHelper } from "../../helpers";
 
 import {
   BRAND_STATUS,
   CLOUD_FOLDERS,
   HTTP_STATUS,
   PAGINATION,
-} from "../constants";
-import { uploadService } from "../services/";
+} from "../../constants";
+import { uploadService } from "../../services";
 import {
   ICustomRequest,
   IFileObject,
   IFileRequest,
   UploadResult,
-} from "../interfaces";
+} from "../../interfaces";
 import fs from "fs";
 import path from "path";
 export class BrandController {

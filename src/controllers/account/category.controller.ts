@@ -1,10 +1,10 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { Category, CategoryType, User } from "../entity";
-import { ApiError } from "../errors";
+import { Category, CategoryType, User } from "../../entity";
+import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { handleResponse, logger } from "../utils";
-import { ICustomRequest, IFileRequest, UploadResult } from "../interfaces";
-import { CATEGORY_TYPE } from "../constants";
+import { handleResponse, logger } from "../../utils";
+import { ICustomRequest, IFileRequest, UploadResult } from "../../interfaces";
+import { CATEGORY_TYPE } from "../../constants";
 
 export class CategoryController {
   constructor(

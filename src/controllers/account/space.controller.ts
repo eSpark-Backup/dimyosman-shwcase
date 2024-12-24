@@ -1,20 +1,20 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { Brand, Spaces, User } from "../entity";
-import { ApiError } from "../errors";
+import { Brand, Spaces, User } from "../../entity";
+import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { calculatePricing, handleResponse, logger } from "../utils";
-import { CLOUD_FOLDERS, HTTP_STATUS, PAGINATION } from "../constants";
-import { uploadService } from "../services";
+import { calculatePricing, handleResponse, logger } from "../../utils";
+import { CLOUD_FOLDERS, HTTP_STATUS, PAGINATION } from "../../constants";
+import { uploadService } from "../../services";
 import {
   ICustomRequest,
   IFileObject,
   IFileRequest,
   PricingTerm,
   UploadResult,
-} from "../interfaces";
+} from "../../interfaces";
 import fs from "fs";
 import path from "path";
-import { commonHelper } from "../helpers";
+import { commonHelper } from "../../helpers";
 export class SpaceController {
   constructor(
     private spaceRepo: Repository<Spaces>,
@@ -319,6 +319,123 @@ export class SpaceController {
         `SpaceController :: updateSpace :: ${(error as Error)?.message}`
       );
       return next(error);
+    }
+  }
+
+  async getSpacePrice(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const { pricing, days } = req.body;
+
+    if (!pricing || !days) {
+      res.status(400).json({ error: "Pricing array and days are required." });
+      return next();
+    }
+
+    try {
+      // Helper function to calculate additional days
+      const calculateAdditionalDays = (
+        termPrice: any,
+        divisor: any,
+        additionalDays: any
+      ) => {
+        const dailyRate = parseFloat(termPrice) / divisor;
+        return Math.round(dailyRate * additionalDays * 100) / 100;
+      };
+
+      // Sort pricing terms by hierarchy: Day, Week, Month, Year
+      const termOrder = { Day: 1, Week: 2, Month: 3, Year: 4 };
+      pricing.sort(
+        (a: PricingTerm, b: PricingTerm) =>
+          termOrder[a.term] - termOrder[b.term]
+      );
+
+      let totalPrice = 0;
+      let termDetails = {};
+
+      for (const term of pricing) {
+        const { term: termName, price, minimum } = term;
+        const termPrice = parseFloat(price);
+
+        switch (termName) {
+          case "Day":
+            if (days <= 6) {
+              totalPrice = termPrice * days;
+              termDetails = { term: "Day", price: termPrice, days };
+              break;
+            }
+            break;
+          case "Week":
+            if (days >= 7 && days <= 29) {
+              const weeks = Math.floor(days / 7);
+              const additionalDays = days % 7;
+              totalPrice =
+                weeks * termPrice +
+                calculateAdditionalDays(termPrice, 7, additionalDays);
+              termDetails = {
+                term: "Week",
+                price: termPrice,
+                weeks,
+                additionalDays,
+              };
+              break;
+            }
+            break;
+          case "Month":
+            if (days >= 30 && days <= 364) {
+              const months = Math.floor(days / 30);
+              const additionalDays = days % 30;
+              totalPrice =
+                months * termPrice +
+                calculateAdditionalDays(termPrice, 30, additionalDays);
+              termDetails = {
+                term: "Month",
+                price: termPrice,
+                months,
+                additionalDays,
+              };
+              break;
+            }
+            break;
+          case "Year":
+            if (days >= 365) {
+              const years = Math.floor(days / 365);
+              const additionalDays = days % 365;
+              totalPrice =
+                years * termPrice +
+                calculateAdditionalDays(termPrice, 365, additionalDays);
+              termDetails = {
+                term: "Year",
+                price: termPrice,
+                years,
+                additionalDays,
+              };
+              break;
+            }
+            break;
+          default:
+            break;
+        }
+
+        if (totalPrice > 0) break; // Exit loop once price is calculated
+      }
+
+      if (totalPrice === 0) {
+        res
+          .status(400)
+          .json({ error: "Invalid days for the provided pricing terms." });
+        return next();
+      }
+
+      res.status(200).json({ totalPrice: totalPrice.toFixed(2), termDetails });
+      return next();
+    } catch (error) {
+      res
+        .status(500)
+        .json({ error: "Server error occurred.", details: error.message });
+      return next();
     }
   }
 
