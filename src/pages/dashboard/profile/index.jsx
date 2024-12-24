@@ -33,7 +33,9 @@ const Profile = () => {
         display: "flex",
         rowGap: "20px",
         flexDirection: "column",
-        backgroundColor: "white"
+        backgroundColor: "white",
+        borderRadius: "5px",
+        marginBottom: "40px"
       }}
     >
       <ProfileCard
