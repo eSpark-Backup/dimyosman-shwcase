@@ -1,11 +1,12 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { Brand, Spaces, User } from "../../entity";
+import { Brand, Events, Spaces, User } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
 import { calculatePricing, handleResponse, logger } from "../../utils";
 import { CLOUD_FOLDERS, HTTP_STATUS, PAGINATION } from "../../constants";
 import { uploadService } from "../../services";
 import {
+  EventDate,
   ICustomRequest,
   IFileObject,
   IFileRequest,
@@ -19,7 +20,8 @@ export class SpaceController {
   constructor(
     private spaceRepo: Repository<Spaces>,
     private userRepo: Repository<User>,
-    private brandRepo: Repository<Brand>
+    private brandRepo: Repository<Brand>,
+    private eventsRepo: Repository<Events>
   ) {}
 
   async createSpace(
@@ -447,14 +449,15 @@ export class SpaceController {
     try {
       const { id } = req.params;
       const { page, take, skip } = req?.query;
-      // Ensure skip and take are numbers
       const skipNumber = Number(skip);
       const takeNumber = Number(take);
       if (id && id !== "{id}") {
-        const space = await this.spaceRepo.findOne({
-          where: { id },
-          relations: ["brand"],
-        });
+        const space = await this.spaceRepo
+          .createQueryBuilder("space")
+          .leftJoinAndSelect("space.brand", "brand")
+          .where("space.id = :id", { id })
+          .leftJoinAndSelect("space.user", "user")
+          .getOne();
 
         if (!space) {
           res.status(200).json(handleResponse("Space not found"));
@@ -464,21 +467,41 @@ export class SpaceController {
         if (typeof space.coverImages === "string") {
           space.coverImages = JSON.parse(space.coverImages);
         }
+        const events = await this.eventsRepo
+          .createQueryBuilder("event")
+          .where("event.spaceId = :spaceId", { spaceId: space.id })
+          .getMany();
 
+        const calendarEvents = events.flatMap((event) => {
+          const eventDates: EventDate[] = Array.isArray(event.eventDate)
+            ? event.eventDate
+            : JSON.parse(event.eventDate as unknown as string);
+
+          return eventDates.map((dateRange) => ({
+            eventId: event.id,
+            title: event.eventName,
+            start: new Date(dateRange.startDate),
+            end: new Date(dateRange.endDate),
+          }));
+        });
+        (space as any).calendarEvents = calendarEvents;
+        const totalPricing = calculatePricing(
+          space.pricing as PricingTerm[],
+          1
+        );
         res.status(200).json(handleResponse("Space Found Successfully", space));
         return next();
       }
 
-      let [spaces, totalItems] = await this.spaceRepo.findAndCount({
-        where: { user: { id: req.user?.id } },
-        relations: ["brand"],
-
-        skip: skipNumber,
-        take: takeNumber,
-        order: {
-          createdAt: "DESC",
-        },
-      });
+      let [spaces, totalItems] = await this.spaceRepo
+        .createQueryBuilder("space")
+        .leftJoinAndSelect("space.brand", "brand")
+        .where("space.user = :userId", { userId: req.user?.id })
+        .leftJoinAndSelect("space.user", "user")
+        .orderBy("space.createdAt", "DESC")
+        .skip(skipNumber)
+        .take(takeNumber)
+        .getManyAndCount();
 
       if (spaces.length === 0) {
         res.status(200).json(handleResponse("No Spaces Found"));
@@ -490,6 +513,27 @@ export class SpaceController {
           space.coverImages = JSON.parse(space.coverImages);
         }
       });
+      for (const space of spaces) {
+        const events = await this.eventsRepo
+          .createQueryBuilder("event")
+          .where("event.spaceId = :spaceId", { spaceId: space.id })
+          .getMany();
+
+        const calendarEvents = events.flatMap((event) => {
+          const eventDates: EventDate[] = Array.isArray(event.eventDate)
+            ? event.eventDate
+            : JSON.parse(event.eventDate as unknown as string);
+
+          return eventDates.map((dateRange) => ({
+            eventId: event.id,
+            title: event.eventName,
+            start: new Date(dateRange.startDate),
+            end: new Date(dateRange.endDate),
+          }));
+        });
+
+        (space as any).calendarEvents = calendarEvents;
+      }
 
       spaces = spaces.map((space) => {
         const totalPricing = calculatePricing(
