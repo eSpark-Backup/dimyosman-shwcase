@@ -55,7 +55,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 AppDataSource.initialize()
   .then(() => {
     connectDb(mongoURI);
-    console.log("Database connection established successfully.");
+    console.log("Database connection established successfully");
     app.use(clearUploadsFolder);
     app.use("/api", router);
     app.use("/api/chat", ChatRouter);
