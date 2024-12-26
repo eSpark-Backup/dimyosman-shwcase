@@ -10,16 +10,23 @@ export const authApi = api.injectEndpoints({
       }),
     }),
     register: builder.mutation({
-        query: (credentials) => ({
-          url: "/auth/register",
-          method: "POST",
-          body: credentials,
-        }),
+      query: (credentials) => ({
+        url: "/auth/register",
+        method: "POST",
+        body: credentials,
       }),
+    }),
+    verifyToken: builder.query({
+      query: () => ({
+        url: "/user/profile",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
 export const {
   useLoginMutation,
   useRegisterMutation,
+  useVerifyTokenQuery
 } = authApi;

@@ -59,7 +59,7 @@ const Calendar = () => {
   const { data, isLoading, isFetching, isError, error, isSuccess } = useGetCalendarQuery({}, { refetchOnMountOrArgChange: true })
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && data?.data) {
       const fetchedEvents = data?.data?.map((item) => {
         const now = Date.now();
         console.log(now, "Now");
@@ -76,7 +76,7 @@ const Calendar = () => {
       });
       setEvents(fetchedEvents);
     }
-  }, [isSuccess]);
+  }, [isSuccess,data]);
 
 
   const getEventClassNames = (event) => {

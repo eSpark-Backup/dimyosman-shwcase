@@ -153,7 +153,6 @@ export const spaceApi = api.injectEndpoints({
         }),
         spacePrice: builder.mutation({
             query: ({ priceData }) => {
-                console.log(priceData)
                 return {
                     url: `/space/price`,
                     method: 'POST',

@@ -29,8 +29,9 @@ const NewEvent = () => {
         eventDate: null,
         selectedDate: [null, null],
         brand: "",
-        space: ""
+        space: "",
     });
+    const [bookedRanges, setBookedRanges] = useState([])
     const { data: brandData, isError: isBrandError, isLoading: BrandLoading, isSuccess: isBrandSuccess, error: brandError, isFetching: isBrandFetching } = useGetAllBrandsQuery({}, {
         refetchOnMountOrArgChange: true,
     });
@@ -105,7 +106,21 @@ const NewEvent = () => {
         });
     };
 
-
+    useEffect(() => {
+        if (eventData?.space !== "") {
+            const selectedSpace = spaceData?.data?.spaces?.filter((item) => item?.id === eventData?.space)?.[0];
+            if (selectedSpace?.calendarEvents?.length > 0) {
+                const bookedDates = selectedSpace.calendarEvents.map((item) => ({
+                    start: new Date(item?.start),
+                    end: new Date(item?.end),
+                }));
+                setBookedRanges(bookedDates);
+            }
+            else {
+                setBookedRanges([])
+            }
+        }
+    }, [eventData, eventData?.space])
 
 
     // Functions
@@ -441,6 +456,7 @@ const NewEvent = () => {
                     selectedValue={eventData?.space || ''}
                     eventData={eventData}
                     updateEventData={updateEventData}
+                    bookedRanges={bookedRanges}
                 />
                 <Box
                     sx={{

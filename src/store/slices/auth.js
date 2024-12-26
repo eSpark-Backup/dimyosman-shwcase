@@ -35,6 +35,15 @@ const slice = createSlice({
         localStorage.setItem("token", data.token);
       }
     );
+    builder.addMatcher(
+      authApi.endpoints.verifyToken.matchFulfilled,
+      (state, { payload }) => {
+        const { data } = payload;
+        // state.token = data.token;
+        state.user = data;
+        // localStorage.setItem("token", data.token);
+      }
+    );
   },
 });
 

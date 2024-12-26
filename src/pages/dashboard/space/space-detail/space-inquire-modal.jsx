@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
 import { LocalizationProvider, StaticDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Box, Button, Modal, Stack, Typography } from "@mui/material";
-import { Input } from "../../../../components";
+import { Box, Button, CircularProgress, Modal, Stack, Typography } from "@mui/material";
+import { Dropdown, Input } from "../../../../components";
 import {
   arrowDown,
   bold,
@@ -19,6 +19,7 @@ import {
 import { DateRangePicker } from "rsuite";
 import { toast } from "react-toastify";
 import { useSpacePriceMutation } from "../../../../services/space";
+import { useGetAllBrandsQuery } from "../../../../services/brands";
 
 const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDates, brandName, spaceImage, pricing }) => {
   const [selectedDate, setSelectedDate] = useState([]);
@@ -28,7 +29,11 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
     pricing: [],
     days: 0
   })
+  const [totalPrice, setTotalPrice] = useState("0")
   const [price, { data, isLoading, isError, error, isSuccess }] = useSpacePriceMutation()
+  const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError, isFetching: IsBrandFetching } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
+  const [brandOptions, setBrandOptions] = useState([])
+  const [selectedValue, setSelectedValue] = useState("");
 
   useEffect(() => {
     const bookedEventsDate = bookedDates?.map((item) => ({
@@ -63,18 +68,19 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
   };
 
   const handleOk = () => {
-    const start = dayjs(selectedDateRef.current[0]);
-    const end = dayjs(selectedDateRef.current[1]);
-    const totalDays = end.diff(start, "day") + 1;
+    if (selectedDateRef.current?.length > 0) {
+      const start = dayjs(selectedDateRef.current[0]);
+      const end = dayjs(selectedDateRef.current[1]);
+      const totalDays = end.diff(start, "day") + 1;
 
-    const updatedBookingDetails = {
-      pricing: pricing,
-      days: totalDays,
-    };
-    console.log(updatedBookingDetails)
+      const updatedBookingDetails = {
+        pricing: pricing,
+        days: totalDays,
+      };
 
-    setBookingDetails(updatedBookingDetails);
-    price({ priceData: updatedBookingDetails });
+      setBookingDetails(updatedBookingDetails);
+      price({ priceData: updatedBookingDetails });
+    }
   };
 
 
@@ -82,6 +88,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
     if (newValue === null) {
       setSelectedDate([]);
       selectedDateRef.current = [];
+      setTotalPrice("0")
       return;
     }
 
@@ -89,15 +96,42 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
       setSelectedDate(newValue);
       selectedDateRef.current = newValue;
     } else {
-      alert("Selected range includes disabled dates. Please choose a valid range.");
+      toast.error("Selected range includes disabled dates. Please choose a valid range.");
       setSelectedDate([]);
       selectedDateRef.current = [];
+      setTotalPrice("0")
+      return;
     }
   };
 
-  // useEffect(())
+  useEffect(() => {
+    if (isSuccess) {
+      setTotalPrice(data?.totalPrice)
+    }
+  }, [data, isSuccess])
 
+  useEffect(() => {
+    if (IsBrandSuccess && brandData) {
+      const options = Array.isArray(brandData?.data?.groupedBrands?.publishedBrands) ?
+        brandData?.data?.groupedBrands?.publishedBrands?.map((brand) => ({
+          label: brand.brandName,
+          value: brand.id,
+          item: brand,
+        })) : [];
+      setBrandOptions(options)
+    }
+  }, [brandData, IsBrandSuccess])
 
+  const handleSelectChange = (e) => {
+    console.log(e.target.value);
+    setSelectedValue(e.target.value)
+  }
+
+  if (IsBrandFetching || IsBrandLoading) {
+    return (
+      <>Loading...</>
+    )
+  }
   return (
     <Modal
       sx={{
@@ -254,7 +288,12 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
                   Selected lease total:
                 </Typography>
                 <Typography textAlign="left" fontSize={32} fontWeight={600}>
-                  $2000
+                  {isLoading ?
+                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: "5px" }}>
+                      <CircularProgress size={15} disableShrink />
+                    </Box>
+                    :
+                    `$${totalPrice}`}
                 </Typography>
               </Box>
             </Stack>
@@ -266,30 +305,15 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
             justifyContent="flex-start"
             alignItems="center"
           >
-            <Typography fontWeight={300} fontSize={16}>
-              Tenant:
-              <Typography
-                component="span"
-                sx={{ display: "inline", marginLeft: "5px" }}
-                fontWeight={600}
-                fontSize={16}
-              >
-                Brand Name
-              </Typography>
-            </Typography>
-            <Box
-              sx={{
-                width: "24px",
-                height: "24px",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <img width={8} height={5} src={arrowDown} alt="down" />
-            </Box>
+            <Dropdown
+              options={brandOptions}
+              onChange={handleSelectChange}
+              value={selectedValue}
+              label={'Select brand:'}
+              placeholder={"Brand name"}
+            />
           </Stack>
-          <Stack
+          {/* <Stack
             direction="row"
             justifyContent="flex-start"
             alignItems="center"
@@ -316,7 +340,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
             >
               <img width={8} height={5} src={arrowDown} alt="down" />
             </Box>
-          </Stack>
+          </Stack> */}
         </Box>
         <Box sx={{ marginY: "16px" }} component="section">
           <Input
