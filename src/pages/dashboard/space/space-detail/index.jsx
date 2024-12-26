@@ -30,7 +30,7 @@ const SpaceDetails = () => {
         profileName: data?.data?.spaceName,
         category: data?.data?.spaceCategory,
         details: {
-          by: "Urban Pop-Up Pavilion",
+          by: data?.data?.user?.name,
           saved: "789k",
         },
         rating: 5,
@@ -247,6 +247,11 @@ const SpaceDetails = () => {
         open={open}
         handleClose={() => setOpen(false)}
         handleSave={handleSave}
+        spaceName={data?.data?.spaceName}
+        brandName={data?.data?.brand?.brandName}
+        spaceImage={data?.data?.spaceImage}
+        bookedDates={data?.data?.calendarEvents}
+        pricing={data?.data?.pricing}
       />
     </>
   );

@@ -5,7 +5,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./sidebar";
 import { getSmallSidebar } from "../constant";
 
-const DashboardLayout = () => {
+const DashboardLayout = ({ isTokenChecking }) => {
   const navigate = useNavigate();
   const token = window.localStorage.getItem("token");
   const { pathname } = useLocation();
@@ -19,7 +19,7 @@ const DashboardLayout = () => {
       navigate("/auth?type=login");
     }
   }, []);
-  if (loading) {
+  if (loading || isTokenChecking) {
     return <SplashScreen />;
   }
   return (

@@ -85,7 +85,7 @@ export const spaceApi = api.injectEndpoints({
                 const formData = new FormData();
                 formData.append("brandId", spaceData?.selectedBrand)
                 formData.append("spaceName", spaceData?.spaceName)
-                
+
                 const pricing = spaceData?.price?.map((item) => ({
                     price: String(item?.price),
                     term: item?.term,
@@ -151,11 +151,21 @@ export const spaceApi = api.injectEndpoints({
                 };
             },
         }),
+        spacePrice: builder.mutation({
+            query: ({ priceData }) => {
+                return {
+                    url: `/space/price`,
+                    method: 'POST',
+                    body: priceData,
+                };
+            }
+        })
     }),
 });
 
 export const {
     useNewSpaceMutation,
     useGetAllSpaceQuery,
-    useEditSpaceMutation
+    useEditSpaceMutation,
+    useSpacePriceMutation
 } = spaceApi;

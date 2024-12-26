@@ -45,7 +45,7 @@ const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
                   }}
                   width={16}
                   height={16}
-                  src={eventBadge}
+                  src={spaceBadge}
                   alt="event-icon"
                 />
               </figure>

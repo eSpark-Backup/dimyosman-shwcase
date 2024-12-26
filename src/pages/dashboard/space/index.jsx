@@ -77,7 +77,6 @@ const Space = () => {
 
   const gotoDetail = (item) => {
     //go to detail page functionality
-    console.log(item, "item");
     navigate(`/space/${item?.id}`)
   };
 
