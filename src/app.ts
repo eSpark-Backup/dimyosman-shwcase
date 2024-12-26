@@ -81,6 +81,9 @@ AppDataSource.initialize()
 
     nsp.on("connection", (socket) => {
       const user = (socket as any).userId;
+      socket.broadcast.emit("NEW_USER_CONNECTED", {
+        message: ` has joined the chat!`,
+      });
 
       userSocketIDs.set(user._id.toString(), socket.id);
 
