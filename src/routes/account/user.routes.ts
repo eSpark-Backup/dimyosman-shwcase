@@ -127,4 +127,47 @@ router.get("/calender", setPagination, (req, res, next) =>
   userController.getCalender(req, res, next)
 );
 
+/**
+ * @swagger
+ * /user/profile:
+ *   get:
+ *     summary: Get authenticated user's profile
+ *     description: This endpoint retrieves the profile details of the authenticated user.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - User
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   description: User ID.
+ *                 username:
+ *                   type: string
+ *                   description: Username of the user.
+ *                 email:
+ *                   type: string
+ *                   description: Email of the user.
+ *                 fullName:
+ *                   type: string
+ *                   description: Full name of the user.
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                   description: User account creation date.
+ *       404:
+ *         description: User profile not found.
+ *       500:
+ *         description: Server error.
+ */
+router.get("/profile", (req, res, next) =>
+  userController.getUserProfile(req, res, next)
+);
+
 export { router };

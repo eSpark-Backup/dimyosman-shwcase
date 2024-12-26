@@ -29,6 +29,8 @@ import { getSockets } from "./lib";
 import { socketAuthenticator } from "./middleware";
 import { Message } from "./models";
 import { connectDb } from "./utils/";
+import { createUser } from "./seeders/user";
+import { createMessages, createSingleChats } from "./seeders/chat";
 const mongoURI = process.env.ME_CONFIG_MONGODB_URL;
 const app = express();
 app.use(cookieParser());
@@ -45,7 +47,8 @@ const io = new Server(server, {
 });
 
 app.set("io", io);
-
+// createSingleChats(20);
+// createMessages(6);
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

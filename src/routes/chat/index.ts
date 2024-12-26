@@ -10,6 +10,6 @@ ChatRouter.get("/", (req, res) => {
   res.json({ message: "Welcome to the Socket API!" });
 });
 
-ChatRouter.use("/user", checkJwt, validateRoles([ROLES.USER]), UserRoutes);
-ChatRouter.use("/", checkJwt, validateRoles([ROLES.USER]), chatRoute);
+ChatRouter.use("/user", UserRoutes);
+ChatRouter.use("/", chatRoute);
 export { ChatRouter };

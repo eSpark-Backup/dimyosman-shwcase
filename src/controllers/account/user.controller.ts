@@ -14,6 +14,36 @@ export class UserController {
     private eventsRepo: Repository<Events>
   ) {}
 
+  async getUserProfile(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      // Retrieve the authenticated user's details
+      const userId = req.user?.id;
+      const user = (await this.usersRepo
+        .createQueryBuilder("user")
+        .where("user.id = :userId", { userId })
+        .getOne()) as User;
+      if (!user) {
+        throw new ApiError("User profile not found", HTTP_STATUS.NOT_FOUND);
+      }
+
+      const { password: _, ...userProfile } = user;
+      res
+        .status(HTTP_STATUS.OK)
+        .json(
+          handleResponse("User profile retrieved successfully", userProfile)
+        );
+    } catch (error) {
+      logger.error(
+        `UserController :: getUserProfile :: ${(error as Error)?.message}`
+      );
+      return next(error);
+    }
+  }
+
   async getCalender(
     req: ICustomRequest,
     res: Response,

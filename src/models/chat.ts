@@ -6,6 +6,10 @@ const schema = new Schema(
       type: String,
       required: true,
     },
+    groupChat: {
+      type: Boolean,
+      default: false,
+    },
     creator: {
       type: Types.ObjectId,
       ref: "User",
