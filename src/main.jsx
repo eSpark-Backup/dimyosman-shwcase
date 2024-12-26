@@ -7,15 +7,18 @@ import { ThemeProvider } from "@emotion/react";
 import { theme } from "./theme.js";
 import { Provider } from "react-redux";
 import store from "./store/index.js";
+import SocketProvider from "./context/SocketContext.jsx";
 
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <ThemeProvider theme={theme}>
-      <Provider store={store}>
-        <App />
-      </Provider>
+        <Provider store={store}>
+          <SocketProvider>
+            <App />
+          </SocketProvider>
+        </Provider>
       </ThemeProvider>
     </BrowserRouter>
   </StrictMode>

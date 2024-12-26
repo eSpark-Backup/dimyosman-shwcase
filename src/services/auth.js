@@ -7,6 +7,7 @@ export const authApi = api.injectEndpoints({
         url: "/auth/login",
         method: "POST",
         body: credentials,
+        credentials: "include"
       }),
     }),
     register: builder.mutation({
@@ -14,12 +15,14 @@ export const authApi = api.injectEndpoints({
         url: "/auth/register",
         method: "POST",
         body: credentials,
+        credentials: "include"
       }),
     }),
     verifyToken: builder.query({
       query: () => ({
         url: "/user/profile",
         method: "GET",
+        credentials: "include"
       }),
     }),
   }),

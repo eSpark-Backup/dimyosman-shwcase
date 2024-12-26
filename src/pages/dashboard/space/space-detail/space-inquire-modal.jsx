@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
 import { LocalizationProvider, StaticDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Box, Button, CircularProgress, Modal, Stack, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, IconButton, Modal, Stack, Typography, useMediaQuery } from "@mui/material";
 import { Dropdown, Input } from "../../../../components";
 import {
   arrowDown,
@@ -20,6 +20,10 @@ import { DateRangePicker } from "rsuite";
 import { toast } from "react-toastify";
 import { useSpacePriceMutation } from "../../../../services/space";
 import { useGetAllBrandsQuery } from "../../../../services/brands";
+import MessageInput from "../../../../components/Message/MessageInput";
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
+
 
 const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDates, brandName, spaceImage, pricing }) => {
   const [selectedDate, setSelectedDate] = useState([]);
@@ -30,10 +34,15 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
     days: 0
   })
   const [totalPrice, setTotalPrice] = useState("0")
-  const [price, { data, isLoading, isError, error, isSuccess }] = useSpacePriceMutation()
+  const [price, { data: spaceData, isLoading, isError, error, isSuccess }] = useSpacePriceMutation()
   const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError, isFetching: IsBrandFetching } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
   const [brandOptions, setBrandOptions] = useState([])
   const [selectedValue, setSelectedValue] = useState("");
+  const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
+  const quillInstance = useRef(null);
+  const isLessThan1400 = useMediaQuery("(max-width:1400px)");
+  const isLessThan1280 = useMediaQuery("(max-width:1280px)");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const bookedEventsDate = bookedDates?.map((item) => ({
@@ -106,9 +115,9 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
 
   useEffect(() => {
     if (isSuccess) {
-      setTotalPrice(data?.totalPrice)
+      setTotalPrice(spaceData?.totalPrice)
     }
-  }, [data, isSuccess])
+  }, [spaceData, isSuccess])
 
   useEffect(() => {
     if (IsBrandSuccess && brandData) {
@@ -126,6 +135,28 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
     console.log(e.target.value);
     setSelectedValue(e.target.value)
   }
+
+  const addEmoji = (emoji) => {
+    const range = quillInstance.current.getSelection();
+    const cursorPosition = range
+      ? range.index
+      : quillInstance.current.getLength();
+
+    quillInstance.current.insertText(cursorPosition, emoji.native, "user");
+
+    quillInstance.current.formatText(
+      cursorPosition,
+      emoji.native.length,
+      "emoji",
+      true
+    );
+
+    setEmojiPickerVisible(false);
+  };
+
+  const handleInputChange = ({ content, text }) => {
+    setMessage(content);
+  };
 
   if (IsBrandFetching || IsBrandLoading) {
     return (
@@ -287,14 +318,11 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
                 <Typography textAlign="left" fontWeight={600} fontSize={12}>
                   Selected lease total:
                 </Typography>
-                <Typography textAlign="left" fontSize={32} fontWeight={600}>
-                  {isLoading ?
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: "5px" }}>
-                      <CircularProgress size={15} disableShrink />
-                    </Box>
-                    :
-                    `$${totalPrice}`}
-                </Typography>
+                {isLoading ? <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: "5px" }}>
+                  <CircularProgress size={15} disableShrink />
+                </Box> : <Typography textAlign="left" fontSize={32} fontWeight={600}>
+                  ${totalPrice}
+                </Typography>}
               </Box>
             </Stack>
           </Stack>
@@ -304,111 +332,157 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
             direction="row"
             justifyContent="flex-start"
             alignItems="center"
+            columnGap={1}
           >
+            <Typography
+              component="span"
+              sx={{ display: "inline", marginLeft: "5px" }}
+              fontWeight={600}
+              fontSize={16}
+            >
+              Select brand:
+            </Typography>
             <Dropdown
               options={brandOptions}
               onChange={handleSelectChange}
               value={selectedValue}
-              label={'Select brand:'}
               placeholder={"Brand name"}
             />
           </Stack>
-          {/* <Stack
-            direction="row"
-            justifyContent="flex-start"
-            alignItems="center"
-          >
-            <Typography fontWeight={300} fontSize={16}>
-              Event:
-              <Typography
-                component="span"
-                sx={{ display: "inline", marginLeft: "5px" }}
-                fontWeight={600}
-                fontSize={16}
-              >
-                Event Name
-              </Typography>
-            </Typography>
-            <Box
-              sx={{
-                width: "24px",
-                height: "24px",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <img width={8} height={5} src={arrowDown} alt="down" />
-            </Box>
-          </Stack> */}
+          
         </Box>
-        <Box sx={{ marginY: "16px" }} component="section">
-          <Input
-            multiline
-            rows={2}
-            sx={{
-              height: "auto",
+        <Box
+          sx={{
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
+            marginTop: "10px",
+            "& .ql-toolbar.ql-snow+.ql-container.ql-snow": {
+              border: "1px solid rgba(209, 219, 215, 0.5) !important",
+              borderTop: "1px solid rgba(209, 219, 215, 0.5) !important",
               borderRadius: "5px",
-              padding: "16px 10px",
-              background: (theme) => theme.palette.primary.contrastText,
-              border: (theme) =>
-                `1px solid ${theme.palette.border.borderColor[0]}`,
-            }}
-            placeholder={"Type your message here"}
-          />
-        </Box>
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          gap={1}
-          sx={{ marginY: "16px" }}
-          component="section"
-        >
-          <Stack
-            direction="row"
-            justifyContent="center"
-            alignItems="center"
-            gap="31px"
-          >
-            <img width={16} height={16} src={bold} alt="bold" />
-            <img width={16} height={16} src={italic} alt="italic" />
-            <img width={16} height={16} src={lineThrough} alt="line-through" />
-            <img width={16} height={16} src={paperClip} alt="paper-clip" />
-          </Stack>
-          <Stack
-            direction="row"
-            justifyContent="center"
-            alignItems="center"
-            gap="31px"
-          >
-            <Stack
-              direction="row"
-              justifyContent="center"
-              alignItems="center"
-              gap="18px"
-            >
-              <img width={24} height={24} src={link} alt="link" />
-              <img width={24} height={24} src={smile} alt="smile" />
-            </Stack>
-            <Button
-              onClick={() => handleSave(open)}
-              sx={{
-                width: "85px",
-                height: "31px",
-                fontSize: "16px",
-                fontWeight: 700,
-                color: (theme) => theme.palette.primary.main,
-                background: (theme) => theme.palette.button.primary,
-                ":hover": {
-                  color: (theme) => theme.palette.primary.contrastText,
+              marginBottom: isLessThan1400 ? 1.25 : 1.5,
+            },
+            "& .ql-toolbar.ql-snow": {
+              border: "1px solid white !important"
+            },
+            "& .ql-editor": {
+              padding: "10px 16px",
+              fontSize: "16px",
+              fontFamily: `"Segoe UI", "sans-serif"`,
+              fontStyle: "unset",
+              fontWeight: 400,
+              lineHeight: "21px",
+            },
+
+            "& .ql-blank::before": {
+              fontStyle: "unset",
+              color: "rgba(0, 20, 28, 0.5)",
+            },
+
+            "& .ql-tooltip": {
+              left: "0px !important",
+            },
+
+            "& .ql-toolbar": {
+              border: "none",
+              order: 2,
+              alignItems: "center",
+              width: isLessThan1280
+                ? "calc(100% - 135px)"
+                : "calc(100% - 145px)",
+              padding: "4px 8px !important",
+
+              "& .ql-formats": {
+                columnGap: isLessThan1280 ? "15px" : "25px",
+              },
+
+              "& .ql-formats:has(.ql-link)": {
+                flex: 1,
+                justifyContent: "end",
+                columnGap: "10px",
+              },
+
+              "& button": {
+                padding: 0,
+                width: "25px",
+              },
+
+              "& .ql-active": {
+                "& img": {
+                  filter:
+                    "invert(21%) sepia(80%) saturate(4500%) hue-rotate(190deg) brightness(100%) contrast(90%)",
                 },
+              },
+            },
+          }}
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: "0px !important",
+              right: "0px !important",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <IconButton
+              onClick={() => setEmojiPickerVisible(!emojiPickerVisible)}
+              sx={{
+                padding: 0,
+                margin: isLessThan1280
+                  ? "0px 25px 0px 0px !important"
+                  : "0px 35px 0px 0px !important",
+              }}
+              disableRipple
+            >
+              <img src={smile} />
+            </IconButton>
+
+            <Button
+              style={{ marginBottom: "10px" }}
+              sx={{
+                padding: 0,
+                margin: "0px !important",
+                height: "31px",
+                width: "85px",
+                fontWeight: 700,
+                fontSize: "16px",
+                bgcolor: "rgba(209, 219, 215, 0.4) !important",
+                color: "#00141C",
+                textTransform: "inherit",
+                lineHeight: "21px",
+                letterSpacing: "-0.01em",
               }}
             >
-              Send
+              SEND
             </Button>
-          </Stack>
-        </Stack>
+          </Box>
+
+          <MessageInput
+            emojiPickerVisible={emojiPickerVisible}
+            setEmojiPickerVisible={setEmojiPickerVisible}
+            quillInstance={quillInstance}
+            onChange={handleInputChange}
+          />
+          {emojiPickerVisible && (
+            <div
+              style={{
+                position: "absolute",
+                zIndex: 9999,
+                backgroundColor: "white",
+                padding: "10px",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                borderRadius: "8px",
+                bottom: "230px",
+                left: "10px",
+                border: "1px solid #ccc",
+              }}
+            >
+              <Picker data={data} onEmojiSelect={addEmoji} />
+            </div>
+          )}
+        </Box>
       </Box>
     </Modal>
   );

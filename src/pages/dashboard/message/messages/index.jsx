@@ -276,7 +276,7 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
                 }}
               >
                 <IconButton
-                  // onClick={() => setEmojiPickerVisible(!emojiPickerVisible)}
+                  onClick={() => setEmojiPickerVisible(!emojiPickerVisible)}
                   sx={{
                     padding: 0,
                     margin: isLessThan1280

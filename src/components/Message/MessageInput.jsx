@@ -9,6 +9,7 @@ const MessageInput = ({
   emojiPickerVisible,
   setEmojiPickerVisible,
   quillInstance,
+  onChange,
 }) => {
   const quillRef = useRef(null);
 
@@ -74,6 +75,15 @@ const MessageInput = ({
         if (imageButton) {
           imageButton.innerHTML = `<img src="${attachment}" alt="image"/>`;
         }
+
+        // Listen for text changes and call the onChange callback
+        quillInstance.current.on("text-change", () => {
+          const content = quillInstance.current.root.innerHTML; // Get HTML content
+          const text = quillInstance.current.getText(); // Get plain text content
+          if (onChange) {
+            onChange({ content, text }); // Pass the content to the parent
+          }
+        });
       }
     }
   }, [emojiPickerVisible]);
