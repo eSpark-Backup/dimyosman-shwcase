@@ -42,6 +42,7 @@ const corsOptions = {
 };
 
 const server = createServer(app);
+
 const io = new Server(server, {
   cors: corsOptions,
 });
@@ -62,8 +63,9 @@ AppDataSource.initialize()
     app.use(clearUploadsFolder);
     app.use("/api", router);
     app.use("/api/chat", ChatRouter);
+    const nsp = io.of("/socket");
 
-    io.use((socket, next) => {
+    nsp.use((socket, next) => {
       const req = socket.request as any;
       cookieParser()(
         req,
@@ -72,7 +74,7 @@ AppDataSource.initialize()
       );
     });
 
-    io.on("connection", (socket) => {
+    nsp.on("connection", (socket) => {
       const user = (socket as any).userId;
 
       userSocketIDs.set(user._id.toString(), socket.id);
