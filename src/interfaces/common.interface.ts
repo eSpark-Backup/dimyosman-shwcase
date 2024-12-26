@@ -19,7 +19,7 @@ export interface IRoutes {
 
 export interface ICustomRequest<T = Record<string, any>> extends Request {
   body: T;
-  user?: { role?: string; id?: string; email?: string };
+  user?: { role?: string; id?: string; email?: string; _id?: string };
   role?: string;
 }
 

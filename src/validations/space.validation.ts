@@ -41,6 +41,13 @@ export class SpaceValidation {
       .required(),
   });
 
+  static inquireSpace = Joi.object({
+    message: Joi.string().required(),
+    senderBrandId: Joi.string().required(),
+    receiverBrandId: Joi.string().required(),
+    receiverSpaceId: Joi.string().required(),
+  });
+
   static UpdateSpace = Joi.object({
     spaceName: Joi.string().optional(),
     brandId: Joi.string().optional(),
