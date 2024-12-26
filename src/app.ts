@@ -23,7 +23,7 @@ import {
 } from "./constants";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
-const envMode = process.env.NODE_ENV.trim() || "production";
+const envMode = "production";
 dotenv.config();
 import { getSockets } from "./lib";
 import { socketAuthenticator } from "./middleware";
@@ -79,7 +79,7 @@ AppDataSource.initialize()
       );
     });
 
-    nsp.on("connection", (socket) => {
+    nsp.on("connect", (socket) => {
       const user = (socket as any).userId;
       socket.broadcast.emit("NEW_USER_CONNECTED", {
         message: ` has joined the chat!`,

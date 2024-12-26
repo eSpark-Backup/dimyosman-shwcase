@@ -18,7 +18,7 @@ const socketAuthenticator = async (error: any, socket: any, next: any) => {
   try {
     if (error) return next(error);
 
-    const authToken = socket.request.cookies[CHAT_COOKIE];
+    const authToken = socket.request.headers.authorization?.split(" ")[1];
 
     if (!authToken) throw new Error("Token not found");
 
