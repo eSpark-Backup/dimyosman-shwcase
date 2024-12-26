@@ -15,13 +15,13 @@ import {
 } from "../../utils";
 
 const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
-  const chats = await Chat.find({ members: req.userId }).populate(
+  const chats = await Chat.find({ members: req.socketUserId }).populate(
     "members",
     "name avatar"
   );
 
   const transformedChats = chats.map(({ _id, name, members, groupChat }) => {
-    const otherMember = getOtherMember(members, req.userId);
+    const otherMember = getOtherMember(members, req.socketUserId);
 
     return {
       _id,
@@ -33,7 +33,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
         : [otherMember.avatar.url],
       name: groupChat ? name : otherMember.name,
       members: members.reduce((prev: any, curr: any) => {
-        if (curr._id.toString() !== req.userId.toString()) {
+        if (curr._id.toString() !== req.socketUserId.toString()) {
           prev.push(curr._id);
         }
         return prev;
@@ -60,7 +60,7 @@ const sendAttachments = TryCatch(async (req: any, res: any, next: any) => {
 
   const [chat, user] = await Promise.all([
     Chat.findById(chatId),
-    UserForChat.findById(req.userId, "name"),
+    UserForChat.findById(req.socketUserId, "name"),
   ]);
 
   if (!chat) return next(new ErrorHandler("chat not found", 404));
@@ -152,13 +152,16 @@ const deleteChat = TryCatch(async (req: any, res: any, next: any) => {
   const members = chat.members;
 
   // Permissions check
-  if (chat.groupChat && chat.creator.toString() !== req.userId.toString()) {
+  if (
+    chat.groupChat &&
+    chat.creator.toString() !== req.socketUserId.toString()
+  ) {
     return next(
       new ErrorHandler("You are not allowed to delete this group", 403)
     );
   }
 
-  if (!chat.groupChat && !chat.members.includes(req.userId.toString())) {
+  if (!chat.groupChat && !chat.members.includes(req.socketUserId.toString())) {
     return next(
       new ErrorHandler("You are not allowed to delete this chat", 403)
     );
