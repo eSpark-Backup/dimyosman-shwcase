@@ -35,7 +35,12 @@ const mongoURI = process.env.ME_CONFIG_MONGODB_URL;
 const app = express();
 app.use(cookieParser());
 const corsOptions = {
-  origin: "*",
+  origin: [
+    "http://localhost:8080", // Local frontend URL
+    "http://localhost", // Allow localhost if needed
+    "https://shwcase.esparkconsultants.com", // Corrected staging URL
+    "https://shwcase-stg.esparkconsultants.com",
+  ],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
