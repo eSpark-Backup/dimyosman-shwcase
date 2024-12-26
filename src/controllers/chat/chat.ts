@@ -214,7 +214,7 @@ const getMessages = TryCatch(async (req: any, res: any, next: any) => {
 
   if (!chat) return next(new ErrorHandler("chat not found", 404));
 
-  if (!chat.members.includes(req.userId.toString()))
+  if (!chat.members.includes(req.socketUserId.toString()))
     return next(new ErrorHandler("You are not allowed to view this chat", 403));
 
   const [messages, totalMessagesCount] = await Promise.all([

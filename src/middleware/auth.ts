@@ -5,7 +5,7 @@ import { TryCatch } from "./error";
 import { UnAuthorizedError } from "../errors";
 import { CHAT_COOKIE } from "../constants";
 const isAuthenticated = TryCatch((req: any, res: any, next: any) => {
-  const token = req.cookies[CHAT_COOKIE];
+  const token = req.headers.authorization?.split(" ")[1];
   if (!token) throw new Error("Token not found");
 
   const decodedData = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
