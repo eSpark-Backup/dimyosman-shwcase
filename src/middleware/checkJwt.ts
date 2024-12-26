@@ -21,6 +21,7 @@ export const checkJwt = (
       id: decoded.id,
       email: decoded.email,
       role: decoded.role,
+      _id: decoded._id,
     };
 
     return next();

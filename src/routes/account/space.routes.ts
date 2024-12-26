@@ -13,17 +13,102 @@ import {
 import { FILE_FIELDS, ROLES } from "../../constants";
 import { parseJsonFields } from "../../utils";
 import { IFileRequest } from "../../interfaces";
+import { Chat, Message, Notification, UserForChat } from "../../models";
 
 const router = Router();
 const spaceRepository = AppDataSource.getRepository(Spaces);
 const userRepository = AppDataSource.getRepository(User);
 const brandRepository = AppDataSource.getRepository(Brand);
 const eventRepository = AppDataSource.getRepository(Events);
+
 const spaceController = new SpaceController(
   spaceRepository,
   userRepository,
   brandRepository,
-  eventRepository
+  eventRepository,
+  Chat,
+  UserForChat,
+  Notification,
+  Message
+);
+
+/**
+ * @swagger
+ * /space/inquire:
+ *   post:
+ *     summary: Inquire about a space
+ *     description: This endpoint allows users to inquire about a specific space by sending a message to the creator.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - Space
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               receiverSpaceId:
+ *                 type: string
+ *                 description: The ID of the space being inquired about.
+ *               message:
+ *                 type: string
+ *                 description: The inquiry message.
+ *               senderBrandId:
+ *                 type: string
+ *                 description: The ID of the sender's brand.
+ *               receiverBrandId:
+ *                 type: string
+ *                 description: The ID of the Receiver's brand.
+ *     responses:
+ *       200:
+ *         description: Inquiry sent successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Inquiry sent successfully.
+ *       400:
+ *         description: Validation error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Validation error.
+ *       403:
+ *         description: Forbidden.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Forbidden access.
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: An unexpected error occurred.
+ */
+router.post(
+  "/inquire",
+  checkJwt,
+  validateRoles([ROLES.USER]),
+  validate(SpaceValidation.inquireSpace, "body"),
+  (req, res, next) => spaceController.inquireSpace(req, res, next)
 );
 
 /**
@@ -393,6 +478,125 @@ router.get(
   validateRoles([ROLES.USER]),
   setPagination,
   (req, res, next) => spaceController.getAllSpaces(req, res, next)
+);
+
+/**
+ * @swagger
+ * /space/publishedSpace/{id}:
+ *   get:
+ *     summary: Get a specific space by ID or all spaces for the authenticated user
+ *     description: This endpoint retrieves a specific space by its ID (if provided) or all spaces associated with the authenticated user. Pagination is supported for retrieving multiple spaces.
+ *     security:
+ *      - bearerAuth: []
+ *     tags:
+ *       - Space
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: false
+ *         description: ID of the space to retrieve (optional).
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: pageSize
+ *         required: false
+ *         description: Number of items per page (for paginated results).
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         description: Page number to retrieve (for paginated results).
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: space found by ID or all spaces for the authenticated user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 spaces:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       spaceName:
+ *                         type: string
+ *                         description: Name of the space.
+ *                       spaceCategory:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             name:
+ *                               type: string
+ *                               description: Name of the category.
+ *                             description:
+ *                               type: string
+ *                               description: Description of the category.
+ *                         description: Categories of the space.
+ *                       details:
+ *                         type: object
+ *                         description: Details about the space.
+ *                       location:
+ *                         type: object
+ *                         properties:
+ *                           long:
+ *                             type: number
+ *                             description: Longitude of the space's location.
+ *                           lat:
+ *                             type: number
+ *                             description: Latitude of the space's location.
+ *                           additional:
+ *                             type: string
+ *                             description: Additional information about the location.
+ *                       status:
+ *                         type: string
+ *                         enum:
+ *                           - PUBLISH
+ *                           - DRAFT
+ *                           - ARCHIVE
+ *                       coverImages:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             url:
+ *                               type: string
+ *                               description: URL of the cover image.
+ *                             public_id:
+ *                               type: string
+ *                               description: Public ID of the cover image.
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     totalItems:
+ *                       type: integer
+ *                       description: Total number of items.
+ *                     currentPage:
+ *                       type: integer
+ *                       description: Current page number.
+ *                     pageSize:
+ *                       type: integer
+ *                       description: Number of items per page.
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages.
+ *       404:
+ *         description: space not found (if ID is provided) or no spaces found for the user.
+ *       500:
+ *         description: Server error.
+ */
+router.get(
+  "/publishedSpace/:id?",
+  checkJwt,
+  validateRoles([ROLES.USER]),
+  setPagination,
+  (req, res, next) => spaceController.getAllPublishedSpaces(req, res, next)
 );
 
 /**

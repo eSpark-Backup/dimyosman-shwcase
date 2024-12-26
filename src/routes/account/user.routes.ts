@@ -6,11 +6,16 @@ import { Events, User } from "../../entity";
 import { getRepository } from "typeorm";
 import { AppDataSource } from "../../typeorm.config";
 import { setPagination } from "../../middleware";
+import { Notification } from "../../models";
 
 const router = Router();
 const userRepository = AppDataSource.getRepository(User);
 const eventRepository = AppDataSource.getRepository(Events);
-const userController = new UserController(userRepository, eventRepository);
+const userController = new UserController(
+  userRepository,
+  eventRepository,
+  Notification
+);
 
 /**
  * @swagger
@@ -168,6 +173,87 @@ router.get("/calender", setPagination, (req, res, next) =>
  */
 router.get("/profile", (req, res, next) =>
   userController.getUserProfile(req, res, next)
+);
+
+/**
+ * @swagger
+ * /user/notifications:
+ *   get:
+ *     summary: Get all notifications for the authenticated user
+ *     description: This endpoint retrieves all notifications associated with the authenticated user. Pagination is supported for retrieving multiple notifications.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - User
+ *     parameters:
+ *       - in: query
+ *         name: pageSize
+ *         required: false
+ *         description: Number of items per page (for paginated results).
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         description: Page number to retrieve (for paginated results).
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: Notifications retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 notifications:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         description: ID of the notification.
+ *                       title:
+ *                         type: string
+ *                         description: Title of the notification.
+ *                       message:
+ *                         type: string
+ *                         description: Content of the notification.
+ *                       type:
+ *                         type: string
+ *                         description: Type of the notification (e.g., alert, info, reminder).
+ *                       isRead:
+ *                         type: boolean
+ *                         description: Whether the notification has been read.
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Date and time the notification was created.
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     totalItems:
+ *                       type: integer
+ *                       description: Total number of items.
+ *                     currentPage:
+ *                       type: integer
+ *                       description: Current page number.
+ *                     pageSize:
+ *                       type: integer
+ *                       description: Number of items per page.
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages.
+ *       404:
+ *         description: No notifications found for the user.
+ *       500:
+ *         description: Server error.
+ */
+router.get("/notifications", setPagination, (req, res, next) =>
+  userController.fetchNotifications(req, res, next)
 );
 
 export { router };

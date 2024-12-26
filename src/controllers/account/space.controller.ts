@@ -2,9 +2,23 @@ import { NextFunction, Request, RequestHandler, Response } from "express";
 import { Brand, Events, Spaces, User } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { calculatePricing, handleResponse, logger } from "../../utils";
-import { CLOUD_FOLDERS, HTTP_STATUS, PAGINATION } from "../../constants";
+import {
+  calculatePricing,
+  emitEvent,
+  handleResponse,
+  logger,
+} from "../../utils";
+import {
+  CLOUD_FOLDERS,
+  HTTP_STATUS,
+  NEW_MESSAGE,
+  NEW_REQUEST,
+  PAGINATION,
+  REFETCH_CHATS,
+} from "../../constants";
 import { uploadService } from "../../services";
+import { Chat, UserForChat, Notification, Message } from "../../models";
+
 import {
   EventDate,
   ICustomRequest,
@@ -21,8 +35,79 @@ export class SpaceController {
     private spaceRepo: Repository<Spaces>,
     private userRepo: Repository<User>,
     private brandRepo: Repository<Brand>,
-    private eventsRepo: Repository<Events>
+    private eventsRepo: Repository<Events>,
+    private chatModel: typeof Chat,
+    private userModel: typeof UserForChat,
+    private notificationModel: typeof Notification,
+    private messageModel: typeof Message
   ) {}
+
+  async inquireSpace(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { receiverSpaceId, message, receiverBrandId, senderBrandId } =
+        req.body;
+      const receiverBrand = await this.brandRepo
+        .createQueryBuilder("brand")
+        .where("brand.id = :receiverBrandId", { receiverBrandId })
+        .leftJoinAndSelect("brand.user", "user")
+        .getOne();
+      if (!receiverBrand) {
+        throw new ApiError("Receiver Brand not found", HTTP_STATUS.NOT_FOUND);
+      }
+      const receiverSpace = await this.spaceRepo
+        .createQueryBuilder("space")
+        .where("space.id = :receiverSpaceId", { receiverSpaceId })
+        .leftJoinAndSelect("space.user", "user")
+        .getOne();
+      if (!receiverSpace) {
+        throw new ApiError("Receiver Space not found", HTTP_STATUS.NOT_FOUND);
+      }
+      const members = [req.user?._id, receiverBrand.user.userChatId];
+
+      const [NewChat, Noti] = await Promise.all([
+        this.chatModel.create({
+          members,
+          name: `Inquiring Brand ${receiverBrand.brandName} For Space ${receiverSpace.spaceName}`,
+          receiverBrand: receiverBrand.id,
+          senderBrand: senderBrandId,
+          creator: req.user?._id,
+          receiverSpace: receiverSpace.id,
+        }),
+
+        this.notificationModel.create({
+          user: receiverBrand.user.userChatId,
+          title: `New Inquiry For ${receiverSpace.spaceName}`,
+
+          message,
+          type: "info",
+        }),
+      ]);
+      const ChatId = NewChat.id.toString();
+      const messageForDB = {
+        content: message,
+        sender: req.user?._id,
+        chat: ChatId,
+      };
+      await this.messageModel.create(messageForDB);
+
+      emitEvent(req, REFETCH_CHATS, members);
+
+      emitEvent(req, NEW_REQUEST, [receiverBrand.user.userChatId]);
+      res
+        .status(HTTP_STATUS.OK)
+        .json(handleResponse("Inquiry Sent Successfully"));
+      return next();
+    } catch (error) {
+      logger.error(
+        `SpaceController :: InquireSpace :: ${(error as Error)?.message}`
+      );
+      return next(error);
+    }
+  }
 
   async createSpace(
     req: ICustomRequest,
@@ -497,6 +582,128 @@ export class SpaceController {
         .createQueryBuilder("space")
         .leftJoinAndSelect("space.brand", "brand")
         .where("space.user = :userId", { userId: req.user?.id })
+        .leftJoinAndSelect("space.user", "user")
+        .orderBy("space.createdAt", "DESC")
+        .skip(skipNumber)
+        .take(takeNumber)
+        .getManyAndCount();
+
+      if (spaces.length === 0) {
+        res.status(200).json(handleResponse("No Spaces Found"));
+        return next();
+      }
+
+      spaces.forEach((space) => {
+        if (typeof space.coverImages === "string") {
+          space.coverImages = JSON.parse(space.coverImages);
+        }
+      });
+      for (const space of spaces) {
+        const events = await this.eventsRepo
+          .createQueryBuilder("event")
+          .where("event.space = :spaceId", { spaceId: space.id })
+          .getMany();
+
+        const calendarEvents = events.flatMap((event) => {
+          const eventDates: EventDate[] = Array.isArray(event.eventDate)
+            ? event.eventDate
+            : JSON.parse(event.eventDate as unknown as string);
+
+          return eventDates.map((dateRange) => ({
+            eventId: event.id,
+            title: event.eventName,
+            start: new Date(dateRange.startDate),
+            end: new Date(dateRange.endDate),
+          }));
+        });
+
+        (space as any).calendarEvents = calendarEvents;
+      }
+
+      spaces = spaces.map((space) => {
+        const totalPricing = calculatePricing(
+          space.pricing as PricingTerm[],
+          1
+        );
+        return {
+          ...space,
+          totalPricing,
+        };
+      });
+
+      res.status(200).json(
+        handleResponse("Spaces Fetched Successfully", {
+          spaces,
+          pagination: {
+            totalItems,
+            currentPage: parseInt(page as string, 10),
+            pageSize: takeNumber,
+            totalPages: Math.ceil(totalItems / takeNumber),
+          },
+        })
+      );
+      return next();
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getAllPublishedSpaces(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { page, take, skip } = req?.query;
+      const skipNumber = Number(skip);
+      const takeNumber = Number(take);
+      if (id && id !== "{id}") {
+        const space = await this.spaceRepo
+          .createQueryBuilder("space")
+          .leftJoinAndSelect("space.brand", "brand")
+          .where("space.id = :id", { id })
+          .leftJoinAndSelect("space.user", "user")
+          .getOne();
+
+        if (!space) {
+          res.status(200).json(handleResponse("Space not found"));
+          return next();
+        }
+
+        if (typeof space.coverImages === "string") {
+          space.coverImages = JSON.parse(space.coverImages);
+        }
+        const events = await this.eventsRepo
+          .createQueryBuilder("event")
+          .where("event.space = :spaceId", { spaceId: space.id })
+          .getMany();
+
+        const calendarEvents = events.flatMap((event) => {
+          const eventDates: EventDate[] = Array.isArray(event.eventDate)
+            ? event.eventDate
+            : JSON.parse(event.eventDate as unknown as string);
+
+          return eventDates.map((dateRange) => ({
+            eventId: event.id,
+            title: event.eventName,
+            start: new Date(dateRange.startDate),
+            end: new Date(dateRange.endDate),
+          }));
+        });
+        (space as any).calendarEvents = calendarEvents;
+        const totalPricing = calculatePricing(
+          space.pricing as PricingTerm[],
+          1
+        );
+        res.status(200).json(handleResponse("Space Found Successfully", space));
+        return next();
+      }
+
+      let [spaces, totalItems] = await this.spaceRepo
+        .createQueryBuilder("space")
+        .leftJoinAndSelect("space.brand", "brand")
+        .where("space.user != :userId", { userId: req.user?.id })
         .leftJoinAndSelect("space.user", "user")
         .orderBy("space.createdAt", "DESC")
         .skip(skipNumber)

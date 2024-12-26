@@ -1,3 +1,4 @@
+import { required, string } from "joi";
 import mongoose, { Schema, Types, model } from "mongoose";
 
 const schema = new Schema(
@@ -14,6 +15,23 @@ const schema = new Schema(
       type: Types.ObjectId,
       ref: "User",
     },
+    receiverBrand: {
+      type: String,
+      required: false,
+    },
+    senderBrand: {
+      type: String,
+      required: false,
+    },
+    receiverSpace: {
+      type: String,
+      required: false,
+    },
+    creatorBrand: {
+      type: String,
+      required: false,
+    },
+
     members: [
       {
         type: Types.ObjectId,
