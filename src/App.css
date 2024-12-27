@@ -280,7 +280,7 @@ input[type=number] {
   background-color: #C4777F !important;
   border-color: #C4777F !important;
   min-height: 30px;
-  border-radius: 6px;
+  border-radius: 6px !important;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -434,6 +434,9 @@ input[type=number] {
   opacity: 1;
 }
 
+a:hover{
+  text-decoration: none !important;
+}
 /* Calendar */
 
 /* input Calendar  */

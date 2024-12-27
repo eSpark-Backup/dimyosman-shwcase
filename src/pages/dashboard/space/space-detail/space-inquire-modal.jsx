@@ -287,14 +287,14 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
                 <Typography textAlign="left" fontWeight={600} fontSize={12}>
                   Selected lease total:
                 </Typography>
-                <Typography textAlign="left" fontSize={32} fontWeight={600}>
-                  {isLoading ?
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: "5px" }}>
-                      <CircularProgress size={15} disableShrink />
-                    </Box>
-                    :
-                    `$${totalPrice}`}
-                </Typography>
+                {isLoading ? <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: "5px" }}>
+                  <CircularProgress size={15} disableShrink />
+                </Box>
+                  :
+                  <Typography textAlign="left" fontSize={32} fontWeight={600}>
+                    ${totalPrice}
+                  </Typography>
+                }
               </Box>
             </Stack>
           </Stack>
