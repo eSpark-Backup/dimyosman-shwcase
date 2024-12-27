@@ -18,14 +18,15 @@ import {
 } from "../../../../assets";
 import { DateRangePicker } from "rsuite";
 import { toast } from "react-toastify";
-import { useSpacePriceMutation } from "../../../../services/space";
+import { useSpaceInquireMutation, useSpacePriceMutation } from "../../../../services/space";
 import { useGetAllBrandsQuery } from "../../../../services/brands";
 import MessageInput from "../../../../components/Message/MessageInput";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
+import { LoadingButton } from "@mui/lab";
 
 
-const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDates, brandName, spaceImage, pricing }) => {
+const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDates, brandName, spaceImage, pricing, spaceId, brandId }) => {
   const [selectedDate, setSelectedDate] = useState([]);
   const selectedDateRef = useRef([]);
   const [bookedRanges, setBookedRanges] = useState([]);
@@ -35,14 +36,19 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
   })
   const [totalPrice, setTotalPrice] = useState("0")
   const [price, { data: spaceData, isLoading, isError, error, isSuccess }] = useSpacePriceMutation()
+  const [spaceMessage, { data: messageData, isLoading: messageLoading, isError: IsMessageError, error: messageError, isSuccess: IsMessageSuccess }] = useSpaceInquireMutation()
   const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError, isFetching: IsBrandFetching } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
   const [brandOptions, setBrandOptions] = useState([])
-  const [selectedValue, setSelectedValue] = useState("");
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
   const quillInstance = useRef(null);
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
-  const [message, setMessage] = useState("");
+  const [finalMessage, setFinalMessage] = useState({
+    receiverSpaceId: spaceId ? spaceId : "",
+    receiverBrandId: brandId ? brandId : "",
+    senderBrandId: "",
+    message: ""
+  })
 
   useEffect(() => {
     const bookedEventsDate = bookedDates?.map((item) => ({
@@ -132,8 +138,10 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
   }, [brandData, IsBrandSuccess])
 
   const handleSelectChange = (e) => {
-    console.log(e.target.value);
-    setSelectedValue(e.target.value)
+    setFinalMessage((prevData) => ({
+      ...prevData,
+      senderBrandId: e.target.value
+    }))
   }
 
   const addEmoji = (emoji) => {
@@ -155,8 +163,41 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
   };
 
   const handleInputChange = ({ content, text }) => {
-    setMessage(content);
+    setFinalMessage((prevData) => ({
+      ...prevData,
+      message: content,
+    }))
   };
+
+  const HandleMessageSend = () => {
+    if (finalMessage?.senderBrandId === "") {
+      toast.error("Please Select Brand First");
+      return;
+    }
+    if (finalMessage?.message === "") {
+      toast.error("Message can not be empty");
+      return;
+    }
+    const strippedContent = finalMessage?.message?.replace(/<[^>]*>/g, "").trim();
+    if (!strippedContent) {
+      toast?.error("Message can not be empty.");
+      return false;
+    }
+    spaceMessage({ message: finalMessage })
+  }
+
+  useEffect(() => {
+    if (IsMessageSuccess && messageData) {
+      toast.success("Message sent successfully");
+      setTimeout(() => {
+        setFinalMessage((prevData) => ({
+          ...prevData,
+          message: "",
+          senderBrandId: ""
+        }));
+      }, 0);
+    }
+  }, [IsMessageSuccess, messageData]);
 
   if (IsBrandFetching || IsBrandLoading) {
     return (
@@ -345,11 +386,11 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
             <Dropdown
               options={brandOptions}
               onChange={handleSelectChange}
-              value={selectedValue}
+              value={finalMessage?.senderBrandId}
               placeholder={"Brand name"}
             />
           </Stack>
-          
+
         </Box>
         <Box
           sx={{
@@ -439,7 +480,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
               <img src={smile} />
             </IconButton>
 
-            <Button
+            <LoadingButton
               style={{ marginBottom: "10px" }}
               sx={{
                 padding: 0,
@@ -454,9 +495,12 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
                 lineHeight: "21px",
                 letterSpacing: "-0.01em",
               }}
+              onClick={HandleMessageSend}
+              loading={messageLoading}
+              loadingIndicator={<CircularProgress size={15} sx={{ color: "#00000" }} />}
             >
               SEND
-            </Button>
+            </LoadingButton>
           </Box>
 
           <MessageInput
@@ -464,6 +508,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
             setEmojiPickerVisible={setEmojiPickerVisible}
             quillInstance={quillInstance}
             onChange={handleInputChange}
+            value={finalMessage?.message}
           />
           {emojiPickerVisible && (
             <div

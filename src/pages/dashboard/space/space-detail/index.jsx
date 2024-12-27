@@ -12,6 +12,7 @@ import { Box, LinearProgress } from "@mui/material";
 const SpaceDetails = () => {
   const { id: spaceId } = useParams()
   const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllSpaceQuery({ page: 1, pageSize: 7, id: spaceId }, { refetchOnMountOrArgChange: true });
+  const { user } = useSelector((state) => state.auth)
 
   const dispatch = useDispatch()
 
@@ -24,7 +25,7 @@ const SpaceDetails = () => {
       const updatedSpace = {
         id: data?.data?.id,
         type: "space",
-        owned: true,
+        owned: user?.id === data?.data?.user?.id ? true : false,
         slides: data?.data?.coverImages,
         profilePic: data?.data?.spaceImage,
         profileName: data?.data?.spaceName,
@@ -46,8 +47,8 @@ const SpaceDetails = () => {
                   points: amenities,
                 },
                 location: "123 Williamsburg Ave, Brooklyn, NY 11211",
-                space: data?.data?.spaceName,
-                spaceCategory: data?.data?.spaceCategory?.map(item => item.name),
+                space: data?.data?.brand?.brandName,
+                spaceCategory: data?.data?.brand?.brandCategory?.map(item => item.name),
                 startingDate: "28.02.2025.",
                 endingDate: "15.4.2025.",
                 expectedPoint: {
@@ -252,6 +253,8 @@ const SpaceDetails = () => {
         spaceImage={data?.data?.spaceImage}
         bookedDates={data?.data?.calendarEvents}
         pricing={data?.data?.pricing}
+        spaceId={data?.data?.id}
+        brandId={data?.data?.brand?.id}
       />
     </>
   );

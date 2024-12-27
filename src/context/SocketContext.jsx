@@ -45,9 +45,10 @@
 // Second
 
 
-import { createContext, useContext, useEffect, useMemo, useRef } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { io } from "socket.io-client";
+import { useGetMyChatsQuery } from "../services/chats";
 
 const SocketContext = createContext(null);
 
@@ -58,10 +59,16 @@ const useSocket = () => {
 const SocketProvider = ({ children }) => {
     const socket = useRef(null);
     const { user } = useSelector((state) => state.auth);
+    const { data, isSuccess, isError, error, refetch } = useGetMyChatsQuery(undefined, { skip: !user });
+
+    useEffect(() => {
+        if (isSuccess && data) {
+            console.log(data)
+        }
+    }, [isSuccess, data])
 
     useEffect(() => {
         if (user && !socket.current) {
-            // Initialize the socket only if user exists and it's not already initialized
             socket.current = io("https://shwcase-stg.esparkconsultants.com/socket", {
                 withCredentials: true,
                 extraHeaders: {
@@ -79,16 +86,14 @@ const SocketProvider = ({ children }) => {
                 console.error("Socket connection error:", error.message);
             });
 
-            const handleRefetchChat = (message) => {
-                console.log(message, "REFETCH")
-            }
-
-            const hanldeNewRequest = (message) => {
-                console.log(message, "NEWWW REQQQ")
-            }
-
-            socket.current.on("REFETCH_CHATS", handleRefetchChat)
-            socket.current.on("NEW_REQUEST", hanldeNewRequest)
+            socket.current.on("REFETCH_CHATS", () => {
+                console.log("REFETCH_CHAT EVENT TRIGGERED.")
+                refetch()
+            })
+            socket.current.on("NEW_REQUEST", () => {
+                console.log("NEW_REQUEST EVENT TRIGGERED.")
+                refetch()
+            })
 
             return () => {
                 // Cleanup socket on unmount

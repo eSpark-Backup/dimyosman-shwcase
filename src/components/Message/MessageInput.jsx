@@ -10,6 +10,7 @@ const MessageInput = ({
   setEmojiPickerVisible,
   quillInstance,
   onChange,
+  value,
 }) => {
   const quillRef = useRef(null);
 
@@ -87,6 +88,15 @@ const MessageInput = ({
       }
     }
   }, [emojiPickerVisible]);
+
+  useEffect(() => {
+    if (quillInstance?.current) {
+      const editorContent = quillInstance.current.root.innerHTML;
+      if (editorContent !== value) {
+        quillInstance.current.root.innerHTML = value || "";
+      }
+    }
+  }, [value]);
 
   return (
     <div ref={quillRef} style={{ height: "74px" }} />

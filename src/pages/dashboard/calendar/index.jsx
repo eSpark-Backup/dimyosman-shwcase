@@ -62,10 +62,8 @@ const Calendar = () => {
     if (isSuccess && data?.data) {
       const fetchedEvents = data?.data?.map((item) => {
         const now = Date.now();
-        console.log(now, "Now");
 
         const end = new Date(item?.end);
-        console.log(end, "End");
 
         return {
           start: item?.start,
