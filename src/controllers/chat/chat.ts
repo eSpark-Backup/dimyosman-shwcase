@@ -1,3 +1,4 @@
+import { Brand } from "../../entity";
 import {
   ALERT,
   NEW_MESSAGE,
@@ -13,6 +14,7 @@ import {
   uploadFilesToCloudinary,
   ErrorHandler,
 } from "../../utils";
+import { AppDataSource } from "../../typeorm.config";
 
 const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
   const chats = await Chat.find({ members: req.socketUserId }).populate(
@@ -20,31 +22,81 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
     "name avatar"
   );
 
-  const transformedChats = chats.map(({ _id, name, members, groupChat }) => {
-    const otherMember = getOtherMember(members, req.socketUserId);
+  if (chats.length < 1) {
+    return res.status(200).json({
+      success: true,
+      chats: [],
+    });
+  }
 
-    return {
-      _id,
-      groupChat,
-      avatar: groupChat
-        ? members
-            .slice(0, 3)
-            .map((member: { avatar: { url: string } }) => member.avatar)
-        : [otherMember.avatar],
-      chatName: name,
-      name: otherMember.name,
-      members: members.reduce((prev: any, curr: any) => {
-        if (curr._id.toString() !== req.socketUserId.toString()) {
-          prev.push(curr._id);
-        }
-        return prev;
-      }, []),
-    };
-  });
+  const transformedChats = await Promise.all(
+    chats.map(
+      async ({
+        _id,
+        name,
+        members,
+        groupChat,
+        creator,
+        receiverBrand,
+        senderBrand,
+      }) => {
+        const otherMember = getOtherMember(members, req.socketUserId);
+        const brandRepository = AppDataSource.getRepository(Brand);
 
+        // Populate receiverBrand and senderBrand if needed
+        const populatedReceiverBrand = receiverBrand
+          ? await brandRepository
+              .createQueryBuilder("brand")
+              .where("brand.id = :id", { id: receiverBrand })
+              .select(["brand.id", "brand.brandName", "brand.brandImage"])
+              .getOne()
+          : null;
+        const populatedSenderBrand = senderBrand
+          ? await brandRepository
+              .createQueryBuilder("brand")
+              .where("brand.id = :id", { id: senderBrand })
+              .select(["brand.id", "brand.brandName", "brand.brandImage"])
+              .getOne()
+          : null;
+
+        return {
+          _id,
+          groupChat,
+          avatar: groupChat
+            ? members
+                .slice(0, 3)
+                .map((member: { avatar: { url: string } }) => member.avatar)
+            : [otherMember.avatar],
+          chatName: name,
+          creator: creator.toString(),
+          receiverBrand: populatedReceiverBrand,
+          senderBrand: populatedSenderBrand,
+          name: otherMember.name,
+          members: members.reduce((prev: any, curr: any) => {
+            if (curr._id.toString() !== req.socketUserId.toString()) {
+              prev.push(curr._id);
+            }
+            return prev;
+          }, []),
+        };
+      }
+    )
+  );
+
+  const groupedBySenderBrand = transformedChats.reduce(
+    (acc: any, chat: any) => {
+      const senderBrandId = chat.senderBrand?.id || "unknown";
+      if (!acc[senderBrandId]) {
+        acc[senderBrandId] = [];
+      }
+      acc[senderBrandId].push(chat);
+      return acc;
+    },
+    {}
+  );
   res.status(200).json({
     success: true,
-    chats: transformedChats,
+    chats: groupedBySenderBrand,
   });
 });
 
