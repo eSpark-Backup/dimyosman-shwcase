@@ -31,10 +31,8 @@ function App() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const token = window.localStorage.getItem("token");
-  const { user } = useSelector((state) => state?.auth);
 
-
-  const { data, isLoading, isError, isFetching } = useVerifyTokenQuery(undefined, { skip: !!user });
+  const { data, isLoading, isError, isFetching } = useVerifyTokenQuery(undefined, { skip: !token });
 
   useEffect(() => {
     if (!token) {
