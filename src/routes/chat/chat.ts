@@ -140,6 +140,75 @@ router.post(
 router.get("/message/:id", chatIdValidator(), validateHandler, getMessages);
 
 // Get Chat Details, Rename, Delete
+/**
+ * @swagger
+ * /chat/{id}:
+ *   get:
+ *     summary: Get all Chat Details for the authenticated user
+ *     description: This endpoint retrieves all Chat Details associated with the authenticated user. Pagination is supported for retrieving multiple notifications.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - Chat
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the space to update
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Notifications retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 notifications:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         description: ID of the notification.
+ *                       title:
+ *                         type: string
+ *                         description: Title of the notification.
+ *                       message:
+ *                         type: string
+ *                         description: Content of the notification.
+ *                       type:
+ *                         type: string
+ *                         description: Type of the notification (e.g., alert, info, reminder).
+ *                       isRead:
+ *                         type: boolean
+ *                         description: Whether the notification has been read.
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Date and time the notification was created.
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     totalItems:
+ *                       type: integer
+ *                       description: Total number of items.
+ *                     currentPage:
+ *                       type: integer
+ *                       description: Current page number.
+ *                     pageSize:
+ *                       type: integer
+ *                       description: Number of items per page.
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages.
+ *       404:
+ *         description: No notifications found for the user.
+ *       500:
+ *         description: Server error.
+ */
 router
   .route("/:id")
   .get(chatIdValidator(), validateHandler, getChatDetails)

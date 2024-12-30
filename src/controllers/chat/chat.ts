@@ -31,7 +31,8 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
             .slice(0, 3)
             .map((member: { avatar: { url: string } }) => member.avatar.url)
         : [otherMember.avatar.url],
-      name: groupChat ? name : otherMember.name,
+      chatName: name,
+      name: otherMember.name,
       members: members.reduce((prev: any, curr: any) => {
         if (curr._id.toString() !== req.socketUserId.toString()) {
           prev.push(curr._id);
