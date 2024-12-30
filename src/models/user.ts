@@ -25,14 +25,8 @@ const schema = new Schema(
       select: false,
     },
     avatar: {
-      public_id: {
-        type: String,
-        required: false,
-      },
-      url: {
-        type: String,
-        required: false,
-      },
+      type: Object,
+      required: false,
     },
   },
   {

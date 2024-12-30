@@ -23,7 +23,7 @@ import {
 } from "./constants";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
-const envMode = process.env.NODE_ENV.trim() || "production";
+const envMode = "production";
 dotenv.config();
 import { getSockets } from "./lib";
 import { socketAuthenticator } from "./middleware";
@@ -35,13 +35,19 @@ const mongoURI = process.env.ME_CONFIG_MONGODB_URL;
 const app = express();
 app.use(cookieParser());
 const corsOptions = {
-  origin: true,
+  origin: [
+    "http://localhost:8080", // Local frontend URL
+    "http://localhost", // Allow localhost if needed
+    "https://shwcase.esparkconsultants.com", // Corrected staging URL
+    "https://shwcase-stg.esparkconsultants.com",
+  ],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
 };
 
 const server = createServer(app);
+
 const io = new Server(server, {
   cors: corsOptions,
 });
@@ -58,12 +64,13 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 AppDataSource.initialize()
   .then(() => {
     connectDb(mongoURI);
-    console.log("Database connection established successfully.");
+    console.log("Database connection established successfully");
     app.use(clearUploadsFolder);
     app.use("/api", router);
     app.use("/api/chat", ChatRouter);
+    const nsp = io.of("/socket");
 
-    io.use((socket, next) => {
+    nsp.use((socket, next) => {
       const req = socket.request as any;
       cookieParser()(
         req,
@@ -72,8 +79,11 @@ AppDataSource.initialize()
       );
     });
 
-    io.on("connection", (socket) => {
+    nsp.on("connect", (socket) => {
       const user = (socket as any).userId;
+      socket.broadcast.emit("NEW_USER_CONNECTED", {
+        message: ` has joined the chat!`,
+      });
 
       userSocketIDs.set(user._id.toString(), socket.id);
 

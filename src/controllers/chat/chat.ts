@@ -29,9 +29,10 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
       avatar: groupChat
         ? members
             .slice(0, 3)
-            .map((member: { avatar: { url: string } }) => member.avatar.url)
-        : [otherMember.avatar.url],
-      name: groupChat ? name : otherMember.name,
+            .map((member: { avatar: { url: string } }) => member.avatar)
+        : [otherMember.avatar],
+      chatName: name,
+      name: otherMember.name,
       members: members.reduce((prev: any, curr: any) => {
         if (curr._id.toString() !== req.socketUserId.toString()) {
           prev.push(curr._id);
@@ -214,7 +215,7 @@ const getMessages = TryCatch(async (req: any, res: any, next: any) => {
 
   if (!chat) return next(new ErrorHandler("chat not found", 404));
 
-  if (!chat.members.includes(req.userId.toString()))
+  if (!chat.members.includes(req.socketUserId.toString()))
     return next(new ErrorHandler("You are not allowed to view this chat", 403));
 
   const [messages, totalMessagesCount] = await Promise.all([
