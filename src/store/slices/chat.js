@@ -12,8 +12,7 @@ const slice = createSlice({
   reducers: {
     getMyChat: (state, action) => {
       const newChat = action.payload;
-      state.myChat.push(...newChat);
-      // state.myChat = action.payload;
+      state.myChat = newChat
     },
     getChatDetails: (state, action) => {
       state.chatDetails = action.payload;

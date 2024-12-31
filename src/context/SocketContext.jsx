@@ -67,7 +67,7 @@ const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (isSuccess && data) {
-      if (data.chats && data?.chats?.brands?.length > 0) {
+      if (data.chats && data?.chats?.brands?.length > 0) {  
         dispatch(getMyChat(data.chats.brands));
       }
     }
