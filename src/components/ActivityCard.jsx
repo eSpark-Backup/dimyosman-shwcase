@@ -206,7 +206,7 @@ const ActivityCard = ({
         </Box>
       </Box>
       <Box sx={{ cursor: "pointer" }}>
-        {slides?.length !== 1 ? (
+        {/* {slides?.length !== 1 ? (
           <Box
             sx={{
               width: "100%",
@@ -233,7 +233,21 @@ const ActivityCard = ({
             alt="Activity"
             style={{ width: "100%" }}
           />
-        )}
+        )} */}
+        <Box
+          sx={{
+            width: "100%",
+          }}
+        >
+          <DynamicPaginationSwiper
+            onClick={
+              activityId
+                ? () => navigate(`/${activity}/${activityId}`)
+                : () => { }
+            }
+            slides={slides}
+          />
+        </Box>
       </Box>
       <Box
         sx={{

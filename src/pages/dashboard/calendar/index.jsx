@@ -57,7 +57,6 @@ const Calendar = () => {
     if (isSuccess && data?.data) {
       const fetchedEvents = data?.data?.map((item) => {
         const now = Date.now();
-  
         // Ensure the end date is correctly set
         const end = new Date(item?.end);
         end.setHours(23, 59, 59, 999);  // Set to end of the day

@@ -159,7 +159,16 @@ export const spaceApi = api.injectEndpoints({
                     body: priceData,
                 };
             }
-        })
+        }),
+        spaceInquire: builder.mutation({
+            query: ({ message }) => {
+                return {
+                    url: `/space/inquire`,
+                    method: 'POST',
+                    body: message,
+                };
+            }
+        }),
     }),
 });
 
@@ -167,5 +176,6 @@ export const {
     useNewSpaceMutation,
     useGetAllSpaceQuery,
     useEditSpaceMutation,
-    useSpacePriceMutation
+    useSpacePriceMutation,
+    useSpaceInquireMutation
 } = spaceApi;

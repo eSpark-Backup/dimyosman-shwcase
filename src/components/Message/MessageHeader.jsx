@@ -6,6 +6,11 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1100 = useMediaQuery("(max-width:1100px)");
 
+  const truncateTo13Characters = (str) => {
+    if (!str) return ''; 
+    return `${str.slice(0, 24)}...`;
+  };
+
   return (
     <Box
       sx={{
@@ -29,9 +34,9 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
               position: "relative",
             }}
           >
-            {selectedGroup?.messageGroup?.icon ? (
+            {selectedGroup?.messageGroup?.brandImage ? (
               <img
-                src={selectedGroup.messageGroup.icon}
+                src={selectedGroup.messageGroup.brandImage}
                 alt="Message Icon"
                 style={{
                   width: "100%",
@@ -72,7 +77,7 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                 textAlign: "left",
               }}
             >
-              {selectedGroup?.messageGroup?.userName}
+              {truncateTo13Characters(selectedGroup?.messageGroup?.chatName)}
             </Typography>
 
             <Typography
@@ -82,7 +87,7 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                 lineHeight: isLessThan1100 ? "18px" : "28px",
               }}
             >
-              {selectedGroup?.messageGroup?.userName}
+              {selectedGroup?.messageGroup?.brandName}
             </Typography>
 
             <Box

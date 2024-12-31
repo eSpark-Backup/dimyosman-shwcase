@@ -1,7 +1,7 @@
 import { Box, Typography, useMediaQuery } from "@mui/material";
 import React from "react";
 
-const Message = ({ ActivityType, theme, message }) => {
+const Message = ({ ActivityType, theme, message, sender }) => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
 
   return (
@@ -23,9 +23,9 @@ const Message = ({ ActivityType, theme, message }) => {
             position: "relative",
           }}
         >
-          {message?.icon ? (
+          {sender?.brandImage ? (
             <img
-              src={message.icon}
+              src={sender.brandImage}
               alt="Message Icon"
               style={{
                 width: "100%",
@@ -66,7 +66,7 @@ const Message = ({ ActivityType, theme, message }) => {
                 textAlign: "left",
               }}
             >
-              {message.userName}
+              {sender.brandName}
             </Typography>
 
             <Box
@@ -96,7 +96,7 @@ const Message = ({ ActivityType, theme, message }) => {
           <Typography
             sx={{ fontWeight: 300, fontSize: "12px", lineHeight: "17px" }}
           >
-            {message.creator}
+            {message.sender.name}
           </Typography>
         </Box>
       </Box>

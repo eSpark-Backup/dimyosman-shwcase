@@ -5,9 +5,12 @@ import {
   Grid,
   IconButton,
   InputAdornment,
+  LinearProgress,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+
+import { useSelector, useDispatch } from "react-redux";
 
 import AllMessages from "./messages";
 
@@ -25,7 +28,12 @@ import {
   accountIcon,
 } from "../../../assets";
 
-import { allMessages } from "../../../constant";
+import {
+  useGetChatsForContactsQuery,
+  useGetAllChatDetailsQuery,
+} from "../../../services/chats.js";
+import { format } from "date-fns";
+import { getMessages } from "../../../store/slices/chat.js";
 
 const icons = [
   { icon: messageIcon, bg: "rgba(0, 20, 28, 0.8)", type: "message" },
@@ -74,11 +82,81 @@ const ActivityType = ({ type, theme }) => (
 );
 
 const Message = () => {
+  const theme = useTheme();
+
   const isLessThan900 = useMediaQuery("(max-width:900px)");
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
 
-  const theme = useTheme();
+  const { user } = useSelector((state) => state.auth);
+  const { myChat, messages } = useSelector((state) => state.chat);
+  const dispatch = useDispatch();
+
+  const { data: messageData, isSuccess } = useGetChatsForContactsQuery(
+    { id: myChat[0]?._id },
+    { skip: !myChat?.length }
+  );
+
+  const { data: chatDetailsData, isLoading: chatDetailsLoading } =
+    useGetAllChatDetailsQuery(
+      { id: myChat[0]?._id },
+      { skip: !myChat?.length }
+    );
+
+  const [allMessages, setAllMessages] = useState([]);
+
+  useEffect(() => {
+    if (messageData && messageData?.messages) {
+      dispatch(getMessages(messageData?.messages));
+    }
+  }, [messageData, isSuccess, myChat]);
+
+  useEffect(() => {
+    if (chatDetailsData && messages) {
+      const message = myChat.slice(0, 1).map((el) => {
+        return {
+          id: el?._id,
+          activity: "brand",
+          brandName: el?.senderBrand?.brandName,
+          brandImage: el?.senderBrand?.brandImage,
+          read: false,
+          creator: el?.name,
+          spaces: 1234,
+          followers: 234566,
+          saved: "789k",
+          reviews: 12345,
+          leases: 12345,
+          rating: 5,
+          messageGroups: [
+            {
+              id: chatDetailsData?.chat?._id,
+              members: chatDetailsData?.chat?.members,
+              brandName: el?.receiverBrand?.brandName,
+              activity: "brand",
+              brandImage: el?.receiverBrand?.brandImage,
+              read: false,
+              chatName: chatDetailsData?.chat?.chatName,
+              messages: messages?.map((item) => {
+                return {
+                  ...item,
+                  id: item?._id,
+                  brandName: el?.receiverBrand?.brandName,
+                  activity: "brand",
+                  creator: el?.name,
+                  brandImage: el?.receiverBrand?.brandImage,
+                  date: format(new Date(item?.createdAt), "MM/dd/yy"),
+                  time: format(new Date(item?.createdAt), "h:mma"),
+                  text: item?.content,
+                };
+              }),
+            },
+          ],
+        };
+      });
+
+      setAllMessages(message);
+    }
+  }, [myChat, messageData, chatDetailsData, messages]);
 
   const [expanded, setExpanded] = useState(0);
   const [selectedGroup, setSelectedGroup] = useState(null);
@@ -100,6 +178,14 @@ const Message = () => {
       });
     }
   }, [allMessages]);
+
+  if (!myChat?.length || !messages?.length || chatDetailsLoading) {
+    return (
+      <Box sx={{ width: "100%" }}>
+        <LinearProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ flexGrow: 1 }}>
