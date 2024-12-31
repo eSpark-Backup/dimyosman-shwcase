@@ -21,6 +21,10 @@ import MessageHeader from "../../../../components/Message/MessageHeader";
 import MessageInput from "../../../../components/Message/MessageInput";
 import Message from "../../../../components/Message/Message";
 
+import { useSocket } from "../../../../context/SocketContext";
+import { useDispatch, useSelector } from "react-redux";
+import { getMessages } from "../../../../store/slices/chat";
+
 const GroupDetail = ({ withColon, text }) => (
   <Typography
     sx={{
@@ -45,10 +49,16 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1100 = useMediaQuery("(max-width:1100px)");
 
+  const socket = useSocket();
   const theme = useTheme();
 
   const quillInstance = useRef(null);
   const messagesContainerRef = useRef(null);
+  const pickerRef = useRef(null);
+  const buttonRef = useRef(null);
+
+  const { messages } = useSelector((state) => state.chat);
+  const dispatch = useDispatch();
 
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
@@ -65,16 +75,54 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
 
   const [sender, setSender] = useState("");
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
+  const [finalMessage, setFinalMessage] = useState({
+    chatId: selectedGroup?.messageGroup?.id,
+    members: selectedGroup?.messageGroup?.members,
+    message: "",
+  });
 
   useEffect(() => {
-    if (selectedGroup?.group?.userName) {
-      setSender(selectedGroup.group.userName);
+    if (selectedGroup?.group?.brandName) {
+      setSender(selectedGroup.group.brandName);
+    }
+
+    if (selectedGroup?.messageGroup?.id) {
+      setFinalMessage({
+        chatId: selectedGroup?.messageGroup?.id,
+        members: selectedGroup?.messageGroup?.members,
+        message: "",
+      });
     }
   }, [selectedGroup]);
 
   const handleChange = (event) => {
     setSender(event.target.value);
   };
+
+  const handleSelectClick = (event) => {
+    event.preventDefault();
+  };
+
+  useEffect(() => {
+    if (finalMessage.chatId && finalMessage.members && finalMessage.message) {
+      socket.on("NEW_MESSAGE", (data) => {
+        console.log("NEW_MESSAGE EVENT TRIGGERED.");
+
+        dispatch(getMessages([...messages, data.message]));
+
+        setFinalMessage((prevData) => ({
+          ...prevData,
+          message: "",
+        }));
+      });
+
+      return () => {
+        if (socket) {
+          socket.off("NEW_MESSAGE");
+        }
+      };
+    }
+  }, [socket, finalMessage]);
 
   const addEmoji = (emoji) => {
     const range = quillInstance.current.getSelection();
@@ -91,8 +139,54 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
       true
     );
 
+    quillInstance.current.setSelection(cursorPosition + emoji.native.length, 0);
+
     setEmojiPickerVisible(false);
   };
+
+  const handleInputChange = ({ content, text }) => {
+    setFinalMessage((prevData) => ({
+      ...prevData,
+      message: content,
+    }));
+  };
+
+  // Handle sending the message
+  const handleSendMessage = () => {
+    if (finalMessage?.message === "") {
+      toast.error("Message can not be empty");
+      return;
+    }
+    const strippedContent = finalMessage?.message
+      ?.replace(/<[^>]*>/g, "")
+      .trim();
+
+    if (!strippedContent) {
+      toast?.error("Message can not be empty.");
+      return false;
+    }
+
+    socket.emit("NEW_MESSAGE", finalMessage);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      setTimeout(() => {
+        if (
+          pickerRef.current &&
+          !pickerRef.current.contains(event.target) &&
+          !buttonRef.current
+        ) {
+          setEmojiPickerVisible(false);
+        }
+      }, 1);
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <Box position={"relative"}>
@@ -145,6 +239,10 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
                         ActivityType={ActivityType}
                         theme={theme}
                         message={message}
+                        sender={{
+                          brandName: selectedGroup?.group?.brandName,
+                          brandImage: selectedGroup?.group?.brandImage,
+                        }}
                       />
                     ) : null}
                   </Fragment>
@@ -163,7 +261,7 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
               position: "relative",
               borderRadius: "5px",
               marginTop: isLessThan1400 ? "12px" : "16px",
-              border:"1px solid rgba(209, 219, 215, 0.5)"
+              border: "1px solid rgba(209, 219, 215, 0.5)",
             }}
           >
             <Stack
@@ -186,17 +284,31 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
                   border: "none",
                   marginLeft: "5px",
                   fontWeight: 600,
+                  cursor: "default",
 
                   "& .MuiSelect-select": {
                     padding: 0,
+                    cursor: "default",
+                  },
+
+                  "& .MuiSelect-icon": {
+                    transform: "none !important", // Prevent rotation
                   },
                 }}
                 value={sender || ""}
                 onChange={handleChange}
+                onClick={handleSelectClick}
+                MenuProps={{
+                  PaperProps: {
+                    style: {
+                      display: "none",
+                    },
+                  },
+                }}
               >
-                {selectedGroup?.group?.userName && (
-                  <MenuItem value={selectedGroup.group.userName}>
-                    {selectedGroup.group.userName}
+                {selectedGroup?.group?.brandName && (
+                  <MenuItem value={selectedGroup.group.brandName}>
+                    {selectedGroup.group.brandName}
                   </MenuItem>
                 )}
               </Select>
@@ -284,6 +396,12 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
                       : "0px 35px 0px 0px !important",
                   }}
                   disableRipple
+                  onMouseEnter={() => {
+                    buttonRef.current = true;
+                  }}
+                  onMouseLeave={() => {
+                    buttonRef.current = false;
+                  }}
                 >
                   <img src={smile} />
                 </IconButton>
@@ -304,6 +422,7 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
                     lineHeight: "21px",
                     letterSpacing: "-0.01em",
                   }}
+                  onClick={handleSendMessage}
                 >
                   Send
                 </Button>
@@ -313,25 +432,36 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
                 emojiPickerVisible={emojiPickerVisible}
                 setEmojiPickerVisible={setEmojiPickerVisible}
                 quillInstance={quillInstance}
+                onChange={handleInputChange}
+                value={finalMessage?.message}
               />
             </Box>
 
             {emojiPickerVisible && (
-              <div
-                style={{
-                  position: "absolute",
+              <Box
+                sx={{
+                  position: "fixed",
                   zIndex: 9999,
                   backgroundColor: "white",
                   padding: "10px",
                   boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
                   borderRadius: "8px",
-                  bottom: "230px",
-                  left: "10px",
+                  bottom: "90px",
+                  right: "18px",
                   border: "1px solid #ccc",
+
+                  "@media only screen and (max-width:1100px)": {
+                    bottom: "78px",
+                  },
+
+                  "@media only screen and (min-width:1400px)": {
+                    bottom: "115px",
+                  },
                 }}
+                ref={pickerRef}
               >
                 <Picker data={data} onEmojiSelect={addEmoji} />
-              </div>
+              </Box>
             )}
           </Box>
         </Box>

@@ -15,6 +15,7 @@ const MessageItem = ({
   selectedGroup,
   ActivityType,
 }) => {
+
   return (
     <Accordion
       sx={{
@@ -58,9 +59,9 @@ const MessageItem = ({
             position: "relative",
           }}
         >
-          {message.icon ? (
+          {message.brandImage ? (
             <img
-              src={message.icon}
+              src={message.brandImage}
               alt="Message Icon"
               style={{
                 width: "100%",
@@ -93,7 +94,7 @@ const MessageItem = ({
             textAlign: "left",
           }}
         >
-          {message.userName}
+          {message.brandName}
         </Typography>
 
         {message.read && (
@@ -152,9 +153,9 @@ const MessageItem = ({
                       position: "relative",
                     }}
                   >
-                    {el.icon ? (
+                    {el.brandImage ? (
                       <img
-                        src={el.icon}
+                        src={el.brandImage}
                         alt="Message Icon"
                         style={{
                           width: "100%",
@@ -195,7 +196,7 @@ const MessageItem = ({
                         textAlign: "left",
                       }}
                     >
-                      {el.userName}
+                      {el.brandName}
                     </Typography>
 
                     {lastEl?.creator && (
