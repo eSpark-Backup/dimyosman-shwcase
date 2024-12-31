@@ -106,12 +106,12 @@ AppDataSource.initialize()
         };
 
         const membersSocket = getSockets(members);
-        io.to(membersSocket).emit(NEW_MESSAGE, {
+        io.of("/socket").to(membersSocket).emit(NEW_MESSAGE, {
           chatId,
           message: messageForRealTime,
         });
         console.log("membersSocket", membersSocket);
-        io.to(membersSocket).emit(NEW_MESSAGE_ALERT, { chatId });
+        io.of("/socket").to(membersSocket).emit(NEW_MESSAGE_ALERT, { chatId });
 
         try {
           await Message.create(messageForDB);
@@ -134,14 +134,18 @@ AppDataSource.initialize()
         onlineUsers.add(userId.toString());
 
         const membersSocket = getSockets(members);
-        io.to(membersSocket).emit(ONLINE_USERS, Array.from(onlineUsers));
+        io.of("/socket")
+          .to(membersSocket)
+          .emit(ONLINE_USERS, Array.from(onlineUsers));
       });
 
       socket.on(CHAT_LEFT, ({ userId, members }) => {
         onlineUsers.delete(userId.toString());
 
         const membersSocket = getSockets(members);
-        io.to(membersSocket).emit(ONLINE_USERS, Array.from(onlineUsers));
+        io.of("/socket")
+          .to(membersSocket)
+          .emit(ONLINE_USERS, Array.from(onlineUsers));
       });
 
       socket.on("disconnect", () => {
