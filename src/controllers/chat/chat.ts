@@ -1,4 +1,4 @@
-import { Brand } from "../../entity";
+import { Brand, Spaces } from "../../entity";
 import {
   ALERT,
   NEW_MESSAGE,
@@ -39,9 +39,11 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
         creator,
         receiverBrand,
         senderBrand,
+        receiverSpace,
       }) => {
         const otherMember = getOtherMember(members, req.socketUserId);
         const brandRepository = AppDataSource.getRepository(Brand);
+        const spaceRepository = AppDataSource.getRepository(Spaces);
 
         // Populate receiverBrand and senderBrand if needed
         const populatedReceiverBrand = receiverBrand
@@ -59,6 +61,14 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
               .getOne()
           : null;
 
+        const populatedReceiverSpace = receiverSpace
+          ? await spaceRepository
+              .createQueryBuilder("space")
+              .where("space.id = :id", { id: receiverSpace })
+              .select(["space.id", "space.spaceName", "space.spaceImage"])
+              .getOne()
+          : null;
+
         return {
           _id,
           groupChat,
@@ -71,6 +81,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
           creator: creator.toString(),
           receiverBrand: populatedReceiverBrand,
           senderBrand: populatedSenderBrand,
+          receiverSpace: populatedReceiverSpace,
           name: otherMember.name,
           members: members.reduce((prev: any, curr: any) => {
             if (curr._id.toString() !== req.socketUserId.toString()) {
@@ -86,17 +97,35 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
   const groupedBySenderBrand = transformedChats.reduce(
     (acc: any, chat: any) => {
       const senderBrandId = chat.senderBrand?.id || "unknown";
+
+      // Initialize the entry for this senderBrandId if not already present
       if (!acc[senderBrandId]) {
-        acc[senderBrandId] = [];
+        acc[senderBrandId] = {
+          brandDetails: chat.senderBrand || {
+            id: "unknown",
+            brandName: "Unknown Brand",
+            brandImage: null,
+          },
+          chats: [],
+        };
       }
-      acc[senderBrandId].push(chat);
+
+      // Add the chat to the chats array for this senderBrandId
+      acc[senderBrandId].chats.push(chat);
+
       return acc;
     },
     {}
   );
+  const formattedData = {
+    brands: Object.values(groupedBySenderBrand).map((chat: any) => ({
+      ...chat,
+    })),
+  };
+
   res.status(200).json({
     success: true,
-    chats: groupedBySenderBrand,
+    chats: formattedData,
   });
 });
 
