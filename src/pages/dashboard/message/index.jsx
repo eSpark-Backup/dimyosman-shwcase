@@ -34,6 +34,7 @@ import {
 } from "../../../services/chats.js";
 import { format } from "date-fns";
 import { getMessages } from "../../../store/slices/chat.js";
+import { useSocket } from "../../../context/SocketContext.jsx";
 
 const icons = [
   { icon: messageIcon, bg: "rgba(0, 20, 28, 0.8)", type: "message" },
@@ -93,32 +94,60 @@ const Message = () => {
   const dispatch = useDispatch();
 
   const { data: messageData, isSuccess } = useGetChatsForContactsQuery(
-    { id: myChat[0]?._id },
-    { skip: !myChat?.length }
+    {
+      chats: myChat?.flatMap((chat) => chat.chats.map((c) => c._id)),
+    },
+    {
+      skip: !myChat?.length,
+    }
   );
 
   const { data: chatDetailsData, isLoading: chatDetailsLoading } =
     useGetAllChatDetailsQuery(
-      { id: myChat[0]?._id },
-      { skip: !myChat?.length }
+      {
+        chats: myChat?.flatMap((chat) => chat.chats.map((c) => c._id)),
+      },
+      {
+        skip: !myChat?.length,
+      }
     );
 
   const [allMessages, setAllMessages] = useState([]);
 
   useEffect(() => {
-    if (messageData && messageData?.messages) {
-      dispatch(getMessages(messageData?.messages));
+    if (messageData && !messageData.includes(undefined) && messageData?.length) {
+      const filteredMessages = messageData?.map((message) => message?.messages)?.flat();
+
+      dispatch(getMessages(filteredMessages));
     }
   }, [messageData, isSuccess, myChat]);
 
+  const socket = useSocket();
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("NEW_MESSAGE", (data) => {
+        console.log("NEW_MESSAGE EVENT TRIGGERED.", data);
+        dispatch(getMessages([...messages, data.message]));
+      });
+
+      return () => {
+        if (socket) {
+          socket.off("NEW_MESSAGE");
+        }
+      };
+    }
+  }, [socket]);
+
   useEffect(() => {
     if (chatDetailsData && messages) {
-      const message = myChat.slice(0, 1).map((el) => {
+      const message = myChat.map((el) => {
+    
         return {
-          id: el?._id,
+          id: el?.brandDetails?.id,
           activity: "brand",
-          brandName: el?.senderBrand?.brandName,
-          brandImage: el?.senderBrand?.brandImage,
+          brandName: el?.brandDetails?.brandName,
+          brandImage: el?.brandDetails?.brandImage,
           read: false,
           creator: el?.name,
           spaces: 1234,
@@ -127,33 +156,57 @@ const Message = () => {
           reviews: 12345,
           leases: 12345,
           rating: 5,
-          messageGroups: [
-            {
-              id: chatDetailsData?.chat?._id,
-              members: chatDetailsData?.chat?.members,
-              brandName: el?.receiverBrand?.brandName,
+          messageGroups: el?.chats?.map((item) => {
+            let matchingItem = chatDetailsData
+              ?.map((item2) => {
+                if (item2.chat._id === item._id) {
+                  return {
+                    members: item2.chat?.members,
+                    name: item2.chat?.name,
+                    createdAt: item2.chat?.createdAt,
+                    updatedAt: item2.chat?.updatedAt,
+                    chatId: item2.chat?._id,
+                  };
+                }
+              })
+              .find((result) => result !== undefined);
+            const currentChatMessages = [];
+
+            messages.forEach((message) => {
+              if (message.chat === item?._id) {
+                currentChatMessages.push(message);
+              }
+            });
+
+            return {
+              ...item,
+              id: item?._id,
+              chatId: matchingItem?.chatId,
+              members: matchingItem?.members,
+              brandName: item?.receiverBrand?.brandName,
               activity: "brand",
-              brandImage: el?.receiverBrand?.brandImage,
+              brandImage: item?.receiverBrand?.brandImage,
               read: false,
-              chatName: chatDetailsData?.chat?.chatName,
-              messages: messages?.map((item) => {
+              chatName: matchingItem?.name,
+              date: format(new Date(matchingItem?.createdAt), "MM/dd/yy"),
+              time: format(new Date(matchingItem?.createdAt), "h:mma"),
+              messages: currentChatMessages?.map((messageItem) => {
                 return {
-                  ...item,
-                  id: item?._id,
-                  brandName: el?.receiverBrand?.brandName,
+                  ...messageItem,
+                  id: messageItem?._id,
+                  brandName: item?.senderBrand?.brandName,
+                  brandImage: item?.senderBrand?.brandImage,
                   activity: "brand",
                   creator: el?.name,
-                  brandImage: el?.receiverBrand?.brandImage,
-                  date: format(new Date(item?.createdAt), "MM/dd/yy"),
-                  time: format(new Date(item?.createdAt), "h:mma"),
-                  text: item?.content,
+                  date: format(new Date(messageItem?.createdAt), "MM/dd/yy"),
+                  time: format(new Date(messageItem?.createdAt), "h:mma"),
+                  text: messageItem?.content,
                 };
               }),
-            },
-          ],
+            };
+          }),
         };
       });
-
       setAllMessages(message);
     }
   }, [myChat, messageData, chatDetailsData, messages]);
@@ -179,102 +232,117 @@ const Message = () => {
     }
   }, [allMessages]);
 
-  if (!myChat?.length || !messages?.length || chatDetailsLoading) {
+
+  if (myChat?.length) {
+    if (chatDetailsLoading) {
+      return (
+        <Box sx={{ width: "100%" }}>
+          <LinearProgress />
+        </Box>
+      );
+    }
+  }
+
+  if (myChat?.length === 0) {
     return (
       <Box sx={{ width: "100%" }}>
-        <LinearProgress />
+        <h1>No Data Found</h1>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={4} lg={3}>
-          <Box sx={{ margin: "16px 0px" }}>
-            <Input
-              name="message"
-              type="text"
-              placeholder="Search Messages..."
-              sx={{
-                backgroundColor: "white",
-                border: "1px solid rgba(209, 219, 215, 0.5)",
-                borderRadius: "5px",
-                padding: "0 16px",
-                "& input": {
-                  paddingRight: 0,
-                  paddingLeft: 0,
-                },
-                "& input::placeholder": {
-                  color: "rgba(0, 20, 28, 0.5)",
-                },
-              }}
-              endAdornment={
-                <InputAdornment position="start">
-                  <IconButton edge="end">
-                    <img src={search} alt="Search" />
-                  </IconButton>
-                </InputAdornment>
-              }
-            />
-          </Box>
+    <>
+      {allMessages.length === 0 ? null : (
+        <Box sx={{ flexGrow: 1 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={4} lg={3}>
+              <Box sx={{ margin: "16px 0px" }}>
+                <Input
+                  name="message"
+                  type="text"
+                  placeholder="Search Messages..."
+                  sx={{
+                    backgroundColor: "white",
+                    border: "1px solid rgba(209, 219, 215, 0.5)",
+                    borderRadius: "5px",
+                    padding: "0 16px",
+                    "& input": {
+                      paddingRight: 0,
+                      paddingLeft: 0,
+                    },
+                    "& input::placeholder": {
+                      color: "rgba(0, 20, 28, 0.5)",
+                    },
+                  }}
+                  endAdornment={
+                    <InputAdornment position="start">
+                      <IconButton edge="end">
+                        <img src={search} alt="Search" />
+                      </IconButton>
+                    </InputAdornment>
+                  }
+                />
+              </Box>
 
-          <Box
-            sx={{
-              display: "flex",
-              marginBottom: 2,
-              justifyContent: "space-between",
-            }}
-          >
-            {icons.map((icon, i) => (
-              <IconBadge key={i} {...icon} theme={theme} />
-            ))}
-          </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  marginBottom: 2,
+                  justifyContent: "space-between",
+                }}
+              >
+                {icons.map((icon, i) => (
+                  <IconBadge key={i} {...icon} theme={theme} />
+                ))}
+              </Box>
 
-          <Box
-            sx={{
-              fontFamily: '"Segoe UI", "sans-serif"',
-              maxHeight: isLessThan1280
-                ? "calc(100vh - 240px)"
-                : isLessThan1400
-                ? "calc(100vh - 252px)"
-                : "calc(100vh - 269px)",
-              overflowY: "auto",
-              marginBottom: isLessThan1280
-                ? "20px"
-                : isLessThan1400
-                ? "32px"
-                : "50px",
-            }}
-          >
-            {allMessages?.map((message, index) => (
-              <MessageItem
-                key={index}
-                message={message}
-                theme={theme}
-                expanded={expanded === index}
-                onChange={handleAccordionChange(index)}
-                setSelectedGroup={setSelectedGroup}
+              <Box
+                sx={{
+                  fontFamily: '"Segoe UI", "sans-serif"',
+                  maxHeight: isLessThan1280
+                    ? "calc(100vh - 240px)"
+                    : isLessThan1400
+                    ? "calc(100vh - 252px)"
+                    : "calc(100vh - 269px)",
+                  overflowY: "auto",
+                  marginBottom: isLessThan1280
+                    ? "20px"
+                    : isLessThan1400
+                    ? "32px"
+                    : "50px",
+                }}
+              >
+                {allMessages?.map((message, index) => (
+                  <MessageItem
+                    key={index}
+                    message={message}
+                    theme={theme}
+                    expanded={expanded === index}
+                    onChange={handleAccordionChange(index)}
+                    setSelectedGroup={setSelectedGroup}
+                    selectedGroup={selectedGroup}
+                    ActivityType={ActivityType}
+                  />
+                ))}
+              </Box>
+            </Grid>
+
+            <Grid
+              sx={{ display: isLessThan900 ? "none" : "block" }}
+              item
+              md={8}
+              lg={9}
+            >
+              <AllMessages
                 selectedGroup={selectedGroup}
                 ActivityType={ActivityType}
               />
-            ))}
-          </Box>
-        </Grid>
-
-        <Grid
-          sx={{ display: isLessThan900 ? "none" : "block" }}
-          item
-          md={8}
-          lg={9}
-        >
-          <AllMessages
-            selectedGroup={selectedGroup}
-            ActivityType={ActivityType}
-          />
-        </Grid>
-      </Grid>
-    </Box>
+            </Grid>
+          </Grid>
+        </Box>
+      )}
+    </>
   );
 };
 

@@ -15,7 +15,6 @@ const MessageItem = ({
   selectedGroup,
   ActivityType,
 }) => {
-
   return (
     <Accordion
       sx={{
@@ -133,7 +132,7 @@ const MessageItem = ({
                     alignItems: lastEl?.creator ? "center" : "unset",
                     padding: 1,
                     bgcolor:
-                      selectedGroup?.messageGroup?.activity === el?.activity
+                      selectedGroup?.messageGroup?.chatId === el?.chatId
                         ? "rgba(209, 219, 215, 0.6)"
                         : "#ffffff",
                     cursor: "pointer",
