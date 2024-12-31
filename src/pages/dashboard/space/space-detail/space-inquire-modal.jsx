@@ -361,9 +361,12 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
                 </Typography>
                 {isLoading ? <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: "5px" }}>
                   <CircularProgress size={15} disableShrink />
-                </Box> : <Typography textAlign="left" fontSize={32} fontWeight={600}>
-                  ${totalPrice}
-                </Typography>}
+                </Box>
+                  :
+                  <Typography textAlign="left" fontSize={32} fontWeight={600}>
+                    ${totalPrice}
+                  </Typography>
+                }
               </Box>
             </Stack>
           </Stack>
