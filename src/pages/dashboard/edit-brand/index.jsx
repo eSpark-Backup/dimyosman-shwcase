@@ -5,16 +5,19 @@ import ReusableModal from '../../../components/Modal'
 import { ChoiceSelectionModal, EventCard, FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs } from '../../../components'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useGetCategoriesQuery } from '../../../services/categories'
 import { useEditBrandMutation, useGetAllBrandsQuery } from '../../../services/brands'
 import { toast } from 'react-toastify'
 import { LoadingButton } from '@mui/lab'
 import { profileContent } from '../../../constant'
+import { useGetMyChatsQuery } from '../../../services/chats'
+import { removeMychat } from '../../../store/slices/chat'
 
 const EditBrand = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch()
   const { events } = useSelector(state => state.event)
   const myEvents = events.filter((event) => event.owned);
   const theme = useTheme()
@@ -39,7 +42,7 @@ const EditBrand = () => {
   const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({
     page: 1, pageSize: 7, id: params?.brandId
   }, { refetchOnMountOrArgChange: true });
-
+    const { refetch } = useGetMyChatsQuery(undefined);
 
   useEffect(() => {
     if (isError) {
@@ -163,7 +166,6 @@ const EditBrand = () => {
   }, [activeTab]);
 
 
-
   useEffect(() => {
 
     if (isEditorVisible && !quillRef.current) {
@@ -223,6 +225,8 @@ const EditBrand = () => {
 
   useEffect(() => {
     if (brandPostSuccess) {
+      dispatch(removeMychat())
+      refetch()
       toast.success(brandPostData?.message)
       navigate("/brand")
     }

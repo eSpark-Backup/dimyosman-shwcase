@@ -9,37 +9,59 @@ export const chatApi = api.injectEndpoints({
       }),
     }),
     getChatsForContacts: builder.query({
-      query: ({ id, page, pageSize } = {}) => {
-        const baseUrl = `/chat/message/${id}`;
-        const queryParams = new URLSearchParams();
+      async queryFn(
+        { chats, page, pageSize },
+        _queryApi,
+        _extraOptions,
+        fetchWithBQ
+      ) {
+        const promises = chats.map((id) => {
+          const queryParams = new URLSearchParams();
+          if (pageSize) queryParams.append("pageSize", pageSize);
+          if (page) queryParams.append("page", page);
 
-        if (pageSize) queryParams.append("pageSize", pageSize);
-        if (page) queryParams.append("page", page);
+          const queryString = queryParams.toString()
+            ? `?${queryParams.toString()}`
+            : "";
 
-        const queryString = queryParams.toString()
-          ? `?${queryParams.toString()}`
-          : "";
-        return {
-          url: `${baseUrl}${queryString}`,
-          method: "GET",
-        };
+          return fetchWithBQ(`/chat/message/${id}${queryString}`);
+        });
+
+        try {
+          const responses = await Promise.all(promises);
+
+          return { data: responses.map((response) => response.data) };
+        } catch (error) {
+          return { error: error.message || "Failed to fetch chat messages" };
+        }
       },
     }),
     getAllChatDetails: builder.query({
-      query: ({ id, page, pageSize } = {}) => {
-        const baseUrl = `/chat/${id}`;
-        const queryParams = new URLSearchParams();
+      async queryFn(
+        { chats, page, pageSize },
+        _queryApi,
+        _extraOptions,
+        fetchWithBQ
+      ) {
+        const promises = chats.map((id) => {
+          const queryParams = new URLSearchParams();
+          if (pageSize) queryParams.append("pageSize", pageSize);
+          if (page) queryParams.append("page", page);
 
-        if (pageSize) queryParams.append("pageSize", pageSize);
-        if (page) queryParams.append("page", page);
+          const queryString = queryParams.toString()
+            ? `?${queryParams.toString()}`
+            : "";
 
-        const queryString = queryParams.toString()
-          ? `?${queryParams.toString()}`
-          : "";
-        return {
-          url: `${baseUrl}${queryString}`,
-          method: "GET",
-        };
+          return fetchWithBQ(`/chat/${id}${queryString}`);
+        });
+
+        try {
+          const responses = await Promise.all(promises);
+
+          return { data: responses.map((response) => response.data) };
+        } catch (error) {
+          return { error: error.message || "Failed to fetch chat messages" };
+        }
       },
     }),
   }),

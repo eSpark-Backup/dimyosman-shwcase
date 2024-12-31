@@ -47,7 +47,7 @@ import { createContext, useContext, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { io } from "socket.io-client";
 import { useGetMyChatsQuery } from "../services/chats";
-import { getMyChat } from "../store/slices/chat";
+import { getMessages, getMyChat } from "../store/slices/chat";
 
 const SocketContext = createContext(null);
 
@@ -58,6 +58,7 @@ const useSocket = () => {
 const SocketProvider = ({ children }) => {
   const socket = useRef(null);
   const { user } = useSelector((state) => state.auth);
+  const { messages } = useSelector((state) => state.chat);
   const { data, isSuccess, isError, error, refetch } = useGetMyChatsQuery(
     undefined,
     { skip: !user }
@@ -66,9 +67,9 @@ const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (isSuccess && data) {
-      Object.keys(data?.chats).forEach((id) => {
-        dispatch(getMyChat(data?.chats[id]));
-      });
+      if (data.chats && data?.chats?.brands?.length > 0) {  
+        dispatch(getMyChat(data.chats.brands));
+      }
     }
   }, [isSuccess, data]);
 

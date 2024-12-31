@@ -195,6 +195,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
           message: "",
           senderBrandId: ""
         }));
+        handleClose()
       }, 0);
     }
   }, [IsMessageSuccess, messageData]);

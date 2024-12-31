@@ -12,18 +12,21 @@ const slice = createSlice({
   reducers: {
     getMyChat: (state, action) => {
       const newChat = action.payload;
-      state.myChat.push(...newChat);
-      // state.myChat = action.payload;
+      state.myChat = newChat
     },
     getChatDetails: (state, action) => {
       state.chatDetails = action.payload;
     },
     getMessages(state, action) {
-      state.messages = action.payload
+      state.messages = action.payload;
+    },
+    removeMychat(state) {
+      state.myChat = [];
     },
   },
 });
 
-export const { getMyChat, getChatDetails, getMessages } = slice.actions;
+export const { getMyChat, getChatDetails, getMessages, removeMychat } =
+  slice.actions;
 
 export default slice.reducer;
