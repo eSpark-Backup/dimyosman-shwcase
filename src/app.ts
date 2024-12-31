@@ -98,6 +98,8 @@ AppDataSource.initialize()
           chat: chatId,
           createdAt: new Date().toISOString(),
         };
+        console.log("messageForRealTime");
+        console.log(chatId, members, message);
 
         const messageForDB = {
           content: message,
