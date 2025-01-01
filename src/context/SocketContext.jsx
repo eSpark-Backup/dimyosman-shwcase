@@ -47,7 +47,7 @@ import { createContext, useContext, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { io } from "socket.io-client";
 import { useGetMyChatsQuery } from "../services/chats";
-import { getMyChat, isUserHasChat } from "../store/slices/chat";
+import { getMessages, getMyChat, isUserHasChat } from "../store/slices/chat";
 
 const SocketContext = createContext(null);
 
@@ -106,18 +106,43 @@ const SocketProvider = ({ children }) => {
         refetch();
       });
 
+      socket.current.on("NEW_MESSAGE", (data) => {
+        console.log("NEW_MESSAGE EVENT TRIGGERED.");
+
+        dispatch(getMessages([...messages, data.message]));
+      });
+
       return () => {
         // Cleanup socket on unmount
         if (socket.current) {
+          socket.current.removeAllListeners();
           socket.current.disconnect();
           socket.current = null;
         }
       };
     }
-  }, [user]);
+  }, [user, socket, dispatch]);
+
+  const emitEvent = (event, payload) => {
+    if (socket.current) {
+      socket.current.emit(event, payload);
+    }
+  };
+
+  const addListener = (event, callback) => {
+    if (socket.current) {
+      socket.current.on(event, callback);
+    }
+  };
+
+  const removeListener = (event) => {
+    if (socket.current) {
+      socket.current.off(event);
+    }
+  };
 
   return (
-    <SocketContext.Provider value={socket.current}>
+    <SocketContext.Provider  value={{ socket: socket.current, emitEvent, addListener, removeListener }}>
       {children}
     </SocketContext.Provider>
   );

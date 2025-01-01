@@ -21,9 +21,7 @@ import MessageHeader from "../../../../components/Message/MessageHeader";
 import MessageInput from "../../../../components/Message/MessageInput";
 import Message from "../../../../components/Message/Message";
 
-import { useSocket } from "../../../../context/SocketContext";
 import { useDispatch, useSelector } from "react-redux";
-import { getMessages } from "../../../../store/slices/chat";
 
 const GroupDetail = ({ withColon, text }) => (
   <Typography
@@ -44,12 +42,11 @@ const GroupDetail = ({ withColon, text }) => (
   </Typography>
 );
 
-const AllMesaages = ({ selectedGroup, ActivityType }) => {
+const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1100 = useMediaQuery("(max-width:1100px)");
 
-  const socket = useSocket();
   const theme = useTheme();
 
   const quillInstance = useRef(null);
@@ -57,9 +54,6 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
   const pickerRef = useRef(null);
   const buttonRef = useRef(null);
 
-  const { messages } = useSelector((state) => state.chat);
-  const { user } = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
 
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
@@ -105,26 +99,6 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
     event.preventDefault();
   };
 
-  useEffect(() => {
-    if (finalMessage.chatId && finalMessage.members && finalMessage.message) {
-      socket.on("NEW_MESSAGE", (data) => {
-        console.log("NEW_MESSAGE EVENT TRIGGERED.");
-
-        dispatch(getMessages([...messages, data.message]));
-
-        setFinalMessage((prevData) => ({
-          ...prevData,
-          message: "",
-        }));
-      });
-
-      return () => {
-        if (socket) {
-          socket.off("NEW_MESSAGE");
-        }
-      };
-    }
-  }, [socket, finalMessage]);
 
   const addEmoji = (emoji) => {
     const range = quillInstance.current.getSelection();
@@ -168,7 +142,12 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
       return false;
     }
 
-    socket.emit("NEW_MESSAGE", finalMessage);
+    emitEvent("NEW_MESSAGE", finalMessage);
+
+    setFinalMessage((prevData) => ({
+      ...prevData,
+      message: "",
+    }));
   };
 
   useEffect(() => {

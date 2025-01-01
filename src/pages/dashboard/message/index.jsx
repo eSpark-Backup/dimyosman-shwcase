@@ -89,8 +89,8 @@ const Message = () => {
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
 
-  const { user } = useSelector((state) => state.auth);
   const { myChat, messages, hasChats } = useSelector((state) => state.chat);
+
   const dispatch = useDispatch();
 
   const {
@@ -135,22 +135,19 @@ const Message = () => {
     }
   }, [messageData, isSuccess, myChat]);
 
-  const socket = useSocket();
+  const { emitEvent, addListener, removeListener } = useSocket();
 
   useEffect(() => {
-    if (socket) {
-      socket.on("NEW_MESSAGE", (data) => {
-        console.log("NEW_MESSAGE EVENT TRIGGERED.");
-        dispatch(getMessages([...messages, data.message]));
-      });
+    addListener("NEW_MESSAGE", (data) => {
+      console.log("NEW_MESSAGE EVENT TRIGGERED.");
 
-      return () => {
-        if (socket) {
-          socket.off("NEW_MESSAGE");
-        }
-      };
-    }
-  }, [socket, messages]);
+      dispatch(getMessages([...messages, data.message]));
+    });
+
+    return () => {
+      removeListener("NEW_MESSAGE");
+    };
+  }, [addListener, removeListener, messages, emitEvent]);
 
   useEffect(() => {
     if (chatDetailsData && messages) {
@@ -225,7 +222,6 @@ const Message = () => {
 
   const [expanded, setExpanded] = useState(0);
   const [selectedGroup, setSelectedGroup] = useState(null);
-  const [initialId, setInitialId] = useState(null);
   const [selectedChatId, setSelectedChatId] = useState(null);
 
   const handleAccordionChange = (index) => (event, isExpanded) => {
@@ -381,13 +377,29 @@ const Message = () => {
               md={8}
               lg={9}
             >
-              <AllMessages
-                setSelectedGroup={setSelectedGroup}
-                selectedGroup={selectedGroup}
-                ActivityType={ActivityType}
-                allMessages={allMessages}
-                setSelectedChatId={selectedChatId}
-              />
+              {expanded === null ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "100%",
+                  }}
+                >
+                  <h1>No chat selected</h1>
+                </Box>
+              ) : (
+                <AllMessages
+                  setSelectedGroup={setSelectedGroup}
+                  selectedGroup={selectedGroup}
+                  ActivityType={ActivityType}
+                  allMessages={allMessages}
+                  setSelectedChatId={selectedChatId}
+                  emitEvent={emitEvent}
+                  removeListener={removeListener}
+                  addListener={addListener}
+                />
+              )}
             </Grid>
           </Grid>
         </Box>
