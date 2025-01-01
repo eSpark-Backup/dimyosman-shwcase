@@ -15,7 +15,7 @@ import {
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 
-import { smile } from "../../../../assets";
+import { message, smile } from "../../../../assets";
 
 import MessageHeader from "../../../../components/Message/MessageHeader";
 import MessageInput from "../../../../components/Message/MessageInput";
@@ -58,6 +58,7 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
   const buttonRef = useRef(null);
 
   const { messages } = useSelector((state) => state.chat);
+  const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   const scrollToBottom = () => {
@@ -80,6 +81,7 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
     members: selectedGroup?.messageGroup?.members,
     message: "",
   });
+  const [buttonDisabled, setButtonDisabled] = useState(true);
 
   useEffect(() => {
     if (selectedGroup?.group?.brandName) {
@@ -234,14 +236,26 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
               ?.map((message, i) => {
                 return (
                   <Fragment key={i}>
-                    {message.text ? (
+                    {message.content ? (
                       <Message
                         ActivityType={ActivityType}
                         theme={theme}
                         message={message}
                         sender={{
-                          brandName: selectedGroup?.group?.brandName,
-                          brandImage: selectedGroup?.group?.brandImage,
+                          brandName:
+                            message?.sender?.name ===
+                            selectedGroup?.group?.creatorDetail?.name
+                              ? selectedGroup?.messageGroup?.senderBrand
+                                  ?.brandName
+                              : selectedGroup?.messageGroup?.receiverBrand
+                                  ?.brandName,
+                          brandImage:
+                            message?.sender?.name ===
+                            selectedGroup?.group?.creatorDetail?.name
+                              ? selectedGroup?.messageGroup?.senderBrand
+                                  ?.brandImage
+                              : selectedGroup?.messageGroup?.receiverBrand
+                                  ?.brandImage,
                         }}
                       />
                     ) : null}
@@ -423,6 +437,7 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
                     letterSpacing: "-0.01em",
                   }}
                   onClick={handleSendMessage}
+                  disabled={buttonDisabled}
                 >
                   Send
                 </Button>
@@ -434,6 +449,7 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
                 quillInstance={quillInstance}
                 onChange={handleInputChange}
                 value={finalMessage?.message}
+                setButtonDisabled={setButtonDisabled}
               />
             </Box>
 

@@ -4,6 +4,7 @@ const initialState = {
   myChat: [],
   chatDetails: {},
   messages: [],
+  hasChats: "",
 };
 
 const slice = createSlice({
@@ -12,7 +13,7 @@ const slice = createSlice({
   reducers: {
     getMyChat: (state, action) => {
       const newChat = action.payload;
-      state.myChat = newChat
+      state.myChat = newChat;
     },
     getChatDetails: (state, action) => {
       state.chatDetails = action.payload;
@@ -23,10 +24,18 @@ const slice = createSlice({
     removeMychat(state) {
       state.myChat = [];
     },
+    isUserHasChat(state,action) {
+      state.hasChats = action.payload;
+    },
   },
 });
 
-export const { getMyChat, getChatDetails, getMessages, removeMychat } =
-  slice.actions;
+export const {
+  getMyChat,
+  getChatDetails,
+  getMessages,
+  removeMychat,
+  isUserHasChat,
+} = slice.actions;
 
 export default slice.reducer;

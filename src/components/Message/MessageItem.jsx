@@ -14,6 +14,7 @@ const MessageItem = ({
   setSelectedGroup,
   selectedGroup,
   ActivityType,
+  setSelectedChatId,
 }) => {
   return (
     <Accordion
@@ -119,17 +120,14 @@ const MessageItem = ({
           gap: 1,
         }}
       >
-        {message.messageGroups.length
+        {message?.messageGroups?.length
           ? message.messageGroups.map((el, i) => {
-              const lastElInd = el.messages.length - 1;
-              const lastEl = el.messages[lastElInd];
-
               return (
                 <Box
                   key={i}
                   sx={{
                     display: "flex",
-                    alignItems: lastEl?.creator ? "center" : "unset",
+                    alignItems: el?.creator ? "center" : "unset",
                     padding: 1,
                     bgcolor:
                       selectedGroup?.messageGroup?.chatId === el?.chatId
@@ -139,9 +137,10 @@ const MessageItem = ({
                     position: "relative",
                     borderRadius: "3px",
                   }}
-                  onClick={() =>
-                    setSelectedGroup({ messageGroup: el, group: message })
-                  }
+                  onClick={() => {
+                    setSelectedChatId(el?.chatId);
+                    setSelectedGroup({ messageGroup: el, group: message });
+                  }}
                 >
                   <Box
                     sx={{
@@ -198,7 +197,7 @@ const MessageItem = ({
                       {el.brandName}
                     </Typography>
 
-                    {lastEl?.creator && (
+                    {el?.creator && (
                       <Typography
                         sx={{
                           fontWeight: 300,
@@ -206,7 +205,7 @@ const MessageItem = ({
                           lineHeight: "17px",
                         }}
                       >
-                        {lastEl.creator}
+                        {el.creator}
                       </Typography>
                     )}
 
@@ -220,7 +219,7 @@ const MessageItem = ({
                           lineHeight: "14px",
                         }}
                       >
-                        {lastEl?.date}
+                        {el?.date}
                       </Typography>
 
                       <Typography
@@ -230,7 +229,7 @@ const MessageItem = ({
                           lineHeight: "14px",
                         }}
                       >
-                        {lastEl?.time}
+                        {el?.time}
                       </Typography>
                     </Box>
                   </Box>

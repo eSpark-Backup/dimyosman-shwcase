@@ -10,39 +10,43 @@ const Activity = () => {
   }, { refetchOnMountOrArgChange: true })
 
   const [activityData, setActivityData] = useState([]);
+  const [hasFetchedData, setHasFetchedData] = useState(false);
 
   useEffect(() => {
-    if (isSuccess && data?.data) {
-      const updatedData = data.data.spaces?.map((item) => {
-        const filterPrice = item?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") || [];
-        const spaceFeatures = item?.amenity?.map((amenityItem) => ({
-          icon: amenityItem?.iconUrl || "",
-          description: amenityItem?.name || ""
-        })) || [];
-        const coverArray = item?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
+    if (isSuccess) {
+      if (data?.data) {
+        const updatedData = data.data.spaces?.map((item) => {
+          const filterPrice = item?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") || [];
+          const spaceFeatures = item?.amenity?.map((amenityItem) => ({
+            icon: amenityItem?.iconUrl || "",
+            description: amenityItem?.name || ""
+          })) || [];
+          const coverArray = item?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
         
-        return {
-          profileId: 2,
-          activity: "space",
-          spaceId: item?.id || "",
-          userName: item?.brand?.brandName || "",
-          activityName: item?.spaceName || "",
-          activityMaker: item?.brand?.brandName || "",
-          content: [item?.details?.description || ""],
-          activityLocation: item?.brand?.brandName || "",
-          activityAddress: "123 Williamsburg Ave, Brooklyn, NY 11211",
-          value: filterPrice[0]?.price ? `$${filterPrice[0]?.price}/day` : "N/A",
-          deadline: filterPrice[0]?.minimum ? `minimum lease: ${filterPrice[0]?.minimum} days` : "N/A",
-          userImage: item?.brand?.brandImage || "",
-          activityImage: item?.spaceImage || "",
-          features: spaceFeatures,
-          userRole: "brand",
-          slides: coverArray
-        };
-      }) || [];
-      setActivityData(updatedData);
-    } else if (isSuccess && !data?.data) {
-      setActivityData([]);
+          return {
+            profileId: 2,
+            activity: "space",
+            spaceId: item?.id || "",
+            userName: item?.brand?.brandName || "",
+            activityName: item?.spaceName || "",
+            activityMaker: item?.brand?.brandName || "",
+            content: [item?.details?.description || ""],
+            activityLocation: item?.brand?.brandName || "",
+            activityAddress: "123 Williamsburg Ave, Brooklyn, NY 11211",
+            value: filterPrice[0]?.price ? `$${filterPrice[0]?.price}/day` : "N/A",
+            deadline: filterPrice[0]?.minimum ? `minimum lease: ${filterPrice[0]?.minimum} days` : "N/A",
+            userImage: item?.brand?.brandImage || "",
+            activityImage: item?.spaceImage || "",
+            features: spaceFeatures,
+            userRole: "brand",
+            slides: coverArray
+          };
+        }) || [];
+        setActivityData(updatedData);
+      } else {
+        setActivityData([]);
+      }
+      setHasFetchedData(true); 
     }
   }, [isSuccess, data]);
   
@@ -55,7 +59,7 @@ const Activity = () => {
     )
   }
 
-  if (isSuccess && data && activityData?.length === 0) {
+  if (hasFetchedData && activityData?.length === 0) {
     return (
       <Box sx={{ width: "100%" }}>
         <h1>No Data Found</h1>

@@ -47,7 +47,7 @@ import { createContext, useContext, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { io } from "socket.io-client";
 import { useGetMyChatsQuery } from "../services/chats";
-import { getMessages, getMyChat } from "../store/slices/chat";
+import { getMyChat, isUserHasChat } from "../store/slices/chat";
 
 const SocketContext = createContext(null);
 
@@ -67,8 +67,13 @@ const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (isSuccess && data) {
-      if (data.chats && data?.chats?.brands?.length > 0) {  
+      if(data.chats && Array.isArray(data.chats)) {
+        dispatch(isUserHasChat("empty"));
+      }
+
+      if (data.chats && data?.chats?.brands?.length > 0) {
         dispatch(getMyChat(data.chats.brands));
+        dispatch(isUserHasChat(""));
       }
     }
   }, [isSuccess, data]);

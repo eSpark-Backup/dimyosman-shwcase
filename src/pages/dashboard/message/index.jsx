@@ -90,10 +90,14 @@ const Message = () => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
 
   const { user } = useSelector((state) => state.auth);
-  const { myChat, messages } = useSelector((state) => state.chat);
+  const { myChat, messages, hasChats } = useSelector((state) => state.chat);
   const dispatch = useDispatch();
 
-  const { data: messageData, isSuccess } = useGetChatsForContactsQuery(
+  const {
+    data: messageData,
+    isSuccess,
+    isLoading,
+  } = useGetChatsForContactsQuery(
     {
       chats: myChat?.flatMap((chat) => chat.chats.map((c) => c._id)),
     },
@@ -102,21 +106,30 @@ const Message = () => {
     }
   );
 
-  const { data: chatDetailsData, isLoading: chatDetailsLoading } =
-    useGetAllChatDetailsQuery(
-      {
-        chats: myChat?.flatMap((chat) => chat.chats.map((c) => c._id)),
-      },
-      {
-        skip: !myChat?.length,
-      }
-    );
+  const {
+    data: chatDetailsData,
+    isSuccess: chatDetailsSuccess,
+    isLoading: chatDetailsLoading,
+  } = useGetAllChatDetailsQuery(
+    {
+      chats: myChat?.flatMap((chat) => chat.chats.map((c) => c._id)),
+    },
+    {
+      skip: !myChat?.length,
+    }
+  );
 
   const [allMessages, setAllMessages] = useState([]);
 
   useEffect(() => {
-    if (messageData && !messageData.includes(undefined) && messageData?.length) {
-      const filteredMessages = messageData?.map((message) => message?.messages)?.flat();
+    if (
+      messageData &&
+      !messageData.includes(undefined) &&
+      messageData?.length
+    ) {
+      const filteredMessages = messageData
+        ?.map((message) => message?.messages)
+        ?.flat();
 
       dispatch(getMessages(filteredMessages));
     }
@@ -127,7 +140,7 @@ const Message = () => {
   useEffect(() => {
     if (socket) {
       socket.on("NEW_MESSAGE", (data) => {
-        console.log("NEW_MESSAGE EVENT TRIGGERED.", data);
+        console.log("NEW_MESSAGE EVENT TRIGGERED.");
         dispatch(getMessages([...messages, data.message]));
       });
 
@@ -137,19 +150,18 @@ const Message = () => {
         }
       };
     }
-  }, [socket]);
+  }, [socket, messages]);
 
   useEffect(() => {
     if (chatDetailsData && messages) {
       const message = myChat.map((el) => {
-    
         return {
           id: el?.brandDetails?.id,
           activity: "brand",
           brandName: el?.brandDetails?.brandName,
           brandImage: el?.brandDetails?.brandImage,
           read: false,
-          creator: el?.name,
+          creatorDetail: el?.brandDetails?.user,
           spaces: 1234,
           followers: 234566,
           saved: "789k",
@@ -186,6 +198,7 @@ const Message = () => {
               brandName: item?.receiverBrand?.brandName,
               activity: "brand",
               brandImage: item?.receiverBrand?.brandImage,
+              creator: item?.receiverBrand?.user?.name,
               read: false,
               chatName: matchingItem?.name,
               date: format(new Date(matchingItem?.createdAt), "MM/dd/yy"),
@@ -200,7 +213,6 @@ const Message = () => {
                   creator: el?.name,
                   date: format(new Date(messageItem?.createdAt), "MM/dd/yy"),
                   time: format(new Date(messageItem?.createdAt), "h:mma"),
-                  text: messageItem?.content,
                 };
               }),
             };
@@ -213,37 +225,71 @@ const Message = () => {
 
   const [expanded, setExpanded] = useState(0);
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const [initialId, setInitialId] = useState(null);
+  const [selectedChatId, setSelectedChatId] = useState(null);
 
   const handleAccordionChange = (index) => (event, isExpanded) => {
-    setSelectedGroup({
-      messageGroup: allMessages[index]?.messageGroups[0],
-      group: allMessages[index],
+    setSelectedChatId(allMessages[index]?.messageGroups[0]?.chatId);
+    setSelectedGroup(() => {
+      if (isExpanded) {
+        return {
+          messageGroup: allMessages[index]?.messageGroups[0],
+          group: allMessages[index],
+        };
+      } else {
+        setSelectedGroup(null);
+      }
     });
 
     setExpanded(isExpanded ? index : null);
   };
 
   useEffect(() => {
-    if (allMessages.length) {
+    if (
+      allMessages.length &&
+      selectedChatId === null &&
+      selectedGroup !== null
+    ) {
       setSelectedGroup({
         messageGroup: allMessages[0]?.messageGroups[0],
         group: allMessages[0],
       });
     }
-  }, [allMessages]);
+  }, [allMessages, selectedChatId, messages]);
 
-
-  if (myChat?.length) {
-    if (chatDetailsLoading) {
-      return (
-        <Box sx={{ width: "100%" }}>
-          <LinearProgress />
-        </Box>
-      );
+  useEffect(() => {
+    if (
+      allMessages.length &&
+      selectedChatId === null &&
+      selectedGroup === null
+    ) {
+      setSelectedGroup({
+        messageGroup: allMessages[0]?.messageGroups[0],
+        group: allMessages[0],
+      });
+    } else if (
+      allMessages.length &&
+      selectedChatId !== null &&
+      expanded !== null
+    ) {
+      setSelectedGroup({
+        messageGroup: allMessages[expanded]?.messageGroups?.find(
+          (msg) => msg.id === selectedChatId
+        ),
+        group: allMessages[expanded],
+      });
     }
+  }, [allMessages, selectedChatId, expanded, messages]);
+
+  if (isLoading || chatDetailsLoading) {
+    return (
+      <Box sx={{ width: "100%" }}>
+        <LinearProgress />
+      </Box>
+    );
   }
 
-  if (myChat?.length === 0) {
+  if (hasChats === "empty") {
     return (
       <Box sx={{ width: "100%" }}>
         <h1>No Data Found</h1>
@@ -253,7 +299,7 @@ const Message = () => {
 
   return (
     <>
-      {allMessages.length === 0 ? null : (
+      {allMessages?.length === 0 ? null : (
         <Box sx={{ flexGrow: 1 }}>
           <Grid container spacing={2}>
             <Grid item xs={12} md={4} lg={3}>
@@ -323,6 +369,7 @@ const Message = () => {
                     setSelectedGroup={setSelectedGroup}
                     selectedGroup={selectedGroup}
                     ActivityType={ActivityType}
+                    setSelectedChatId={setSelectedChatId}
                   />
                 ))}
               </Box>
@@ -335,8 +382,11 @@ const Message = () => {
               lg={9}
             >
               <AllMessages
+                setSelectedGroup={setSelectedGroup}
                 selectedGroup={selectedGroup}
                 ActivityType={ActivityType}
+                allMessages={allMessages}
+                setSelectedChatId={selectedChatId}
               />
             </Grid>
           </Grid>
