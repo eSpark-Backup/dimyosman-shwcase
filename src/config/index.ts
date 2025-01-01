@@ -15,14 +15,14 @@ export const configs = {
   EXPIRES_IN: <string>getEnv("EXPIRES_IN"),
 };
 
-export const email = {
-  host: getEnv("SMTP_HOST"),
-  port: Number(getEnv("SMTP_PORT")),
-  secure: Boolean(getEnv("SMTP_SECURE")),
-  user: getEnv("SMTP_USER"),
-  pass: getEnv("SMTP_PASS"),
-  from: getEnv("SMTP_FROM"),
-};
+// export const email = {
+//   host: getEnv("SMTP_HOST"),
+//   port: Number(getEnv("SMTP_PORT")),
+//   secure: Boolean(getEnv("SMTP_SECURE")),
+//   user: getEnv("SMTP_USER"),
+//   pass: getEnv("SMTP_PASS"),
+//   from: getEnv("SMTP_FROM"),
+// };
 
 export const bcryptConfig = {
   salt: Number(getEnv("SALT")),
