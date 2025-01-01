@@ -9,3 +9,8 @@
 [32m{"level":"info","message":"Uploading file image","timestamp":"2025-01-01 13:14:20"}[39m
 [32m{"level":"info","message":"Uploading file image","timestamp":"2025-01-01 13:17:27"}[39m
 [32m{"level":"info","message":"Uploading file image","timestamp":"2025-01-01 13:17:46"}[39m
+[31m{"level":"error","message":"UserController :: changePassword :: Incorrect old password","timestamp":"2025-01-01 13:28:46"}[39m
+[31m{"level":"error","message":"UserController :: changePassword :: Incorrect old password","timestamp":"2025-01-01 13:29:22"}[39m
+[31m{"level":"error","message":"UserController :: changePassword :: New password cannot be the same as old password","timestamp":"2025-01-01 13:31:16"}[39m
+[31m{"level":"error","message":"UserController :: changePassword :: New password cannot be the same as old password","timestamp":"2025-01-01 13:31:35"}[39m
+[31m{"level":"error","message":"UserController :: changePassword :: Incorrect old password","timestamp":"2025-01-01 13:32:01"}[39m

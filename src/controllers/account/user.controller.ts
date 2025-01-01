@@ -24,6 +24,51 @@ export class UserController {
     private notificationModel: typeof Notification
   ) {}
 
+  async changePassword(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      const { oldPassword, newPassword } = req.body;
+
+      const user = await this.usersRepo
+        .createQueryBuilder("user")
+        .where("user.id = :userId", { userId })
+        .getOne();
+
+      if (!user) {
+        throw new ApiError("User not found", HTTP_STATUS.NOT_FOUND);
+      }
+
+      const isMatch = await bcrypt.compare(oldPassword, user.password);
+      if (!isMatch) {
+        throw new ApiError("Incorrect old password", HTTP_STATUS.UN_AUTHORIZED);
+      }
+      if (oldPassword === newPassword) {
+        throw new ApiError(
+          "New password cannot be the same as old password",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+      user.password = hashedPassword;
+      await this.usersRepo.save(user);
+
+      res
+        .status(HTTP_STATUS.OK)
+        .json(handleResponse("Password changed successfully"));
+    } catch (error) {
+      logger.error(
+        `UserController :: changePassword :: ${(error as Error)?.message}`
+      );
+      return next(error);
+    }
+  }
   async updateProfileImage(
     req: ICustomRequest,
     res: Response,

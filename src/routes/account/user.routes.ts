@@ -411,4 +411,59 @@ router.put(
   handleMultipleFiles([{ name: FILE_FIELDS.IMAGE, maxCount: 1 }]),
   (req, res, next) => userController.updateProfileImage(req, res, next)
 );
+
+/**
+ * @swagger
+ * /user/change-password:
+ *   post:
+ *     summary: Change user password
+ *     description: Allows users to change their password by providing the old password and a new password.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - User
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               oldPassword:
+ *                 type: string
+ *                 description: The current password of the user.
+ *                 example: oldPassword123
+ *               newPassword:
+ *                 type: string
+ *                 description: The new password to set.
+ *                 example: newPassword456
+ *             required:
+ *               - oldPassword
+ *               - newPassword
+ *     responses:
+ *       200:
+ *         description: Password changed successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Password changed successfully.
+ *       400:
+ *         description: Validation error.
+ *       401:
+ *         description: Unauthorized - Incorrect old password.
+ *       500:
+ *         description: Internal server error.
+ */
+router.post(
+  "/change-password",
+  checkJwt,
+  validateRoles([ROLES.USER]),
+  validate(UserValidation.changePasswordValidation, "body"),
+  (req, res, next) => userController.changePassword(req, res, next)
+);
+
 export { router };
