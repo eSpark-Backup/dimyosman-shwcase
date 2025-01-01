@@ -49,12 +49,6 @@ export class User extends BaseEntity {
   @Column({ type: "varchar", length: 100, nullable: true })
   userChatId: string;
 
-  @Column({ type: "boolean", nullable: true, default: false })
-  isVerified: boolean;
-
-  @Column({ type: "varchar", length: 100, nullable: true })
-  emailLinkExpire: string;
-
   @Column({ type: "varchar", length: 50, nullable: true, default: "user" })
   role: string;
   @Column({

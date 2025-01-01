@@ -1,4 +1,4 @@
-import crypto, { createCipheriv, createDecipheriv, randomBytes } from "crypto";
+import crypto from "crypto";
 import {
   EXPIRATION_TIME,
   HTTP_STATUS,
@@ -6,13 +6,9 @@ import {
   ONE_MIN_MS,
   OTP_LENGTH,
   TOKEN_LENGTH,
-  TOKEN_EXPIRATION,
 } from "../constants";
 import { Request, Response, NextFunction } from "express";
 import { PricingTerm } from "../interfaces";
-import { config } from "dotenv";
-import { configs } from "../config";
-import { ApiError } from "../errors";
 
 /**
  * @description : For set success response data
@@ -145,125 +141,12 @@ export const getTime = (
   }
 };
 
-export const generateToken = (
-  payload: { userId: string; newEmail: string },
-  expiresIn: string = "1h"
-) => {
-  // Handle expiration time
-  const expirationDate = new Date();
-  const expirationTime = convertToMilliseconds(expiresIn);
-  expirationDate.setTime(expirationDate.getTime() + expirationTime);
-
-  // Generate a random token
-  const token = encrypt(payload.userId);
-
-  // Combine token with user data and expiration time (this will be your payload)
-  const payloadWithExpiration = {
-    token,
-    userId: payload.userId,
-    newEmail: payload.newEmail,
-    expiresAt: expirationDate.toISOString(), // Add expiration time to the payload
-  };
-
-  return payloadWithExpiration;
-};
-
-export const verifyToken = (token: string) => {
-  // Decrypt the token
-  const decryptedToken = decrypt(token);
-
-  // Extract the expiration date from the payload
-  const payload = JSON.parse(decryptedToken);
-  const expiresAt = new Date(payload.expiresAt);
-
-  // Check if the token has expired
-  if (expiresAt.getTime() < Date.now()) {
-    return null;
+export const generateToken = (length: number = TOKEN_LENGTH) => {
+  let tokenLength = length;
+  if (!Number.isInteger(length) || length <= 0) {
+    tokenLength = TOKEN_LENGTH;
   }
-
-  return payload;
+  const randomBytes = crypto.randomBytes(Math.ceil(length / 2));
+  const token = randomBytes.toString("hex").slice(0, length);
+  return token;
 };
-
-// Convert human-readable time to milliseconds (e.g., "1h" -> 3600000ms)
-const convertToMilliseconds = (expiresIn: string) => {
-  const match = expiresIn.match(/(\d+)([smhd])/);
-  if (!match) return 0;
-
-  const value = parseInt(match[1]);
-  const unit = match[2];
-
-  switch (unit) {
-    case "s":
-      return value * 1000; // seconds
-    case "m":
-      return value * 60 * 1000; // minutes
-    case "h":
-      return value * 60 * 60 * 1000; // hours
-    case "d":
-      return value * 24 * 60 * 60 * 1000; // days
-    default:
-      return 0;
-  }
-};
-
-export function encrypt(text: any) {
-  const algorithm = "aes-256-ctr";
-  const secretKey = configs.LINK_SECRET_KEY;
-  const iv = randomBytes(16);
-
-  // Ensure the secretKey is 32 bytes long
-  const key = Buffer.alloc(32);
-  Buffer.from(secretKey).copy(key);
-
-  const cipher = createCipheriv(algorithm, key, iv);
-
-  const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
-
-  return `${iv.toString("hex")}SHWCASE${encrypted.toString("hex")}`;
-}
-export function decrypt(encryptedText: any) {
-  try {
-    const algorithm = "aes-256-ctr";
-    const secretKey = configs.LINK_SECRET_KEY;
-
-    // Ensure the encryptedText is valid
-    if (
-      !encryptedText ||
-      typeof encryptedText !== "string" ||
-      !encryptedText.includes("SHWCASE")
-    ) {
-      throw new Error("Invalid input for decryption");
-    }
-
-    const parts = encryptedText.split("SHWCASE");
-    const iv = Buffer.from(parts[0], "hex");
-    const encrypted = Buffer.from(parts[1], "hex");
-
-    const key = Buffer.alloc(32);
-    Buffer.from(secretKey).copy(key);
-
-    const decipher = createDecipheriv(algorithm, key, iv);
-
-    // Decrypt the text
-    const decrypted = Buffer.concat([
-      decipher.update(encrypted),
-      decipher.final(),
-    ]);
-
-    return decrypted.toString();
-  } catch (error) {
-    // Handle known and unknown errors
-    if (error instanceof Error) {
-      throw new ApiError(
-        error.message || "Decryption failed due to an unknown error.",
-        HTTP_STATUS.BAD_REQUEST
-      );
-    }
-
-    // If it's not an instance of Error, something went wrong
-    throw new ApiError(
-      "An unexpected error occurred during decryption",
-      HTTP_STATUS.INTERNAL_SERVER_ERROR
-    );
-  }
-}

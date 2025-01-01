@@ -15,7 +15,6 @@ export const defaultCountryCode = "+91";
 export const OTP_LENGTH = 4;
 export const TOKEN_LENGTH = 30;
 export const ONE_MIN_MS = 1000 * 60;
-export const TOKEN_EXPIRATION = 60 * 60 * 1000;
 
 export const enum EXPIRATION_TIME {
   OTP = 15,

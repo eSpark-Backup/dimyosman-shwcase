@@ -13,17 +13,16 @@ export const configs = {
   // JWT Configs
   JWT_SECRET_KEY: <string>getEnv("JWT_SECRET"),
   EXPIRES_IN: <string>getEnv("EXPIRES_IN"),
-  LINK_SECRET_KEY: <string>getEnv("LINK_SECRET_KEY"),
 };
 
-export const MAILER_CONFIG = {
-  host: getEnv("SMTP_HOST"),
-  port: Number(getEnv("SMTP_PORT")),
-  secure: Boolean(getEnv("SMTP_SECURE")),
-  service: getEnv("SMTP_SERVICE"),
-  pass: getEnv("SMTP_PASS"),
-  from: getEnv("SMTP_FROM"),
-};
+// export const email = {
+//   host: getEnv("SMTP_HOST"),
+//   port: Number(getEnv("SMTP_PORT")),
+//   secure: Boolean(getEnv("SMTP_SECURE")),
+//   user: getEnv("SMTP_USER"),
+//   pass: getEnv("SMTP_PASS"),
+//   from: getEnv("SMTP_FROM"),
+// };
 
 export const bcryptConfig = {
   salt: Number(getEnv("SALT")),
