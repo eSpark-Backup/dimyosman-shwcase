@@ -365,7 +365,7 @@ router.get("/notifications", setPagination, (req, res, next) =>
  *                   type: string
  *                   example: An unexpected error occurred.
  */
-router.post(
+router.put(
   "/profile",
   checkJwt,
   validateRoles([ROLES.USER]),
