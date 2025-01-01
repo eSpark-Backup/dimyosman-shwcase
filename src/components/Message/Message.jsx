@@ -110,7 +110,7 @@ const Message = ({ ActivityType, theme, message, sender }) => {
           },
         }}
         dangerouslySetInnerHTML={{
-          __html: message.text,
+          __html: message.content,
         }}
       />
     </Box>

@@ -11,8 +11,14 @@ const MessageInput = ({
   quillInstance,
   onChange,
   value,
+  setButtonDisabled,
 }) => {
   const quillRef = useRef(null);
+
+  const checkIfContentIsEmpty = () => {
+    const text = quillInstance.current.getText().trim();
+    setButtonDisabled && setButtonDisabled(text.length === 0);
+  };
 
   useEffect(() => {
     if (!quillInstance?.current) {
@@ -84,6 +90,7 @@ const MessageInput = ({
           if (onChange) {
             onChange({ content, text }); // Pass the content to the parent
           }
+          checkIfContentIsEmpty(); // Check if the content is empty on every change
         });
       }
     }
@@ -98,9 +105,7 @@ const MessageInput = ({
     }
   }, [value]);
 
-  return (
-    <div ref={quillRef} style={{ height: "74px" }} />
-  );
+  return <div ref={quillRef} style={{ height: "74px" }} />;
 };
 
 export default MessageInput;

@@ -24,6 +24,8 @@ import MessageInput from "../../../../components/Message/MessageInput";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import { LoadingButton } from "@mui/lab";
+import { useGetMyChatsQuery } from "../../../../services/chats";
+import { useSelector } from "react-redux";
 
 
 const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDates, brandName, spaceImage, pricing, spaceId, brandId }) => {
@@ -49,6 +51,9 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
     senderBrandId: "",
     message: ""
   })
+  const { user } = useSelector((state) => state.auth);
+
+   const { refetch } = useGetMyChatsQuery(undefined, { skip: !user });
 
   useEffect(() => {
     const bookedEventsDate = bookedDates?.map((item) => ({
@@ -195,6 +200,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
           message: "",
           senderBrandId: ""
         }));
+        refetch()
         handleClose()
       }, 0);
     }
