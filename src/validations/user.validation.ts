@@ -17,6 +17,7 @@ export class UserValidation {
     isSocialLogin: Joi.boolean().optional(),
     profile: Joi.boolean().optional(),
     sendEmails: Joi.boolean().optional(),
+    email: Joi.string().email().optional(),
     socialId: Joi.string().optional(),
   });
 
@@ -36,6 +37,11 @@ export class UserValidation {
   static passwordReset = Joi.object({
     password: Joi.string().min(8),
     token: Joi.string().required(),
+  });
+
+  static updateEmail = Joi.object({
+    newEmail: Joi.string().email().required(),
+    oldEmail: Joi.string().email().required(),
   });
 
   static changePasswordValidation = Joi.object({

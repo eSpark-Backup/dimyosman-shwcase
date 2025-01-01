@@ -7,6 +7,7 @@ import { CHAT_COOKIE, HTTP_STATUS } from "../../constants";
 import jwt from "jsonwebtoken";
 import { UserForChat } from "../../models";
 import bcrypt from "bcryptjs";
+import { mailService } from "../../services/mail.service";
 const cookieOptions: {
   maxAge: number;
   sameSite: "none" | "lax" | "strict";
