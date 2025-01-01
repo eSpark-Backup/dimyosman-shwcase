@@ -50,14 +50,29 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
           ? await brandRepository
               .createQueryBuilder("brand")
               .where("brand.id = :id", { id: receiverBrand })
-              .select(["brand.id", "brand.brandName", "brand.brandImage"])
+              // .select(["brand.id", "brand.brandName", "brand.brandImage"])
+              .leftJoinAndSelect("brand.user", "user")
+              .select([
+                "brand.id",
+                "brand.brandName",
+                "brand.brandImage",
+                "user.id",
+                "user.name",
+              ])
               .getOne()
           : null;
         const populatedSenderBrand = senderBrand
           ? await brandRepository
               .createQueryBuilder("brand")
               .where("brand.id = :id", { id: senderBrand })
-              .select(["brand.id", "brand.brandName", "brand.brandImage"])
+              .leftJoinAndSelect("brand.user", "user")
+              .select([
+                "brand.id",
+                "brand.brandName",
+                "brand.brandImage",
+                "user.id",
+                "user.name",
+              ])
               .getOne()
           : null;
 

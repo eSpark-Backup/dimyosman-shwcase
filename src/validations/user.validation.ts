@@ -7,10 +7,8 @@ export class UserValidation {
     is: Joi.exist(),
     then: Joi.string().required(),
   });
-  static signupUser = Joi.object({
+  static updateUser = Joi.object({
     firstName: Joi.string()?.optional(),
-    email: Joi.string().email(),
-    password: Joi.string().min(8)?.optional(),
     lastName: Joi.string()?.optional(),
     profileImage: Joi.string()?.optional(),
     loginType: Joi.string()
