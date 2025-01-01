@@ -15,6 +15,8 @@ export class UserValidation {
       .valid(...Object.values(LoginType))
       .optional(),
     isSocialLogin: Joi.boolean().optional(),
+    profile: Joi.boolean().optional(),
+    sendEmails: Joi.boolean().optional(),
     socialId: Joi.string().optional(),
   });
 

@@ -33,6 +33,7 @@ export enum CLOUD_FOLDERS {
   SPACE = "Space",
   FILES = "Files",
   AMENITY = "Amenity",
+  USER = "User",
 }
 
 export const imageExtensions = [

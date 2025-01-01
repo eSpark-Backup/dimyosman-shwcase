@@ -6,3 +6,6 @@
 [31m{"level":"error","message":"AuthController :: registerUser :: ER_DUP_ENTRY: Duplicate entry 'user@examplse.com' for key 'IDX_e12875dfb3b1d92d7d7c5377e2'","timestamp":"2024-11-22 15:34:17"}[39m
 [31m{"level":"error","message":"AuthController :: loginUser :: Invalid email or password.","timestamp":"2024-11-22 15:39:53"}[39m
 [31m{"level":"error","message":"AuthController :: registerUser :: Email is already registered. Please log in.","timestamp":"2024-11-22 15:42:47"}[39m
+[32m{"level":"info","message":"Uploading file image","timestamp":"2025-01-01 13:14:20"}[39m
+[32m{"level":"info","message":"Uploading file image","timestamp":"2025-01-01 13:17:27"}[39m
+[32m{"level":"info","message":"Uploading file image","timestamp":"2025-01-01 13:17:46"}[39m

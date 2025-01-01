@@ -3,18 +3,145 @@ import { Events, User } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
 import { handleResponse, logger } from "../../utils";
-import { HTTP_STATUS } from "../../constants";
+import { CLOUD_FOLDERS, HTTP_STATUS } from "../../constants";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import { EventDate, ICustomRequest } from "../../interfaces";
+import {
+  EventDate,
+  ICustomRequest,
+  IFileObject,
+  UploadResult,
+} from "../../interfaces";
 import { Notification } from "../../models";
-
+import fs from "fs";
+import path from "path";
+import { commonHelper } from "../../helpers";
+import { uploadService } from "../../services";
 export class UserController {
   constructor(
     private usersRepo: Repository<User>,
     private eventsRepo: Repository<Events>,
     private notificationModel: typeof Notification
   ) {}
+
+  async updateProfileImage(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      const user = await this.usersRepo
+        .createQueryBuilder("user")
+        .where("user.id = :userId", { userId })
+        .getOne();
+
+      if (!user) {
+        throw new ApiError("User not found", HTTP_STATUS.NOT_FOUND);
+      }
+
+      const imageFilesPath = path.join(process.cwd(), "uploads");
+
+      const imageFiles = fs
+        .readdirSync(path.join(imageFilesPath))
+        .filter((file) => file.startsWith("image")); // Filter for image files
+
+      if (imageFiles.length < 1) {
+        throw new ApiError("No image file found", HTTP_STATUS.NOT_FOUND);
+      }
+
+      const imageFileObjects: IFileObject[] = imageFiles.map((file) =>
+        commonHelper.createFileObject(path.join(imageFilesPath, file), "image")
+      );
+
+      const oldUserImage = user.profileImage;
+      const FolderName = `${CLOUD_FOLDERS.USER}/${user.name.trim()}`;
+      const imageUrls = (
+        imageFileObjects?.length > 0
+          ? await uploadService.uploadMultipleFiles(
+              imageFileObjects,
+              FolderName
+            )
+          : [{ url: oldUserImage }]
+      ) as UploadResult[];
+
+      if (user.imageKey) {
+        if (imageFileObjects && oldUserImage !== imageUrls[0]?.url) {
+          await uploadService.deleteFile(user.imageKey);
+        }
+      }
+      await this.usersRepo.update(user.id, {
+        profileImage: imageUrls[0]?.url,
+        imageKey: imageUrls[0]?.public_id,
+      });
+      const uploadsPath = path.join(process.cwd(), "uploads");
+      const files = fs.readdirSync(uploadsPath);
+
+      files.forEach((file) => {
+        const filePath = path.join(uploadsPath, file);
+        fs.unlinkSync(filePath);
+      });
+
+      res
+        .status(HTTP_STATUS.OK)
+        .json(handleResponse("User Profile Updated Successfully"));
+      return next();
+    } catch (error) {
+      const uploadsPath = path.join(process.cwd(), "uploads");
+      const files = fs.readdirSync(uploadsPath);
+
+      files.forEach((file) => {
+        const filePath = path.join(uploadsPath, file);
+        fs.unlinkSync(filePath);
+      });
+      logger.error(
+        `UserController :: updateProfileImage :: ${(error as Error)?.message}`
+      );
+      return next(error);
+    }
+  }
+
+  async updateUser(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      const { firstName, lastName, ...rest } = req.body;
+
+      const name = [firstName, lastName].filter(Boolean).join(" ");
+
+      // Retrieve user
+      const user = await this.usersRepo
+        .createQueryBuilder("user")
+        .where("user.id = :userId", { userId })
+        .getOne();
+
+      if (!user) {
+        throw new ApiError("User not found", HTTP_STATUS.NOT_FOUND);
+      }
+
+      const updatedData = {
+        ...user,
+        ...rest,
+        ...(name && { name }),
+      };
+
+      const updatedUser = await this.usersRepo.save(updatedData);
+
+      const { password: _, ...userProfile } = updatedUser;
+
+      res
+        .status(HTTP_STATUS.OK)
+        .json(handleResponse("User profile updated successfully", userProfile));
+    } catch (error) {
+      logger.error(
+        `UserController :: updateUser :: ${(error as Error)?.message}`
+      );
+      return next(error);
+    }
+  }
 
   async fetchNotifications(
     req: ICustomRequest,

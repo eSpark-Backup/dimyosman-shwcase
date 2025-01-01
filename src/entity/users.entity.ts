@@ -31,14 +31,20 @@ export class User extends BaseEntity {
   @Column({ type: "varchar", length: 100, nullable: true })
   socialId: string;
 
-  @Column({ type: "varchar", length: 100, nullable: true })
+  @Column({ type: "varchar", length: 500, nullable: true })
   profileImage: string;
 
-  @Column({ type: "varchar", length: 100, nullable: true })
+  @Column({ type: "varchar", length: 500, nullable: true })
   imageKey: string;
 
   @Column({ type: "varchar", length: 255, nullable: true })
   password: string;
+
+  @Column({ type: "boolean", nullable: true, default: false })
+  sendEmails: boolean;
+
+  @Column({ type: "boolean", nullable: true, default: false })
+  profile: boolean;
 
   @Column({ type: "varchar", length: 100, nullable: true })
   userChatId: string;
