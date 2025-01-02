@@ -114,6 +114,14 @@ jobs:
           echo "EXPIRES_IN: ${{ secrets.EXPIRES_IN }}" >> .env        
           echo "SALT: ${{ secrets.SALT }}" >> .env
           echo "ME_CONFIG_MONGODB_URL: ${{ secrets.ME_CONFIG_MONGODB_URL }}" >> .env
+          echo "LINK_SECRET_KEY: ${{ secrets.LINK_SECRET_KEY }}" >> .env
+          echo "FRONTEND_URL: ${{ secrets.FRONTEND_URL }}" >> .env
+          echo "SMTP_HOST: ${{ secrets.SMTP_HOST }}" >> .env
+          echo "SMTP_PORT: ${{ secrets.SMTP_PORT }}" >> .env
+          echo "SMTP_SECURE: ${{ secrets.SMTP_SECURE }}" >> .env
+          echo "SMTP_SERVICE: ${{ secrets.SMTP_SERVICE }}" >> .env
+          echo "SMTP_PASS: ${{ secrets.SMTP_PASS }}" >> .env
+          echo "SMTP_FROM: ${{ secrets.SMTP_FROM }}" >> .env
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-publish
@@ -183,6 +191,14 @@ jobs:
           EXPIRES_IN: ${{ secrets.EXPIRES_IN }}
           SALT: ${{ secrets.SALT }}
           ME_CONFIG_MONGODB_URL: ${{ secrets.ME_CONFIG_MONGODB_URL }}
+          LINK_SECRET_KEY: ${{ secrets.LINK_SECRET_KEY }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
+          SMTP_SERVICE: ${{ secrets.SMTP_SERVICE }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
 
         run: |
           docker compose -f docker-compose.yml -f docker-compose.dev.yml pull
