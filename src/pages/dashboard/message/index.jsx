@@ -194,7 +194,7 @@ const Message = () => {
                 chatId: matchingItem && matchingItem?.chatId,
                 members: matchingItem && matchingItem?.members,
                 brandName: item?.receiverBrand?.brandName,
-                activity: "brand",
+                activity: "space",
                 brandImage: item?.receiverBrand?.brandImage,
                 creator: item?.receiverBrand?.user?.name,
                 read: false,
