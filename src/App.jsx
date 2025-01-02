@@ -21,6 +21,8 @@ import {
   Settings,
   Space,
   SpaceDetails,
+  ForgotPassword,
+  ResetPassword,
 } from "./pages";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -38,7 +40,7 @@ function App() {
     if (!token) {
 
       window.localStorage.removeItem("token");
-      if (pathname !== "/auth") {
+      if (pathname !== "/auth" && pathname !== "/forgot-password" && pathname !== "/reset-password") {
         navigate("/auth?type=login");
       }
     } else if (pathname === "/auth") {
@@ -61,6 +63,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to={"/auth?type=login"} />} />
         <Route path="/auth" element={<AuthBox />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="*" element={<Navigate to={"/auth?type=login"} />} />
 
         <Route element={<DashboardLayout isTokenChecking={isLoading || isFetching} />}>

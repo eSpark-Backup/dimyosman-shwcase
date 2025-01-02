@@ -98,7 +98,7 @@ const Login = () => {
                         color: "#00141C",
                         fontFamily: "'Segoe UI'",
                     }}
-                    to={"/auth?type=login"}
+                    to={"/forgot-password"}
                 >
                     Forgot Password?
                 </Link>
