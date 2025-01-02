@@ -2,7 +2,7 @@ import { NextFunction, Request, RequestHandler, Response } from "express";
 import { Events, User } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { handleResponse, logger } from "../../utils";
+import { decrypt, generateToken, handleResponse, logger } from "../../utils";
 import { CLOUD_FOLDERS, HTTP_STATUS } from "../../constants";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -16,13 +16,128 @@ import { Notification } from "../../models";
 import fs from "fs";
 import path from "path";
 import { commonHelper } from "../../helpers";
-import { uploadService } from "../../services";
+import { mailService, uploadService } from "../../services";
 export class UserController {
   constructor(
     private usersRepo: Repository<User>,
     private eventsRepo: Repository<Events>,
     private notificationModel: typeof Notification
   ) {}
+
+  async verifyTokenAPI(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { token, expiresAt } = req.query;
+
+      if (!token || !expiresAt) {
+        throw new ApiError(
+          "Token and expiration time are required",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+
+      // Check if the token has expired
+      const currentTime = new Date();
+      const expirationTime = new Date(expiresAt as string);
+      if (currentTime > expirationTime) {
+        throw new ApiError("The token has expired", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      let payload;
+      try {
+        payload = decrypt(token as string);
+      } catch (error) {
+        throw new ApiError(
+          "Invalid or tampered token",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+
+      const user = await this.usersRepo.findOne({ where: { id: payload } });
+      if (!user) {
+        throw new ApiError("User not found", HTTP_STATUS.NOT_FOUND);
+      }
+      if (user.emailLinkExpire != expiresAt) {
+        throw new ApiError(
+          "Email Link maybe expired or Invalid",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+      user.emailLinkExpire = null;
+      user.isVerified = true;
+      await this.usersRepo.save(user);
+
+      res.status(HTTP_STATUS.OK).json({
+        message: "Email has been successfully updated.",
+        data: {
+          id: user.id,
+          email: user.email,
+        },
+      });
+    } catch (error) {
+      logger.error(
+        `UserController :: verifyTokenAPI :: "${(error as Error)?.message}"`
+      );
+      return next(error);
+    }
+  }
+
+  async updateEmail(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      let userId = req.user?.id;
+      let { newEmail, oldEmail } = req.body;
+
+      const user = await this.usersRepo
+        .createQueryBuilder("user")
+        .where("user.id = :userId", { userId })
+        .getOne();
+
+      if (!user) {
+        throw new ApiError("User not found", HTTP_STATUS.NOT_FOUND);
+      }
+
+      if (user.email !== oldEmail) {
+        throw new ApiError(
+          "The current email does not match the user's email",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+
+      const { token, expiresAt } = generateToken({ userId, newEmail }, "1h");
+
+      const link = `${process.env.FRONTEND_URL}/confirm-email?token=${token}&expiresAt=${expiresAt}`;
+
+      await mailService.changeEmailAddress({
+        name: user.name,
+        oldEmail,
+        newEmail,
+        link,
+      });
+      user.email = newEmail;
+      user.isVerified = false;
+      user.emailLinkExpire = expiresAt;
+      const updatedUser = await this.usersRepo.save(user);
+
+      res.status(HTTP_STATUS.OK).json(
+        handleResponse("Email Sent successfully", {
+          id: updatedUser.id,
+          email: updatedUser.email,
+        })
+      );
+    } catch (error) {
+      logger.error(
+        `UserController :: updateEmail :: ${(error as Error)?.message}`
+      );
+      return next(error);
+    }
+  }
 
   async changePassword(
     req: ICustomRequest,
