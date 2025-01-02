@@ -9,9 +9,13 @@ import { useFormik } from "formik";
 import { loginSchema } from "../../../validation/validation";
 import { useTheme } from "@emotion/react";
 import { useLoginMutation } from "../../../services/auth";
+import { useGetMyChatsQuery } from "../../../services/chats";
 
 const Login = () => {
     const [login, { isLoading, isSuccess, isError, error }] = useLoginMutation();
+    const { refetch } = useGetMyChatsQuery(undefined, {
+      skip: !localStorage.getItem("token"),
+    });
     const theme = useTheme();
     const navigate = useNavigate();
     const formik = useFormik({
@@ -30,6 +34,7 @@ const Login = () => {
         toast.error(error?.data?.message);
     }
     if (isSuccess) {
+      refetch()
       navigate("/activity");
     }
   }, [isError, isSuccess, navigate, error]);

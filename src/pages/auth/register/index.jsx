@@ -8,10 +8,14 @@ import { google, facebook, apple } from "../../../assets";
 import { useFormik } from "formik";
 import { registerSchema } from '../../../validation/validation';
 import { useRegisterMutation } from "../../../services/auth";
+import { useGetMyChatsQuery } from '../../../services/chats';
 
 const Register = () => {
   const [register, { isLoading, isSuccess, isError, error}] =
     useRegisterMutation();
+    const { refetch } = useGetMyChatsQuery(undefined, {
+      skip: !localStorage.getItem("token"),
+    });
   const theme = useTheme();
   const navigate = useNavigate();
   const formik = useFormik({
@@ -41,6 +45,7 @@ const Register = () => {
             toast.error(error?.data?.message);
         }
         if (isSuccess) {
+            refetch()
             navigate("/activity");
         }
     }, [isError, isSuccess, navigate, error]);
