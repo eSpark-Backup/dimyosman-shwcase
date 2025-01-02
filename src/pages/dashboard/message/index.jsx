@@ -150,75 +150,88 @@ const Message = () => {
   }, [addListener, removeListener, messages, emitEvent]);
 
   useEffect(() => {
-    if (chatDetailsData && messages) {
-      const message = myChat.map((el) => {
-        return {
-          id: el?.brandDetails?.id,
-          activity: "brand",
-          brandName: el?.brandDetails?.brandName,
-          brandImage: el?.brandDetails?.brandImage,
-          read: false,
-          creatorDetail: el?.brandDetails?.user,
-          spaces: 1234,
-          followers: 234566,
-          saved: "789k",
-          reviews: 12345,
-          leases: 12345,
-          rating: 5,
-          messageGroups: el?.chats?.map((item) => {
-            let matchingItem = chatDetailsData
-              ?.map((item2) => {
-                if (item2.chat._id === item._id) {
-                  return {
-                    members: item2.chat?.members,
-                    name: item2.chat?.name,
-                    createdAt: item2.chat?.createdAt,
-                    updatedAt: item2.chat?.updatedAt,
-                    chatId: item2.chat?._id,
-                  };
+    if (isSuccess && chatDetailsSuccess) {
+      if (chatDetailsData && messages) {
+        const message = myChat.map((el) => {
+          return {
+            id: el?.brandDetails?.id,
+            activity: "brand",
+            brandName: el?.brandDetails?.brandName,
+            brandImage: el?.brandDetails?.brandImage,
+            read: false,
+            creatorDetail: el?.brandDetails?.user,
+            spaces: 1234,
+            followers: 234566,
+            saved: "789k",
+            reviews: 12345,
+            leases: 12345,
+            rating: 5,
+            messageGroups: el?.chats?.map((item) => {
+              let matchingItem = chatDetailsData
+                ?.map((item2) => {
+                  if (item2.chat._id === item._id) {
+                    return {
+                      members: item2.chat?.members,
+                      name: item2.chat?.name,
+                      createdAt: item2.chat?.createdAt,
+                      updatedAt: item2.chat?.updatedAt,
+                      chatId: item2.chat?._id,
+                    };
+                  }
+                })
+                .find((result) => result !== undefined);
+              const currentChatMessages = [];
+
+              messages.forEach((message) => {
+                if (message.chat === item?._id) {
+                  currentChatMessages.push(message);
                 }
-              })
-              .find((result) => result !== undefined);
-            const currentChatMessages = [];
+              });
 
-            messages.forEach((message) => {
-              if (message.chat === item?._id) {
-                currentChatMessages.push(message);
-              }
-            });
-
-            return {
-              ...item,
-              id: item?._id,
-              chatId: matchingItem?.chatId,
-              members: matchingItem?.members,
-              brandName: item?.receiverBrand?.brandName,
-              activity: "brand",
-              brandImage: item?.receiverBrand?.brandImage,
-              creator: item?.receiverBrand?.user?.name,
-              read: false,
-              chatName: matchingItem?.name,
-              date: format(new Date(matchingItem?.createdAt), "MM/dd/yy"),
-              time: format(new Date(matchingItem?.createdAt), "h:mma"),
-              messages: currentChatMessages?.map((messageItem) => {
-                return {
-                  ...messageItem,
-                  id: messageItem?._id,
-                  brandName: item?.senderBrand?.brandName,
-                  brandImage: item?.senderBrand?.brandImage,
-                  activity: "brand",
-                  creator: el?.name,
-                  date: format(new Date(messageItem?.createdAt), "MM/dd/yy"),
-                  time: format(new Date(messageItem?.createdAt), "h:mma"),
-                };
-              }),
-            };
-          }),
-        };
-      });
-      setAllMessages(message);
+              return {
+                ...item,
+                id: item?._id,
+                chatId: matchingItem && matchingItem?.chatId,
+                members: matchingItem && matchingItem?.members,
+                brandName: item?.receiverBrand?.brandName,
+                activity: "brand",
+                brandImage: item?.receiverBrand?.brandImage,
+                creator: item?.receiverBrand?.user?.name,
+                read: false,
+                chatName: matchingItem && matchingItem?.name,
+                date:
+                  matchingItem &&
+                  format(new Date(matchingItem?.createdAt), "MM/dd/yy"),
+                time:
+                  matchingItem &&
+                  format(new Date(matchingItem?.createdAt), "h:mma"),
+                messages: currentChatMessages?.map((messageItem) => {
+                  return {
+                    ...messageItem,
+                    id: messageItem?._id,
+                    brandName: item?.senderBrand?.brandName,
+                    brandImage: item?.senderBrand?.brandImage,
+                    activity: "brand",
+                    creator: el?.name,
+                    date: format(new Date(messageItem?.createdAt), "MM/dd/yy"),
+                    time: format(new Date(messageItem?.createdAt), "h:mma"),
+                  };
+                }),
+              };
+            }),
+          };
+        });
+        setAllMessages(message);
+      }
     }
-  }, [myChat, messageData, chatDetailsData, messages]);
+  }, [
+    myChat,
+    messageData,
+    chatDetailsData,
+    messages,
+    isSuccess,
+    chatDetailsSuccess,
+  ]);
 
   const [expanded, setExpanded] = useState(0);
   const [selectedGroup, setSelectedGroup] = useState(null);

@@ -341,7 +341,7 @@ const InputWithMap = ({
             </Typography>
 
             <Box
-              onClick={() => (activity === "event" && selectedValue !== "") ? setOpenDatePicker(!openDatePicker) : HandlePriceModal()}
+              onClick={() => (activity === "event" && selectedValue !== "") ? setOpenDatePicker(!openDatePicker) : HandlePriceModal?.()}
               sx={{
                 width: "100%",
                 border: "1px dashed rgba(0, 20, 28, 0.4)",

@@ -15,13 +15,13 @@ import {
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 
-import { arrowDown, message, smile } from "../../../../assets";
+import { arrowDown, smile } from "../../../../assets";
 
 import MessageHeader from "../../../../components/Message/MessageHeader";
 import MessageInput from "../../../../components/Message/MessageInput";
 import Message from "../../../../components/Message/Message";
 
-import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 const GroupDetail = ({ withColon, text }) => (
   <Typography
@@ -99,8 +99,17 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
     event.preventDefault();
   };
 
+  const isCursorActive = () => {
+    const selection = quillInstance.current.getSelection();
+    return selection !== null && selection.length > 0;
+  };
 
   const addEmoji = (emoji) => {
+    const isActive = isCursorActive();
+    if (!isActive) {
+      quillInstance.current.focus(); 
+    }
+
     const range = quillInstance.current.getSelection();
     const cursorPosition = range
       ? range.index
@@ -355,6 +364,10 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
                   fontStyle: "unset",
                   fontWeight: 400,
                   lineHeight: "21px",
+                  // "& img": {
+                  //   width: "80px",
+                  //   height: "80px",
+                  // },
                 },
 
                 "& .ql-blank::before": {
