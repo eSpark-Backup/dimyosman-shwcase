@@ -94,7 +94,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
       const totalDays = end.diff(start, "day") + 1;
       const findDay = pricing?.find(price => price?.term === 'Day')
 
-      if (totalDays <= findDay?.minimum) {
+      if (totalDays < Number(findDay?.minimum)) {
         toast.error(
           `Selected range should be greater than or equal to ${findDay?.minimum} days`
         );
