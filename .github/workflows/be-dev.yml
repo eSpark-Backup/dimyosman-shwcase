@@ -121,7 +121,7 @@ jobs:
           echo "SMTP_SECURE: ${{ secrets.SMTP_SECURE }}" >> .env
           echo "SMTP_SERVICE: ${{ secrets.SMTP_SERVICE }}" >> .env
           echo "SMTP_PASS: ${{ secrets.SMTP_PASS }}" >> .env
-          echo "smtp_from: ${{ secrets.smtp_from }}" >> .env
+          echo "smtp_from: ${{ secrets.SMTP_FROM }}" >> .env
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-publish
@@ -198,7 +198,7 @@ jobs:
           SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
           SMTP_SERVICE: ${{ secrets.SMTP_SERVICE }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          smtp_from: ${{ secrets.smtp_from }}
+          smtp_from: ${{ secrets.SMTP_FROM }}
 
         run: |
           docker compose -f docker-compose.yml -f docker-compose.dev.yml pull
