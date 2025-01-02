@@ -12,16 +12,22 @@ import {
   eye,
   facebook,
   google,
-  profilePicture,
   settingsIcon,
   uploadIcon,
 } from "../../../assets";
 
 import {
-  emailSchema,
   nameSchema,
   passwordSchema,
 } from "../../../validation/validation";
+import { useSelector } from "react-redux";
+import {
+  useChangeProfileImageMutation,
+  useChangePwMutation,
+  useUpdateProfileMutation,
+} from "../../../services/auth";
+import { toast } from "react-toastify";
+import { LoadingButton } from "@mui/lab";
 
 const buttonStyle = {
   background:
@@ -71,59 +77,92 @@ const labelStyle = {
 };
 
 const Settings = () => {
+  const [updateProfile] = useUpdateProfileMutation();
+  const [isLoading, setIsLoading] = useState(false);
+  const [changePw, { isLoading: loading }] = useChangePwMutation();
+  const [changeProfileImage, { isLoading: imgLoading }] =
+    useChangeProfileImageMutation();
   const theme = useTheme();
+  const { user } = useSelector((state) => state.auth);
+  const fullName = user?.name?.split(" ");
+  const fName = fullName && fullName[0];
+  const lName = fullName && fullName[1];
 
   const profileImageRef = useRef(null);
 
   const [changeName, setChangeName] = useState(false);
-  const [changeEmail, setChangeEmail] = useState(false);
   const [changePassword, setChangePassword] = useState(false);
   const [changeImage, setChangeImage] = useState(false);
-  const [profileImage, setProfileImage] = useState(profilePicture);
-  const [isPublic, setIsPublic] = useState(true);
-  const [allowEmail, setAllowEmail] = useState(true);
+  const [profileImage, setProfileImage] = useState(user?.profileImage || null);
+  const [image, setImage] = useState(null);
+  const [isPublic, setIsPublic] = useState(user?.profile);
+  const [allowEmail, setAllowEmail] = useState(user?.sendEmails);
 
   const handleisPublic = (event) => {
+    updateProfile({ profile: event.target.checked });
     setIsPublic(event.target.checked);
   };
 
   const handleAllowEmail = (event) => {
+    updateProfile({ sendEmails: event.target.checked });
     setAllowEmail(event.target.checked);
   };
 
-  const formikConfigs = {
-    nameInputs: {
-      initialValues: { fName: "Emily", lName: "Thompson" },
-      validationSchema: nameSchema,
-      onSubmit: (values) => {
-        console.log(values);
+  const nameFormik = useFormik({
+    initialValues: { fName, lName },
+    enableReinitialize: true,
+    validationSchema: nameSchema,
+    onSubmit: (values) => {
+      setIsLoading(true);
+      const objToSend = {
+        firstName: values?.fName,
+        lastName: values?.lName,
+      };
+      updateProfile(objToSend).then((res) => {
+        res?.data && toast.success("Profile name updated successfully");
+        setIsLoading(false);
         setChangeName(false);
-      },
+      });
     },
-    emailInput: {
-      initialValues: { email: "emily.thompson@gmail.com" },
-      validationSchema: emailSchema,
-      onSubmit: (values) => {
-        console.log(values);
-        setChangeEmail(false);
-      },
-    },
-    passwordInputs: {
-      initialValues: { password: "Pa$$w0rd!", conPassword: "Pa$$w0rd!" },
-      validationSchema: passwordSchema,
-      onSubmit: (values) => {
-        console.log(values);
-        setChangePassword(false);
-      },
-    },
-  };
+  });
 
-  const inputsState = {
-    fName: useFormik(formikConfigs.nameInputs),
-    lName: useFormik(formikConfigs.nameInputs),
-    email: useFormik(formikConfigs.emailInput),
-    password: useFormik(formikConfigs.passwordInputs),
-    conPassword: useFormik(formikConfigs.passwordInputs),
+  const passwordFormik = useFormik({
+    initialValues: {
+      oldPassword: "",
+      password: "",
+      conPassword: "",
+    },
+    validationSchema: passwordSchema,
+    onSubmit: (values, { resetForm }) => {
+      const objToSend = {
+        oldPassword: values?.oldPassword,
+        newPassword: values?.password,
+      };
+      changePw(objToSend).then((res) => {
+        if (res?.error) {
+          toast.error(res?.error?.data?.message || "something went wrong");
+        }
+        if (res?.data) {
+          toast.success("Password updated successfully");
+          setChangePassword(false);
+          resetForm();
+        }
+      });
+    },
+  });
+
+  const handleChangeProfileImage = () => {
+    if (changeImage) {
+      if (image) {
+        const formdata = new FormData();
+        formdata.append("image", image);
+        changeProfileImage(formdata).then((res) => console.log(res, "res"));
+      } else {
+        toast.error("Please select the image first");
+      }
+    } else {
+      setChangeImage(true);
+    }
   };
 
   const renderInputField = ({
@@ -138,19 +177,19 @@ const Settings = () => {
     alignItems,
     mb,
     isEditable,
+    formik,
   }) => {
-    const objItem = inputsState[name];
     return (
       <Input
         theme={theme}
         label={label}
         name={name}
         type={type}
-        value={objItem.values[name]}
-        onInputChange={objItem.handleChange}
-        onBlur={objItem.handleBlur}
-        error={objItem.touched[name] && Boolean(objItem.errors[name])}
-        helperText={objItem.touched[name] && objItem.errors[name]}
+        value={formik.values[name]}
+        onInputChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        error={formik.touched[name] && Boolean(formik.errors[name])}
+        helperText={formik.touched[name] && formik.errors[name]}
         placeholder={placeholder}
         stackStyle={{
           flexDirection,
@@ -177,6 +216,7 @@ const Settings = () => {
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
+      setImage(file);
       const reader = new FileReader();
       reader.onload = (e) => {
         setProfileImage(e.target.result);
@@ -250,6 +290,7 @@ const Settings = () => {
             flexDirection: "row",
             alignItems: "center",
             isEditable: changeName,
+            formik: nameFormik,
           })}
 
           {renderInputField({
@@ -261,18 +302,21 @@ const Settings = () => {
             flexDirection: "row",
             alignItems: "center",
             isEditable: changeName,
+            formik: nameFormik,
           })}
 
-          <Button
+          <LoadingButton
+            loading={isLoading}
+            disabled={isLoading}
             sx={buttonStyle}
             onClick={() =>
               changeName
-                ? inputsState.fName.handleSubmit()
+                ? nameFormik.handleSubmit()
                 : setChangeName(true)
             }
           >
             {changeName ? "Save Name" : "Change Name"}
-          </Button>
+          </LoadingButton>
         </Box>
 
         <Box
@@ -297,7 +341,7 @@ const Settings = () => {
               mb={0.6}
               sx={{ color: theme.palette.primary.main }}
             >
-              This account is connected with emily.thompson@gmail.com
+              This account is connected with {user?.email}
             </Typography>
 
             <Box
@@ -328,32 +372,6 @@ const Settings = () => {
         </Box>
 
         <Box
-          sx={{ ...formGroupStyle, marginBottom: 1, gap: !changeEmail ? 3 : 1 }}
-        >
-          {renderInputField({
-            label: "email",
-            name: "email",
-            type: "text",
-            placeholder: "Type Your Email",
-            textWidth: "240px",
-            flexDirection: "row",
-            alignItems: "center",
-            isEditable: changeEmail,
-          })}
-
-          <Button
-            sx={buttonStyle}
-            onClick={() =>
-              changeEmail
-                ? inputsState.email.handleSubmit()
-                : setChangeEmail(true)
-            }
-          >
-            {changeEmail ? "Verify New Email Address" : "Change Email Address"}
-          </Button>
-        </Box>
-
-        <Box
           sx={{
             ...formGroupStyle,
             justifyContent: changePassword ? "space-between" : "inherit",
@@ -365,6 +383,17 @@ const Settings = () => {
           {changePassword ? (
             <>
               {renderInputField({
+                label: "type old password",
+                name: "oldPassword",
+                type: "password",
+                placeholder: "Type Your Old Password",
+                width: "300px",
+                mb: 1,
+                isEditable: changePassword,
+                formik: passwordFormik,
+              })}
+
+              {renderInputField({
                 label: "choose new password",
                 name: "password",
                 type: "password",
@@ -372,6 +401,7 @@ const Settings = () => {
                 width: "300px",
                 mb: 1,
                 isEditable: changePassword,
+                formik: passwordFormik,
               })}
 
               {renderInputField({
@@ -382,6 +412,7 @@ const Settings = () => {
                 width: "300px",
                 mb: 1,
                 isEditable: changePassword,
+                formik: passwordFormik,
               })}
             </>
           ) : (
@@ -405,9 +436,7 @@ const Settings = () => {
                     width: "300px",
                   }}
                 >
-                  {"*".repeat(
-                    formikConfigs.passwordInputs.initialValues.password.length
-                  )}
+                  {"**********"}
 
                   <IconButton
                     sx={{
@@ -422,31 +451,35 @@ const Settings = () => {
                   </IconButton>
                 </Typography>
 
-                <Button
+                <LoadingButton
+                  loading={loading}
+                  disabled={loading}
                   sx={buttonStyle}
                   onClick={() =>
                     changePassword
-                      ? inputsState.password.handleSubmit()
+                      ? passwordFormik.handleSubmit()
                       : setChangePassword(true)
                   }
                 >
                   {changePassword ? "Save Password" : "Change Password"}
-                </Button>
+                </LoadingButton>
               </Box>
             </>
           )}
 
           {changePassword ? (
-            <Button
+            <LoadingButton
+              loading={loading}
+              disabled={loading}
               sx={{ ...buttonStyle }}
               onClick={() =>
                 changePassword
-                  ? inputsState.password.handleSubmit()
+                  ? passwordFormik.handleSubmit()
                   : setChangePassword(true)
               }
             >
               {changePassword ? "Save Password" : "Change Password"}
-            </Button>
+            </LoadingButton>
           ) : null}
         </Box>
 
@@ -470,7 +503,7 @@ const Settings = () => {
                 mt: 0.3,
               }}
             >
-              {profileImage && (
+              {profileImage ? (
                 <img
                   src={profileImage}
                   alt="Preview"
@@ -485,6 +518,8 @@ const Settings = () => {
                     borderRadius: "5px",
                   }}
                 />
+              ) : (
+                "No image"
               )}
               {changeImage ? (
                 <Box
@@ -521,14 +556,14 @@ const Settings = () => {
             </Box>
           </Box>
 
-          <Button
+          <LoadingButton
+            loading={imgLoading}
+            disabled={imgLoading}
             sx={buttonStyle}
-            onClick={() =>
-              changeImage ? setChangeImage(false) : setChangeImage(true)
-            }
+            onClick={handleChangeProfileImage}
           >
             {changeImage ? "Save Profile Picture" : "Change Profile Picture"}
-          </Button>
+          </LoadingButton>
         </Box>
 
         <Box
