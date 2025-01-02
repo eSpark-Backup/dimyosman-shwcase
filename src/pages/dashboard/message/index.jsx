@@ -288,7 +288,7 @@ const Message = () => {
   if (hasChats === "empty") {
     return (
       <Box sx={{ width: "100%" }}>
-        <h1>No Data Found</h1>
+        <h1>You don't have any conversations.</h1>
       </Box>
     );
   }
