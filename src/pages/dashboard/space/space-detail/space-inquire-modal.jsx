@@ -92,6 +92,14 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
       const start = dayjs(selectedDateRef.current[0]);
       const end = dayjs(selectedDateRef.current[1]);
       const totalDays = end.diff(start, "day") + 1;
+      const findDay = pricing?.find(price => price?.term === 'Day')
+
+      if (totalDays <= findDay?.minimum) {
+        toast.error(
+          `Selected range should be greater than or equal to ${findDay?.minimum} days`
+        );
+        return;
+      }
 
       const updatedBookingDetails = {
         pricing: pricing,
@@ -149,7 +157,17 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
     }))
   }
 
+  const isCursorActive = () => {
+    const selection = quillInstance.current.getSelection(); 
+    return selection !== null && selection.length > 0;
+  };
+
   const addEmoji = (emoji) => {
+    const isActive = isCursorActive();
+    if (!isActive) {
+      quillInstance.current.focus(); 
+    }
+
     const range = quillInstance.current.getSelection();
     const cursorPosition = range
       ? range.index
@@ -163,6 +181,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
       "emoji",
       true
     );
+    quillInstance.current.setSelection(cursorPosition + emoji.native.length, 0);
 
     setEmojiPickerVisible(false);
   };
@@ -191,6 +210,19 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
     spaceMessage({ message: finalMessage })
   }
 
+  const resetALsStates = () => {
+    handleClose()
+    setSelectedDate([]);
+    selectedDateRef.current = [];
+    quillInstance.current = null;
+    setTotalPrice("0")
+    setFinalMessage((prevData) => ({
+      ...prevData,
+      message: "",
+      senderBrandId: ""
+    }));
+  };
+
   useEffect(() => {
     if (IsMessageSuccess && messageData) {
       toast.success("Message sent successfully");
@@ -201,7 +233,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
           senderBrandId: ""
         }));
         refetch()
-        handleClose()
+        resetALsStates()
       }, 0);
     }
   }, [IsMessageSuccess, messageData]);
@@ -219,7 +251,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
         alignItems: "center",
       }}
       open={open}
-      onClose={handleClose}
+      onClose={resetALsStates}
     >
       <Box
         sx={{
@@ -298,7 +330,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
               src={close}
               alt="Close Icon"
               style={{ cursor: "pointer", width: "24px", height: "24px" }}
-              onClick={handleClose}
+              onClick={resetALsStates}
             />
           </Stack>
         </Box>
