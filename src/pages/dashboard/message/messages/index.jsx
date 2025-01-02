@@ -15,7 +15,7 @@ import {
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 
-import { message, smile } from "../../../../assets";
+import { arrowDown, message, smile } from "../../../../assets";
 
 import MessageHeader from "../../../../components/Message/MessageHeader";
 import MessageInput from "../../../../components/Message/MessageInput";
@@ -267,7 +267,34 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
                 Sender:
               </Typography>
 
-              <Select
+              <Box
+                sx={{
+                  width: "auto",
+                  bgcolor: "transparent",
+                  padding: 0,
+                  fontSize: "16px",
+                  lineHeight: "22px",
+                  border: "none",
+                  marginLeft: "5px",
+                  fontWeight: 600,
+                  cursor: "default",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {selectedGroup?.group?.brandName && (
+                  <>
+                    <span>{selectedGroup.group.brandName}</span>
+                    <img
+                      src={arrowDown}
+                      alt="arrow"
+                      style={{ marginLeft: "8px" }}
+                    />
+                  </>
+                )}
+              </Box>
+
+              {/* <Select
                 sx={{
                   width: "auto",
                   bgcolor: "transparent",
@@ -293,8 +320,9 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
                 onClick={handleSelectClick}
                 MenuProps={{
                   PaperProps: {
-                    style: {
-                      display: "none",
+                    sx: {
+                      visibility: "hidden",
+                      pointerEvents: "none",
                     },
                   },
                 }}
@@ -304,7 +332,7 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
                     {selectedGroup.group.brandName}
                   </MenuItem>
                 )}
-              </Select>
+              </Select> */}
             </Stack>
 
             <Box
