@@ -34,9 +34,9 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
               position: "relative",
             }}
           >
-            {selectedGroup?.messageGroup?.brandImage ? (
+            {selectedGroup?.messageGroup?.receiverSpace?.spaceImage ? (
               <img
-                src={selectedGroup.messageGroup.brandImage}
+                src={selectedGroup?.messageGroup?.receiverSpace.spaceImage}
                 alt="Message Icon"
                 style={{
                   width: "100%",
@@ -77,7 +77,8 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                 textAlign: "left",
               }}
             >
-              {truncateTo13Characters(selectedGroup?.messageGroup?.chatName)}
+              {/* {truncateTo13Characters(selectedGroup?.messageGroup?.chatName)} */}
+              {selectedGroup?.messageGroup?.receiverSpace?.spaceName}
             </Typography>
 
             <Typography
@@ -99,10 +100,10 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                 columnGap: isLessThan1100 ? 1 : 2,
               }}
             >
-              {selectedGroup?.group?.creator && (
+              {selectedGroup?.messageGroup?.creator && (
                 <GroupDetail
                   withColon="By"
-                  text={selectedGroup?.group?.creator}
+                  text={selectedGroup?.messageGroup?.creator}
                 />
               )}
 

@@ -36,7 +36,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
     pricing: [],
     days: 0
   })
-  const [totalPrice, setTotalPrice] = useState("0")
+  const [totalPrice, setTotalPrice] = useState(null)
   const [price, { data: spaceData, isLoading, isError, error, isSuccess }] = useSpacePriceMutation()
   const [spaceMessage, { data: messageData, isLoading: messageLoading, isError: IsMessageError, error: messageError, isSuccess: IsMessageSuccess }] = useSpaceInquireMutation()
   const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError, isFetching: IsBrandFetching } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
@@ -194,6 +194,28 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
   };
 
   const HandleMessageSend = () => {
+    if (selectedDate.length === 0) {
+      toast.error("Please Select Date range");
+      return;
+    }
+
+    const start = dayjs(selectedDate[0]);
+    const end = dayjs(selectedDate[1]);
+    const totalDays = end.diff(start, "day") + 1;
+    const findDay = pricing?.find(price => price?.term === 'Day')
+
+    if (totalDays < Number(findDay?.minimum)) {
+      toast.error(
+        `Selected range should be greater than or equal to ${findDay?.minimum} days`
+      );
+      return;
+    }
+
+    if (totalPrice === null) {
+      toast.error("Price is not set");
+      return;
+    }
+
     if (finalMessage?.senderBrandId === "") {
       toast.error("Please Select Brand First");
       return;
@@ -202,14 +224,30 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
       toast.error("Message can not be empty");
       return;
     }
-    const strippedContent = finalMessage?.message?.replace(/<[^>]*>/g, "").trim();
+    const strippedContent = finalMessage?.message
+      ?.replace(/<[^>]*>/g, "")
+      .trim();
     if (!strippedContent) {
       toast?.error("Message can not be empty.");
       return false;
     }
-    spaceMessage({ message: finalMessage })
-  }
 
+    const inquiryInfo = `Inquiry for: <strong>${spaceName}</strong><br />Date Range: <strong>${dayjs(
+      selectedDate[0]
+    ).format("DD.MM.YYYY")}</strong> - <strong>${dayjs(selectedDate[1]).format(
+      "DD.MM.YYYY"
+    )}</strong><br />Lease Total: <strong>$${totalPrice}</strong>`;
+
+    const fullMessage = `${inquiryInfo}<br /><br />${finalMessage.message}`;
+
+    const updateMessage = {
+      ...finalMessage,
+      message: fullMessage,
+    };
+
+    spaceMessage({ message: updateMessage });
+  };
+  
   const resetALsStates = () => {
     handleClose()
     setSelectedDate([]);
@@ -403,7 +441,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
                 </Box>
                   :
                   <Typography textAlign="left" fontSize={32} fontWeight={600}>
-                    ${totalPrice}
+                    ${totalPrice === null ? 0 : totalPrice}
                   </Typography>
                 }
               </Box>

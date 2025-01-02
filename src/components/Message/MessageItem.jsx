@@ -151,9 +151,9 @@ const MessageItem = ({
                       position: "relative",
                     }}
                   >
-                    {el.brandImage ? (
+                    {el?.receiverSpace?.spaceImage ? (
                       <img
-                        src={el.brandImage}
+                        src={el?.receiverSpace?.spaceImage}
                         alt="Message Icon"
                         style={{
                           width: "100%",
@@ -194,7 +194,7 @@ const MessageItem = ({
                         textAlign: "left",
                       }}
                     >
-                      {el.brandName}
+                      {el?.receiverSpace?.spaceName}
                     </Typography>
 
                     {el?.creator && (
