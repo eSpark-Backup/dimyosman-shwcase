@@ -14,6 +14,7 @@ const MessageItem = ({
   setSelectedGroup,
   selectedGroup,
   ActivityType,
+  setSelectedChatId,
 }) => {
   return (
     <Accordion
@@ -58,9 +59,9 @@ const MessageItem = ({
             position: "relative",
           }}
         >
-          {message.icon ? (
+          {message.brandImage ? (
             <img
-              src={message.icon}
+              src={message.brandImage}
               alt="Message Icon"
               style={{
                 width: "100%",
@@ -93,7 +94,7 @@ const MessageItem = ({
             textAlign: "left",
           }}
         >
-          {message.userName}
+          {message.brandName}
         </Typography>
 
         {message.read && (
@@ -119,29 +120,27 @@ const MessageItem = ({
           gap: 1,
         }}
       >
-        {message.messageGroups.length
+        {message?.messageGroups?.length
           ? message.messageGroups.map((el, i) => {
-              const lastElInd = el.messages.length - 1;
-              const lastEl = el.messages[lastElInd];
-
               return (
                 <Box
                   key={i}
                   sx={{
                     display: "flex",
-                    alignItems: lastEl?.creator ? "center" : "unset",
+                    alignItems: el?.creator ? "center" : "unset",
                     padding: 1,
                     bgcolor:
-                      selectedGroup?.messageGroup?.activity === el?.activity
+                      selectedGroup?.messageGroup?.chatId === el?.chatId
                         ? "rgba(209, 219, 215, 0.6)"
                         : "#ffffff",
                     cursor: "pointer",
                     position: "relative",
                     borderRadius: "3px",
                   }}
-                  onClick={() =>
-                    setSelectedGroup({ messageGroup: el, group: message })
-                  }
+                  onClick={() => {
+                    setSelectedChatId(el?.chatId);
+                    setSelectedGroup({ messageGroup: el, group: message });
+                  }}
                 >
                   <Box
                     sx={{
@@ -152,9 +151,9 @@ const MessageItem = ({
                       position: "relative",
                     }}
                   >
-                    {el.icon ? (
+                    {el?.receiverSpace?.spaceImage ? (
                       <img
-                        src={el.icon}
+                        src={el?.receiverSpace?.spaceImage}
                         alt="Message Icon"
                         style={{
                           width: "100%",
@@ -195,10 +194,10 @@ const MessageItem = ({
                         textAlign: "left",
                       }}
                     >
-                      {el.userName}
+                      {el?.receiverSpace?.spaceName}
                     </Typography>
 
-                    {lastEl?.creator && (
+                    {el?.creator && (
                       <Typography
                         sx={{
                           fontWeight: 300,
@@ -206,7 +205,7 @@ const MessageItem = ({
                           lineHeight: "17px",
                         }}
                       >
-                        {lastEl.creator}
+                        {el.creator}
                       </Typography>
                     )}
 
@@ -220,7 +219,7 @@ const MessageItem = ({
                           lineHeight: "14px",
                         }}
                       >
-                        {lastEl?.date}
+                        {el?.date}
                       </Typography>
 
                       <Typography
@@ -230,7 +229,7 @@ const MessageItem = ({
                           lineHeight: "14px",
                         }}
                       >
-                        {lastEl?.time}
+                        {el?.time}
                       </Typography>
                     </Box>
                   </Box>

@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
 import { LocalizationProvider, StaticDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Box, Button, Modal, Stack, Typography } from "@mui/material";
-import { Input } from "../../../../components";
+import { Box, Button, CircularProgress, IconButton, Modal, Stack, Typography, useMediaQuery } from "@mui/material";
+import { Dropdown, Input } from "../../../../components";
 import {
   arrowDown,
   bold,
@@ -16,10 +16,271 @@ import {
   spaceActivityImage,
   spaceBadge,
 } from "../../../../assets";
+import { DateRangePicker } from "rsuite";
+import { toast } from "react-toastify";
+import { useSpaceInquireMutation, useSpacePriceMutation } from "../../../../services/space";
+import { useGetAllBrandsQuery } from "../../../../services/brands";
+import MessageInput from "../../../../components/Message/MessageInput";
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
+import { LoadingButton } from "@mui/lab";
+import { useGetMyChatsQuery } from "../../../../services/chats";
+import { useSelector } from "react-redux";
 
-const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
-  const [selectedDate, setSelectedDate] = useState(new Date());
 
+const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDates, brandName, spaceImage, pricing, spaceId, brandId }) => {
+  const [selectedDate, setSelectedDate] = useState([]);
+  const selectedDateRef = useRef([]);
+  const [bookedRanges, setBookedRanges] = useState([]);
+  const [bookingDetails, setBookingDetails] = useState({
+    pricing: [],
+    days: 0
+  })
+  const [totalPrice, setTotalPrice] = useState(null)
+  const [price, { data: spaceData, isLoading, isError, error, isSuccess }] = useSpacePriceMutation()
+  const [spaceMessage, { data: messageData, isLoading: messageLoading, isError: IsMessageError, error: messageError, isSuccess: IsMessageSuccess }] = useSpaceInquireMutation()
+  const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError, isFetching: IsBrandFetching } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
+  const [brandOptions, setBrandOptions] = useState([])
+  const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
+  const quillInstance = useRef(null);
+  const isLessThan1400 = useMediaQuery("(max-width:1400px)");
+  const isLessThan1280 = useMediaQuery("(max-width:1280px)");
+  const [finalMessage, setFinalMessage] = useState({
+    receiverSpaceId: spaceId ? spaceId : "",
+    receiverBrandId: brandId ? brandId : "",
+    senderBrandId: "",
+    message: ""
+  })
+  const { user } = useSelector((state) => state.auth);
+
+   const { refetch } = useGetMyChatsQuery(undefined, { skip: !user });
+
+  useEffect(() => {
+    const bookedEventsDate = bookedDates?.map((item) => ({
+      start: new Date(item?.start),
+      end: new Date(item?.end),
+    }))
+
+    setBookedRanges(bookedEventsDate)
+  }, [bookedDates])
+
+  const isDateInRanges = (date, ranges) => {
+    return ranges.some(
+      (range) => date >= range.start && date <= range.end
+    );
+  };
+
+  const isRangeValid = (range, ranges) => {
+    if (!range || range.length < 2) return false;
+    const [startDate, endDate] = range;
+
+    for (
+      let d = new Date(startDate);
+      d <= endDate;
+      d.setDate(d.getDate() + 1)
+    ) {
+      if (isDateInRanges(new Date(d), ranges)) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const handleOk = () => {
+    if (selectedDateRef.current?.length > 0) {
+      const start = dayjs(selectedDateRef.current[0]);
+      const end = dayjs(selectedDateRef.current[1]);
+      const totalDays = end.diff(start, "day") + 1;
+      const findDay = pricing?.find(price => price?.term === 'Day')
+
+      if (totalDays < Number(findDay?.minimum)) {
+        toast.error(
+          `Selected range should be greater than or equal to ${findDay?.minimum} days`
+        );
+        return;
+      }
+
+      const updatedBookingDetails = {
+        pricing: pricing,
+        days: totalDays,
+      };
+
+      setBookingDetails(updatedBookingDetails);
+      price({ priceData: updatedBookingDetails });
+    }
+  };
+
+
+  const handleDateChange = (newValue) => {
+    if (newValue === null) {
+      setSelectedDate([]);
+      selectedDateRef.current = [];
+      setTotalPrice("0")
+      return;
+    }
+
+    if (isRangeValid(newValue, bookedRanges)) {
+      setSelectedDate(newValue);
+      selectedDateRef.current = newValue;
+    } else {
+      toast.error("Selected range includes disabled dates. Please choose a valid range.");
+      setSelectedDate([]);
+      selectedDateRef.current = [];
+      setTotalPrice("0")
+      return;
+    }
+  };
+
+  useEffect(() => {
+    if (isSuccess) {
+      setTotalPrice(spaceData?.totalPrice)
+    }
+  }, [spaceData, isSuccess])
+
+  useEffect(() => {
+    if (IsBrandSuccess && brandData) {
+      const options = Array.isArray(brandData?.data?.groupedBrands?.publishedBrands) ?
+        brandData?.data?.groupedBrands?.publishedBrands?.map((brand) => ({
+          label: brand.brandName,
+          value: brand.id,
+          item: brand,
+        })) : [];
+      setBrandOptions(options)
+    }
+  }, [brandData, IsBrandSuccess])
+
+  const handleSelectChange = (e) => {
+    setFinalMessage((prevData) => ({
+      ...prevData,
+      senderBrandId: e.target.value
+    }))
+  }
+
+  const isCursorActive = () => {
+    const selection = quillInstance.current.getSelection(); 
+    return selection !== null && selection.length > 0;
+  };
+
+  const addEmoji = (emoji) => {
+    const isActive = isCursorActive();
+    if (!isActive) {
+      quillInstance.current.focus(); 
+    }
+
+    const range = quillInstance.current.getSelection();
+    const cursorPosition = range
+      ? range.index
+      : quillInstance.current.getLength();
+
+    quillInstance.current.insertText(cursorPosition, emoji.native, "user");
+
+    quillInstance.current.formatText(
+      cursorPosition,
+      emoji.native.length,
+      "emoji",
+      true
+    );
+    quillInstance.current.setSelection(cursorPosition + emoji.native.length, 0);
+
+    setEmojiPickerVisible(false);
+  };
+
+  const handleInputChange = ({ content, text }) => {
+    setFinalMessage((prevData) => ({
+      ...prevData,
+      message: content,
+    }))
+  };
+
+  const HandleMessageSend = () => {
+    if (selectedDate.length === 0) {
+      toast.error("Please Select Date range");
+      return;
+    }
+
+    const start = dayjs(selectedDate[0]);
+    const end = dayjs(selectedDate[1]);
+    const totalDays = end.diff(start, "day") + 1;
+    const findDay = pricing?.find(price => price?.term === 'Day')
+
+    if (totalDays < Number(findDay?.minimum)) {
+      toast.error(
+        `Selected range should be greater than or equal to ${findDay?.minimum} days`
+      );
+      return;
+    }
+
+    if (totalPrice === null) {
+      toast.error("Price is not set");
+      return;
+    }
+
+    if (finalMessage?.senderBrandId === "") {
+      toast.error("Please Select Brand First");
+      return;
+    }
+    if (finalMessage?.message === "") {
+      toast.error("Message can not be empty");
+      return;
+    }
+    const strippedContent = finalMessage?.message
+      ?.replace(/<[^>]*>/g, "")
+      .trim();
+    if (!strippedContent) {
+      toast?.error("Message can not be empty.");
+      return false;
+    }
+
+    const inquiryInfo = `Inquiry for: <strong>${spaceName}</strong><br />Date Range: <strong>${dayjs(
+      selectedDate[0]
+    ).format("DD.MM.YYYY")}</strong> - <strong>${dayjs(selectedDate[1]).format(
+      "DD.MM.YYYY"
+    )}</strong><br />Lease Total: <strong>$${totalPrice}</strong>`;
+
+    const fullMessage = `${inquiryInfo}<br /><br />${finalMessage.message}`;
+
+    const updateMessage = {
+      ...finalMessage,
+      message: fullMessage,
+    };
+
+    spaceMessage({ message: updateMessage });
+  };
+  
+  const resetALsStates = () => {
+    handleClose()
+    setSelectedDate([]);
+    selectedDateRef.current = [];
+    quillInstance.current = null;
+    setTotalPrice("0")
+    setFinalMessage((prevData) => ({
+      ...prevData,
+      message: "",
+      senderBrandId: ""
+    }));
+  };
+
+  useEffect(() => {
+    if (IsMessageSuccess && messageData) {
+      toast.success("Message sent successfully");
+      setTimeout(() => {
+        setFinalMessage((prevData) => ({
+          ...prevData,
+          message: "",
+          senderBrandId: ""
+        }));
+        refetch()
+        resetALsStates()
+      }, 0);
+    }
+  }, [IsMessageSuccess, messageData]);
+
+  if (IsBrandFetching || IsBrandLoading) {
+    return (
+      <>Loading...</>
+    )
+  }
   return (
     <Modal
       sx={{
@@ -28,7 +289,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
         alignItems: "center",
       }}
       open={open}
-      onClose={handleClose}
+      onClose={resetALsStates}
     >
       <Box
         sx={{
@@ -66,7 +327,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
               >
                 <img
                   style={{ width: "48px", height: "48px" }}
-                  src={spaceActivityImage}
+                  src={spaceImage}
                   alt="brand-profile"
                 />
                 <img
@@ -90,7 +351,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
                   fontSize={24}
                   variant="h2"
                 >
-                  Urban Pop-Up Studio 3B{" "}
+                  {spaceName}
                 </Typography>
                 <Typography
                   marginTop="10px"
@@ -98,7 +359,8 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
                   fontWeight={600}
                   fontSize={12}
                 >
-                  Urban Pop-Up Pavilion{" "}
+                  {brandName}
+
                 </Typography>
               </Box>
             </Stack>
@@ -106,7 +368,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
               src={close}
               alt="Close Icon"
               style={{ cursor: "pointer", width: "24px", height: "24px" }}
-              onClick={handleClose}
+              onClick={resetALsStates}
             />
           </Stack>
         </Box>
@@ -117,55 +379,24 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
             alignItems="flex-start"
             gap="28px"
           >
-            <Box
-              sx={{
-                backgroundColor: "white",
-                borderRadius: "5px",
-              }}
-            >
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <StaticDatePicker
-                  sx={{
-                    width: "296px",
-                    minWidth: "296px",
-                    borderRadius: "5px",
-                    border: (theme) => theme.palette.border.primary,
-                    ".MuiDateCalendar-root": {
-                      width: "296px",
-                      minWidth: "296px",
-                    },
-                    ".Mui-selected": {
-                      color: (theme) =>
-                        `${theme.palette.primary.main} !important`,
-                      backgroundColor: (theme) =>
-                        `${theme.palette.secondary.main} !important`,
-                    },
-                    ".Mui-selected:hover": {
-                      color: (theme) =>
-                        `${theme.palette.primary.main} !important`,
-                      backgroundColor: (theme) =>
-                        `${theme.palette.secondary.main} !important`,
-                    },
-                    ".MuiPickersLayout-toolbar": {
-                      display: "none",
-                    },
-                    ".MuiDialogActions-root>:not(style)~:not(style)": {
-                      fontWeight: 700,
-                    },
-                    button: {
-                      background: "transparent",
-                      color: (theme) => theme.palette.primary.main,
-                      fontSize: "12px",
-                      ":hover": {
-                        background: "transparent",
-                      },
-                    },
-                  }}
-                  onChange={(date) => setSelectedDate(date)}
-                  defaultValue={dayjs(selectedDate) || dayjs()}
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <Box
+                sx={{
+                  width: '100%',
+                  minHeight: '300px',
+                }}
+              >
+                <DateRangePicker
+                  value={selectedDate}
+                  onChange={handleDateChange}
+                  onOk={handleOk}
+                  appearance="default"
+                  showOneCalendar
+                  menuStyle={{ zIndex: 1300 }}
+                  shouldDisableDate={(date) => isDateInRanges(date, bookedRanges)}
                 />
-              </LocalizationProvider>
-            </Box>
+              </Box>
+            </LocalizationProvider>
             <Stack
               direction="column"
               justifyContent="space-between"
@@ -175,7 +406,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
             >
               <Box>
                 <Typography textAlign="left" fontWeight={600} fontSize={12}>
-                  Selected Date Range:
+                  {selectedDate?.length === 0 ? "Please select date" : "Selected Date Range:"}
                 </Typography>
                 <time
                   style={{
@@ -186,7 +417,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
                     lineHeight: "140%",
                   }}
                 >
-                  24.02.2024 -
+                  {selectedDate?.length >= 1 ? dayjs(selectedDate[0]).format("DD.MM.YYYY") : "Start Date"}
                 </time>
                 <time
                   style={{
@@ -198,16 +429,21 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
                     display: "inline-block",
                   }}
                 >
-                  15-03.2024
+                  {selectedDate?.length >= 1 ? dayjs(selectedDate[1]).format("DD.MM.YYYY") : "End Date"}
                 </time>
               </Box>
               <Box>
                 <Typography textAlign="left" fontWeight={600} fontSize={12}>
                   Selected lease total:
                 </Typography>
-                <Typography textAlign="left" fontSize={32} fontWeight={600}>
-                  $2000
-                </Typography>
+                {isLoading ? <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: "5px" }}>
+                  <CircularProgress size={15} disableShrink />
+                </Box>
+                  :
+                  <Typography textAlign="left" fontSize={32} fontWeight={600}>
+                    ${totalPrice === null ? 0 : totalPrice}
+                  </Typography>
+                }
               </Box>
             </Stack>
           </Stack>
@@ -217,126 +453,161 @@ const SpaceInquireModal = ({ open, handleClose, handleSave }) => {
             direction="row"
             justifyContent="flex-start"
             alignItems="center"
+            columnGap={1}
           >
-            <Typography fontWeight={300} fontSize={16}>
-              Tenant:
-              <Typography
-                component="span"
-                sx={{ display: "inline", marginLeft: "5px" }}
-                fontWeight={600}
-                fontSize={16}
-              >
-                Brand Name
-              </Typography>
-            </Typography>
-            <Box
-              sx={{
-                width: "24px",
-                height: "24px",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
+            <Typography
+              component="span"
+              sx={{ display: "inline", marginLeft: "5px" }}
+              fontWeight={600}
+              fontSize={16}
             >
-              <img width={8} height={5} src={arrowDown} alt="down" />
-            </Box>
-          </Stack>
-          <Stack
-            direction="row"
-            justifyContent="flex-start"
-            alignItems="center"
-          >
-            <Typography fontWeight={300} fontSize={16}>
-              Event:
-              <Typography
-                component="span"
-                sx={{ display: "inline", marginLeft: "5px" }}
-                fontWeight={600}
-                fontSize={16}
-              >
-                Event Name
-              </Typography>
+              Select brand:
             </Typography>
-            <Box
-              sx={{
-                width: "24px",
-                height: "24px",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <img width={8} height={5} src={arrowDown} alt="down" />
-            </Box>
+            <Dropdown
+              options={brandOptions}
+              onChange={handleSelectChange}
+              value={finalMessage?.senderBrandId}
+              placeholder={"Brand name"}
+            />
           </Stack>
+
         </Box>
-        <Box sx={{ marginY: "16px" }} component="section">
-          <Input
-            multiline
-            rows={2}
-            sx={{
-              height: "auto",
+        <Box
+          sx={{
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
+            marginTop: "10px",
+            "& .ql-toolbar.ql-snow+.ql-container.ql-snow": {
+              border: "1px solid rgba(209, 219, 215, 0.5) !important",
+              borderTop: "1px solid rgba(209, 219, 215, 0.5) !important",
               borderRadius: "5px",
-              padding: "16px 10px",
-              background: (theme) => theme.palette.primary.contrastText,
-              border: (theme) =>
-                `1px solid ${theme.palette.border.borderColor[0]}`,
-            }}
-            placeholder={"Type your message here"}
-          />
-        </Box>
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          gap={1}
-          sx={{ marginY: "16px" }}
-          component="section"
-        >
-          <Stack
-            direction="row"
-            justifyContent="center"
-            alignItems="center"
-            gap="31px"
-          >
-            <img width={16} height={16} src={bold} alt="bold" />
-            <img width={16} height={16} src={italic} alt="italic" />
-            <img width={16} height={16} src={lineThrough} alt="line-through" />
-            <img width={16} height={16} src={paperClip} alt="paper-clip" />
-          </Stack>
-          <Stack
-            direction="row"
-            justifyContent="center"
-            alignItems="center"
-            gap="31px"
-          >
-            <Stack
-              direction="row"
-              justifyContent="center"
-              alignItems="center"
-              gap="18px"
-            >
-              <img width={24} height={24} src={link} alt="link" />
-              <img width={24} height={24} src={smile} alt="smile" />
-            </Stack>
-            <Button
-              onClick={() => handleSave(open)}
-              sx={{
-                width: "85px",
-                height: "31px",
-                fontSize: "16px",
-                fontWeight: 700,
-                color: (theme) => theme.palette.primary.main,
-                background: (theme) => theme.palette.button.primary,
-                ":hover": {
-                  color: (theme) => theme.palette.primary.contrastText,
+              marginBottom: isLessThan1400 ? 1.25 : 1.5,
+            },
+            "& .ql-toolbar.ql-snow": {
+              border: "1px solid white !important"
+            },
+            "& .ql-editor": {
+              padding: "10px 16px",
+              fontSize: "16px",
+              fontFamily: `"Segoe UI", "sans-serif"`,
+              fontStyle: "unset",
+              fontWeight: 400,
+              lineHeight: "21px",
+            },
+
+            "& .ql-blank::before": {
+              fontStyle: "unset",
+              color: "rgba(0, 20, 28, 0.5)",
+            },
+
+            "& .ql-tooltip": {
+              left: "0px !important",
+            },
+
+            "& .ql-toolbar": {
+              border: "none",
+              order: 2,
+              alignItems: "center",
+              width: isLessThan1280
+                ? "calc(100% - 135px)"
+                : "calc(100% - 145px)",
+              padding: "4px 8px !important",
+
+              "& .ql-formats": {
+                columnGap: isLessThan1280 ? "15px" : "25px",
+              },
+
+              "& .ql-formats:has(.ql-link)": {
+                flex: 1,
+                justifyContent: "end",
+                columnGap: "10px",
+              },
+
+              "& button": {
+                padding: 0,
+                width: "25px",
+              },
+
+              "& .ql-active": {
+                "& img": {
+                  filter:
+                    "invert(21%) sepia(80%) saturate(4500%) hue-rotate(190deg) brightness(100%) contrast(90%)",
                 },
+              },
+            },
+          }}
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: "0px !important",
+              right: "0px !important",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <IconButton
+              onClick={() => setEmojiPickerVisible(!emojiPickerVisible)}
+              sx={{
+                padding: 0,
+                margin: isLessThan1280
+                  ? "0px 25px 0px 0px !important"
+                  : "0px 35px 0px 0px !important",
+              }}
+              disableRipple
+            >
+              <img src={smile} />
+            </IconButton>
+
+            <LoadingButton
+              style={{ marginBottom: "10px" }}
+              sx={{
+                padding: 0,
+                margin: "0px !important",
+                height: "31px",
+                width: "85px",
+                fontWeight: 700,
+                fontSize: "16px",
+                bgcolor: "rgba(209, 219, 215, 0.4) !important",
+                color: "#00141C",
+                textTransform: "inherit",
+                lineHeight: "21px",
+                letterSpacing: "-0.01em",
+              }}
+              onClick={HandleMessageSend}
+              loading={messageLoading}
+              loadingIndicator={<CircularProgress size={15} sx={{ color: "#00000" }} />}
+            >
+              SEND
+            </LoadingButton>
+          </Box>
+
+          <MessageInput
+            emojiPickerVisible={emojiPickerVisible}
+            setEmojiPickerVisible={setEmojiPickerVisible}
+            quillInstance={quillInstance}
+            onChange={handleInputChange}
+            value={finalMessage?.message}
+          />
+          {emojiPickerVisible && (
+            <div
+              style={{
+                position: "absolute",
+                zIndex: 9999,
+                backgroundColor: "white",
+                padding: "10px",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                borderRadius: "8px",
+                bottom: "230px",
+                left: "10px",
+                border: "1px solid #ccc",
               }}
             >
-              Send
-            </Button>
-          </Stack>
-        </Stack>
+              <Picker data={data} onEmojiSelect={addEmoji} />
+            </div>
+          )}
+        </Box>
       </Box>
     </Modal>
   );

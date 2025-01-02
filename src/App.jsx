@@ -1,6 +1,6 @@
-import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import './App.css'
-import { useEffect } from 'react'
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import './App.css';
+import { useEffect } from 'react';
 import { Header, AuthBox, DashboardLayout } from "./layout";
 import {
   Activity,
@@ -22,50 +22,48 @@ import {
   Space,
   SpaceDetails,
 } from "./pages";
-import { ToastContainer } from 'react-toastify'
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { jwtDecode } from "jwt-decode";
+import { useVerifyTokenQuery } from './services/auth';
+import { useSelector } from 'react-redux';
 
 function App() {
   const { pathname } = useLocation();
-  const token = window.localStorage.getItem("token");
   const navigate = useNavigate();
+  const token = window.localStorage.getItem("token");
 
-  function isTokenExpired(token) {
-    if (!token) return true;
-    try {
-      const decodedToken = jwtDecode(token);
-      const now = Date.now() / 1000;
-      return decodedToken.exp < now;
-    } catch (error) {
-      console.error('Error decoding token:', error);
-      return true; // If decoding fails, treat as expired
-    }
-  }
+  const { data, isLoading, isError, isFetching } = useVerifyTokenQuery(undefined, { skip: !token });
 
   useEffect(() => {
-    const tokenExpired = isTokenExpired(token);
+    if (!token) {
 
-    if (token && !tokenExpired && pathname === "/auth") {
-      navigate("/activity");
-    }
-    if (!token || tokenExpired) {
       window.localStorage.removeItem("token");
       if (pathname !== "/auth") {
         navigate("/auth?type=login");
       }
+    } else if (pathname === "/auth") {
+
+      navigate("/activity");
     }
   }, [token, pathname, navigate]);
 
+  useEffect(() => {
+    if (isError) {
+
+      window.localStorage.removeItem("token");
+      navigate("/auth?type=login");
+    }
+  }, [isError, navigate]);
+
   return (
     <>
-      <Header isLogin={token} />
+      <Header isLogin={!!token} />
       <Routes>
         <Route path="/" element={<Navigate to={"/auth?type=login"} />} />
         <Route path="/auth" element={<AuthBox />} />
         <Route path="*" element={<Navigate to={"/auth?type=login"} />} />
 
-        <Route element={<DashboardLayout />}>
+        <Route element={<DashboardLayout isTokenChecking={isLoading || isFetching} />}>
           <Route path="/activity" element={<Activity />} />
           <Route path="/brand" element={<Brand />} />
           <Route path="/brand/:id" element={<BrandDetails />} />

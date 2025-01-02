@@ -15,11 +15,13 @@ import {
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 
-import { smile } from "../../../../assets";
+import { arrowDown, smile } from "../../../../assets";
 
 import MessageHeader from "../../../../components/Message/MessageHeader";
 import MessageInput from "../../../../components/Message/MessageInput";
 import Message from "../../../../components/Message/Message";
+
+import { toast } from "react-toastify";
 
 const GroupDetail = ({ withColon, text }) => (
   <Typography
@@ -40,7 +42,7 @@ const GroupDetail = ({ withColon, text }) => (
   </Typography>
 );
 
-const AllMesaages = ({ selectedGroup, ActivityType }) => {
+const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1100 = useMediaQuery("(max-width:1100px)");
@@ -49,6 +51,9 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
 
   const quillInstance = useRef(null);
   const messagesContainerRef = useRef(null);
+  const pickerRef = useRef(null);
+  const buttonRef = useRef(null);
+
 
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
@@ -65,10 +70,24 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
 
   const [sender, setSender] = useState("");
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
+  const [finalMessage, setFinalMessage] = useState({
+    chatId: selectedGroup?.messageGroup?.id,
+    members: selectedGroup?.messageGroup?.members,
+    message: "",
+  });
+  const [buttonDisabled, setButtonDisabled] = useState(true);
 
   useEffect(() => {
-    if (selectedGroup?.group?.userName) {
-      setSender(selectedGroup.group.userName);
+    if (selectedGroup?.group?.brandName) {
+      setSender(selectedGroup.group.brandName);
+    }
+
+    if (selectedGroup?.messageGroup?.id) {
+      setFinalMessage({
+        chatId: selectedGroup?.messageGroup?.id,
+        members: selectedGroup?.messageGroup?.members,
+        message: "",
+      });
     }
   }, [selectedGroup]);
 
@@ -76,7 +95,21 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
     setSender(event.target.value);
   };
 
+  const handleSelectClick = (event) => {
+    event.preventDefault();
+  };
+
+  const isCursorActive = () => {
+    const selection = quillInstance.current.getSelection();
+    return selection !== null && selection.length > 0;
+  };
+
   const addEmoji = (emoji) => {
+    const isActive = isCursorActive();
+    if (!isActive) {
+      quillInstance.current.focus(); 
+    }
+
     const range = quillInstance.current.getSelection();
     const cursorPosition = range
       ? range.index
@@ -91,8 +124,59 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
       true
     );
 
+    quillInstance.current.setSelection(cursorPosition + emoji.native.length, 0);
+
     setEmojiPickerVisible(false);
   };
+
+  const handleInputChange = ({ content, text }) => {
+    setFinalMessage((prevData) => ({
+      ...prevData,
+      message: content,
+    }));
+  };
+
+  // Handle sending the message
+  const handleSendMessage = () => {
+    if (finalMessage?.message === "") {
+      toast.error("Message can not be empty");
+      return;
+    }
+    const strippedContent = finalMessage?.message
+      ?.replace(/<[^>]*>/g, "")
+      .trim();
+
+    if (!strippedContent) {
+      toast?.error("Message can not be empty.");
+      return false;
+    }
+
+    emitEvent("NEW_MESSAGE", finalMessage);
+
+    setFinalMessage((prevData) => ({
+      ...prevData,
+      message: "",
+    }));
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      setTimeout(() => {
+        if (
+          pickerRef.current &&
+          !pickerRef.current.contains(event.target) &&
+          !buttonRef.current
+        ) {
+          setEmojiPickerVisible(false);
+        }
+      }, 1);
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <Box position={"relative"}>
@@ -140,11 +224,27 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
               ?.map((message, i) => {
                 return (
                   <Fragment key={i}>
-                    {message.text ? (
+                    {message.content ? (
                       <Message
                         ActivityType={ActivityType}
                         theme={theme}
                         message={message}
+                        sender={{
+                          brandName:
+                            message?.sender?.name ===
+                            selectedGroup?.group?.creatorDetail?.name
+                              ? selectedGroup?.messageGroup?.senderBrand
+                                  ?.brandName
+                              : selectedGroup?.messageGroup?.receiverBrand
+                                  ?.brandName,
+                          brandImage:
+                            message?.sender?.name ===
+                            selectedGroup?.group?.creatorDetail?.name
+                              ? selectedGroup?.messageGroup?.senderBrand
+                                  ?.brandImage
+                              : selectedGroup?.messageGroup?.receiverBrand
+                                  ?.brandImage,
+                        }}
                       />
                     ) : null}
                   </Fragment>
@@ -163,7 +263,7 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
               position: "relative",
               borderRadius: "5px",
               marginTop: isLessThan1400 ? "12px" : "16px",
-              border:"1px solid rgba(209, 219, 215, 0.5)"
+              border: "1px solid rgba(209, 219, 215, 0.5)",
             }}
           >
             <Stack
@@ -176,7 +276,7 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
                 Sender:
               </Typography>
 
-              <Select
+              <Box
                 sx={{
                   width: "auto",
                   bgcolor: "transparent",
@@ -186,20 +286,62 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
                   border: "none",
                   marginLeft: "5px",
                   fontWeight: 600,
+                  cursor: "default",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {selectedGroup?.group?.brandName && (
+                  <>
+                    <span>{selectedGroup.group.brandName}</span>
+                    <img
+                      src={arrowDown}
+                      alt="arrow"
+                      style={{ marginLeft: "8px" }}
+                    />
+                  </>
+                )}
+              </Box>
+
+              {/* <Select
+                sx={{
+                  width: "auto",
+                  bgcolor: "transparent",
+                  padding: 0,
+                  fontSize: "16px",
+                  lineHeight: "22px",
+                  border: "none",
+                  marginLeft: "5px",
+                  fontWeight: 600,
+                  cursor: "default",
 
                   "& .MuiSelect-select": {
                     padding: 0,
+                    cursor: "default",
+                  },
+
+                  "& .MuiSelect-icon": {
+                    transform: "none !important", // Prevent rotation
                   },
                 }}
                 value={sender || ""}
                 onChange={handleChange}
+                onClick={handleSelectClick}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      visibility: "hidden",
+                      pointerEvents: "none",
+                    },
+                  },
+                }}
               >
-                {selectedGroup?.group?.userName && (
-                  <MenuItem value={selectedGroup.group.userName}>
-                    {selectedGroup.group.userName}
+                {selectedGroup?.group?.brandName && (
+                  <MenuItem value={selectedGroup.group.brandName}>
+                    {selectedGroup.group.brandName}
                   </MenuItem>
                 )}
-              </Select>
+              </Select> */}
             </Stack>
 
             <Box
@@ -222,6 +364,10 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
                   fontStyle: "unset",
                   fontWeight: 400,
                   lineHeight: "21px",
+                  // "& img": {
+                  //   width: "80px",
+                  //   height: "80px",
+                  // },
                 },
 
                 "& .ql-blank::before": {
@@ -276,7 +422,7 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
                 }}
               >
                 <IconButton
-                  // onClick={() => setEmojiPickerVisible(!emojiPickerVisible)}
+                  onClick={() => setEmojiPickerVisible(!emojiPickerVisible)}
                   sx={{
                     padding: 0,
                     margin: isLessThan1280
@@ -284,6 +430,12 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
                       : "0px 35px 0px 0px !important",
                   }}
                   disableRipple
+                  onMouseEnter={() => {
+                    buttonRef.current = true;
+                  }}
+                  onMouseLeave={() => {
+                    buttonRef.current = false;
+                  }}
                 >
                   <img src={smile} />
                 </IconButton>
@@ -304,6 +456,8 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
                     lineHeight: "21px",
                     letterSpacing: "-0.01em",
                   }}
+                  onClick={handleSendMessage}
+                  disabled={buttonDisabled}
                 >
                   Send
                 </Button>
@@ -313,25 +467,37 @@ const AllMesaages = ({ selectedGroup, ActivityType }) => {
                 emojiPickerVisible={emojiPickerVisible}
                 setEmojiPickerVisible={setEmojiPickerVisible}
                 quillInstance={quillInstance}
+                onChange={handleInputChange}
+                value={finalMessage?.message}
+                setButtonDisabled={setButtonDisabled}
               />
             </Box>
 
             {emojiPickerVisible && (
-              <div
-                style={{
-                  position: "absolute",
+              <Box
+                sx={{
+                  position: "fixed",
                   zIndex: 9999,
                   backgroundColor: "white",
                   padding: "10px",
                   boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
                   borderRadius: "8px",
-                  bottom: "230px",
-                  left: "10px",
+                  bottom: "90px",
+                  right: "18px",
                   border: "1px solid #ccc",
+
+                  "@media only screen and (max-width:1100px)": {
+                    bottom: "78px",
+                  },
+
+                  "@media only screen and (min-width:1400px)": {
+                    bottom: "115px",
+                  },
                 }}
+                ref={pickerRef}
               >
                 <Picker data={data} onEmojiSelect={addEmoji} />
-              </div>
+              </Box>
             )}
           </Box>
         </Box>

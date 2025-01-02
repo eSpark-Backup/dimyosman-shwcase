@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { useClickOutside } from "../utils";
 import { useDispatch } from "react-redux";
 import { logout as logoutFunc } from "../store/slices/auth";
+import { removeMychat } from "../store/slices/chat";
 
 const Header = ({ isLogin }) => {
   const theme = useTheme();
@@ -36,6 +37,7 @@ const Header = ({ isLogin }) => {
 
   const handleLogout = () => {
     dispatch(logoutFunc())
+    dispatch(removeMychat())
     setAddPopup(false);
     setOpenProfilePopup(false);
     navigate("/auth?type=login")

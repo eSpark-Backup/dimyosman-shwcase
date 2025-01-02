@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 
 import { LocalizationProvider, StaticDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Box, Stack, Popper } from "@mui/material";
+import { Box, Stack, Popper, LinearProgress } from "@mui/material";
 
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -12,6 +12,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 
 import { bigCalendar } from "../../../assets";
+import { useGetCalendarQuery } from "../../../services/calendar";
 
 const datePickerStyle = {
   borderRadius: "5px",
@@ -46,23 +47,39 @@ const Calendar = () => {
   const popperRef = useRef(null);
 
   const [timeZone, setTimeZone] = useState("");
-  const [events, setEvents] = useState([
-    { title: "(Info here)", date: "2024-12-11T13:00:00", status: "no" },
-    { title: "(Info here)", date: "2024-12-11T14:00:00", status: "no" },
-    { title: "(60 min)", date: "2024-12-24T12:00:00", status: "yes" },
-  ]);
+  const [events, setEvents] = useState([]);
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentView, setCurrentView] = useState("dayGridMonth");
+  const { data, isLoading, isFetching, isError, error, isSuccess } = useGetCalendarQuery({}, { refetchOnMountOrArgChange: true })
+  useEffect(() => {
+    if (isSuccess && data?.data) {
+      const fetchedEvents = data?.data?.map((item) => {
+        const now = Date.now();
+        // Ensure the end date is correctly set
+        const end = new Date(item?.end);
+        end.setHours(23, 59, 59, 999);  // Set to end of the day
+  
+        return {
+          start: item?.start,
+          end: end, // Use the adjusted end date
+          title: item?.title,
+          status: now > end.getTime() ? "no" : "yes",
+        };
+      });
+      setEvents(fetchedEvents);
+    }
+  }, [isSuccess, data]);
+
 
   const getEventClassNames = (event) => {
     const { status } = event.extendedProps;
     return status === "yes"
       ? ["event-yes"]
       : status === "no"
-      ? ["event-no"]
-      : [];
+        ? ["event-no"]
+        : [];
   };
 
   useEffect(() => {
@@ -145,6 +162,14 @@ const Calendar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  if (isLoading || isFetching) {
+    return (
+      <Box sx={{ width: "100%" }}>
+        <LinearProgress />
+      </Box>
+    )
+  }
 
   return (
     <Box sx={{ marginBottom: "50px" }}>

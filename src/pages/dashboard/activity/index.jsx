@@ -1,8 +1,71 @@
-import { Box, Grid } from "@mui/material";
+import { Box, Grid, LinearProgress } from "@mui/material";
 import { ActivityCard } from "../../../components";
 import { activityItems } from "../../../constant";
+import { useGetActivityDataQuery } from "../../../services/activity";
+import { useEffect, useState } from "react";
 
 const Activity = () => {
+  const { data, isSuccess, isError, error, isLoading, isFetching } = useGetActivityDataQuery({
+    page: 1, pageSize: 7
+  }, { refetchOnMountOrArgChange: true })
+
+  const [activityData, setActivityData] = useState([]);
+  const [hasFetchedData, setHasFetchedData] = useState(false);
+
+  useEffect(() => {
+    if (isSuccess) {
+      if (data?.data) {
+        const updatedData = data.data.spaces?.map((item) => {
+          const filterPrice = item?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") || [];
+          const spaceFeatures = item?.amenity?.map((amenityItem) => ({
+            icon: amenityItem?.iconUrl || "",
+            description: amenityItem?.name || ""
+          })) || [];
+          const coverArray = item?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
+        
+          return {
+            profileId: 2,
+            activity: "space",
+            spaceId: item?.id || "",
+            userName: item?.brand?.brandName || "",
+            activityName: item?.spaceName || "",
+            activityMaker: item?.brand?.brandName || "",
+            content: [item?.details?.description || ""],
+            activityLocation: item?.brand?.brandName || "",
+            activityAddress: "123 Williamsburg Ave, Brooklyn, NY 11211",
+            value: filterPrice[0]?.price ? `$${filterPrice[0]?.price}/day` : "N/A",
+            deadline: filterPrice[0]?.minimum ? `minimum lease: ${filterPrice[0]?.minimum} days` : "N/A",
+            userImage: item?.brand?.brandImage || "",
+            activityImage: item?.spaceImage || "",
+            features: spaceFeatures,
+            userRole: "brand",
+            slides: coverArray
+          };
+        }) || [];
+        setActivityData(updatedData);
+      } else {
+        setActivityData([]);
+      }
+      setHasFetchedData(true); 
+    }
+  }, [isSuccess, data]);
+  
+
+  if (isLoading || isFetching) {
+    return (
+      <Box sx={{ width: "100%" }}>
+        <LinearProgress />
+      </Box>
+    )
+  }
+
+  if (hasFetchedData && activityData?.length === 0) {
+    return (
+      <Box sx={{ width: "100%" }}>
+        <h1>No Data Found</h1>
+      </Box>
+    )
+  }
   return (
     <>
 
@@ -24,7 +87,7 @@ const Activity = () => {
           }}
         >
 
-          {activityItems.map((item, index) => (
+          {activityData?.map((item, index) => (
             <ActivityCard
               key={index}
               id={item?.profileId}
@@ -32,8 +95,8 @@ const Activity = () => {
                 item?.activity === "event"
                   ? item?.eventId
                   : item?.activity === "space"
-                  ? item?.spaceId
-                  : item?.brandId
+                    ? item?.spaceId
+                    : item?.brandId
               }
               activity={item?.activity}
               userName={item?.userName}
@@ -85,7 +148,7 @@ const Activity = () => {
         </Grid>
       </Grid>
 
-      
+
     </>
   );
 };

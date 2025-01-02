@@ -14,6 +14,7 @@ import dayjs from 'dayjs';
 import { DateRangePicker } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
 import Dropdown from './Dropdown';
+import { toast } from 'react-toastify';
 
 const InputWithMap = ({
   edit,
@@ -36,7 +37,8 @@ const InputWithMap = ({
   defaultPrice,
   HandlePriceModal,
   mapInstruction,
-  HandleCategoryChange
+  HandleCategoryChange,
+  bookedRanges
 
 }) => {
   const theme = useTheme();
@@ -44,22 +46,62 @@ const InputWithMap = ({
   const containerRef = useRef(null);
   const [openDatePicker, setOpenDatePicker] = useState(false);
 
-  const [selectedDate, setSelectedDate] = useState(
-    defaultDate && defaultDate[0] === null && defaultDate[1] === null
-      ? [null, null]
-      : defaultDate && defaultDate?.map((date) => (date ? new Date(date) : null))
-  );
-  const [priceToShow, setPriceToShow] = useState(defaultDate);
+  const isDateInRanges = (date, ranges) => {
+    return ranges.some(
+      (range) => date >= range.start && date <= range.end
+    );
+  };
+
+  const isRangeValid = (range, ranges) => {
+    if (!range || range.length < 2 || !range[0] || !range[1]) return false;
+    const [startDate, endDate] = range;
+
+    for (
+      let d = new Date(startDate);
+      d <= endDate;
+      d.setDate(d.getDate() + 1)
+    ) {
+      if (isDateInRanges(new Date(d), ranges)) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+
+  const [selectedDate, setSelectedDate] = useState(() => {
+    if (!defaultDate || !Array.isArray(defaultDate)) return [null, null];
+
+    const isValidDefault = isRangeValid(
+      defaultDate?.map((date) => (date ? new Date(date) : null)),
+      bookedRanges
+    );
+
+    return isValidDefault
+      ? defaultDate?.map((date) => (date ? new Date(date) : null))
+      : [null, null];
+  });
+  const [priceToShow, setPriceToShow] = useState(defaultPrice);
 
   useEffect(() => {
-    setSelectedDate(
-      defaultDate && defaultDate[0] === null && defaultDate[1] === null
-        ? [null, null]
-        : defaultDate && defaultDate?.map((date) => (date ? new Date(date) : null))
-    )
+    if (!defaultDate || !Array.isArray(defaultDate)) {
+      setSelectedDate([null, null]);
+      return;
+    }
 
-  }, [defaultDate])
-  // Format start and end dates
+    const isValidDefault = isRangeValid(
+      defaultDate?.map((date) => (date ? new Date(date) : null)),
+      bookedRanges
+    );
+
+    setSelectedDate(
+      isValidDefault
+        ? defaultDate?.map((date) => (date ? new Date(date) : null))
+        : [null, null]
+    );
+  }, [defaultDate, bookedRanges]);
+
   const formatStartDate = (dateRange) =>
     dateRange && dateRange[0] ? dayjs(dateRange[0]).format("DD.MM.YYYY") : "dd.mm.yyyy";
 
@@ -68,6 +110,7 @@ const InputWithMap = ({
 
   const startDate = formatStartDate(selectedDate);
   const endDate = formatEndDate(selectedDate);
+
 
   useEffect(() => {
     if (activity === "space" && Array.isArray(defaultPrice)) {
@@ -116,7 +159,7 @@ const InputWithMap = ({
       backgroundColor: "#3B3B3B !important", // Slightly darker grey on hover
     },
   };
-  
+
 
   const handleSelectChange = (e) => {
     const selectedValue = e.target.value;
@@ -132,6 +175,27 @@ const InputWithMap = ({
 
     else {
       updateEventData("selectedBrand", selectedValue);
+    }
+  };
+
+
+
+
+
+  const handleDateChange = (newValue) => {
+    if (newValue === null || !newValue.length) {
+      setSelectedDate([null, null]);
+      onDateChange([null, null]);
+      return;
+    }
+
+    if (isRangeValid(newValue, bookedRanges)) {
+      setSelectedDate(newValue);
+      onDateChange(newValue);
+    } else {
+      toast.error("Selected range includes disabled dates. Please choose a valid range.");
+      setSelectedDate([null, null]);
+      onDateChange([null, null]);
     }
   };
 
@@ -277,7 +341,7 @@ const InputWithMap = ({
             </Typography>
 
             <Box
-              onClick={() => activity === "event" ? setOpenDatePicker(!openDatePicker) : HandlePriceModal()}
+              onClick={() => (activity === "event" && selectedValue !== "") ? setOpenDatePicker(!openDatePicker) : HandlePriceModal?.()}
               sx={{
                 width: "100%",
                 border: "1px dashed rgba(0, 20, 28, 0.4)",
@@ -287,7 +351,7 @@ const InputWithMap = ({
                 backgroundColor: "rgba(209, 219, 215, 0.2)",
                 p: "10px",
                 flexDirection: "column",
-                cursor: "pointer",
+                cursor: (activity === "event" && selectedValue === "") ? "not-allowed" : "pointer",
               }}
               ref={containerRef}
             >
@@ -326,10 +390,12 @@ const InputWithMap = ({
                   <DateRangePicker
                     value={selectedDate}
                     style={datePickerStyle}
-                    onChange={(newValue) => {
-                      setSelectedDate(newValue);
-                      onDateChange(newValue);
-                    }}
+                    // onChange={(newValue) => {
+                    //   setSelectedDate(newValue);
+                    //   onDateChange(newValue);
+                    // }}
+                    onChange={handleDateChange}
+                    shouldDisableDate={(date) => isDateInRanges(date, bookedRanges)}
                     appearance="default"
                     showOneCalendar
                   />

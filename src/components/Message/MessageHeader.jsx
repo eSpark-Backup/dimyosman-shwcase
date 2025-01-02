@@ -6,6 +6,11 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1100 = useMediaQuery("(max-width:1100px)");
 
+  const truncateTo13Characters = (str) => {
+    if (!str) return ''; 
+    return `${str.slice(0, 24)}...`;
+  };
+
   return (
     <Box
       sx={{
@@ -29,9 +34,9 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
               position: "relative",
             }}
           >
-            {selectedGroup?.messageGroup?.icon ? (
+            {selectedGroup?.messageGroup?.receiverSpace?.spaceImage ? (
               <img
-                src={selectedGroup.messageGroup.icon}
+                src={selectedGroup?.messageGroup?.receiverSpace.spaceImage}
                 alt="Message Icon"
                 style={{
                   width: "100%",
@@ -72,7 +77,8 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                 textAlign: "left",
               }}
             >
-              {selectedGroup?.messageGroup?.userName}
+              {/* {truncateTo13Characters(selectedGroup?.messageGroup?.chatName)} */}
+              {selectedGroup?.messageGroup?.receiverSpace?.spaceName}
             </Typography>
 
             <Typography
@@ -82,7 +88,7 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                 lineHeight: isLessThan1100 ? "18px" : "28px",
               }}
             >
-              {selectedGroup?.messageGroup?.userName}
+              {selectedGroup?.messageGroup?.brandName}
             </Typography>
 
             <Box
@@ -94,10 +100,10 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                 columnGap: isLessThan1100 ? 1 : 2,
               }}
             >
-              {selectedGroup?.group?.creator && (
+              {selectedGroup?.messageGroup?.creator && (
                 <GroupDetail
                   withColon="By"
-                  text={selectedGroup?.group?.creator}
+                  text={selectedGroup?.messageGroup?.creator}
                 />
               )}
 

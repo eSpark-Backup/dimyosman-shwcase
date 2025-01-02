@@ -25,7 +25,6 @@ const Details = ({ spaceInquire, details, myProfile }) => {
   } else {
     details = null; // Default case if `activity` doesn't match any
   }
-
   return (
     <Box>
       <Stack
@@ -314,7 +313,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             alt="share"
           />
         </Stack>
-        {(myProfile.type === "space" || !myProfile?.owned) && (
+        {(myProfile.type === "space" && !myProfile?.owned) && (
           <Button
             onClick={spaceInquire ? () => spaceInquire(myProfile?.id) : () => { }}
             sx={{
@@ -496,7 +495,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             alt="share"
           />
         </Stack>
-        {(myProfile.type === "space" || !myProfile?.owned) && (
+        {(myProfile.type === "space" && !myProfile?.owned) && (
           <Button
             onClick={spaceInquire ? () => spaceInquire(myProfile?.id) : () => { }}
             sx={{

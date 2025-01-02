@@ -9,8 +9,16 @@ const MessageInput = ({
   emojiPickerVisible,
   setEmojiPickerVisible,
   quillInstance,
+  onChange,
+  value,
+  setButtonDisabled,
 }) => {
   const quillRef = useRef(null);
+
+  const checkIfContentIsEmpty = () => {
+    const text = quillInstance.current.getText().trim();
+    setButtonDisabled && setButtonDisabled(text.length === 0);
+  };
 
   useEffect(() => {
     if (!quillInstance?.current) {
@@ -74,13 +82,30 @@ const MessageInput = ({
         if (imageButton) {
           imageButton.innerHTML = `<img src="${attachment}" alt="image"/>`;
         }
+
+        // Listen for text changes and call the onChange callback
+        quillInstance.current.on("text-change", () => {
+          const content = quillInstance.current.root.innerHTML; // Get HTML content
+          const text = quillInstance.current.getText(); // Get plain text content
+          if (onChange) {
+            onChange({ content, text }); // Pass the content to the parent
+          }
+          checkIfContentIsEmpty(); // Check if the content is empty on every change
+        });
       }
     }
   }, [emojiPickerVisible]);
 
-  return (
-    <div ref={quillRef} style={{ height: "74px" }} />
-  );
+  useEffect(() => {
+    if (quillInstance?.current) {
+      const editorContent = quillInstance.current.root.innerHTML;
+      if (editorContent !== value) {
+        quillInstance.current.root.innerHTML = value || "";
+      }
+    }
+  }, [value]);
+
+  return <div ref={quillRef} style={{ height: "74px" }} />;
 };
 
 export default MessageInput;

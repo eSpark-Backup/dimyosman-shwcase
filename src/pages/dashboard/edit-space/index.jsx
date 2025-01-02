@@ -378,10 +378,6 @@ const EditSpace = () => {
     const HandleDraftSubmit = () => handleSubmit("DRAFT");
     const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
 
-    useEffect(() => {
-        console.log(spaceData)
-    }, [spaceData])
-
     if (IsBrandLoading || AmenitiesLoading || isLoading || GetCategoryLoading || isFetching || IsBrandFetching || AmenitiesFetching || CategoryFetching) {
         return (
             <Box sx={{ width: "100%" }}>

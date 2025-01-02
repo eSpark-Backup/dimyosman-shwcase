@@ -20,6 +20,8 @@ const EditEvent = () => {
     const theme = useTheme()
     const [currentIndex, setCurrentIndex] = useState(0);
     const params = useParams();
+    const [bookedRanges, setBookedRanges] = useState([])
+
 
     const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading } = useGetCategoriesQuery('EVENTS')
 
@@ -115,6 +117,24 @@ const EditEvent = () => {
         : [];
 
     const [activeTab, setActiveTab] = useState("Details");
+
+    useEffect(() => {
+        if (spaceData) {
+            if (eventData?.space !== "") {
+                const selectedSpace = spaceData?.data?.spaces?.filter((item) => item?.id === eventData?.space)?.[0];
+
+                if (selectedSpace?.calendarEvents?.length > 0) {
+                    const bookedDates = selectedSpace.calendarEvents
+                        .filter((item) => item?.eventId !== data?.data?.id)
+                        .map((item) => ({
+                            start: new Date(item?.start),
+                            end: new Date(item?.end),
+                        }));
+                    setBookedRanges(bookedDates);
+                }
+            }
+        }
+    }, [spaceData, eventData, eventData?.space])
 
     const tabs = [
         { label: "Details", component: <></> },
@@ -521,6 +541,7 @@ const EditEvent = () => {
                                 eventData={eventData}
                                 updateEventData={updateEventData}
                                 handleClick={() => setMapModal(true)}
+                                bookedRanges={bookedRanges}
                             />
 
                             <Box

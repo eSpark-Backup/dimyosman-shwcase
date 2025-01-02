@@ -37,7 +37,7 @@ const IconBadge = ({ icon, bg, type, theme }) => {
       }}
     >
       <img src={icon} alt="Icon" />
-      {isRead && (
+      {/* {isRead && (
         <Box
           sx={{
             width: "10px",
@@ -49,7 +49,7 @@ const IconBadge = ({ icon, bg, type, theme }) => {
             right: "-3px",
           }}
         />
-      )}
+      )} */}
     </Box>
   );
 };
