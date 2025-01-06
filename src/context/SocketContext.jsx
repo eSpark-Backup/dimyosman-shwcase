@@ -80,7 +80,7 @@ const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (user && !socket.current) {
-      socket.current = io("https://shwcase-stg.esparkconsultants.com/socket", {
+      socket.current = io("https://shwcase-dev.esparkconsultants.com/socket", {
         withCredentials: true,
         extraHeaders: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,

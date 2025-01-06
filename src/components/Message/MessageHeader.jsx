@@ -3,6 +3,8 @@ import { Box, Stack, Typography, useMediaQuery } from "@mui/material";
 import { star } from "../../assets";
 
 const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
+const { messageGroup, group } = selectedGroup;
+
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1100 = useMediaQuery("(max-width:1100px)");
 
@@ -34,9 +36,14 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
               position: "relative",
             }}
           >
-            {selectedGroup?.messageGroup?.receiverSpace?.spaceImage ? (
+            {messageGroup?.receiverSpace?.spaceImage ||
+            messageGroup?.senderBrand?.brandImage ? (
               <img
-                src={selectedGroup?.messageGroup?.receiverSpace.spaceImage}
+                src={
+                  messageGroup?.isInquiryRole === "sender"
+                    ? messageGroup?.receiverSpace.spaceImage
+                    : messageGroup?.senderBrand.brandImage
+                }
                 alt="Message Icon"
                 style={{
                   width: "100%",
@@ -58,7 +65,7 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
             )}
 
             <ActivityType
-              type={selectedGroup?.messageGroup?.activity}
+              type={messageGroup?.activity}
               theme={theme}
             />
           </Box>
@@ -77,19 +84,22 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                 textAlign: "left",
               }}
             >
-              {/* {truncateTo13Characters(selectedGroup?.messageGroup?.chatName)} */}
-              {selectedGroup?.messageGroup?.receiverSpace?.spaceName}
+              {messageGroup?.isInquiryRole === "sender"
+                ? messageGroup?.receiverSpace?.spaceName
+                : messageGroup?.senderBrand?.brandName}
             </Typography>
 
-            <Typography
-              sx={{
-                fontWeight: 300,
-                fontSize: isLessThan1100 ? "16px" : "20px",
-                lineHeight: isLessThan1100 ? "18px" : "28px",
-              }}
-            >
-              {selectedGroup?.messageGroup?.brandName}
-            </Typography>
+            {messageGroup?.isInquiryRole === "sender" && (
+              <Typography
+                sx={{
+                  fontWeight: 300,
+                  fontSize: isLessThan1100 ? "16px" : "20px",
+                  lineHeight: isLessThan1100 ? "18px" : "28px",
+                }}
+              >
+                {messageGroup?.brandName}
+              </Typography>
+            )}
 
             <Box
               sx={{
@@ -100,26 +110,26 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                 columnGap: isLessThan1100 ? 1 : 2,
               }}
             >
-              {selectedGroup?.messageGroup?.creator && (
+              {messageGroup?.creator && (
                 <GroupDetail
                   withColon="By"
-                  text={selectedGroup?.messageGroup?.creator}
+                  text={messageGroup?.creator}
                 />
               )}
 
               <GroupDetail
                 withColon="Spaces"
-                text={selectedGroup?.group?.spaces}
+                text={group?.spaces}
               />
 
               <GroupDetail
                 withColon="Followers"
-                text={selectedGroup?.group?.followers}
+                text={group?.followers}
               />
 
               <GroupDetail
                 withColon="Saved"
-                text={selectedGroup?.group?.saved}
+                text={group?.saved}
               />
 
               {isLessThan1100 ? (
@@ -132,12 +142,12 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                       marginRight: 0.8,
                     }}
                   >
-                    {selectedGroup?.group?.rating.toFixed(1)}
+                    {group?.rating.toFixed(1)}
                   </Typography>
 
                   <Box sx={{ display: "flex", gap: 0.5 }}>
                     {Array.from(
-                      { length: selectedGroup?.group?.rating },
+                      { length: group?.rating },
                       (_, ind) => {
                         return (
                           <img
@@ -171,12 +181,12 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                 color: "rgba(0, 20, 28, 0.8)",
               }}
             >
-              {selectedGroup?.group?.rating.toFixed(1)}
+              {group?.rating.toFixed(1)}
             </Typography>
 
             <Box>
               {Array.from(
-                { length: selectedGroup?.group?.rating },
+                { length: group?.rating },
                 (_, ind) => {
                   return (
                     <img
@@ -197,7 +207,7 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                 fontSize: "12px",
                 lineHeight: "17px",
               }}
-            >{`Based on ${selectedGroup?.group?.reviews} reviews from ${selectedGroup?.group?.leases} Leases`}</Typography>
+            >{`Based on ${group?.reviews} reviews from ${group?.leases} Leases`}</Typography>
           </Stack>
         ) : null}
       </Box>
