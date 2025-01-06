@@ -478,6 +478,67 @@ a:hover{
 }
 /* input Calendar  */
 
+/* Typing indicator styles */
+.typing-indicator {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.dots {
+  display: inline-block;
+  font-size: 24px;
+  color: #00141C;
+  animation: typing 1.5s infinite;
+  line-height: normal;
+}
+
+.dots:after {
+  content: '.';
+  animation: dotAnimation 1.5s steps(5, end) infinite;
+}
+
+.dots:before {
+  content: '';
+  display: block;
+  width: 0;
+}
+
+@keyframes typing {
+  0% {
+    content: '.';
+  }
+  20% {
+    content: '..';
+  }
+  40% {
+    content: '...';
+  }
+  100% {
+    content: '.';
+  }
+}
+
+@keyframes dotAnimation {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Typing indicator styles */
+
 
 /* Media Query Starts */
 @media screen and (max-width:550px) {

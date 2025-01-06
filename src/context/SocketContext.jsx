@@ -101,16 +101,17 @@ const SocketProvider = ({ children }) => {
         console.log("REFETCH_CHAT EVENT TRIGGERED.");
         refetch();
       });
+      
       socket.current.on("NEW_REQUEST", () => {
         console.log("NEW_REQUEST EVENT TRIGGERED.");
         refetch();
       });
 
-      socket.current.on("NEW_MESSAGE", (data) => {
-        console.log("NEW_MESSAGE EVENT TRIGGERED.");
+      // socket.current.on("NEW_MESSAGE", (data) => {
+      //   console.log("NEW_MESSAGE EVENT TRIGGERED.");
 
-        dispatch(getMessages([...messages, data.message]));
-      });
+      //   dispatch(getMessages([...messages, data.message]));
+      // });
 
       return () => {
         // Cleanup socket on unmount
@@ -121,7 +122,7 @@ const SocketProvider = ({ children }) => {
         }
       };
     }
-  }, [user, socket, dispatch]);
+  }, [user, socket]);
 
   const emitEvent = (event, payload) => {
     if (socket.current) {

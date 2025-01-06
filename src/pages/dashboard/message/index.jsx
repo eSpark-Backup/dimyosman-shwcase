@@ -90,6 +90,7 @@ const Message = () => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
 
   const { myChat, messages, hasChats } = useSelector((state) => state.chat);
+  const { user } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
 
@@ -120,6 +121,13 @@ const Message = () => {
   );
 
   const [allMessages, setAllMessages] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [isTypingUser, setIsTypingUser] = useState(null);
+  const [messageAlert, setMessageAlert] = useState(null);
+
+  const [expanded, setExpanded] = useState(0);
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedChatId, setSelectedChatId] = useState(null);
 
   useEffect(() => {
     if (
@@ -144,10 +152,39 @@ const Message = () => {
       dispatch(getMessages([...messages, data.message]));
     });
 
+    // addListener("NEW_MESSAGE_ALERT", (data) => {
+    //   console.log("NEW_MESSAGE_ALERT EVENT TRIGGERED.");
+
+    //   setMessageAlert(data.chatId);
+    // });
+
     return () => {
       removeListener("NEW_MESSAGE");
+      // removeListener("NEW_MESSAGE_ALERT");
     };
   }, [addListener, removeListener, messages, emitEvent]);
+
+  useEffect(() => {
+    addListener("START_TYPING", (data) => {
+      console.log("START_TYPING EVENT TRIGGERED.");
+
+      setIsTypingUser({
+        chatId: data.chatId,
+        userId: user.id,
+      });
+    });
+
+    addListener("STOP_TYPING", () => {
+      console.log("STOP_TYPING EVENT TRIGGERED.");
+
+      setIsTypingUser(null);
+    });
+
+    return () => {
+      removeListener("START_TYPING");
+      removeListener("STOP_TYPING");
+    };
+  }, [addListener, removeListener, emitEvent]);
 
   useEffect(() => {
     if (isSuccess && chatDetailsSuccess) {
@@ -194,7 +231,7 @@ const Message = () => {
                 chatId: matchingItem && matchingItem?.chatId,
                 members: matchingItem && matchingItem?.members,
                 brandName: item?.receiverBrand?.brandName,
-                activity: "brand",
+                activity: "space",
                 brandImage: item?.receiverBrand?.brandImage,
                 creator: item?.receiverBrand?.user?.name,
                 read: false,
@@ -233,60 +270,38 @@ const Message = () => {
     chatDetailsSuccess,
   ]);
 
-  const [expanded, setExpanded] = useState(0);
-  const [selectedGroup, setSelectedGroup] = useState(null);
-  const [selectedChatId, setSelectedChatId] = useState(null);
-
   const handleAccordionChange = (index) => (event, isExpanded) => {
-    setSelectedChatId(allMessages[index]?.messageGroups[0]?.chatId);
-    setSelectedGroup(() => {
-      if (isExpanded) {
-        return {
+    const selectedGroup = isExpanded
+      ? {
           messageGroup: allMessages[index]?.messageGroups[0],
           group: allMessages[index],
-        };
-      } else {
-        setSelectedGroup(null);
-      }
-    });
+        }
+      : null;
 
+    setSelectedChatId(allMessages[index]?.messageGroups[0]?.chatId);
+    setSelectedGroup(selectedGroup);
     setExpanded(isExpanded ? index : null);
   };
 
   useEffect(() => {
-    if (
-      allMessages.length &&
-      selectedChatId === null &&
-      selectedGroup !== null
-    ) {
-      setSelectedGroup({
-        messageGroup: allMessages[0]?.messageGroups[0],
-        group: allMessages[0],
-      });
-    }
-  }, [allMessages, selectedChatId, messages]);
+    if (allMessages.length) {
+      if (selectedChatId === null && selectedGroup === null) {
+        setSelectedGroup({
+          messageGroup: allMessages[0]?.messageGroups[0],
+          group: allMessages[0],
+        });
+      }
 
-  useEffect(() => {
-    if (
-      allMessages.length &&
-      selectedChatId === null &&
-      selectedGroup === null
-    ) {
-      setSelectedGroup({
-        messageGroup: allMessages[0]?.messageGroups[0],
-        group: allMessages[0],
-      });
-    } else if (
-      allMessages.length &&
-      selectedChatId !== null &&
-      expanded !== null
-    ) {
-      setSelectedGroup({
-        messageGroup: allMessages[expanded]?.messageGroups?.find(
+      if (selectedChatId !== null && expanded !== null) {
+        const group = allMessages[expanded];
+        const messageGroup = group?.messageGroups?.find(
           (msg) => msg.id === selectedChatId
-        ),
-        group: allMessages[expanded],
-      });
+        );
+
+        if (messageGroup) {
+          setSelectedGroup({ messageGroup, group });
+        }
+      }
     }
   }, [allMessages, selectedChatId, expanded, messages]);
 
@@ -411,6 +426,9 @@ const Message = () => {
                   emitEvent={emitEvent}
                   removeListener={removeListener}
                   addListener={addListener}
+                  setIsTyping={setIsTyping}
+                  isTyping={isTyping}
+                  isTypingUser={isTypingUser}
                 />
               )}
             </Grid>

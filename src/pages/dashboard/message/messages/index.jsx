@@ -22,6 +22,7 @@ import MessageInput from "../../../../components/Message/MessageInput";
 import Message from "../../../../components/Message/Message";
 
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 const GroupDetail = ({ withColon, text }) => (
   <Typography
@@ -42,7 +43,14 @@ const GroupDetail = ({ withColon, text }) => (
   </Typography>
 );
 
-const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
+const AllMesaages = ({
+  selectedGroup,
+  ActivityType,
+  emitEvent,
+  setIsTyping,
+  isTyping,
+  isTypingUser,
+}) => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1100 = useMediaQuery("(max-width:1100px)");
@@ -54,6 +62,7 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
   const pickerRef = useRef(null);
   const buttonRef = useRef(null);
 
+  const { user } = useSelector((state) => state.auth);
 
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
@@ -107,7 +116,7 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
   const addEmoji = (emoji) => {
     const isActive = isCursorActive();
     if (!isActive) {
-      quillInstance.current.focus(); 
+      quillInstance.current.focus();
     }
 
     const range = quillInstance.current.getSelection();
@@ -128,12 +137,38 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
 
     setEmojiPickerVisible(false);
   };
+  const selectedGroupData = useRef(null);
+
+  useEffect(() => {
+    if (
+      selectedGroup?.messageGroup?.members &&
+      selectedGroup?.messageGroup?.chatId
+    ) {
+      selectedGroupData.current = selectedGroup?.messageGroup;
+    }
+  }, [selectedGroup]);
 
   const handleInputChange = ({ content, text }) => {
+    const newMessage = text.trim();
+    const dataToSend = {
+      members: selectedGroupData.current?.members,
+      chatId: selectedGroupData.current?.chatId,
+    };
+
     setFinalMessage((prevData) => ({
       ...prevData,
       message: content,
     }));
+
+    if (newMessage.length > 0) {
+      setIsTyping(true);
+
+      emitEvent("START_TYPING", dataToSend);
+    } else {
+      setIsTyping(false);
+
+      emitEvent("STOP_TYPING", dataToSend);
+    }
   };
 
   // Handle sending the message
@@ -251,6 +286,13 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
                 );
               })}
           </Box>
+
+          {isTypingUser?.userId === user?.id &&
+            selectedGroup?.messageGroup?.chatId === isTypingUser?.chatId && (
+              <span className="typing-indicator">
+                <span className="dots">...</span>
+              </span>
+            )}
 
           <Box
             sx={{
