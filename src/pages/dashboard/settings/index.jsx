@@ -319,7 +319,7 @@ const Settings = () => {
           </LoadingButton>
         </Box>
 
-        <Box
+        {/* <Box
           sx={{
             marginBottom: 2,
           }}
@@ -369,7 +369,7 @@ const Settings = () => {
             </Box>
           </Box>
           <Button sx={{ ...buttonStyle, marginTop: "10px" }}>Edit SSO</Button>
-        </Box>
+        </Box> */}
 
         <Box
           sx={{
