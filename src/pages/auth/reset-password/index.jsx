@@ -45,8 +45,7 @@ const ResetPassword = () => {
               width: { xs: "90%", md: "70%" },
             }}
           >
-            Please enter your email. We will be sending an email to verify your
-            account to reset your password.
+            Please enter your new password and confirm it to reset your account password.
           </Typography>
         </Box>
         <Box
