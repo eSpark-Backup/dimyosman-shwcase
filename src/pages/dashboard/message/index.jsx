@@ -32,9 +32,9 @@ import {
   useGetChatsForContactsQuery,
   useGetAllChatDetailsQuery,
 } from "../../../services/chats.js";
-import { format } from "date-fns";
 import { getMessages } from "../../../store/slices/chat.js";
 import { useSocket } from "../../../context/SocketContext.jsx";
+import { messageBox } from "../../../utils/index.js";
 
 const icons = [
   { icon: messageIcon, bg: "rgba(0, 20, 28, 0.8)", type: "message" },
@@ -189,74 +189,83 @@ const Message = () => {
   useEffect(() => {
     if (isSuccess && chatDetailsSuccess) {
       if (chatDetailsData && messages) {
-        const message = myChat.map((el) => {
-          return {
-            id: el?.brandDetails?.id,
-            activity: "brand",
-            brandName: el?.brandDetails?.brandName,
-            brandImage: el?.brandDetails?.brandImage,
-            read: false,
-            creatorDetail: el?.brandDetails?.user,
-            spaces: 1234,
-            followers: 234566,
-            saved: "789k",
-            reviews: 12345,
-            leases: 12345,
-            rating: 5,
-            messageGroups: el?.chats?.map((item) => {
-              let matchingItem = chatDetailsData
-                ?.map((item2) => {
-                  if (item2.chat._id === item._id) {
-                    return {
-                      members: item2.chat?.members,
-                      name: item2.chat?.name,
-                      createdAt: item2.chat?.createdAt,
-                      updatedAt: item2.chat?.updatedAt,
-                      chatId: item2.chat?._id,
-                    };
-                  }
-                })
-                .find((result) => result !== undefined);
-              const currentChatMessages = [];
+        let newArr = [];
 
-              messages.forEach((message) => {
-                if (message.chat === item?._id) {
-                  currentChatMessages.push(message);
-                }
-              });
+        myChat.forEach((brandObj) => {
+          // Separate sender and receiver chats
+          let senderChats = [];
+          let receiverChats = [];
 
-              return {
-                ...item,
-                id: item?._id,
-                chatId: matchingItem && matchingItem?.chatId,
-                members: matchingItem && matchingItem?.members,
-                brandName: item?.receiverBrand?.brandName,
-                activity: "space",
-                brandImage: item?.receiverBrand?.brandImage,
-                creator: item?.receiverBrand?.user?.name,
-                read: false,
-                chatName: matchingItem && matchingItem?.name,
-                date:
-                  matchingItem &&
-                  format(new Date(matchingItem?.createdAt), "MM/dd/yy"),
-                time:
-                  matchingItem &&
-                  format(new Date(matchingItem?.createdAt), "h:mma"),
-                messages: currentChatMessages?.map((messageItem) => {
-                  return {
-                    ...messageItem,
-                    id: messageItem?._id,
-                    brandName: item?.senderBrand?.brandName,
-                    brandImage: item?.senderBrand?.brandImage,
-                    activity: "brand",
-                    creator: el?.name,
-                    date: format(new Date(messageItem?.createdAt), "MM/dd/yy"),
-                    time: format(new Date(messageItem?.createdAt), "h:mma"),
-                  };
-                }),
+          // Separate sender and receiver chats based on the isInquiryRole property
+          brandObj.chats.forEach((chat) => {
+            if (chat.isInquiryRole === "sender") {
+              senderChats.push(chat); // Store sender chats
+            } else if (chat.isInquiryRole === "receiver") {
+              receiverChats.push(chat); // Store receiver chats
+            }
+          });
+
+          // Deep clone the brand details to ensure no shared reference issues
+          const clonedBrandDetails = JSON.parse(
+            JSON.stringify(brandObj.brandDetails)
+          );
+
+          // Handle sender chats
+          if (senderChats.length > 0) {
+            let existingSenderBrand = newArr.find(
+              (brand) => brand.brandDetails.id === clonedBrandDetails.id
+            );
+
+            if (!existingSenderBrand) {
+              existingSenderBrand = {
+                hasReceiverChats: false, // Set to true if there are receiver chats
+                brandDetails: clonedBrandDetails, // Add the brand details
+                chats: [], // Initialize an empty chats array
               };
-            }),
-          };
+
+              // Add the new brand object to newArr for sender chats
+              newArr.push(existingSenderBrand);
+            }
+
+            // Add the sender chats to the existing sender brand object
+            senderChats.forEach((senderChat) => {
+              // Add sender chat to sender brand's chats array
+              existingSenderBrand.chats.push(senderChat);
+            });
+          }
+
+          // Handle receiver chats
+          receiverChats.forEach((receiverChat) => {
+            // Check if this space already has a corresponding receiver object
+            let existingReceiverBrand = newArr.find(
+              (brand) =>
+                brand.brandDetails.id === receiverChat.receiverBrand.id &&
+                brand.chats.some(
+                  (chat) =>
+                    chat.receiverSpace.id === receiverChat.receiverSpace.id
+                )
+            );
+
+            if (!existingReceiverBrand) {
+              // Create a new object for each receiver brand if not already present in newArr
+              existingReceiverBrand = {
+                hasReceiverChats: true, // Receiver brand will always have receiver chats
+                brandDetails: receiverChat.receiverBrand, // Add the receiver brand details
+                chats: [], // Initialize an empty chats array
+                receiverSpace: receiverChat.receiverSpace,
+              };
+
+              // Add the receiver brand object to newArr
+              newArr.push(existingReceiverBrand);
+            }
+
+            // Add the receiver chat to the corresponding receiver brand object
+            existingReceiverBrand.chats.push(receiverChat);
+          });
+        });
+
+        let message = newArr.map((el) => {
+          return messageBox(el, chatDetailsData, messages);
         });
         setAllMessages(message);
       }

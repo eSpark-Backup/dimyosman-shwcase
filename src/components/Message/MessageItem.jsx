@@ -151,9 +151,9 @@ const MessageItem = ({
                       position: "relative",
                     }}
                   >
-                    {el.brandImage ? (
+                    { (el?.receiverSpace?.spaceImage || el?.senderBrand?.brandImage) ? (
                       <img
-                        src={el.brandImage}
+                        src={el?.isInquiryRole === 'sender' ?  el?.receiverSpace?.spaceImage : el?.senderBrand?.brandImage}
                         alt="Message Icon"
                         style={{
                           width: "100%",
@@ -194,7 +194,8 @@ const MessageItem = ({
                         textAlign: "left",
                       }}
                     >
-                      {el.brandName}
+                      {el?.isInquiryRole === 'sender' ?  el?.receiverSpace?.spaceName : el?.senderBrand?.brandName}
+                      {/* {el?.receiverSpace?.spaceName} */}
                     </Typography>
 
                     {el?.creator && (

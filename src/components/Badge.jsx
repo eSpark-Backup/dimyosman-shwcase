@@ -21,7 +21,7 @@ const BadgeComp = ({ onClick, imageSrc, bg }) => {
             }}
         >
             <img src={imageSrc} alt="icon" />
-            <Box
+            {/* <Box
                 sx={{
                     width: "10px",
                     height: "10px",
@@ -33,7 +33,7 @@ const BadgeComp = ({ onClick, imageSrc, bg }) => {
                 }}
             >
 
-            </Box>
+            </Box> */}
         </Box>
     );
 };
