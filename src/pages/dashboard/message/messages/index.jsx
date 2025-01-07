@@ -180,12 +180,14 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
 
   return (
     <Box position={"relative"}>
-      <MessageHeader
-        selectedGroup={selectedGroup}
-        theme={theme}
-        ActivityType={ActivityType}
-        GroupDetail={GroupDetail}
-      />
+      {selectedGroup && (
+        <MessageHeader
+          selectedGroup={selectedGroup}
+          theme={theme}
+          ActivityType={ActivityType}
+          GroupDetail={GroupDetail}
+        />
+      )}
 
       <Box
         sx={{
@@ -232,14 +234,14 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
                         sender={{
                           brandName:
                             message?.sender?.name ===
-                            selectedGroup?.group?.creatorDetail?.name
+                            selectedGroup?.messageGroup?.senderBrand?.user?.name
                               ? selectedGroup?.messageGroup?.senderBrand
                                   ?.brandName
                               : selectedGroup?.messageGroup?.receiverBrand
                                   ?.brandName,
                           brandImage:
                             message?.sender?.name ===
-                            selectedGroup?.group?.creatorDetail?.name
+                            selectedGroup?.messageGroup?.senderBrand?.user?.name
                               ? selectedGroup?.messageGroup?.senderBrand
                                   ?.brandImage
                               : selectedGroup?.messageGroup?.receiverBrand
