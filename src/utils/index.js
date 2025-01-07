@@ -45,25 +45,31 @@ export function useClickOutside(ref, onClickOutside) {
   }, [ref, onClickOutside]);
 }
 
-export const messageBox = (parentObj, chatDetails, allMessages, length) => {
-  const parentObject = {
-    id: "",
-    activity: "",
-    brandName: "",
-    brandImage: "",
+export const messageBox = (parentObj, chatDetails, allMessages) => {
+  const getParentObject = () => {
+    const isReceiverChats = parentObj?.hasReceiverChats;
+    const details = isReceiverChats ? parentObj?.receiverSpace : parentObj?.brandDetails;
+
+    return {
+      id: details?.id || '',
+      activity: isReceiverChats ? "space" : "brand",
+      brandName: details?.brandName || details?.spaceName,
+      brandImage: details?.brandImage || details?.spaceImage,
+    };
   };
 
-  if (length === 0) {
-    parentObject.id = parentObj?.brandDetails?.id;
-    parentObject.activity = "brand";
-    parentObject.brandName = parentObj?.brandDetails?.brandName;
-    parentObject.brandImage = parentObj?.brandDetails?.brandImage;
-  } else {
-    parentObject.id = parentObj?.receiverSpace?.id;
-    parentObject.activity = "space";
-    parentObject.brandName = parentObj?.receiverSpace?.spaceName;
-    parentObject.brandImage = parentObj?.receiverSpace?.spaceImage;
-  }
+  const getMatchingChatDetails = (chatId) => {
+    return chatDetails?.find(item => item.chat._id === chatId)?.chat || {};
+  };
+
+  const getMessagesForChat = (chatId) => {
+    return allMessages.filter(message => message.chat === chatId);
+  };
+
+  const formatDate = (date) => format(new Date(date), "MM/dd/yy");
+  const formatTime = (date) => format(new Date(date), "h:mma");
+
+  const parentObject = getParentObject();
 
   return {
     ...parentObject,
@@ -75,67 +81,38 @@ export const messageBox = (parentObj, chatDetails, allMessages, length) => {
     leases: 12345,
     rating: 5,
     messageGroups: parentObj?.chats?.map((item) => {
-      let matchingItem = chatDetails
-        ?.map((item2) => {
-          if (item2.chat._id === item._id) {
-            return {
-              members: item2.chat?.members,
-              name: item2.chat?.name,
-              createdAt: item2.chat?.createdAt,
-              updatedAt: item2.chat?.updatedAt,
-              chatId: item2.chat?._id,
-            };
-          }
-        })
-        .find((result) => result !== undefined);
-      const currentChatMessages = [];
+      const matchingItem = getMatchingChatDetails(item._id);
+      const currentChatMessages = getMessagesForChat(item._id);
 
-      allMessages.forEach((message) => {
-        if (message.chat === item?._id) {
-          currentChatMessages.push(message);
-        }
-      });
+      const isReceiverChats = parentObj?.hasReceiverChats;
+      const brandName = isReceiverChats ? item?.senderBrand?.brandName : item?.receiverBrand?.brandName;
+      const brandImage = isReceiverChats ? item?.senderBrand?.brandImage : item?.receiverBrand?.brandImage;
+      const creator = isReceiverChats ? item?.senderBrand?.user?.name : item?.receiverBrand?.user?.name;
+      const activity = isReceiverChats ? "brand" : "space";
 
       return {
         ...item,
         id: item?._id,
-        chatId: matchingItem && matchingItem?.chatId,
-        members: matchingItem && matchingItem?.members,
-        brandName:
-          length === 0
-            ? item?.receiverBrand?.brandName
-            : item?.senderBrand?.brandName,
-        brandImage:
-          length === 0
-            ? item?.receiverBrand?.brandImage
-            : item?.senderBrand?.brandImage,
-        creator:
-          length === 0
-            ? item?.receiverBrand?.user?.name
-            : item?.senderBrand?.user?.name,
-        chatName: matchingItem && matchingItem?.name,
-        activity: length === 0 ? "space" : "brand",
+        chatId: matchingItem?._id,
+        members: matchingItem?.members,
+        brandName,
+        brandImage,
+        creator,
+        chatName: matchingItem?.name,
+        activity,
         read: false,
-        date:
-          matchingItem && format(new Date(matchingItem?.createdAt), "MM/dd/yy"),
-        time:
-          matchingItem && format(new Date(matchingItem?.createdAt), "h:mma"),
-        messages: currentChatMessages?.map((messageItem) => {
+        date: matchingItem?.createdAt ? formatDate(matchingItem?.createdAt) : '',
+        time: matchingItem?.createdAt ? formatTime(matchingItem?.createdAt) : '',
+        messages: currentChatMessages.map((messageItem) => {
           return {
             ...messageItem,
             id: messageItem?._id,
-            brandName:
-              length === 0
-                ? item?.receiverBrand?.brandName
-                : item?.senderBrand?.brandName,
-            brandImage:
-              length === 0
-                ? item?.receiverBrand?.brandImage
-                : item?.senderBrand?.brandImage,
+            brandName,
+            brandImage,
             activity: "brand",
             creator: parentObj?.name,
-            date: format(new Date(messageItem?.createdAt), "MM/dd/yy"),
-            time: format(new Date(messageItem?.createdAt), "h:mma"),
+            date: formatDate(messageItem?.createdAt),
+            time: formatTime(messageItem?.createdAt),
           };
         }),
       };
