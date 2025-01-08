@@ -88,6 +88,7 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
       const brandName = isReceiverChats ? item?.senderBrand?.brandName : item?.receiverBrand?.brandName;
       const brandImage = isReceiverChats ? item?.senderBrand?.brandImage : item?.receiverBrand?.brandImage;
       const creator = isReceiverChats ? item?.senderBrand?.user?.name : item?.receiverBrand?.user?.name;
+      const receiverbrandName = isReceiverChats ? item?.receiverBrand?.brandName : ""
       const activity = isReceiverChats ? "brand" : "space";
 
       return {
@@ -97,6 +98,7 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
         members: matchingItem?.members,
         brandName,
         brandImage,
+        receiverbrandName,
         creator,
         chatName: matchingItem?.name,
         activity,

@@ -335,15 +335,26 @@ const AllMesaages = ({
                   alignItems: "center",
                 }}
               >
-                {selectedGroup?.group?.brandName && (
+                {selectedGroup?.messageGroup?.receiverbrandName !== "" ? (
                   <>
-                    <span>{selectedGroup.group.brandName}</span>
+                    <span>{selectedGroup?.messageGroup?.receiverbrandName}</span>
                     <img
                       src={arrowDown}
                       alt="arrow"
                       style={{ marginLeft: "8px" }}
                     />
                   </>
+                ) : (
+                  selectedGroup?.group?.brandName && (
+                    <>
+                      <span>{selectedGroup.group.brandName}</span>
+                      <img
+                        src={arrowDown}
+                        alt="arrow"
+                        style={{ marginLeft: "8px" }}
+                      />
+                    </>
+                  )
                 )}
               </Box>
 
