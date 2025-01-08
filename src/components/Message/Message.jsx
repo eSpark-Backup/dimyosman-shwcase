@@ -104,6 +104,7 @@ const Message = ({ ActivityType, theme, message, sender }) => {
       <Typography
         sx={{
           marginTop: isLessThan1400 ? 2 : 3,
+          wordBreak:"break-word",
 
           "& a": {
             color: "#00141C !important",
