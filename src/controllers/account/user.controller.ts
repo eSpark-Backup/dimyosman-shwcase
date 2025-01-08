@@ -219,9 +219,9 @@ export class UserController {
       const imageUrls = (
         imageFileObjects?.length > 0
           ? await uploadService.uploadMultipleFiles(
-              imageFileObjects,
-              FolderName
-            )
+            imageFileObjects,
+            FolderName
+          )
           : [{ url: oldUserImage }]
       ) as UploadResult[];
 

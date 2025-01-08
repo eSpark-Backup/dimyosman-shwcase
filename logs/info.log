@@ -14,3 +14,18 @@
 [31m{"level":"error","message":"UserController :: changePassword :: New password cannot be the same as old password","timestamp":"2025-01-01 13:31:16"}[39m
 [31m{"level":"error","message":"UserController :: changePassword :: New password cannot be the same as old password","timestamp":"2025-01-01 13:31:35"}[39m
 [31m{"level":"error","message":"UserController :: changePassword :: Incorrect old password","timestamp":"2025-01-01 13:32:01"}[39m
+[31m{"level":"error","message":"AuthController :: loginUser :: This email is registered as a social login. Please use social login.","timestamp":"2025-01-08 13:02:51"}[39m
+[31m{"level":"error","message":"AuthController :: loginUser :: This email is registered as a social login. Please use social login.","timestamp":"2025-01-08 13:03:56"}[39m
+[31m{"level":"error","message":"AuthController :: loginUser :: Invalid email or password.","timestamp":"2025-01-08 13:04:21"}[39m
+[31m{"level":"error","message":"AuthController :: loginUser :: This email is registered as a social login. Please use social login.","timestamp":"2025-01-08 13:04:25"}[39m
+[31m{"level":"error","message":"AuthController :: forgotPassword :: \"Please provide email\"","timestamp":"2025-01-08 13:55:23"}[39m
+[31m{"level":"error","message":"AuthController :: resetPassword :: \"Please provide password\"","timestamp":"2025-01-08 16:15:03"}[39m
+[31m{"level":"error","message":"AuthController :: resetPassword :: \"Please provide password\"","timestamp":"2025-01-08 16:16:03"}[39m
+[31m{"level":"error","message":"AuthController :: resetPassword :: \"Please provide password\"","timestamp":"2025-01-08 16:16:18"}[39m
+[31m{"level":"error","message":"AuthController :: resetPassword :: \"Unexpected non-whitespace character after JSON at position 1\"","timestamp":"2025-01-08 16:17:14"}[39m
+[31m{"level":"error","message":"AuthController :: resetPassword :: \"Unexpected non-whitespace character after JSON at position 1\"","timestamp":"2025-01-08 16:18:54"}[39m
+[31m{"level":"error","message":"AuthController :: resetPassword :: \"Unexpected non-whitespace character after JSON at position 1\"","timestamp":"2025-01-08 16:28:55"}[39m
+[31m{"level":"error","message":"AuthController :: loginUser :: Invalid email or password.","timestamp":"2025-01-08 17:00:12"}[39m
+[31m{"level":"error","message":"AuthController :: loginUser :: Invalid email or password.","timestamp":"2025-01-08 17:03:18"}[39m
+[31m{"level":"error","message":"AuthController :: forgotPassword :: \"This email is registered as a social login. Please use social login.\"","timestamp":"2025-01-08 17:11:40"}[39m
+[31m{"level":"error","message":"AuthController :: forgotPassword :: \"This email is registered as a social login. Please use social login.\"","timestamp":"2025-01-08 17:12:11"}[39m

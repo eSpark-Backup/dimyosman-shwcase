@@ -2,7 +2,7 @@ import { NextFunction, Request, RequestHandler, Response } from "express";
 import { User } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { handleResponse, logger } from "../../utils";
+import { decrypt, generateToken, handleResponse, logger } from "../../utils";
 import { CHAT_COOKIE, HTTP_STATUS } from "../../constants";
 import jwt from "jsonwebtoken";
 import { UserForChat } from "../../models";
@@ -21,7 +21,7 @@ const cookieOptions: {
 };
 
 export class AuthController {
-  constructor(private usersRepo: Repository<User>) {}
+  constructor(private usersRepo: Repository<User>) { }
 
   async registerUser(
     req: Request,
@@ -319,4 +319,123 @@ export class AuthController {
       return next(error);
     }
   }
+
+  
+  async forgotPassword(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+
+      const { email } = req.body;
+
+      const user = await this.usersRepo.findOne({ where: { email } });
+
+      if (!user) {
+        throw new ApiError("User not found", HTTP_STATUS.NOT_FOUND);
+      }
+
+      if (user.isSocialLogin) {
+        throw new ApiError(
+          "This email is registered as a social login. Please use social login.",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+
+      const { token, expiresAt } = generateToken({ userId: user.id, newEmail: email }, '1h');
+
+      const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}?expiresAt=${expiresAt}`;
+
+      await mailService.forgotPassword({
+        name: user.name,
+        email: email,
+        link: resetLink
+      });
+
+      res.status(HTTP_STATUS.OK).json(
+        handleResponse("Email Sent successfully", {
+          id: user.id,
+          email: user.email,
+        })
+      );
+
+    }
+    catch (error) {
+      logger.error(
+        `AuthController :: forgotPassword :: "${(error as Error)?.message}"`
+      );
+      return next(error);
+    }
+  }
+
+  
+  async resetPassword(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { token, expiresAt } = req.params;
+      const { newPassword } = req.body;
+
+      if (!token || !expiresAt) {
+        throw new ApiError("Token and expiration time are required", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      if (!newPassword) {
+        throw new ApiError("Please provide password", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      const currentTime = new Date();
+      const expirationTime = new Date(expiresAt as string);
+      if (currentTime > expirationTime) {
+        throw new ApiError("The token has expired", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      let userId;
+      try {
+        userId = decrypt(token as string);
+      } catch (error) {
+        throw new ApiError(
+          "Invalid or tampered token",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+
+      if (!userId) {
+        throw new ApiError("Invalid token", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      const user = await this.usersRepo.findOne({ where: { id: userId } });
+
+      if (!user) {
+        throw new ApiError("User not found", HTTP_STATUS.NOT_FOUND);
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+      user.password = hashedPassword;
+      await this.usersRepo.save(user);
+
+
+      res.status(HTTP_STATUS.OK).json(
+        handleResponse("Password reset successfully", {
+          id: user.id,
+          email: user.email,
+        })
+      );
+
+    }
+    catch (error) {
+      logger.error(
+        `AuthController :: resetPassword :: "${(error as Error)?.message}"`
+      );
+      return next(error);
+    }
+  }
+
+
+
 }

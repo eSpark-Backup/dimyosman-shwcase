@@ -2,6 +2,7 @@ import { SendMailOptions, createTransport } from "nodemailer";
 import { MAILER_CONFIG } from "../config";
 import { logger } from "../utils";
 import { changeEmailAddress } from "../templates";
+import { forgotPassword } from "../templates";
 
 const transporter = createTransport({
   service: MAILER_CONFIG.service,
@@ -35,6 +36,22 @@ class MailService {
       from: MAILER_CONFIG.from,
       to: userData?.newEmail,
       subject: "Confirm Email Change",
+      html: template,
+    };
+    return this.sendMail(mailDetails);
+  }
+
+  forgotPassword(userData: any) {
+    const template = forgotPassword({
+      name: userData?.name,
+      email: userData?.email,
+      link: userData?.link,
+    });
+
+    const mailDetails: SendMailOptions = {
+      from: MAILER_CONFIG.from,
+      to: userData?.email,
+      subject: "Reset Password",
       html: template,
     };
     return this.sendMail(mailDetails);
