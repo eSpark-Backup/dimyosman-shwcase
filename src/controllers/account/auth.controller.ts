@@ -330,10 +330,6 @@ export class AuthController {
 
       const { email } = req.body;
 
-      if (!email) {
-        throw new ApiError("Please provide email", HTTP_STATUS.BAD_REQUEST);
-      }
-
       const user = await this.usersRepo.findOne({ where: { email } });
 
       if (!user) {
@@ -350,8 +346,6 @@ export class AuthController {
       const { token, expiresAt } = generateToken({ userId: user.id, newEmail: email }, '1h');
 
       const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}?expiresAt=${expiresAt}`;
-      console.log(resetLink, "resetLink");
-
 
       await mailService.forgotPassword({
         name: user.name,
@@ -399,7 +393,15 @@ export class AuthController {
         throw new ApiError("The token has expired", HTTP_STATUS.BAD_REQUEST);
       }
 
-      const userId = decrypt(token);
+      let userId;
+      try {
+        userId = decrypt(token as string);
+      } catch (error) {
+        throw new ApiError(
+          "Invalid or tampered token",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
 
       if (!userId) {
         throw new ApiError("Invalid token", HTTP_STATUS.BAD_REQUEST);
