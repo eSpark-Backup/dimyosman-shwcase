@@ -46,8 +46,11 @@ export class AuthValidation {
     countryCode: Joi.string(),
   }).xor("email", "phone");
 
+  static forgotPassword = Joi.object({
+    email: Joi.string().email().required(),
+  });
+
   static passwordReset = Joi.object({
-    password: Joi.string().min(8),
-    token: Joi.string().required(),
+    newPassword: Joi.string().min(8),
   });
 }
