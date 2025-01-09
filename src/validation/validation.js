@@ -45,8 +45,8 @@ export const emailSchema = Yup.object({
   email: Yup.reach(registerSchema, "email"),
 });
 export const passwordSchema = Yup.object({
-  password: Yup.reach(registerSchema, "password"), 
-  conPassword: Yup.reach(registerSchema, "conPassword"), 
+  password: Yup.reach(registerSchema, "password"),
+  conPassword: Yup.reach(registerSchema, "conPassword"),
 });
 export const imageValidationSchema = Yup.object().shape({
   image: Yup.mixed()
