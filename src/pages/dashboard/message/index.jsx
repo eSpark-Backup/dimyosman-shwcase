@@ -90,6 +90,17 @@ const Message = () => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
 
   const { myChat, messages, hasChats } = useSelector((state) => state.chat);
+  const gatherBrandsChatId = () => {
+    return (
+      myChat?.brands?.flatMap((chat) => chat.chats.map((c) => c._id)) || []
+    );
+  };
+
+  const gatherSpacesChatId = () => {
+    return (
+      myChat?.spaces?.flatMap((chat) => chat.chats.map((c) => c._id)) || []
+    );
+  };
 
   const dispatch = useDispatch();
 
@@ -99,10 +110,10 @@ const Message = () => {
     isLoading,
   } = useGetChatsForContactsQuery(
     {
-      chats: myChat?.flatMap((chat) => chat.chats.map((c) => c._id)),
+      chats: [...gatherBrandsChatId(), ...gatherSpacesChatId()],
     },
     {
-      skip: !myChat?.length,
+      skip: !(myChat?.brands?.length || myChat?.spaces?.length), 
     }
   );
 
@@ -112,10 +123,10 @@ const Message = () => {
     isLoading: chatDetailsLoading,
   } = useGetAllChatDetailsQuery(
     {
-      chats: myChat?.flatMap((chat) => chat.chats.map((c) => c._id)),
+      chats: [...gatherBrandsChatId(), ...gatherSpacesChatId()],
     },
     {
-      skip: !myChat?.length,
+      skip: !(myChat?.brands?.length || myChat?.spaces?.length), 
     }
   );
 
@@ -152,84 +163,12 @@ const Message = () => {
   useEffect(() => {
     if (isSuccess && chatDetailsSuccess) {
       if (chatDetailsData && messages) {
-        let newArr = [];
-
-        myChat.forEach((brandObj) => {
-          // Separate sender and receiver chats
-          let senderChats = [];
-          let receiverChats = [];
-
-          // Separate sender and receiver chats based on the isInquiryRole property
-          brandObj.chats.forEach((chat) => {
-            if (chat.isInquiryRole === "sender") {
-              senderChats.push(chat); // Store sender chats
-            } else if (chat.isInquiryRole === "receiver") {
-              receiverChats.push(chat); // Store receiver chats
-            }
-          });
-
-          // Deep clone the brand details to ensure no shared reference issues
-          const clonedBrandDetails = JSON.parse(
-            JSON.stringify(brandObj.brandDetails)
-          );
-
-          // Handle sender chats
-          if (senderChats.length > 0) {
-            let existingSenderBrand = newArr.find(
-              (brand) => brand.brandDetails.id === clonedBrandDetails.id
-            );
-
-            if (!existingSenderBrand) {
-              existingSenderBrand = {
-                hasReceiverChats: false, // Set to true if there are receiver chats
-                brandDetails: clonedBrandDetails, // Add the brand details
-                chats: [], // Initialize an empty chats array
-              };
-
-              // Add the new brand object to newArr for sender chats
-              newArr.push(existingSenderBrand);
-            }
-
-            // Add the sender chats to the existing sender brand object
-            senderChats.forEach((senderChat) => {
-              // Add sender chat to sender brand's chats array
-              existingSenderBrand.chats.push(senderChat);
-            });
-          }
-
-          // Handle receiver chats
-          receiverChats.forEach((receiverChat) => {
-            // Check if this space already has a corresponding receiver object
-            let existingReceiverBrand = newArr.find(
-              (brand) =>
-                brand.brandDetails.id === receiverChat.receiverBrand.id &&
-                brand.chats.some(
-                  (chat) =>
-                    chat.receiverSpace.id === receiverChat.receiverSpace.id
-                )
-            );
-
-            if (!existingReceiverBrand) {
-              // Create a new object for each receiver brand if not already present in newArr
-              existingReceiverBrand = {
-                hasReceiverChats: true, // Receiver brand will always have receiver chats
-                brandDetails: receiverChat.receiverBrand, // Add the receiver brand details
-                chats: [], // Initialize an empty chats array
-                receiverSpace: receiverChat.receiverSpace,
-              };
-
-              // Add the receiver brand object to newArr
-              newArr.push(existingReceiverBrand);
-            }
-
-            // Add the receiver chat to the corresponding receiver brand object
-            existingReceiverBrand.chats.push(receiverChat);
-          });
-        });
+        let newArr = [...myChat.brands, ...myChat.spaces];
 
         let message = newArr.map((el) => {
           return messageBox(el, chatDetailsData, messages);
         });
+
         setAllMessages(message);
       }
     }
@@ -247,11 +186,11 @@ const Message = () => {
   const [selectedChatId, setSelectedChatId] = useState(null);
 
   const handleAccordionChange = (index) => (event, isExpanded) => {
-    setSelectedChatId(allMessages[index]?.messageGroups[0]?.chatId);
+    setSelectedChatId(allMessages[index]?.chatGroups[0]?.chatId);
     setSelectedGroup(() => {
       if (isExpanded) {
         return {
-          messageGroup: allMessages[index]?.messageGroups[0],
+          chatGroup: allMessages[index]?.chatGroups[0],
           group: allMessages[index],
         };
       } else {
@@ -269,7 +208,7 @@ const Message = () => {
       selectedGroup !== null
     ) {
       setSelectedGroup({
-        messageGroup: allMessages[0]?.messageGroups[0],
+        chatGroup: allMessages[0]?.chatGroups[0],
         group: allMessages[0],
       });
     }
@@ -282,7 +221,7 @@ const Message = () => {
       selectedGroup === null
     ) {
       setSelectedGroup({
-        messageGroup: allMessages[0]?.messageGroups[0],
+        chatGroup: allMessages[0]?.chatGroups[0],
         group: allMessages[0],
       });
     } else if (
@@ -291,7 +230,7 @@ const Message = () => {
       expanded !== null
     ) {
       setSelectedGroup({
-        messageGroup: allMessages[expanded]?.messageGroups?.find(
+        chatGroup: allMessages[expanded]?.chatGroups?.find(
           (msg) => msg.id === selectedChatId
         ),
         group: allMessages[expanded],

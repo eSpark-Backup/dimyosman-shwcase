@@ -22,12 +22,12 @@ export function getValue(item, keys) {
 export const formatDate = (date) => {
   if (!(date instanceof Date)) return ""; // Check if the input is a valid Date object
 
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
   const year = date.getFullYear();
 
   return `${day}.${month}.${year}`;
-}
+};
 
 export function useClickOutside(ref, onClickOutside) {
   useEffect(() => {
@@ -38,7 +38,7 @@ export function useClickOutside(ref, onClickOutside) {
     }
 
     document.addEventListener("mousedown", handleClickOutside);
-    
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -47,23 +47,26 @@ export function useClickOutside(ref, onClickOutside) {
 
 export const messageBox = (parentObj, chatDetails, allMessages) => {
   const getParentObject = () => {
-    const isReceiverChats = parentObj?.hasReceiverChats;
-    const details = isReceiverChats ? parentObj?.receiverSpace : parentObj?.brandDetails;
+    const isSpacesChats = parentObj?.spaceDetails;
+   
+    const details = isSpacesChats
+      ? parentObj?.spaceDetails
+      : parentObj?.brandDetails;
 
     return {
-      id: details?.id || '',
-      activity: isReceiverChats ? "space" : "brand",
-      brandName: details?.brandName || details?.spaceName,
-      brandImage: details?.brandImage || details?.spaceImage,
+      parentId: details?.id,
+      parentActivity: isSpacesChats ? "space" : "brand",
+      parentName: details?.brandName || details?.spaceName,
+      parentImage: details?.brandImage || details?.spaceImage,
     };
   };
 
   const getMatchingChatDetails = (chatId) => {
-    return chatDetails?.find(item => item.chat._id === chatId)?.chat || {};
+    return chatDetails?.find((item) => item.chat._id === chatId)?.chat || {};
   };
 
   const getMessagesForChat = (chatId) => {
-    return allMessages.filter(message => message.chat === chatId);
+    return allMessages.filter((message) => message.chat === chatId);
   };
 
   const formatDate = (date) => format(new Date(date), "MM/dd/yy");
@@ -80,37 +83,51 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
     reviews: 12345,
     leases: 12345,
     rating: 5,
-    messageGroups: parentObj?.chats?.map((item) => {
+    chatGroups: parentObj?.chats?.map((item) => {
       const matchingItem = getMatchingChatDetails(item._id);
       const currentChatMessages = getMessagesForChat(item._id);
 
-      const isReceiverChats = parentObj?.hasReceiverChats;
-      const brandName = isReceiverChats ? item?.senderBrand?.brandName : item?.receiverBrand?.brandName;
-      const brandImage = isReceiverChats ? item?.senderBrand?.brandImage : item?.receiverBrand?.brandImage;
-      const creator = isReceiverChats ? item?.senderBrand?.user?.name : item?.receiverBrand?.user?.name;
-      const receiverbrandName = isReceiverChats ? item?.receiverBrand?.brandName : ""
-      const activity = isReceiverChats ? "brand" : "space";
+      const isSpacesChats = parentObj?.spaceDetails;
+
+      const childName = isSpacesChats
+        ? item?.senderBrand?.brandName
+        : item?.receiverSpace?.spaceName;
+      const childImage = isSpacesChats
+        ? item?.senderBrand?.brandImage
+        : item?.receiverSpace?.spaceImage;
+      const creator = isSpacesChats
+        ? item?.senderBrand?.user?.name
+        : item?.receiverBrand?.user?.name;
+      const receiverbrandName = isSpacesChats
+        ? item?.receiverBrand?.brandName
+        : "";
+      const activity = isSpacesChats ? "brand" : "space";
+
 
       return {
         ...item,
         id: item?._id,
         chatId: matchingItem?._id,
         members: matchingItem?.members,
-        brandName,
-        brandImage,
+        childName,
+        childImage,
         receiverbrandName,
         creator,
         chatName: matchingItem?.name,
         activity,
         read: false,
-        date: matchingItem?.createdAt ? formatDate(matchingItem?.createdAt) : '',
-        time: matchingItem?.createdAt ? formatTime(matchingItem?.createdAt) : '',
+        date: matchingItem?.createdAt
+          ? formatDate(matchingItem?.createdAt)
+          : "",
+        time: matchingItem?.createdAt
+          ? formatTime(matchingItem?.createdAt)
+          : "",
         messages: currentChatMessages.map((messageItem) => {
           return {
             ...messageItem,
             id: messageItem?._id,
-            brandName,
-            brandImage,
+            childName,
+            childImage,
             activity: "brand",
             creator: parentObj?.name,
             date: formatDate(messageItem?.createdAt),
