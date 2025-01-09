@@ -248,10 +248,11 @@ export class UserController {
           await uploadService.deleteFile(user.imageKey);
         }
       }
-      await this.usersRepo.update(user.id, {
-        profileImage: imageUrls[0]?.url,
-        imageKey: imageUrls[0]?.public_id,
-      });
+      user.profileImage = imageUrls[0]?.url;
+      user.imageKey = imageUrls[0]?.public_id;
+      await this.usersRepo.save(user);
+      const { password: _, ...userProfile } = user;
+
       const chatUser = await UserForChat.findById(req.user?._id);
       chatUser.avatar = imageUrls[0]?.url;
       await chatUser.save();
@@ -265,7 +266,7 @@ export class UserController {
 
       res
         .status(HTTP_STATUS.OK)
-        .json(handleResponse("User Profile Updated Successfully"));
+        .json(handleResponse("User Profile Updated Successfully", userProfile));
       return next();
     } catch (error) {
       const uploadsPath = path.join(process.cwd(), "uploads");
