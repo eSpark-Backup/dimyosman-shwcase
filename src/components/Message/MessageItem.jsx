@@ -1,3 +1,5 @@
+import { useRef, useEffect } from "react";
+
 import {
   Accordion,
   AccordionDetails,
@@ -5,6 +7,8 @@ import {
   Box,
   Typography,
 } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { isActiveMembers } from "../../store/slices/chat";
 
 const MessageItem = ({
   message,
@@ -15,7 +19,19 @@ const MessageItem = ({
   selectedGroup,
   ActivityType,
   setSelectedChatId,
+  emitEvent,
 }) => {
+  const detailsRef = useRef(null);
+
+  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    if (expanded && detailsRef.current) {
+      detailsRef.current.scrollTop = 0;
+    }
+  }, [expanded]);
+
   return (
     <Accordion
       sx={{
@@ -113,11 +129,14 @@ const MessageItem = ({
       </AccordionSummary>
 
       <AccordionDetails
+        ref={detailsRef}
         sx={{
           padding: 1,
           display: "flex",
           flexDirection: "column",
           gap: 1,
+          maxHeight: "300px",
+          overflowY: "auto",
         }}
       >
         {message?.messageGroups?.length
@@ -138,6 +157,15 @@ const MessageItem = ({
                     borderRadius: "3px",
                   }}
                   onClick={() => {
+                    const obj = {
+                      userId: user.userChatId,
+                      members: el?.members,
+                    };
+                    console.log(obj)
+                    console.log(obj.members)
+                    dispatch(isActiveMembers(obj.members));
+                    emitEvent("CHAT_JOINED", obj);
+
                     setSelectedChatId(el?.chatId);
                     setSelectedGroup({ messageGroup: el, group: message });
                   }}
@@ -151,18 +179,51 @@ const MessageItem = ({
                       position: "relative",
                     }}
                   >
-                    { (el?.receiverSpace?.spaceImage || el?.senderBrand?.brandImage) ? (
-                      <img
-                        src={el?.isInquiryRole === 'sender' ?  el?.receiverSpace?.spaceImage : el?.senderBrand?.brandImage}
-                        alt="Message Icon"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          borderRadius: "5px",
-                          border: "1px solid rgba(209, 219, 215, 0.4)",
-                        }}
-                      />
+                    {el?.receiverSpace?.spaceImage ||
+                    el?.senderBrand?.brandImage ? (
+                      <Box sx={{ position: "relative", height: "100%" }}>
+                        <img
+                          src={
+                            el?.isInquiryRole === "sender"
+                              ? el?.receiverSpace?.spaceImage
+                              : el?.senderBrand?.brandImage
+                          }
+                          alt="Message Icon"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            borderRadius: "5px",
+                            border: "1px solid rgba(209, 219, 215, 0.4)",
+                          }}
+                        />
+                        {el.isActive && (
+                          <Box
+                            sx={{
+                              width: "10px",
+                              height: "10px",
+                              borderRadius: "50%",
+                              backgroundColor: "#00FF00",
+                              position: "absolute",
+                              top: "-4px",
+                              right: "-3px",
+                            }}
+                          />
+                        )}
+                        {/* {!el.isActive && (
+                          <Box
+                            sx={{
+                              width: "10px",
+                              height: "10px",
+                              borderRadius: "50%",
+                              backgroundColor: "#B0B0B0",
+                              position: "absolute",
+                              top: "-4px",
+                              right: "-3px",
+                            }}
+                          />
+                        )} */}
+                      </Box>
                     ) : (
                       <Box
                         sx={{
@@ -194,7 +255,9 @@ const MessageItem = ({
                         textAlign: "left",
                       }}
                     >
-                      {el?.isInquiryRole === 'sender' ?  el?.receiverSpace?.spaceName : el?.senderBrand?.brandName}
+                      {el?.isInquiryRole === "sender"
+                        ? el?.receiverSpace?.spaceName
+                        : el?.senderBrand?.brandName}
                       {/* {el?.receiverSpace?.spaceName} */}
                     </Typography>
 

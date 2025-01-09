@@ -32,7 +32,7 @@ import {
   useGetChatsForContactsQuery,
   useGetAllChatDetailsQuery,
 } from "../../../services/chats.js";
-import { getMessages } from "../../../store/slices/chat.js";
+import { getChatDetails, getMessages, isActiveMembers } from "../../../store/slices/chat.js";
 import { useSocket } from "../../../context/SocketContext.jsx";
 import { messageBox } from "../../../utils/index.js";
 
@@ -89,10 +89,47 @@ const Message = () => {
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
 
-  const { myChat, messages, hasChats } = useSelector((state) => state.chat);
+  const { emitEvent, addListener, removeListener } = useSocket();
+
+  const { myChat, messages, chatDetails, hasChats } = useSelector(
+    (state) => state.chat
+  );
   const { user } = useSelector((state) => state.auth);
+  const allMyChatIds =
+    myChat?.flatMap((chat) => chat.chats.map((c) => c._id)) || [];
 
   const dispatch = useDispatch();
+
+  const [isNewIdsForChatDetails, setIsNewIdsForChatDetails] = useState([]);
+  const [isNewIdsForAllMessages, setIsNewIdsForAllMessages] = useState([]);
+  const [fetchedChatIds, setFetchedChatIds] = useState(new Set());
+  const [fetchedMessageIds, setFetchedMessageIds] = useState(new Set());
+
+  useEffect(() => {
+    const existingDetailsIds = chatDetails.map((item) => item._id);
+    const newIdsForDetails = allMyChatIds.filter(
+      (id) => !existingDetailsIds.includes(id) && !fetchedChatIds.has(id)
+    );
+
+    if (newIdsForDetails.length) {
+      setIsNewIdsForChatDetails(newIdsForDetails);
+    } else {
+      setIsNewIdsForChatDetails([]);
+    }
+  }, [myChat, chatDetails, fetchedChatIds]);
+
+  useEffect(() => {
+    const existingMessagesIds = messages.map((item) => item.chat);
+    const newIdsForMessages = allMyChatIds.filter(
+      (id) => !existingMessagesIds.includes(id) && !fetchedMessageIds.has(id)
+    );
+
+    if (newIdsForMessages.length) {
+      setIsNewIdsForAllMessages(newIdsForMessages);
+    } else {
+      setIsNewIdsForAllMessages([]);
+    }
+  }, [myChat, messages, fetchedMessageIds]);
 
   const {
     data: messageData,
@@ -100,7 +137,7 @@ const Message = () => {
     isLoading,
   } = useGetChatsForContactsQuery(
     {
-      chats: myChat?.flatMap((chat) => chat.chats.map((c) => c._id)),
+      chats: isNewIdsForAllMessages,
     },
     {
       skip: !myChat?.length,
@@ -113,7 +150,7 @@ const Message = () => {
     isLoading: chatDetailsLoading,
   } = useGetAllChatDetailsQuery(
     {
-      chats: myChat?.flatMap((chat) => chat.chats.map((c) => c._id)),
+      chats: isNewIdsForChatDetails,
     },
     {
       skip: !myChat?.length,
@@ -123,27 +160,62 @@ const Message = () => {
   const [allMessages, setAllMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isTypingUser, setIsTypingUser] = useState(null);
-  const [messageAlert, setMessageAlert] = useState(null);
 
   const [expanded, setExpanded] = useState(0);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedChatId, setSelectedChatId] = useState(null);
+  const [initialChatId, setInitialChatId] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState([]);
 
   useEffect(() => {
-    if (
-      messageData &&
-      !messageData.includes(undefined) &&
-      messageData?.length
-    ) {
+    if (messageData && messageData?.length) {
       const filteredMessages = messageData
-        ?.map((message) => message?.messages)
-        ?.flat();
+        .map((message) => message?.messages)
+        .flat();
 
-      dispatch(getMessages(filteredMessages));
+      // Get existing message IDs from the current state
+      const existingMessageIds = messages.map((message) => message.chat);
+
+      // Filter new messages that are not already in the current state
+      const newMessages = filteredMessages.filter(
+        (message) => !existingMessageIds.includes(message.chat)
+      );
+
+      // Dispatch only new messages to add them to the state
+      if (newMessages.length > 0) {
+        dispatch(getMessages([...messages, ...newMessages]));
+        newMessages.forEach((msg) => {
+          setFetchedMessageIds((prev) => new Set(prev).add(msg.chat)); // Mark as fetched
+        });
+      } else {
+        dispatch(getMessages(filteredMessages));
+      }
     }
-  }, [messageData, isSuccess, myChat]);
+  }, [messageData, isSuccess]);
 
-  const { emitEvent, addListener, removeListener } = useSocket();
+  useEffect(() => {
+    if (chatDetailsData && chatDetailsData?.length) {
+      const filteredChat = chatDetailsData?.map((chat) => chat?.chat);
+
+      // Get existing chat IDs from the current state
+      const existingChatIds = chatDetails.map((chat) => chat._id);
+
+      // Filter new chats that are not already in the current state
+      const newChats = filteredChat.filter(
+        (chat) => !existingChatIds.includes(chat._id)
+      );
+
+      // Dispatch only new chats to add them to the state
+      if (newChats.length > 0) {
+        dispatch(getChatDetails([...chatDetails, ...newChats]));
+        newChats.forEach((chat) => {
+          setFetchedChatIds((prev) => new Set(prev).add(chat._id)); // Mark as fetched
+        });
+      } else {
+        dispatch(getChatDetails(filteredChat));
+      }
+    }
+  }, [chatDetailsData, chatDetailsSuccess]);
 
   useEffect(() => {
     addListener("NEW_MESSAGE", (data) => {
@@ -152,11 +224,40 @@ const Message = () => {
       dispatch(getMessages([...messages, data.message]));
     });
 
-    // addListener("NEW_MESSAGE_ALERT", (data) => {
-    //   console.log("NEW_MESSAGE_ALERT EVENT TRIGGERED.");
+    addListener("NEW_MESSAGE_ALERT", (data) => {
+      console.log("NEW_MESSAGE_ALERT EVENT TRIGGERED.", data);
 
-    //   setMessageAlert(data.chatId);
-    // });
+      // if (
+      //   allMessages.length &&
+      //   data.chatId !== (initialChatId || selectedChatId)
+      // ) {
+      //   const updateRead = allMessages?.map((msg) => {
+      //     const findGroup = msg.messageGroups.findIndex(
+      //       (group) => group._id === data.chatId
+      //     );
+
+      //     if (findGroup !== -1) {
+      //       return {
+      //         ...msg,
+      //         read: true,
+      //         messageGroups: msg.messageGroups.map((group, index) => {
+      //           if (index === findGroup) {
+      //             return {
+      //               ...group,
+      //               read: true,
+      //             };
+      //           }
+      //           return group;
+      //         }),
+      //       };
+      //     } else {
+      //       return msg;
+      //     }
+      //   });
+
+      //   setAllMessages(updateRead);
+      // }
+    });
 
     return () => {
       removeListener("NEW_MESSAGE");
@@ -265,7 +366,7 @@ const Message = () => {
         });
 
         let message = newArr.map((el) => {
-          return messageBox(el, chatDetailsData, messages);
+          return messageBox(el, chatDetails, messages);
         });
         setAllMessages(message);
       }
@@ -277,28 +378,103 @@ const Message = () => {
     messages,
     isSuccess,
     chatDetailsSuccess,
+    chatDetails,
   ]);
 
+  useEffect(() => {
+    addListener("ONLINE_USERS", (data) => {
+      console.log("ONLINE_USERS EVENT TRIGGERED.",data);
+
+      const filterCurrentUser = data?.filter((acc) => acc !== user?.userChatId);
+
+      if (allMessages?.length > 0 && filterCurrentUser?.length > 0) {
+      console.log(allMessages?.length > 0 && filterCurrentUser?.length > 0);
+
+        const updatedMessages = allMessages.map((messageGroup) => {
+          return {
+            ...messageGroup,
+            messageGroups: messageGroup.messageGroups.map((group) => {
+              const findOppositeUser = group.members?.find(
+                (member) => member !== user?.userChatId
+              );
+
+              // Check if it's a receiver chat or sender chat
+              if (messageGroup.isReceiverChats) {
+                // If the current user is the sender, mark sender as active
+                if (filterCurrentUser.includes(findOppositeUser)) {
+                  return {
+                    ...group,
+                    isActive: true,
+                  };
+                } else {
+                  return {
+                    ...group,
+                    isActive: false,
+                  };
+                }
+              } else {
+                // If the current user is the receiver, mark receiver as active
+                if (filterCurrentUser.includes(findOppositeUser)) {
+                  return {
+                    ...group,
+                    isActive: true,
+                  };
+                } else {
+                  return {
+                    ...group,
+                    isActive: false,
+                  };
+                }
+              }
+            }),
+          };
+        });
+        setAllMessages(updatedMessages);
+        setOnlineUsers(filterCurrentUser);
+      }
+    });
+
+    return () => {
+      removeListener("ONLINE_USERS");
+    };
+  }, [addListener, removeListener, selectedGroup]);
+
   const handleAccordionChange = (index) => (event, isExpanded) => {
-    const selectedGroup = isExpanded
-      ? {
-          messageGroup: allMessages[index]?.messageGroups[0],
-          group: allMessages[index],
-        }
-      : null;
+    const selectedGroup = {
+      messageGroup: allMessages[index]?.messageGroups[0],
+      group: allMessages[index],
+    };
+
+    const obj = {
+      userId: user.userChatId,
+      members: allMessages[index]?.messageGroups[0]?.members,
+    };
+
+    if (index !== expanded) {
+      dispatch(isActiveMembers(obj.members))
+      emitEvent("CHAT_JOINED", obj);
+    }
 
     setSelectedChatId(allMessages[index]?.messageGroups[0]?.chatId);
     setSelectedGroup(selectedGroup);
-    setExpanded(isExpanded ? index : null);
+    setExpanded(index);
   };
 
   useEffect(() => {
     if (allMessages.length) {
       if (selectedChatId === null && selectedGroup === null) {
+        setInitialChatId(allMessages[0]?.messageGroups[0]?._id);
         setSelectedGroup({
           messageGroup: allMessages[0]?.messageGroups[0],
           group: allMessages[0],
         });
+
+        const obj = {
+          userId: user.userChatId,
+          members: allMessages[0]?.messageGroups[0]?.members,
+        };
+        dispatch(isActiveMembers(obj.members))
+        emitEvent("CHAT_JOINED", obj);
       }
 
       if (selectedChatId !== null && expanded !== null) {
@@ -308,11 +484,30 @@ const Message = () => {
         );
 
         if (messageGroup) {
+          setInitialChatId(null);
           setSelectedGroup({ messageGroup, group });
         }
       }
     }
   }, [allMessages, selectedChatId, expanded, messages]);
+
+    // useEffect(() => {
+    //   if (
+    //     selectedGroup &&
+    //     selectedGroup.group &&
+    //     selectedGroup.group.messageGroups
+    //   ) {
+    //     const obj = {
+    //       userId: user.userChatId,
+    //       members: allMessages[expanded]?.messageGroups[0]?.members,
+    //     };
+
+    //     return () => {
+    //       emitEvent("CHAT_LEFT", obj);
+    //       setOnlineUsers([]);
+    //     };
+    //   }
+    // }, []);
 
   if (isLoading || chatDetailsLoading) {
     return (
@@ -403,6 +598,7 @@ const Message = () => {
                     selectedGroup={selectedGroup}
                     ActivityType={ActivityType}
                     setSelectedChatId={setSelectedChatId}
+                    emitEvent={emitEvent}
                   />
                 ))}
               </Box>

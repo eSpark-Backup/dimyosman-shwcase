@@ -55,11 +55,12 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
       activity: isReceiverChats ? "space" : "brand",
       brandName: details?.brandName || details?.spaceName,
       brandImage: details?.brandImage || details?.spaceImage,
+      isReceiverChats
     };
   };
 
   const getMatchingChatDetails = (chatId) => {
-    return chatDetails?.find(item => item.chat._id === chatId)?.chat || {};
+    return chatDetails?.find(item => item._id === chatId) || {};
   };
 
   const getMessagesForChat = (chatId) => {
@@ -105,6 +106,7 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
         read: false,
         date: matchingItem?.createdAt ? formatDate(matchingItem?.createdAt) : '',
         time: matchingItem?.createdAt ? formatTime(matchingItem?.createdAt) : '',
+        isActive: false,
         messages: currentChatMessages.map((messageItem) => {
           return {
             ...messageItem,

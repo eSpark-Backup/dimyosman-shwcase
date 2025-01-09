@@ -47,7 +47,8 @@ import { createContext, useContext, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { io } from "socket.io-client";
 import { useGetMyChatsQuery } from "../services/chats";
-import { getMessages, getMyChat, isUserHasChat } from "../store/slices/chat";
+import { emptyActiveMembers, getMessages, getMyChat, isUserHasChat } from "../store/slices/chat";
+import { useLocation } from "react-router-dom";
 
 const SocketContext = createContext(null);
 
@@ -58,16 +59,17 @@ const useSocket = () => {
 const SocketProvider = ({ children }) => {
   const socket = useRef(null);
   const { user } = useSelector((state) => state.auth);
-  const { messages } = useSelector((state) => state.chat);
+  const { activeMembers } = useSelector((state) => state.chat);
   const { data, isSuccess, isError, error, refetch } = useGetMyChatsQuery(
     undefined,
     { skip: !user }
   );
+  const { pathname } = useLocation();
   const dispatch = useDispatch();
 
   useEffect(() => {
     if (isSuccess && data) {
-      if(data.chats && Array.isArray(data.chats)) {
+      if (data.chats && Array.isArray(data.chats)) {
         dispatch(isUserHasChat("empty"));
       }
 
@@ -101,7 +103,7 @@ const SocketProvider = ({ children }) => {
         console.log("REFETCH_CHAT EVENT TRIGGERED.");
         refetch();
       });
-      
+
       socket.current.on("NEW_REQUEST", () => {
         console.log("NEW_REQUEST EVENT TRIGGERED.");
         refetch();
@@ -142,8 +144,26 @@ const SocketProvider = ({ children }) => {
     }
   };
 
+  useEffect(() => {
+    console.log(pathname !== "/message" && activeMembers?.length > 0);
+
+    if (pathname !== "/message" && activeMembers?.length > 0) {
+      const obj = {
+        userId: user.userChatId,
+        members: activeMembers,
+      };
+
+      console.log(obj);
+      socket.current.emit("CHAT_LEFT", obj);
+      
+      dispatch(emptyActiveMembers())
+    }
+  }, [pathname, activeMembers]);
+
   return (
-    <SocketContext.Provider  value={{ socket: socket.current, emitEvent, addListener, removeListener }}>
+    <SocketContext.Provider
+      value={{ socket: socket.current, emitEvent, addListener, removeListener }}
+    >
       {children}
     </SocketContext.Provider>
   );

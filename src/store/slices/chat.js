@@ -2,9 +2,10 @@ import { createSlice, current } from "@reduxjs/toolkit";
 
 const initialState = {
   myChat: [],
-  chatDetails: {},
+  chatDetails: [],
   messages: [],
   hasChats: "",
+  activeMembers: [],
 };
 
 const slice = createSlice({
@@ -24,8 +25,15 @@ const slice = createSlice({
     removeMychat(state) {
       state.myChat = [];
     },
-    isUserHasChat(state,action) {
+    isUserHasChat(state, action) {
       state.hasChats = action.payload;
+    },
+    isActiveMembers(state, action) {
+      console.log(action.payload)
+      state.activeMembers = action.payload;
+    },
+    emptyActiveMembers(state, action) {
+      state.activeMembers = [];
     },
   },
 });
@@ -36,6 +44,8 @@ export const {
   getMessages,
   removeMychat,
   isUserHasChat,
+  isActiveMembers,
+  emptyActiveMembers
 } = slice.actions;
 
 export default slice.reducer;
