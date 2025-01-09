@@ -5,6 +5,8 @@ import { Repository } from "typeorm";
 import { decrypt, generateToken, handleResponse, logger } from "../../utils";
 import { CLOUD_FOLDERS, HTTP_STATUS } from "../../constants";
 import jwt from "jsonwebtoken";
+import { UserForChat } from "../../models";
+
 import bcrypt from "bcryptjs";
 import {
   EventDate,
@@ -219,9 +221,9 @@ export class UserController {
       const imageUrls = (
         imageFileObjects?.length > 0
           ? await uploadService.uploadMultipleFiles(
-            imageFileObjects,
-            FolderName
-          )
+              imageFileObjects,
+              FolderName
+            )
           : [{ url: oldUserImage }]
       ) as UploadResult[];
 
@@ -234,6 +236,9 @@ export class UserController {
         profileImage: imageUrls[0]?.url,
         imageKey: imageUrls[0]?.public_id,
       });
+      const chatUser = await UserForChat.findById(req.user?._id);
+      chatUser.avatar = imageUrls[0]?.url;
+      await chatUser.save();
       const uploadsPath = path.join(process.cwd(), "uploads");
       const files = fs.readdirSync(uploadsPath);
 
@@ -287,6 +292,10 @@ export class UserController {
         ...rest,
         ...(name && { name }),
       };
+
+      const chatUser = await UserForChat.findById(req.user?._id);
+      chatUser.name = name;
+      await chatUser.save();
 
       const updatedUser = await this.usersRepo.save(updatedData);
 
