@@ -2,7 +2,13 @@ import { NextFunction, Request, RequestHandler, Response } from "express";
 import { Events, User } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { decrypt, generateToken, handleResponse, logger } from "../../utils";
+import {
+  decrypt,
+  generateToken,
+  handleResponse,
+  logger,
+  verifyToken,
+} from "../../utils";
 import { CLOUD_FOLDERS, HTTP_STATUS } from "../../constants";
 import jwt from "jsonwebtoken";
 import { UserForChat } from "../../models";
@@ -19,6 +25,7 @@ import fs from "fs";
 import path from "path";
 import { commonHelper } from "../../helpers";
 import { mailService, uploadService } from "../../services";
+import { json } from "stream/consumers";
 export class UserController {
   constructor(
     private usersRepo: Repository<User>,
@@ -48,9 +55,15 @@ export class UserController {
         throw new ApiError("The token has expired", HTTP_STATUS.BAD_REQUEST);
       }
 
-      let payload;
+      let payload: {
+        userId: string;
+        newEmail: string;
+      };
       try {
-        payload = decrypt(token as string);
+        payload = verifyToken(token as string) as {
+          userId: string;
+          newEmail: string;
+        };
       } catch (error) {
         throw new ApiError(
           "Invalid or tampered token",
@@ -58,7 +71,9 @@ export class UserController {
         );
       }
 
-      const user = await this.usersRepo.findOne({ where: { id: payload } });
+      const user = await this.usersRepo.findOne({
+        where: { id: payload.userId },
+      });
       if (!user) {
         throw new ApiError("User not found", HTTP_STATUS.NOT_FOUND);
       }
@@ -70,6 +85,7 @@ export class UserController {
       }
       user.emailLinkExpire = null;
       user.isVerified = true;
+      user.email = payload.newEmail;
       await this.usersRepo.save(user);
 
       res.status(HTTP_STATUS.OK).json({
@@ -114,7 +130,7 @@ export class UserController {
 
       const { token, expiresAt } = generateToken({ userId, newEmail }, "1h");
 
-      const link = `${process.env.FRONTEND_URL}/confirm-email?token=${token}&expiresAt=${expiresAt}`;
+      const link = `${process.env.FRONTEND_URL}confirm-email?token=${token}&expiresAt=${expiresAt}`;
 
       await mailService.changeEmailAddress({
         name: user.name,
@@ -122,8 +138,8 @@ export class UserController {
         newEmail,
         link,
       });
-      user.email = newEmail;
-      user.isVerified = false;
+      // user.email = newEmail;
+      // user.isVerified = false;
       user.emailLinkExpire = expiresAt;
       const updatedUser = await this.usersRepo.save(user);
 

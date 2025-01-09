@@ -5,6 +5,7 @@ export const getOtherMember = (members: any[] = [], userId: any) => {
 };
 
 export const getSockets = (users: any[] = []) => {
+  if (!users.length) return [];
   const sockets = users.map((user) => userSocketIDs.get(user.toString()));
 
   return sockets;

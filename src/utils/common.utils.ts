@@ -155,7 +155,7 @@ export const generateToken = (
   expirationDate.setTime(expirationDate.getTime() + expirationTime);
 
   // Generate a random token
-  const token = encrypt(payload.userId);
+  const token = encrypt(JSON.stringify(payload));
 
   // Combine token with user data and expiration time (this will be your payload)
   const payloadWithExpiration = {
@@ -174,12 +174,6 @@ export const verifyToken = (token: string) => {
 
   // Extract the expiration date from the payload
   const payload = JSON.parse(decryptedToken);
-  const expiresAt = new Date(payload.expiresAt);
-
-  // Check if the token has expired
-  if (expiresAt.getTime() < Date.now()) {
-    return null;
-  }
 
   return payload;
 };

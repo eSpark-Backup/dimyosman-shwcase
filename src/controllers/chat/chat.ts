@@ -25,7 +25,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
   if (chats.length < 1) {
     return res.status(200).json({
       success: true,
-      chats: [],
+      chats: { brands: [], spaces: [] },
     });
   }
 
@@ -50,7 +50,6 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
           ? await brandRepository
               .createQueryBuilder("brand")
               .where("brand.id = :id", { id: receiverBrand })
-              // .select(["brand.id", "brand.brandName", "brand.brandImage"])
               .leftJoinAndSelect("brand.user", "user")
               .select([
                 "brand.id",
@@ -82,7 +81,15 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
           ? await spaceRepository
               .createQueryBuilder("space")
               .where("space.id = :id", { id: receiverSpace })
-              .select(["space.id", "space.spaceName", "space.spaceImage"])
+              .leftJoinAndSelect("space.user", "user")
+              .select([
+                "space.id",
+                "space.spaceName",
+                "space.spaceImage",
+                "user.id",
+                "user.name",
+                "user.userChatId",
+              ])
               .getOne()
           : null;
 
@@ -111,54 +118,72 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
     )
   );
 
-  const groupedByUser = transformedChats.reduce((acc: any, chat: any) => {
-    // Determine if the logged-in user is the sender or receiver
-    const isSender = chat.senderBrand?.user?.userChatId === req.socketUserId;
-    const isReceiver =
-      chat.receiverBrand?.user?.userChatId === req.socketUserId;
+  const groupedByUser = transformedChats.reduce(
+    (acc: any, chat: any) => {
+      // Determine if the logged-in user is the sender or receiver
+      const isSender = chat.senderBrand?.user?.userChatId === req.socketUserId;
+      const isReceiver =
+        chat.receiverBrand?.user?.userChatId === req.socketUserId;
 
-    // Use the appropriate key based on the logged-in user's role in the chat
-    const userRoleKey = isSender
-      ? chat.senderBrand?.id || "unknown_sender"
-      : isReceiver
-      ? chat.receiverBrand?.id || "unknown_receiver"
-      : "unknown";
+      // Handle brands
+      const userRoleKey = isSender
+        ? chat.senderBrand?.id || "unknown_sender"
+        : isReceiver
+        ? chat.receiverBrand?.id || "unknown_receiver"
+        : "unknown";
 
-    // Initialize the entry for this userRoleKey if not already present
-    if (!acc[userRoleKey]) {
-      acc[userRoleKey] = {
-        brandDetails: isSender
-          ? chat.senderBrand || {
-              id: "unknown_sender",
-              brandName: "Unknown Sender Brand",
-              brandImage: null,
-            }
-          : isReceiver
-          ? chat.receiverBrand || {
-              id: "unknown_receiver",
-              brandName: "Unknown Receiver Brand",
-              brandImage: null,
-            }
-          : {
-              id: "unknown",
-              brandName: "Unknown Brand",
-              brandImage: null,
+      if (!isReceiver) {
+        if (!acc.brands[userRoleKey]) {
+          acc.brands[userRoleKey] = {
+            brandDetails: isSender
+              ? chat.senderBrand || {
+                  id: "unknown_sender",
+                  brandName: "Unknown Sender Brand",
+                  brandImage: null,
+                }
+              : {
+                  id: "unknown",
+                  brandName: "Unknown Brand",
+                  brandImage: null,
+                },
+            chats: [],
+          };
+        }
+        acc.brands[userRoleKey].chats.push({
+          ...chat,
+          isInquiryRole: isSender ? "sender" : "unknown", // Inquiry role only applies for brands
+        });
+      }
+
+      // Handle spaces
+      if (chat.receiverSpace?.user?.userChatId === req.socketUserId) {
+        const spaceKey = chat.receiverSpace?.id || "unknown_space";
+
+        if (!acc.spaces[spaceKey]) {
+          acc.spaces[spaceKey] = {
+            spaceDetails: chat.receiverSpace || {
+              id: "unknown_space",
+              spaceName: "Unknown Space",
+              spaceImage: null,
             },
-        chats: [],
-      };
-    }
+            chats: [],
+          };
+        }
 
-    acc[userRoleKey].chats.push({
-      ...chat,
-      isInquiryRole: isSender ? "sender" : isReceiver ? "receiver" : "unknown", // Add the inquiry role
-    });
+        acc.spaces[spaceKey].chats.push(chat);
+      }
 
-    return acc;
-  }, {});
+      return acc;
+    },
+    { brands: {}, spaces: {} }
+  );
 
   // Format the grouped data for response
   const formattedData = {
-    brands: Object.values(groupedByUser).map((group: any) => ({
+    brands: Object.values(groupedByUser.brands).map((group: any) => ({
+      ...group,
+    })),
+    spaces: Object.values(groupedByUser.spaces).map((group: any) => ({
       ...group,
     })),
   };

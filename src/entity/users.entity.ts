@@ -55,6 +55,9 @@ export class User extends BaseEntity {
   @Column({ type: "varchar", length: 100, nullable: true })
   emailLinkExpire: string;
 
+  @Column({ type: "varchar", length: 100, nullable: true })
+  passwordResetExpire: string;
+
   @Column({ type: "varchar", length: 50, nullable: true, default: "user" })
   role: string;
   @Column({
