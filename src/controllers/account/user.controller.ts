@@ -2,9 +2,17 @@ import { NextFunction, Request, RequestHandler, Response } from "express";
 import { Events, User } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { decrypt, generateToken, handleResponse, logger } from "../../utils";
+import {
+  decrypt,
+  generateToken,
+  handleResponse,
+  logger,
+  verifyToken,
+} from "../../utils";
 import { CLOUD_FOLDERS, HTTP_STATUS } from "../../constants";
 import jwt from "jsonwebtoken";
+import { UserForChat } from "../../models";
+
 import bcrypt from "bcryptjs";
 import {
   EventDate,
@@ -17,6 +25,7 @@ import fs from "fs";
 import path from "path";
 import { commonHelper } from "../../helpers";
 import { mailService, uploadService } from "../../services";
+import { json } from "stream/consumers";
 export class UserController {
   constructor(
     private usersRepo: Repository<User>,
@@ -46,9 +55,15 @@ export class UserController {
         throw new ApiError("The token has expired", HTTP_STATUS.BAD_REQUEST);
       }
 
-      let payload;
+      let payload: {
+        userId: string;
+        newEmail: string;
+      };
       try {
-        payload = decrypt(token as string);
+        payload = verifyToken(token as string) as {
+          userId: string;
+          newEmail: string;
+        };
       } catch (error) {
         throw new ApiError(
           "Invalid or tampered token",
@@ -56,7 +71,9 @@ export class UserController {
         );
       }
 
-      const user = await this.usersRepo.findOne({ where: { id: payload } });
+      const user = await this.usersRepo.findOne({
+        where: { id: payload.userId },
+      });
       if (!user) {
         throw new ApiError("User not found", HTTP_STATUS.NOT_FOUND);
       }
@@ -68,6 +85,7 @@ export class UserController {
       }
       user.emailLinkExpire = null;
       user.isVerified = true;
+      user.email = payload.newEmail;
       await this.usersRepo.save(user);
 
       res.status(HTTP_STATUS.OK).json({
@@ -112,7 +130,7 @@ export class UserController {
 
       const { token, expiresAt } = generateToken({ userId, newEmail }, "1h");
 
-      const link = `${process.env.FRONTEND_URL}/confirm-email?token=${token}&expiresAt=${expiresAt}`;
+      const link = `${process.env.FRONTEND_URL}confirm-email?token=${token}&expiresAt=${expiresAt}`;
 
       await mailService.changeEmailAddress({
         name: user.name,
@@ -120,8 +138,8 @@ export class UserController {
         newEmail,
         link,
       });
-      user.email = newEmail;
-      user.isVerified = false;
+      // user.email = newEmail;
+      // user.isVerified = false;
       user.emailLinkExpire = expiresAt;
       const updatedUser = await this.usersRepo.save(user);
 
@@ -219,9 +237,9 @@ export class UserController {
       const imageUrls = (
         imageFileObjects?.length > 0
           ? await uploadService.uploadMultipleFiles(
-            imageFileObjects,
-            FolderName
-          )
+              imageFileObjects,
+              FolderName
+            )
           : [{ url: oldUserImage }]
       ) as UploadResult[];
 
@@ -230,10 +248,14 @@ export class UserController {
           await uploadService.deleteFile(user.imageKey);
         }
       }
-      await this.usersRepo.update(user.id, {
-        profileImage: imageUrls[0]?.url,
-        imageKey: imageUrls[0]?.public_id,
-      });
+      user.profileImage = imageUrls[0]?.url;
+      user.imageKey = imageUrls[0]?.public_id;
+      await this.usersRepo.save(user);
+      const { password: _, ...userProfile } = user;
+
+      const chatUser = await UserForChat.findById(req.user?._id);
+      chatUser.avatar = imageUrls[0]?.url;
+      await chatUser.save();
       const uploadsPath = path.join(process.cwd(), "uploads");
       const files = fs.readdirSync(uploadsPath);
 
@@ -244,7 +266,7 @@ export class UserController {
 
       res
         .status(HTTP_STATUS.OK)
-        .json(handleResponse("User Profile Updated Successfully"));
+        .json(handleResponse("User Profile Updated Successfully", userProfile));
       return next();
     } catch (error) {
       const uploadsPath = path.join(process.cwd(), "uploads");
@@ -287,6 +309,10 @@ export class UserController {
         ...rest,
         ...(name && { name }),
       };
+
+      const chatUser = await UserForChat.findById(req.user?._id);
+      chatUser.name = name;
+      await chatUser.save();
 
       const updatedUser = await this.usersRepo.save(updatedData);
 

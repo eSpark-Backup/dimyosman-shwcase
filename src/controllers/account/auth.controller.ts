@@ -21,7 +21,7 @@ const cookieOptions: {
 };
 
 export class AuthController {
-  constructor(private usersRepo: Repository<User>) { }
+  constructor(private usersRepo: Repository<User>) {}
 
   async registerUser(
     req: Request,
@@ -320,14 +320,12 @@ export class AuthController {
     }
   }
 
-  
   async forgotPassword(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
-
       const { email } = req.body;
 
       const user = await this.usersRepo.findOne({ where: { email } });
@@ -343,14 +341,19 @@ export class AuthController {
         );
       }
 
-      const { token, expiresAt } = generateToken({ userId: user.id, newEmail: email }, '1h');
+      const { token, expiresAt } = generateToken(
+        { userId: user.id, newEmail: email },
+        "1h"
+      );
 
-      const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}?expiresAt=${expiresAt}`;
+      const resetLink = `${process.env.FRONTEND_URL}reset-password?token=${token}&expiresAt=${expiresAt}`;
+      user.passwordResetExpire = expiresAt;
+      await this.usersRepo.save(user);
 
       await mailService.forgotPassword({
         name: user.name,
         email: email,
-        link: resetLink
+        link: resetLink,
       });
 
       res.status(HTTP_STATUS.OK).json(
@@ -359,9 +362,7 @@ export class AuthController {
           email: user.email,
         })
       );
-
-    }
-    catch (error) {
+    } catch (error) {
       logger.error(
         `AuthController :: forgotPassword :: "${(error as Error)?.message}"`
       );
@@ -369,7 +370,6 @@ export class AuthController {
     }
   }
 
-  
   async resetPassword(
     req: Request,
     res: Response,
@@ -380,7 +380,10 @@ export class AuthController {
       const { newPassword } = req.body;
 
       if (!token || !expiresAt) {
-        throw new ApiError("Token and expiration time are required", HTTP_STATUS.BAD_REQUEST);
+        throw new ApiError(
+          "Token and expiration time are required",
+          HTTP_STATUS.BAD_REQUEST
+        );
       }
 
       if (!newPassword) {
@@ -412,13 +415,15 @@ export class AuthController {
       if (!user) {
         throw new ApiError("User not found", HTTP_STATUS.NOT_FOUND);
       }
-
+      if (user.passwordResetExpire != expiresAt) {
+        throw new ApiError("Invalid token", HTTP_STATUS.BAD_REQUEST);
+      }
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(newPassword, salt);
 
       user.password = hashedPassword;
+      user.passwordResetExpire = null;
       await this.usersRepo.save(user);
-
 
       res.status(HTTP_STATUS.OK).json(
         handleResponse("Password reset successfully", {
@@ -426,16 +431,11 @@ export class AuthController {
           email: user.email,
         })
       );
-
-    }
-    catch (error) {
+    } catch (error) {
       logger.error(
         `AuthController :: resetPassword :: "${(error as Error)?.message}"`
       );
       return next(error);
     }
   }
-
-
-
 }
