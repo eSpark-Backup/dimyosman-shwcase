@@ -4,8 +4,19 @@ import { LoadingButton } from "@mui/lab";
 import { useFormik } from "formik";
 import { Input } from "../../../components";
 import { resetPasswordSchema } from "../../../validation/validation";
+import { useQuery } from "../../../utils";
+import { toast } from "react-toastify";
+import { useEffect } from "react";
+import { useResetPasswordMutation } from "../../../services/auth";
+import { useNavigate } from "react-router-dom";
 
 const ResetPassword = () => {
+  const [resetPassword, { isLoading, isError, isSuccess, error }] =
+    useResetPasswordMutation();
+  const query = useQuery();
+  const navigate = useNavigate();
+  const token = query.get("token");
+  const expiresAt = query.get("expiresAt");
   const formik = useFormik({
     initialValues: {
       password: "",
@@ -13,9 +24,23 @@ const ResetPassword = () => {
     },
     validationSchema: resetPasswordSchema,
     onSubmit: (values) => {
-      console.log("test", values);
+      resetPassword({
+        credentials: { newPassword: values.password },
+        token,
+        expiresAt,
+      });
     },
   });
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(error?.data?.message);
+    }
+    if (isSuccess) {
+      toast.success("Password reset successfully");
+      navigate("/auth?type=login");
+    }
+  }, [isError, isSuccess, error]);
 
   return (
     <div className="auth-main">
@@ -102,8 +127,8 @@ const ResetPassword = () => {
               placeholder={"Re-Type Your New Password"}
             />
             <LoadingButton
-              loading={false}
-              disabled={false}
+              loading={isLoading}
+              disabled={isLoading}
               type="submit"
               sx={{ textTransform: "none" }}
             >

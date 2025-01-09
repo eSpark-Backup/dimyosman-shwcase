@@ -5,17 +5,30 @@ import { LoadingButton } from "@mui/lab";
 import { useFormik } from "formik";
 import { Input } from "../../../components";
 import { emailSchema } from "../../../validation/validation";
+import { useForgotPasswordMutation } from "../../../services/auth";
+import { useEffect } from "react";
+import { toast } from "react-toastify";
 
 const ForgotPassword = () => {
+  const [forgotPassword, { isLoading, isError, isSuccess, error }] = useForgotPasswordMutation();
   const formik = useFormik({
     initialValues: {
       email: "",
     },
     validationSchema: emailSchema,
     onSubmit: (values) => {
-      console.log("test", values);
+      forgotPassword(values);
     },
   });
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(error?.data?.message);
+    }
+    if (isSuccess) {
+      toast.success("Please check your email")
+    }
+  }, [isError, isSuccess, error]);
 
   return (
     <div className="auth-main">
@@ -82,8 +95,8 @@ const ForgotPassword = () => {
               placeholder={"Type Your Email"}
             />
             <LoadingButton
-              loading={false}
-              disabled={false}
+              loading={isLoading}
+              disabled={isLoading}
               type="submit"
               sx={{ textTransform: "none" }}
             >
