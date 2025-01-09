@@ -75,26 +75,26 @@ const AllMesaages = ({
 
   useEffect(() => {
     scrollToBottom();
-  }, [selectedGroup?.messageGroup?.messages]);
+  }, [selectedGroup?.chatGroup?.messages]);
 
   const [sender, setSender] = useState("");
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
   const [finalMessage, setFinalMessage] = useState({
-    chatId: selectedGroup?.messageGroup?.id,
-    members: selectedGroup?.messageGroup?.members,
+    chatId: selectedGroup?.chatGroup?.id,
+    members: selectedGroup?.chatGroup?.members,
     message: "",
   });
   const [buttonDisabled, setButtonDisabled] = useState(true);
 
   useEffect(() => {
-    if (selectedGroup?.group?.brandName) {
-      setSender(selectedGroup.group.brandName);
+    if (selectedGroup?.group?.parentName) {
+      setSender(selectedGroup.group.parentName);
     }
 
-    if (selectedGroup?.messageGroup?.id) {
+    if (selectedGroup?.chatGroup?.id) {
       setFinalMessage({
-        chatId: selectedGroup?.messageGroup?.id,
-        members: selectedGroup?.messageGroup?.members,
+        chatId: selectedGroup?.chatGroup?.id,
+        members: selectedGroup?.chatGroup?.members,
         message: "",
       });
     }
@@ -255,7 +255,7 @@ const AllMesaages = ({
               flexDirection: "column-reverse",
             }}
           >
-            {selectedGroup?.messageGroup?.messages
+            {selectedGroup?.chatGroup?.messages
               ?.slice()
               .reverse()
               ?.map((message, i) => {
@@ -269,17 +269,17 @@ const AllMesaages = ({
                         sender={{
                           brandName:
                             message?.sender?.name ===
-                            selectedGroup?.messageGroup?.senderBrand?.user?.name
-                              ? selectedGroup?.messageGroup?.senderBrand
+                            selectedGroup?.chatGroup?.senderBrand?.user?.name
+                              ? selectedGroup?.chatGroup?.senderBrand
                                   ?.brandName
-                              : selectedGroup?.messageGroup?.receiverBrand
+                              : selectedGroup?.chatGroup?.receiverBrand
                                   ?.brandName,
                           brandImage:
                             message?.sender?.name ===
-                            selectedGroup?.messageGroup?.senderBrand?.user?.name
-                              ? selectedGroup?.messageGroup?.senderBrand
+                            selectedGroup?.chatGroup?.senderBrand?.user?.name
+                              ? selectedGroup?.chatGroup?.senderBrand
                                   ?.brandImage
-                              : selectedGroup?.messageGroup?.receiverBrand
+                              : selectedGroup?.chatGroup?.receiverBrand
                                   ?.brandImage,
                         }}
                       />
@@ -335,9 +335,9 @@ const AllMesaages = ({
                   alignItems: "center",
                 }}
               >
-                {selectedGroup?.messageGroup?.receiverbrandName !== "" ? (
+                {selectedGroup?.chatGroup?.receiverbrandName !== "" ? (
                   <>
-                    <span>{selectedGroup?.messageGroup?.receiverbrandName}</span>
+                    <span>{selectedGroup?.chatGroup?.receiverbrandName}</span>
                     <img
                       src={arrowDown}
                       alt="arrow"
@@ -345,9 +345,9 @@ const AllMesaages = ({
                     />
                   </>
                 ) : (
-                  selectedGroup?.group?.brandName && (
+                  selectedGroup?.group?.parentName && (
                     <>
-                      <span>{selectedGroup.group.brandName}</span>
+                      <span>{selectedGroup.group.parentName}</span>
                       <img
                         src={arrowDown}
                         alt="arrow"
@@ -391,7 +391,7 @@ const AllMesaages = ({
                   },
                 }}
               >
-                {selectedGroup?.group?.brandName && (
+                {selectedGroup?.group?.parentName && (
                   <MenuItem value={selectedGroup.group.brandName}>
                     {selectedGroup.group.brandName}
                   </MenuItem>
