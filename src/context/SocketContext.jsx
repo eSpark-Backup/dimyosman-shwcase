@@ -71,8 +71,8 @@ const SocketProvider = ({ children }) => {
         dispatch(isUserHasChat("empty"));
       }
 
-      if (data.chats && data?.chats?.brands?.length > 0) {
-        dispatch(getMyChat(data.chats.brands));
+      if (data.chats && (data?.chats?.brands?.length > 0 || data?.chats?.spaces?.length > 0)) {
+        dispatch(getMyChat(data.chats));
         dispatch(isUserHasChat(""));
       }
     }

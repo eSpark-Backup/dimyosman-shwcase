@@ -32,8 +32,8 @@ const MessageItem = ({
           marginBottom: 0,
         },
       }}
-      expanded={message?.messageGroups?.length ? expanded : false}
-      onChange={message?.messageGroups?.length ? onChange : null}
+      expanded={message?.chatGroups?.length ? expanded : false}
+      onChange={message?.chatGroups?.length ? onChange : null}
     >
       <AccordionSummary
         sx={{
@@ -59,9 +59,9 @@ const MessageItem = ({
             position: "relative",
           }}
         >
-          {message.brandImage ? (
+          {message.parentImage ? (
             <img
-              src={message.brandImage}
+              src={message.parentImage}
               alt="Message Icon"
               style={{
                 width: "100%",
@@ -82,7 +82,7 @@ const MessageItem = ({
             />
           )}
 
-          <ActivityType type={message.activity} theme={theme} />
+          <ActivityType type={message.parentActivity} theme={theme} />
         </Box>
 
         <Typography
@@ -94,7 +94,7 @@ const MessageItem = ({
             textAlign: "left",
           }}
         >
-          {message.brandName}
+          {message.parentName}
         </Typography>
 
         {message.read && (
@@ -120,8 +120,8 @@ const MessageItem = ({
           gap: 1,
         }}
       >
-        {message?.messageGroups?.length
-          ? message.messageGroups.map((el, i) => {
+        {message?.chatGroups?.length
+          ? message.chatGroups.map((el, i) => {
               return (
                 <Box
                   key={i}
@@ -130,7 +130,7 @@ const MessageItem = ({
                     alignItems: el?.creator ? "center" : "unset",
                     padding: 1,
                     bgcolor:
-                      selectedGroup?.messageGroup?.chatId === el?.chatId
+                      selectedGroup?.chatGroup?.chatId === el?.chatId
                         ? "rgba(209, 219, 215, 0.6)"
                         : "#ffffff",
                     cursor: "pointer",
@@ -139,7 +139,7 @@ const MessageItem = ({
                   }}
                   onClick={() => {
                     setSelectedChatId(el?.chatId);
-                    setSelectedGroup({ messageGroup: el, group: message });
+                    setSelectedGroup({ chatGroup: el, group: message });
                   }}
                 >
                   <Box
@@ -151,9 +151,14 @@ const MessageItem = ({
                       position: "relative",
                     }}
                   >
-                    { (el?.receiverSpace?.spaceImage || el?.senderBrand?.brandImage) ? (
+                    {el?.receiverSpace?.spaceImage ||
+                    el?.senderBrand?.brandImage ? (
                       <img
-                        src={el?.isInquiryRole === 'sender' ?  el?.receiverSpace?.spaceImage : el?.senderBrand?.brandImage}
+                        src={
+                          el?.isInquiryRole === "sender"
+                            ? el?.receiverSpace?.spaceImage
+                            : el?.senderBrand?.brandImage
+                        }
                         alt="Message Icon"
                         style={{
                           width: "100%",
@@ -194,8 +199,7 @@ const MessageItem = ({
                         textAlign: "left",
                       }}
                     >
-                      {el?.isInquiryRole === 'sender' ?  el?.receiverSpace?.spaceName : el?.senderBrand?.brandName}
-                      {/* {el?.receiverSpace?.spaceName} */}
+                      {el?.childName}
                     </Typography>
 
                     {el?.creator && (

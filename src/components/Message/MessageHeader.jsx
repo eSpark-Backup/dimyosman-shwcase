@@ -3,15 +3,11 @@ import { Box, Stack, Typography, useMediaQuery } from "@mui/material";
 import { star } from "../../assets";
 
 const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
-const { messageGroup, group } = selectedGroup;
+  const { chatGroup, group } = selectedGroup;
 
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1100 = useMediaQuery("(max-width:1100px)");
 
-  const truncateTo13Characters = (str) => {
-    if (!str) return ''; 
-    return `${str.slice(0, 24)}...`;
-  };
 
   return (
     <Box
@@ -36,14 +32,9 @@ const { messageGroup, group } = selectedGroup;
               position: "relative",
             }}
           >
-            {messageGroup?.receiverSpace?.spaceImage ||
-            messageGroup?.senderBrand?.brandImage ? (
+            {chatGroup?.childImage ? (
               <img
-                src={
-                  messageGroup?.isInquiryRole === "sender"
-                    ? messageGroup?.receiverSpace.spaceImage
-                    : messageGroup?.senderBrand.brandImage
-                }
+                src={chatGroup?.childImage}
                 alt="Message Icon"
                 style={{
                   width: "100%",
@@ -64,13 +55,19 @@ const { messageGroup, group } = selectedGroup;
               />
             )}
 
-            <ActivityType
-              type={messageGroup?.activity}
-              theme={theme}
-            />
+            <ActivityType type={chatGroup?.activity} theme={theme} />
           </Box>
 
-          <Box marginLeft={"10px"}>
+          <Box
+            marginLeft={"10px"}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: chatGroup?.isInquiryRole === "sender"
+                ? "normal"
+                : "center",
+            }}
+          >
             <Typography
               variant="h1"
               sx={{
@@ -84,12 +81,10 @@ const { messageGroup, group } = selectedGroup;
                 textAlign: "left",
               }}
             >
-              {messageGroup?.isInquiryRole === "sender"
-                ? messageGroup?.receiverSpace?.spaceName
-                : messageGroup?.senderBrand?.brandName}
+              {chatGroup?.childName}
             </Typography>
 
-            {messageGroup?.isInquiryRole === "sender" && (
+            {chatGroup?.isInquiryRole === "sender" && (
               <Typography
                 sx={{
                   fontWeight: 300,
@@ -97,7 +92,7 @@ const { messageGroup, group } = selectedGroup;
                   lineHeight: isLessThan1100 ? "18px" : "28px",
                 }}
               >
-                {messageGroup?.brandName}
+                {chatGroup?.receiverBrand?.brandName}
               </Typography>
             )}
 
@@ -110,27 +105,15 @@ const { messageGroup, group } = selectedGroup;
                 columnGap: isLessThan1100 ? 1 : 2,
               }}
             >
-              {messageGroup?.creator && (
-                <GroupDetail
-                  withColon="By"
-                  text={messageGroup?.creator}
-                />
+              {chatGroup?.creator && (
+                <GroupDetail withColon="By" text={chatGroup?.creator} />
               )}
 
-              <GroupDetail
-                withColon="Spaces"
-                text={group?.spaces}
-              />
+              <GroupDetail withColon="Spaces" text={group?.spaces} />
 
-              <GroupDetail
-                withColon="Followers"
-                text={group?.followers}
-              />
+              <GroupDetail withColon="Followers" text={group?.followers} />
 
-              <GroupDetail
-                withColon="Saved"
-                text={group?.saved}
-              />
+              <GroupDetail withColon="Saved" text={group?.saved} />
 
               {isLessThan1100 ? (
                 <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -146,20 +129,17 @@ const { messageGroup, group } = selectedGroup;
                   </Typography>
 
                   <Box sx={{ display: "flex", gap: 0.5 }}>
-                    {Array.from(
-                      { length: group?.rating },
-                      (_, ind) => {
-                        return (
-                          <img
-                            key={ind}
-                            width={10}
-                            height={10}
-                            src={star}
-                            alt="star"
-                          />
-                        );
-                      }
-                    )}
+                    {Array.from({ length: group?.rating }, (_, ind) => {
+                      return (
+                        <img
+                          key={ind}
+                          width={10}
+                          height={10}
+                          src={star}
+                          alt="star"
+                        />
+                      );
+                    })}
                   </Box>
                 </Box>
               ) : null}
@@ -185,20 +165,11 @@ const { messageGroup, group } = selectedGroup;
             </Typography>
 
             <Box>
-              {Array.from(
-                { length: group?.rating },
-                (_, ind) => {
-                  return (
-                    <img
-                      key={ind}
-                      width={21}
-                      height={20}
-                      src={star}
-                      alt="star"
-                    />
-                  );
-                }
-              )}
+              {Array.from({ length: group?.rating }, (_, ind) => {
+                return (
+                  <img key={ind} width={21} height={20} src={star} alt="star" />
+                );
+              })}
             </Box>
 
             <Typography
