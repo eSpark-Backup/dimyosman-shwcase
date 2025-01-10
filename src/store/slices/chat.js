@@ -29,10 +29,9 @@ const slice = createSlice({
       state.hasChats = action.payload;
     },
     isActiveMembers(state, action) {
-      console.log(action.payload)
       state.activeMembers = action.payload;
     },
-    emptyActiveMembers(state, action) {
+    emptyActiveMembers(state) {
       state.activeMembers = [];
     },
   },

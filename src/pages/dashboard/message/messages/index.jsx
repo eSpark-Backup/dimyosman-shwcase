@@ -141,10 +141,10 @@ const AllMesaages = ({
 
   useEffect(() => {
     if (
-      selectedGroup?.messageGroup?.members &&
-      selectedGroup?.messageGroup?.chatId
+      selectedGroup?.chatGroup?.members &&
+      selectedGroup?.chatGroup?.chatId
     ) {
-      selectedGroupData.current = selectedGroup?.messageGroup;
+      selectedGroupData.current = selectedGroup?.chatGroup;
     }
   }, [selectedGroup]);
 
@@ -184,6 +184,11 @@ const AllMesaages = ({
     if (!strippedContent) {
       toast?.error("Message can not be empty.");
       return false;
+    }
+
+    if (!finalMessage?.chatId) {
+      toast.error("Chat id is required");
+      return;
     }
 
     emitEvent("NEW_MESSAGE", finalMessage);
@@ -290,7 +295,7 @@ const AllMesaages = ({
           </Box>
 
           {isTypingUser?.userId === user?.id &&
-            selectedGroup?.messageGroup?.chatId === isTypingUser?.chatId && (
+            selectedGroup?.chatGroup?.chatId === isTypingUser?.chatId && (
               <span className="typing-indicator">
                 <span className="dots">...</span>
               </span>

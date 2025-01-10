@@ -45,6 +45,23 @@ export function useClickOutside(ref, onClickOutside) {
   }, [ref, onClickOutside]);
 }
 
+export function setCookie(name, value) {
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/`;
+}
+
+export function getCookie(name) {
+  const cookies = document.cookie.split("; ");
+  for (const cookie of cookies) {
+    const [key, value] = cookie.split("=");
+    if (key === name) return decodeURIComponent(value);
+  }
+  return null;
+}
+
+export function deleteCookie(name) {
+  document.cookie = `${name}=; Max-Age=-1; path=/`;
+}
+
 export const messageBox = (parentObj, chatDetails, allMessages) => {
   const getParentObject = () => {
     const isSpacesChats = parentObj?.spaceDetails;
@@ -54,16 +71,15 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
       : parentObj?.brandDetails;
 
     return {
-      id: details?.id || '',
-      activity: isReceiverChats ? "space" : "brand",
-      brandName: details?.brandName || details?.spaceName,
-      brandImage: details?.brandImage || details?.spaceImage,
-      isReceiverChats
+      parentId: details?.id,
+      parentActivity: isSpacesChats ? "space" : "brand",
+      parentName: details?.brandName || details?.spaceName,
+      parentImage: details?.brandImage || details?.spaceImage,
     };
   };
 
   const getMatchingChatDetails = (chatId) => {
-    return chatDetails?.find(item => item._id === chatId) || {};
+    return chatDetails?.find((item) => item._id === chatId) || {};
   };
 
   const getMessagesForChat = (chatId) => {

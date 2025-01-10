@@ -32,9 +32,13 @@ import {
   useGetChatsForContactsQuery,
   useGetAllChatDetailsQuery,
 } from "../../../services/chats.js";
-import { getChatDetails, getMessages, isActiveMembers } from "../../../store/slices/chat.js";
+import {
+  getChatDetails,
+  getMessages,
+  isActiveMembers,
+} from "../../../store/slices/chat.js";
 import { useSocket } from "../../../context/SocketContext.jsx";
-import { messageBox } from "../../../utils/index.js";
+import { deleteCookie, getCookie, messageBox, setCookie } from "../../../utils/index.js";
 
 const icons = [
   { icon: messageIcon, bg: "rgba(0, 20, 28, 0.8)", type: "message" },
@@ -95,8 +99,18 @@ const Message = () => {
     (state) => state.chat
   );
   const { user } = useSelector((state) => state.auth);
-  const allMyChatIds =
-    myChat?.flatMap((chat) => chat.chats.map((c) => c._id)) || [];
+
+  const gatherBrandsChatId = () => {
+    return (
+      myChat?.brands?.flatMap((chat) => chat.chats.map((c) => c._id)) || []
+    );
+  };
+
+  const gatherSpacesChatId = () => {
+    return (
+      myChat?.spaces?.flatMap((chat) => chat.chats.map((c) => c._id)) || []
+    );
+  };
 
   const dispatch = useDispatch();
 
@@ -107,7 +121,10 @@ const Message = () => {
 
   useEffect(() => {
     const existingDetailsIds = chatDetails.map((item) => item._id);
-    const newIdsForDetails = allMyChatIds.filter(
+    const newIdsForDetails = [
+      ...gatherBrandsChatId(),
+      ...gatherSpacesChatId(),
+    ].filter(
       (id) => !existingDetailsIds.includes(id) && !fetchedChatIds.has(id)
     );
 
@@ -120,7 +137,10 @@ const Message = () => {
 
   useEffect(() => {
     const existingMessagesIds = messages.map((item) => item.chat);
-    const newIdsForMessages = allMyChatIds.filter(
+    const newIdsForMessages = [
+      ...gatherBrandsChatId(),
+      ...gatherSpacesChatId(),
+    ].filter(
       (id) => !existingMessagesIds.includes(id) && !fetchedMessageIds.has(id)
     );
 
@@ -140,7 +160,7 @@ const Message = () => {
       chats: isNewIdsForAllMessages,
     },
     {
-      skip: !(myChat?.brands?.length || myChat?.spaces?.length), 
+      skip: !isNewIdsForAllMessages?.length,
     }
   );
 
@@ -153,7 +173,7 @@ const Message = () => {
       chats: isNewIdsForChatDetails,
     },
     {
-      skip: !(myChat?.brands?.length || myChat?.spaces?.length), 
+      skip: !isNewIdsForChatDetails?.length,
     }
   );
 
@@ -219,51 +239,61 @@ const Message = () => {
 
   useEffect(() => {
     addListener("NEW_MESSAGE", (data) => {
-      console.log("NEW_MESSAGE EVENT TRIGGERED.");
-
       dispatch(getMessages([...messages, data.message]));
     });
 
     addListener("NEW_MESSAGE_ALERT", (data) => {
-      console.log("NEW_MESSAGE_ALERT EVENT TRIGGERED.", data);
+      if (
+        allMessages.length > 0 &&
+        data.chatId !== (initialChatId || selectedChatId)
+      ) {
+        const getNotReadMessage = JSON.parse(getCookie("unread"));
+        const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
 
-      // if (
-      //   allMessages.length &&
-      //   data.chatId !== (initialChatId || selectedChatId)
-      // ) {
-      //   const updateRead = allMessages?.map((msg) => {
-      //     const findGroup = msg.messageGroups.findIndex(
-      //       (group) => group._id === data.chatId
-      //     );
+        if (!getNotReadMessage) {
+          // If no unread messages cookie exists, create it
+          setCookie(
+            "unread",
+            JSON.stringify([
+              {
+                chatId: data.chatId,
+                count: 1,
+              },
+            ])
+          );
 
-      //     if (findGroup !== -1) {
-      //       return {
-      //         ...msg,
-      //         read: true,
-      //         messageGroups: msg.messageGroups.map((group, index) => {
-      //           if (index === findGroup) {
-      //             return {
-      //               ...group,
-      //               read: true,
-      //             };
-      //           }
-      //           return group;
-      //         }),
-      //       };
-      //     } else {
-      //       return msg;
-      //     }
-      //   });
+          setCookie("unreadChatIds", JSON.stringify([data.chatId]));
+        } else {
+          const updatedMessages = getNotReadMessage.some(
+            (el) => el.chatId === data.chatId
+          )
+            ? getNotReadMessage.map((el) =>
+                el.chatId === data.chatId
+                  ? { chatId: el.chatId, count: el.count + 1 }
+                  : el
+              )
+            : [
+                ...getNotReadMessage,
+                {
+                  chatId: data.chatId,
+                  count: 1,
+                },
+              ];
 
-      //   setAllMessages(updateRead);
-      // }
+          setCookie("unread", JSON.stringify(updatedMessages));
+          if (!getUnreadChatIds.includes(data.chatId)) {
+            getUnreadChatIds.push(data.chatId);
+            setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
+          }
+        }
+      }
     });
 
     return () => {
       removeListener("NEW_MESSAGE");
-      // removeListener("NEW_MESSAGE_ALERT");
+      removeListener("NEW_MESSAGE_ALERT");
     };
-  }, [addListener, removeListener, messages, emitEvent]);
+  }, [addListener, removeListener, messages, emitEvent, allMessages]);
 
   useEffect(() => {
     addListener("START_TYPING", (data) => {
@@ -309,133 +339,153 @@ const Message = () => {
     chatDetails,
   ]);
 
-  useEffect(() => {
-    addListener("ONLINE_USERS", (data) => {
-      console.log("ONLINE_USERS EVENT TRIGGERED.",data);
+  // useEffect(() => {
+  //   addListener("ONLINE_USERS", (data) => {
+  //     console.log("ONLINE_USERS EVENT TRIGGERED.",data);
 
-      const filterCurrentUser = data?.filter((acc) => acc !== user?.userChatId);
+  //     const filterCurrentUser = data?.filter((acc) => acc !== user?.userChatId);
 
-      if (allMessages?.length > 0 && filterCurrentUser?.length > 0) {
-      console.log(allMessages?.length > 0 && filterCurrentUser?.length > 0);
+  //     if (allMessages?.length > 0 && filterCurrentUser?.length > 0) {
+  //     console.log(allMessages?.length > 0 && filterCurrentUser?.length > 0);
 
-        const updatedMessages = allMessages.map((messageGroup) => {
-          return {
-            ...messageGroup,
-            messageGroups: messageGroup.messageGroups.map((group) => {
-              const findOppositeUser = group.members?.find(
-                (member) => member !== user?.userChatId
-              );
+  //       const updatedMessages = allMessages.map((messageGroup) => {
+  //         return {
+  //           ...messageGroup,
+  //           messageGroups: messageGroup.messageGroups.map((group) => {
+  //             const findOppositeUser = group.members?.find(
+  //               (member) => member !== user?.userChatId
+  //             );
 
-              // Check if it's a receiver chat or sender chat
-              if (messageGroup.isReceiverChats) {
-                // If the current user is the sender, mark sender as active
-                if (filterCurrentUser.includes(findOppositeUser)) {
-                  return {
-                    ...group,
-                    isActive: true,
-                  };
-                } else {
-                  return {
-                    ...group,
-                    isActive: false,
-                  };
-                }
-              } else {
-                // If the current user is the receiver, mark receiver as active
-                if (filterCurrentUser.includes(findOppositeUser)) {
-                  return {
-                    ...group,
-                    isActive: true,
-                  };
-                } else {
-                  return {
-                    ...group,
-                    isActive: false,
-                  };
-                }
-              }
-            }),
-          };
-        });
-        setAllMessages(updatedMessages);
-        setOnlineUsers(filterCurrentUser);
-      }
-    });
+  //             // Check if it's a receiver chat or sender chat
+  //             if (messageGroup.isReceiverChats) {
+  //               // If the current user is the sender, mark sender as active
+  //               if (filterCurrentUser.includes(findOppositeUser)) {
+  //                 return {
+  //                   ...group,
+  //                   isActive: true,
+  //                 };
+  //               } else {
+  //                 return {
+  //                   ...group,
+  //                   isActive: false,
+  //                 };
+  //               }
+  //             } else {
+  //               // If the current user is the receiver, mark receiver as active
+  //               if (filterCurrentUser.includes(findOppositeUser)) {
+  //                 return {
+  //                   ...group,
+  //                   isActive: true,
+  //                 };
+  //               } else {
+  //                 return {
+  //                   ...group,
+  //                   isActive: false,
+  //                 };
+  //               }
+  //             }
+  //           }),
+  //         };
+  //       });
+  //       // setAllMessages(updatedMessages);
+  //       setOnlineUsers(filterCurrentUser);
+  //     }
+  //   });
 
-    return () => {
-      removeListener("ONLINE_USERS");
-    };
-  }, [addListener, removeListener, selectedGroup]);
+  //   return () => {
+  //     removeListener("ONLINE_USERS");
+  //   };
+  // }, [addListener, removeListener, selectedGroup]);
 
   const handleAccordionChange = (index) => (event, isExpanded) => {
     const selectedGroup = {
-      messageGroup: allMessages[index]?.messageGroups[0],
+      chatGroup: allMessages[index]?.chatGroups[0],
       group: allMessages[index],
     };
 
     const obj = {
       userId: user.userChatId,
-      members: allMessages[index]?.messageGroups[0]?.members,
+      members: allMessages[index]?.chatGroups[0]?.members,
     };
 
     if (index !== expanded) {
-      dispatch(isActiveMembers(obj.members))
-      emitEvent("CHAT_JOINED", obj);
+      // dispatch(isActiveMembers(obj.members))
+      // emitEvent("CHAT_JOINED", obj);
+    }
+    const getUnreadMessage = JSON.parse(getCookie("unread"))|| [];
+    const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds")) || [];
+
+    const ifCountExists = getUnreadMessage?.filter(
+      (msg) => msg.chatId !== allMessages[index]?.chatGroups[0]?.id
+    );
+    const ifChatIdExists = getUnreadChatIds?.filter(
+      (id) => id !== allMessages[index]?.chatGroups[0]?.id
+    );
+
+    if (ifCountExists?.length > 0) {
+      setCookie("unread", JSON.stringify(ifCountExists));
+      setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
+    } else {
+      deleteCookie("unread");
+      deleteCookie("unreadChatIds");
     }
 
-    setSelectedChatId(allMessages[index]?.messageGroups[0]?.chatId);
+    setSelectedChatId(allMessages[index]?.chatGroups[0]?.chatId);
     setSelectedGroup(selectedGroup);
     setExpanded(index);
   };
 
   useEffect(() => {
     if (allMessages.length) {
-      if (selectedChatId === null && selectedGroup === null) {
-        setInitialChatId(allMessages[0]?.messageGroups[0]?._id);
+      if (
+        (selectedChatId === null && selectedGroup === null) ||
+        (selectedChatId === null && selectedGroup !== null)
+      ) {
+        setInitialChatId(allMessages[0]?.chatGroups[0]?._id);
         setSelectedGroup({
-          messageGroup: allMessages[0]?.messageGroups[0],
+          chatGroup: allMessages[0]?.chatGroups[0],
           group: allMessages[0],
         });
 
         const obj = {
           userId: user.userChatId,
-          members: allMessages[0]?.messageGroups[0]?.members,
+          members: allMessages[0]?.chatGroups[0]?.members,
         };
-        dispatch(isActiveMembers(obj.members))
-        emitEvent("CHAT_JOINED", obj);
+        // dispatch(isActiveMembers(obj.members))
+        // emitEvent("CHAT_JOINED", obj);
       }
 
       if (selectedChatId !== null && expanded !== null) {
         const group = allMessages[expanded];
-        const messageGroup = group?.messageGroups?.find(
+        const chatGroup = group?.chatGroups?.find(
           (msg) => msg.id === selectedChatId
         );
 
-        if (messageGroup) {
+        if (chatGroup) {
           setInitialChatId(null);
-          setSelectedGroup({ messageGroup, group });
+          setSelectedGroup({ chatGroup, group });
         }
       }
     }
   }, [allMessages, selectedChatId, expanded, messages]);
 
-    // useEffect(() => {
-    //   if (
-    //     selectedGroup &&
-    //     selectedGroup.group &&
-    //     selectedGroup.group.messageGroups
-    //   ) {
-    //     const obj = {
-    //       userId: user.userChatId,
-    //       members: allMessages[expanded]?.messageGroups[0]?.members,
-    //     };
+  // useEffect(() => {
+  //   if (
+  //     selectedGroup &&
+  //     selectedGroup.group &&
+  //     selectedGroup.group.messageGroups
+  //   ) {
+  //     const obj = {
+  //       userId: user.userChatId,
+  //       members: allMessages[expanded]?.messageGroups[0]?.members,
+  //     };
 
-    //     return () => {
-    //       emitEvent("CHAT_LEFT", obj);
-    //       setOnlineUsers([]);
-    //     };
-    //   }
-    // }, []);
+  //     return () => {
+  //       emitEvent("CHAT_LEFT", obj);
+  //       setOnlineUsers([]);
+  //     };
+  //   }
+  // }, []);
 
   if (isLoading || chatDetailsLoading) {
     return (

@@ -145,8 +145,6 @@ const SocketProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    console.log(pathname !== "/message" && activeMembers?.length > 0);
-
     if (pathname !== "/message" && activeMembers?.length > 0) {
       const obj = {
         userId: user.userChatId,

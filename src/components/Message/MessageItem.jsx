@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { isActiveMembers } from "../../store/slices/chat";
+import { deleteCookie, getCookie, setCookie } from "../../utils";
 
 const MessageItem = ({
   message,
@@ -23,14 +24,42 @@ const MessageItem = ({
 }) => {
   const detailsRef = useRef(null);
 
+  const getUnreadMessage =
+    getCookie("unread") && JSON.parse(getCookie("unread"));
+  const getUnreadChatIds =
+    getCookie("unreadChatIds") && JSON.parse(getCookie("unreadChatIds"));
+
   const { user } = useSelector((state) => state.auth);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (expanded && detailsRef.current) {
       detailsRef.current.scrollTop = 0;
     }
   }, [expanded]);
+
+  const getCount = (id) => {
+    const ifCountExists = getUnreadMessage?.filter((msg) => msg.chatId === id);
+
+    if (ifCountExists?.length > 0) {
+      const count = getUnreadMessage?.find((msg) => msg.chatId === id)?.count;
+
+      return count;
+    }
+  };
+
+  const filterCount = (id) => {
+    const ifCountExists = getUnreadMessage?.filter((msg) => msg.chatId !== id);
+    const ifChatIdExists = getUnreadChatIds?.filter((id) => id !== id);
+
+    if (ifCountExists?.length > 0) {
+      setCookie("unread", JSON.stringify(ifCountExists));
+      setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
+    } else {
+      deleteCookie("unread");
+      deleteCookie("unreadChatIds");
+    }
+  };
 
   return (
     <Accordion
@@ -113,19 +142,23 @@ const MessageItem = ({
           {message.parentName}
         </Typography>
 
-        {message.read && (
-          <Box
-            sx={{
-              width: "10px",
-              height: "10px",
-              borderRadius: "50%",
-              backgroundColor: theme.palette.error.danger,
-              position: "absolute",
-              top: "-4px",
-              right: "0px",
-            }}
-          />
-        )}
+        {/* {message.read && ( */}
+        {getUnreadMessage?.length &&
+          message?.chatGroups?.some((msg) =>
+            getUnreadChatIds?.includes(msg.chatId)
+          ) && (
+            <Box
+              sx={{
+                width: "10px",
+                height: "10px",
+                borderRadius: "50%",
+                backgroundColor: theme.palette.error.danger,
+                position: "absolute",
+                top: "0px",
+                right: "2px",
+              }}
+            />
+          )}
       </AccordionSummary>
 
       <AccordionDetails
@@ -161,13 +194,14 @@ const MessageItem = ({
                       userId: user.userChatId,
                       members: el?.members,
                     };
-                    console.log(obj)
-                    console.log(obj.members)
-                    dispatch(isActiveMembers(obj.members));
-                    emitEvent("CHAT_JOINED", obj);
+                    // console.log(obj)
+                    // console.log(obj.members)
+                    // dispatch(isActiveMembers(obj.members));
+                    // emitEvent("CHAT_JOINED", obj);
 
                     setSelectedChatId(el?.chatId);
                     setSelectedGroup({ chatGroup: el, group: message });
+                    getCount(el.chatId) && filterCount(el?.chatId);
                   }}
                 >
                   <Box
@@ -182,21 +216,21 @@ const MessageItem = ({
                     {el?.receiverSpace?.spaceImage ||
                     el?.senderBrand?.brandImage ? (
                       <Box sx={{ position: "relative", height: "100%" }}>
-                      <img
-                        src={
-                          el?.isInquiryRole === "sender"
-                            ? el?.receiverSpace?.spaceImage
-                            : el?.senderBrand?.brandImage
-                        }
-                        alt="Message Icon"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          borderRadius: "5px",
-                          border: "1px solid rgba(209, 219, 215, 0.4)",
-                        }}
-                      />
+                        <img
+                          src={
+                            el?.isInquiryRole === "sender"
+                              ? el?.receiverSpace?.spaceImage
+                              : el?.senderBrand?.brandImage
+                          }
+                          alt="Message Icon"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            borderRadius: "5px",
+                            border: "1px solid rgba(209, 219, 215, 0.4)",
+                          }}
+                        />
                         {el.isActive && (
                           <Box
                             sx={{
@@ -264,9 +298,30 @@ const MessageItem = ({
                           fontWeight: 300,
                           fontSize: "12px",
                           lineHeight: "17px",
+                          display: "flex",
+                          justifyContent: "space-between",
                         }}
                       >
-                        {el.creator}
+                        <span>{el.creator}</span>
+                        {getUnreadMessage?.length && getCount(el.chatId) && (
+                          <Box
+                            sx={{
+                              minWidth: "15px",
+                              height: "15px",
+                              borderRadius: "50%",
+                              backgroundColor: "#ee6161",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "10px",
+                              color: "#ffffff",
+                              padding:
+                                getCount(el.chatId) > 10 ? "0px 4px" : "0px",
+                            }}
+                          >
+                            {getCount(el.chatId)}
+                          </Box>
+                        )}
                       </Typography>
                     )}
 
