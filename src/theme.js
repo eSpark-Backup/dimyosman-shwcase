@@ -177,6 +177,14 @@ export const theme = createTheme({
         },
       },
     },
+    MuiFormHelperText: {
+      styleOverrides: {
+        root: {
+          position: "absolute",
+          bottom: "-20px",
+        },
+      },
+    },
   },
 
   palette: {

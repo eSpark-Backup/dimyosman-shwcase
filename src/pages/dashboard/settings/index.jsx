@@ -20,7 +20,7 @@ import {
   nameSchema,
   passwordSchema,
 } from "../../../validation/validation";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   useChangeProfileImageMutation,
   useChangePwMutation,
@@ -28,6 +28,7 @@ import {
 } from "../../../services/auth";
 import { toast } from "react-toastify";
 import { LoadingButton } from "@mui/lab";
+import { updateUser } from "../../../store/slices/auth";
 
 const buttonStyle = {
   background:
@@ -97,14 +98,19 @@ const Settings = () => {
   const [image, setImage] = useState(null);
   const [isPublic, setIsPublic] = useState(user?.profile);
   const [allowEmail, setAllowEmail] = useState(user?.sendEmails);
+  const dispatch = useDispatch();
 
   const handleisPublic = (event) => {
-    updateProfile({ profile: event.target.checked });
+    updateProfile({ profile: event.target.checked }).then((res) => {
+      dispatch(updateUser(res?.data?.data));
+    });
     setIsPublic(event.target.checked);
   };
 
   const handleAllowEmail = (event) => {
-    updateProfile({ sendEmails: event.target.checked });
+    updateProfile({ sendEmails: event.target.checked }).then((res) => {
+      dispatch(updateUser(res?.data?.data));
+    });
     setAllowEmail(event.target.checked);
   };
 
@@ -119,6 +125,7 @@ const Settings = () => {
         lastName: values?.lName,
       };
       updateProfile(objToSend).then((res) => {
+        dispatch(updateUser(res?.data?.data));
         res?.data && toast.success("Profile name updated successfully");
         setIsLoading(false);
         setChangeName(false);
@@ -156,7 +163,15 @@ const Settings = () => {
       if (image) {
         const formdata = new FormData();
         formdata.append("image", image);
-        changeProfileImage(formdata).then((res) => console.log(res, "res"));
+        changeProfileImage(formdata).then((res) => {
+          if (res?.error) {
+            toast.error(res?.error?.data?.message || "something went wrong");
+          }
+          if (res?.data) {
+            dispatch(updateUser(res?.data?.data));
+            setChangeImage(false);
+          }
+        });
       } else {
         toast.error("Please select the image first");
       }
@@ -498,7 +513,7 @@ const Settings = () => {
                 border: "1px dashed rgb(0, 20, 28, 0.4)",
                 backgroundColor: "rgb(209, 219, 215, 0.2)",
                 ...flexContentCenter,
-                pt: "15px",
+                pt: changeImage ? "15px" : "",
                 overflow: "hidden",
                 mt: 0.3,
               }}
@@ -518,8 +533,10 @@ const Settings = () => {
                     borderRadius: "5px",
                   }}
                 />
-              ) : (
+              ) : !profileImage && !changeImage ? (
                 "No image"
+              ) : (
+                ""
               )}
               {changeImage ? (
                 <Box
