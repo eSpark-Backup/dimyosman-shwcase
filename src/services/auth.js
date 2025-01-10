@@ -25,12 +25,28 @@ export const authApi = api.injectEndpoints({
         credentials: "include"
       }),
     }),
+    forgotPassword: builder.mutation({
+      query: (credentials) => ({
+        url: "/auth/forgot-password",
+        method: "POST",
+        body: credentials,
+        credentials: "include",
+      }),
+    }),
+    resetPassword: builder.mutation({
+      query: ({ credentials, token, expiresAt }) => ({
+        url: `/auth/reset-password/${token}/${expiresAt}`,
+        method: "POST",
+        body: credentials,
+        credentials: "include",
+      }),
+    }),
     updateProfile: builder.mutation({
       query: (credentials) => ({
         url: "/user/profile",
         method: "PUT",
         body: credentials,
-        credentials: "include"
+        credentials: "include",
       }),
     }),
     changePw: builder.mutation({
@@ -38,7 +54,7 @@ export const authApi = api.injectEndpoints({
         url: "/user/change-password",
         method: "POST",
         body: credentials,
-        credentials: "include"
+        credentials: "include",
       }),
     }),
     changeProfileImage: builder.mutation({
@@ -46,7 +62,7 @@ export const authApi = api.injectEndpoints({
         url: "/user/profileImage",
         method: "PUT",
         body: credentials,
-        credentials: "include"
+        credentials: "include",
       }),
     }),
   }),
@@ -56,6 +72,8 @@ export const {
   useLoginMutation,
   useRegisterMutation,
   useVerifyTokenQuery,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
   useUpdateProfileMutation,
   useChangePwMutation,
   useChangeProfileImageMutation,
