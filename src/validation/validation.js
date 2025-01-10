@@ -45,6 +45,9 @@ export const emailSchema = Yup.object({
   email: Yup.reach(registerSchema, "email"),
 });
 export const passwordSchema = Yup.object({
+  oldPassword: Yup.string()
+    .required("Old password is required")
+    .min(8, "Old password must contain at least 8 characters"),
   password: Yup.reach(registerSchema, "password"), 
   conPassword: Yup.reach(registerSchema, "conPassword"), 
 });

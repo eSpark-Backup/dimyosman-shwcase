@@ -54,7 +54,6 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
   const pickerRef = useRef(null);
   const buttonRef = useRef(null);
 
-
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
@@ -66,26 +65,26 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [selectedGroup?.messageGroup?.messages]);
+  }, [selectedGroup?.chatGroup?.messages]);
 
   const [sender, setSender] = useState("");
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
   const [finalMessage, setFinalMessage] = useState({
-    chatId: selectedGroup?.messageGroup?.id,
-    members: selectedGroup?.messageGroup?.members,
+    chatId: selectedGroup?.chatGroup?.id,
+    members: selectedGroup?.chatGroup?.members,
     message: "",
   });
   const [buttonDisabled, setButtonDisabled] = useState(true);
 
   useEffect(() => {
-    if (selectedGroup?.group?.brandName) {
-      setSender(selectedGroup.group.brandName);
+    if (selectedGroup?.group?.parentName) {
+      setSender(selectedGroup.group.parentName);
     }
 
-    if (selectedGroup?.messageGroup?.id) {
+    if (selectedGroup?.chatGroup?.id) {
       setFinalMessage({
-        chatId: selectedGroup?.messageGroup?.id,
-        members: selectedGroup?.messageGroup?.members,
+        chatId: selectedGroup?.chatGroup?.id,
+        members: selectedGroup?.chatGroup?.members,
         message: "",
       });
     }
@@ -107,7 +106,7 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
   const addEmoji = (emoji) => {
     const isActive = isCursorActive();
     if (!isActive) {
-      quillInstance.current.focus(); 
+      quillInstance.current.focus();
     }
 
     const range = quillInstance.current.getSelection();
@@ -180,12 +179,14 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
 
   return (
     <Box position={"relative"}>
-      <MessageHeader
-        selectedGroup={selectedGroup}
-        theme={theme}
-        ActivityType={ActivityType}
-        GroupDetail={GroupDetail}
-      />
+      {selectedGroup && (
+        <MessageHeader
+          selectedGroup={selectedGroup}
+          theme={theme}
+          ActivityType={ActivityType}
+          GroupDetail={GroupDetail}
+        />
+      )}
 
       <Box
         sx={{
@@ -218,7 +219,7 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
               flexDirection: "column-reverse",
             }}
           >
-            {selectedGroup?.messageGroup?.messages
+            {selectedGroup?.chatGroup?.messages
               ?.slice()
               .reverse()
               ?.map((message, i) => {
@@ -232,17 +233,17 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
                         sender={{
                           brandName:
                             message?.sender?.name ===
-                            selectedGroup?.group?.creatorDetail?.name
-                              ? selectedGroup?.messageGroup?.senderBrand
+                            selectedGroup?.chatGroup?.senderBrand?.user?.name
+                              ? selectedGroup?.chatGroup?.senderBrand
                                   ?.brandName
-                              : selectedGroup?.messageGroup?.receiverBrand
+                              : selectedGroup?.chatGroup?.receiverBrand
                                   ?.brandName,
                           brandImage:
                             message?.sender?.name ===
-                            selectedGroup?.group?.creatorDetail?.name
-                              ? selectedGroup?.messageGroup?.senderBrand
+                            selectedGroup?.chatGroup?.senderBrand?.user?.name
+                              ? selectedGroup?.chatGroup?.senderBrand
                                   ?.brandImage
-                              : selectedGroup?.messageGroup?.receiverBrand
+                              : selectedGroup?.chatGroup?.receiverBrand
                                   ?.brandImage,
                         }}
                       />
@@ -291,15 +292,26 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
                   alignItems: "center",
                 }}
               >
-                {selectedGroup?.group?.brandName && (
+                {selectedGroup?.chatGroup?.receiverbrandName !== "" ? (
                   <>
-                    <span>{selectedGroup.group.brandName}</span>
+                    <span>{selectedGroup?.chatGroup?.receiverbrandName}</span>
                     <img
                       src={arrowDown}
                       alt="arrow"
                       style={{ marginLeft: "8px" }}
                     />
                   </>
+                ) : (
+                  selectedGroup?.group?.parentName && (
+                    <>
+                      <span>{selectedGroup.group.parentName}</span>
+                      <img
+                        src={arrowDown}
+                        alt="arrow"
+                        style={{ marginLeft: "8px" }}
+                      />
+                    </>
+                  )
                 )}
               </Box>
 
@@ -336,7 +348,7 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
                   },
                 }}
               >
-                {selectedGroup?.group?.brandName && (
+                {selectedGroup?.group?.parentName && (
                   <MenuItem value={selectedGroup.group.brandName}>
                     {selectedGroup.group.brandName}
                   </MenuItem>

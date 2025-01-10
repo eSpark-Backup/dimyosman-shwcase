@@ -32,9 +32,9 @@ import {
   useGetChatsForContactsQuery,
   useGetAllChatDetailsQuery,
 } from "../../../services/chats.js";
-import { format } from "date-fns";
 import { getMessages } from "../../../store/slices/chat.js";
 import { useSocket } from "../../../context/SocketContext.jsx";
+import { messageBox } from "../../../utils/index.js";
 
 const icons = [
   { icon: messageIcon, bg: "rgba(0, 20, 28, 0.8)", type: "message" },
@@ -90,6 +90,17 @@ const Message = () => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
 
   const { myChat, messages, hasChats } = useSelector((state) => state.chat);
+  const gatherBrandsChatId = () => {
+    return (
+      myChat?.brands?.flatMap((chat) => chat.chats.map((c) => c._id)) || []
+    );
+  };
+
+  const gatherSpacesChatId = () => {
+    return (
+      myChat?.spaces?.flatMap((chat) => chat.chats.map((c) => c._id)) || []
+    );
+  };
 
   const dispatch = useDispatch();
 
@@ -99,10 +110,10 @@ const Message = () => {
     isLoading,
   } = useGetChatsForContactsQuery(
     {
-      chats: myChat?.flatMap((chat) => chat.chats.map((c) => c._id)),
+      chats: [...gatherBrandsChatId(), ...gatherSpacesChatId()],
     },
     {
-      skip: !myChat?.length,
+      skip: !(myChat?.brands?.length || myChat?.spaces?.length), 
     }
   );
 
@@ -112,10 +123,10 @@ const Message = () => {
     isLoading: chatDetailsLoading,
   } = useGetAllChatDetailsQuery(
     {
-      chats: myChat?.flatMap((chat) => chat.chats.map((c) => c._id)),
+      chats: [...gatherBrandsChatId(), ...gatherSpacesChatId()],
     },
     {
-      skip: !myChat?.length,
+      skip: !(myChat?.brands?.length || myChat?.spaces?.length), 
     }
   );
 
@@ -152,75 +163,12 @@ const Message = () => {
   useEffect(() => {
     if (isSuccess && chatDetailsSuccess) {
       if (chatDetailsData && messages) {
-        const message = myChat.map((el) => {
-          return {
-            id: el?.brandDetails?.id,
-            activity: "brand",
-            brandName: el?.brandDetails?.brandName,
-            brandImage: el?.brandDetails?.brandImage,
-            read: false,
-            creatorDetail: el?.brandDetails?.user,
-            spaces: 1234,
-            followers: 234566,
-            saved: "789k",
-            reviews: 12345,
-            leases: 12345,
-            rating: 5,
-            messageGroups: el?.chats?.map((item) => {
-              let matchingItem = chatDetailsData
-                ?.map((item2) => {
-                  if (item2.chat._id === item._id) {
-                    return {
-                      members: item2.chat?.members,
-                      name: item2.chat?.name,
-                      createdAt: item2.chat?.createdAt,
-                      updatedAt: item2.chat?.updatedAt,
-                      chatId: item2.chat?._id,
-                    };
-                  }
-                })
-                .find((result) => result !== undefined);
-              const currentChatMessages = [];
+        let newArr = [...myChat.brands, ...myChat.spaces];
 
-              messages.forEach((message) => {
-                if (message.chat === item?._id) {
-                  currentChatMessages.push(message);
-                }
-              });
-
-              return {
-                ...item,
-                id: item?._id,
-                chatId: matchingItem && matchingItem?.chatId,
-                members: matchingItem && matchingItem?.members,
-                brandName: item?.receiverBrand?.brandName,
-                activity: "brand",
-                brandImage: item?.receiverBrand?.brandImage,
-                creator: item?.receiverBrand?.user?.name,
-                read: false,
-                chatName: matchingItem && matchingItem?.name,
-                date:
-                  matchingItem &&
-                  format(new Date(matchingItem?.createdAt), "MM/dd/yy"),
-                time:
-                  matchingItem &&
-                  format(new Date(matchingItem?.createdAt), "h:mma"),
-                messages: currentChatMessages?.map((messageItem) => {
-                  return {
-                    ...messageItem,
-                    id: messageItem?._id,
-                    brandName: item?.senderBrand?.brandName,
-                    brandImage: item?.senderBrand?.brandImage,
-                    activity: "brand",
-                    creator: el?.name,
-                    date: format(new Date(messageItem?.createdAt), "MM/dd/yy"),
-                    time: format(new Date(messageItem?.createdAt), "h:mma"),
-                  };
-                }),
-              };
-            }),
-          };
+        let message = newArr.map((el) => {
+          return messageBox(el, chatDetailsData, messages);
         });
+
         setAllMessages(message);
       }
     }
@@ -238,11 +186,11 @@ const Message = () => {
   const [selectedChatId, setSelectedChatId] = useState(null);
 
   const handleAccordionChange = (index) => (event, isExpanded) => {
-    setSelectedChatId(allMessages[index]?.messageGroups[0]?.chatId);
+    setSelectedChatId(allMessages[index]?.chatGroups[0]?.chatId);
     setSelectedGroup(() => {
       if (isExpanded) {
         return {
-          messageGroup: allMessages[index]?.messageGroups[0],
+          chatGroup: allMessages[index]?.chatGroups[0],
           group: allMessages[index],
         };
       } else {
@@ -260,7 +208,7 @@ const Message = () => {
       selectedGroup !== null
     ) {
       setSelectedGroup({
-        messageGroup: allMessages[0]?.messageGroups[0],
+        chatGroup: allMessages[0]?.chatGroups[0],
         group: allMessages[0],
       });
     }
@@ -273,7 +221,7 @@ const Message = () => {
       selectedGroup === null
     ) {
       setSelectedGroup({
-        messageGroup: allMessages[0]?.messageGroups[0],
+        chatGroup: allMessages[0]?.chatGroups[0],
         group: allMessages[0],
       });
     } else if (
@@ -282,7 +230,7 @@ const Message = () => {
       expanded !== null
     ) {
       setSelectedGroup({
-        messageGroup: allMessages[expanded]?.messageGroups?.find(
+        chatGroup: allMessages[expanded]?.chatGroups?.find(
           (msg) => msg.id === selectedChatId
         ),
         group: allMessages[expanded],

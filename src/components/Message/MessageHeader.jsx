@@ -3,13 +3,11 @@ import { Box, Stack, Typography, useMediaQuery } from "@mui/material";
 import { star } from "../../assets";
 
 const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
+  const { chatGroup, group } = selectedGroup;
+
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1100 = useMediaQuery("(max-width:1100px)");
 
-  const truncateTo13Characters = (str) => {
-    if (!str) return ''; 
-    return `${str.slice(0, 24)}...`;
-  };
 
   return (
     <Box
@@ -34,9 +32,9 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
               position: "relative",
             }}
           >
-            {selectedGroup?.messageGroup?.brandImage ? (
+            {chatGroup?.childImage ? (
               <img
-                src={selectedGroup.messageGroup.brandImage}
+                src={chatGroup?.childImage}
                 alt="Message Icon"
                 style={{
                   width: "100%",
@@ -57,13 +55,19 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
               />
             )}
 
-            <ActivityType
-              type={selectedGroup?.messageGroup?.activity}
-              theme={theme}
-            />
+            <ActivityType type={chatGroup?.activity} theme={theme} />
           </Box>
 
-          <Box marginLeft={"10px"}>
+          <Box
+            marginLeft={"10px"}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: chatGroup?.isInquiryRole === "sender"
+                ? "normal"
+                : "center",
+            }}
+          >
             <Typography
               variant="h1"
               sx={{
@@ -77,18 +81,20 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                 textAlign: "left",
               }}
             >
-              {truncateTo13Characters(selectedGroup?.messageGroup?.chatName)}
+              {chatGroup?.childName}
             </Typography>
 
-            <Typography
-              sx={{
-                fontWeight: 300,
-                fontSize: isLessThan1100 ? "16px" : "20px",
-                lineHeight: isLessThan1100 ? "18px" : "28px",
-              }}
-            >
-              {selectedGroup?.messageGroup?.brandName}
-            </Typography>
+            {chatGroup?.isInquiryRole === "sender" && (
+              <Typography
+                sx={{
+                  fontWeight: 300,
+                  fontSize: isLessThan1100 ? "16px" : "20px",
+                  lineHeight: isLessThan1100 ? "18px" : "28px",
+                }}
+              >
+                {chatGroup?.receiverBrand?.brandName}
+              </Typography>
+            )}
 
             <Box
               sx={{
@@ -99,27 +105,15 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                 columnGap: isLessThan1100 ? 1 : 2,
               }}
             >
-              {selectedGroup?.group?.creator && (
-                <GroupDetail
-                  withColon="By"
-                  text={selectedGroup?.group?.creator}
-                />
+              {chatGroup?.creator && (
+                <GroupDetail withColon="By" text={chatGroup?.creator} />
               )}
 
-              <GroupDetail
-                withColon="Spaces"
-                text={selectedGroup?.group?.spaces}
-              />
+              <GroupDetail withColon="Spaces" text={group?.spaces} />
 
-              <GroupDetail
-                withColon="Followers"
-                text={selectedGroup?.group?.followers}
-              />
+              <GroupDetail withColon="Followers" text={group?.followers} />
 
-              <GroupDetail
-                withColon="Saved"
-                text={selectedGroup?.group?.saved}
-              />
+              <GroupDetail withColon="Saved" text={group?.saved} />
 
               {isLessThan1100 ? (
                 <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -131,24 +125,21 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                       marginRight: 0.8,
                     }}
                   >
-                    {selectedGroup?.group?.rating.toFixed(1)}
+                    {group?.rating.toFixed(1)}
                   </Typography>
 
                   <Box sx={{ display: "flex", gap: 0.5 }}>
-                    {Array.from(
-                      { length: selectedGroup?.group?.rating },
-                      (_, ind) => {
-                        return (
-                          <img
-                            key={ind}
-                            width={10}
-                            height={10}
-                            src={star}
-                            alt="star"
-                          />
-                        );
-                      }
-                    )}
+                    {Array.from({ length: group?.rating }, (_, ind) => {
+                      return (
+                        <img
+                          key={ind}
+                          width={10}
+                          height={10}
+                          src={star}
+                          alt="star"
+                        />
+                      );
+                    })}
                   </Box>
                 </Box>
               ) : null}
@@ -170,24 +161,15 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                 color: "rgba(0, 20, 28, 0.8)",
               }}
             >
-              {selectedGroup?.group?.rating.toFixed(1)}
+              {group?.rating.toFixed(1)}
             </Typography>
 
             <Box>
-              {Array.from(
-                { length: selectedGroup?.group?.rating },
-                (_, ind) => {
-                  return (
-                    <img
-                      key={ind}
-                      width={21}
-                      height={20}
-                      src={star}
-                      alt="star"
-                    />
-                  );
-                }
-              )}
+              {Array.from({ length: group?.rating }, (_, ind) => {
+                return (
+                  <img key={ind} width={21} height={20} src={star} alt="star" />
+                );
+              })}
             </Box>
 
             <Typography
@@ -196,7 +178,7 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
                 fontSize: "12px",
                 lineHeight: "17px",
               }}
-            >{`Based on ${selectedGroup?.group?.reviews} reviews from ${selectedGroup?.group?.leases} Leases`}</Typography>
+            >{`Based on ${group?.reviews} reviews from ${group?.leases} Leases`}</Typography>
           </Stack>
         ) : null}
       </Box>
