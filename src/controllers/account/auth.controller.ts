@@ -2,7 +2,13 @@ import { NextFunction, Request, RequestHandler, Response } from "express";
 import { User } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { decrypt, generateToken, handleResponse, logger } from "../../utils";
+import {
+  decrypt,
+  generateToken,
+  handleResponse,
+  logger,
+  verifyToken,
+} from "../../utils";
 import { CHAT_COOKIE, HTTP_STATUS } from "../../constants";
 import jwt from "jsonwebtoken";
 import { UserForChat } from "../../models";
@@ -396,9 +402,16 @@ export class AuthController {
         throw new ApiError("The token has expired", HTTP_STATUS.BAD_REQUEST);
       }
 
-      let userId;
+      let payload: {
+        userId: string;
+        newEmail: string;
+      };
+
       try {
-        userId = decrypt(token as string);
+        payload = verifyToken(token as string) as {
+          userId: string;
+          newEmail: string;
+        };
       } catch (error) {
         throw new ApiError(
           "Invalid or tampered token",
@@ -406,11 +419,13 @@ export class AuthController {
         );
       }
 
-      if (!userId) {
+      if (!payload) {
         throw new ApiError("Invalid token", HTTP_STATUS.BAD_REQUEST);
       }
 
-      const user = await this.usersRepo.findOne({ where: { id: userId } });
+      const user = await this.usersRepo.findOne({
+        where: { id: payload.userId },
+      });
 
       if (!user) {
         throw new ApiError("User not found", HTTP_STATUS.NOT_FOUND);
