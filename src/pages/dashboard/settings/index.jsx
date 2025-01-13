@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 
 import { useFormik } from "formik";
 
-import { Box, Button, IconButton, Stack, Typography, useTheme } from "@mui/material";
+import { CircularProgress, Box, Button, IconButton, Stack, Typography, useTheme } from "@mui/material";
 
 import Input from "../../../components/Setting/SettingInput";
 import { CheckBox } from "../../../components";
@@ -80,6 +80,8 @@ const labelStyle = {
 const Settings = () => {
   const [updateProfile] = useUpdateProfileMutation();
   const [isLoading, setIsLoading] = useState(false);
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
   const [changePw, { isLoading: loading }] = useChangePwMutation();
   const [changeProfileImage, { isLoading: imgLoading }] =
     useChangeProfileImageMutation();
@@ -101,17 +103,29 @@ const Settings = () => {
   const dispatch = useDispatch();
 
   const handleisPublic = (event) => {
-    updateProfile({ profile: event.target.checked }).then((res) => {
-      dispatch(updateUser(res?.data?.data));
-    });
-    setIsPublic(event.target.checked);
+    setIsProfileLoading(true);
+    updateProfile({ profile: event.target.checked, firstName: fName }).then(
+      (res) => {
+        if (res?.data) {
+          dispatch(updateUser(res?.data?.data));
+          setIsPublic(res?.data?.data?.profile);
+        }
+        setIsProfileLoading(false);
+      }
+    );
   };
 
   const handleAllowEmail = (event) => {
-    updateProfile({ sendEmails: event.target.checked }).then((res) => {
-      dispatch(updateUser(res?.data?.data));
-    });
-    setAllowEmail(event.target.checked);
+    setIsEmailLoading(true);
+    updateProfile({ sendEmails: event.target.checked, firstName: fName }).then(
+      (res) => {
+        if (res?.data) {
+          dispatch(updateUser(res?.data?.data));
+          setAllowEmail(res?.data?.data?.sendEmails);
+        }
+        setIsEmailLoading(false);
+      }
+    );
   };
 
   const nameFormik = useFormik({
@@ -126,9 +140,11 @@ const Settings = () => {
       };
       updateProfile(objToSend).then((res) => {
         dispatch(updateUser(res?.data?.data));
-        res?.data && toast.success("Profile name updated successfully");
-        setIsLoading(false);
-        setChangeName(false);
+        if (res?.data) {
+          toast.success("Profile name updated successfully");
+          setIsLoading(false);
+          setChangeName(false);
+        }
       });
     },
   });
@@ -393,6 +409,9 @@ const Settings = () => {
             alignItems: changePassword && "center",
             gap: !changePassword ? 3 : 2,
             display: changePassword ? "flex" : "block",
+            ".MuiStack-root": {
+              width: "280px",
+            },
           }}
         >
           {changePassword ? (
@@ -486,7 +505,7 @@ const Settings = () => {
             <LoadingButton
               loading={loading}
               disabled={loading}
-              sx={{ ...buttonStyle }}
+              sx={{ ...buttonStyle, height: "auto", padding: "5px 23px" }}
               onClick={() =>
                 changePassword
                   ? passwordFormik.handleSubmit()
@@ -583,27 +602,40 @@ const Settings = () => {
           </LoadingButton>
         </Box>
 
-        <Box
-          display="flex"
-          alignItems="center"
-          marginBottom={1}
-          columnGap={2}
-          sx={{
-            "& img": { width: "18px !important", height: "18px !important" },
-          }}
-        >
-          <CheckBox checked={isPublic} onChange={handleisPublic} />
-          <Typography sx={{ fontWeight: 600 }}>
-            Display My profile publicly and allow search engines to index it.
-          </Typography>
-        </Box>
+        {isProfileLoading ? (
+          <CircularProgress size={20} />
+        ) : (
+          <Box
+            display="flex"
+            alignItems="center"
+            marginBottom={1}
+            columnGap={2}
+            sx={{
+              "& img": { width: "18px !important", height: "18px !important" },
+            }}
+          >
+            <CheckBox checked={isPublic} onChange={handleisPublic} />
+            <Typography sx={{ fontWeight: 600 }}>
+              Display My profile publicly and allow search engines to index it.
+            </Typography>
+          </Box>
+        )}
 
-        <Box display="flex" alignItems="center" marginBottom={1} columnGap={2}>
-          <CheckBox checked={allowEmail} onChange={handleAllowEmail} />
-          <Typography sx={{ fontWeight: 600 }}>
-            Allow SHWcase to send me occasional emails.
-          </Typography>
-        </Box>
+        {isEmailLoading ? (
+          <CircularProgress size={20} />
+        ) : (
+          <Box
+            display="flex"
+            alignItems="center"
+            marginBottom={1}
+            columnGap={2}
+          >
+            <CheckBox checked={allowEmail} onChange={handleAllowEmail} />
+            <Typography sx={{ fontWeight: 600 }}>
+              Allow SHWcase to send me occasional emails.
+            </Typography>
+          </Box>
+        )}
       </Box>
     </>
   );
