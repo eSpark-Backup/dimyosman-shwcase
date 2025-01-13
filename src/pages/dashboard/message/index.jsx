@@ -238,7 +238,7 @@ const Message = () => {
     }
   }, [allMessages, selectedChatId, expanded, messages]);
 
-  if (isLoading || chatDetailsLoading) {
+  if ((isLoading || chatDetailsLoading) && hasChats != "empty") {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />

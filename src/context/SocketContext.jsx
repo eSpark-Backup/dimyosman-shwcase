@@ -67,7 +67,12 @@ const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (isSuccess && data) {
-      if(data.chats && Array.isArray(data.chats)) {
+      if (
+        data.chats &&
+        (Array.isArray(data.chats) ||
+          (data?.chats?.brands?.length === 0 &&
+            data?.chats?.spaces?.length === 0))
+      ) {
         dispatch(isUserHasChat("empty"));
       }
 
