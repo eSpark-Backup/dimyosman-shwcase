@@ -206,20 +206,23 @@ const Header = ({ isLogin }) => {
                   <Popup open={openProfilePopup} data={profilePopuptabs} />
                 </Box>
               ) : (
-                <Button
-                  onClick={() => setOpenProfilePopup(true)}
-                  className="user-btn1"
-                  sx={{
-                    minWidth: "32px",
-                    height: "32px",
-                    backgroundColor: "rgba(0, 20, 28, 0.8)",
-                    ":hover": {
+                <Box sx={{ width: "32px", height: "32px" }} ref={profileRef}>
+                  <Button
+                    onClick={() => setOpenProfilePopup(true)}
+                    className="user-btn1"
+                    sx={{
+                      minWidth: "32px",
+                      height: "32px",
                       backgroundColor: "rgba(0, 20, 28, 0.8)",
-                    },
-                  }}
-                >
-                  <img src={user} alt="User" />
-                </Button>
+                      ":hover": {
+                        backgroundColor: "rgba(0, 20, 28, 0.8)",
+                      },
+                    }}
+                  >
+                    <img src={user} alt="User" />
+                  </Button>
+                  <Popup open={openProfilePopup} data={profilePopuptabs} />
+                </Box>
               )}
             </ul>
           ) : (
