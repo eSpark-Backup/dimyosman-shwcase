@@ -406,7 +406,7 @@ const Settings = () => {
           sx={{
             ...formGroupStyle,
             justifyContent: changePassword ? "space-between" : "inherit",
-            alignItems: changePassword && "center",
+            alignItems: changePassword && "flex-start",
             gap: !changePassword ? 3 : 2,
             display: changePassword ? "flex" : "block",
             ".MuiStack-root": {
@@ -505,7 +505,7 @@ const Settings = () => {
             <LoadingButton
               loading={loading}
               disabled={loading}
-              sx={{ ...buttonStyle, height: "auto", padding: "5px 23px" }}
+              sx={{ ...buttonStyle, height: "auto", padding: "5px 23px", marginTop: "24px" }}
               onClick={() =>
                 changePassword
                   ? passwordFormik.handleSubmit()
