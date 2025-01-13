@@ -104,7 +104,7 @@ const Settings = () => {
 
   const handleisPublic = (event) => {
     setIsProfileLoading(true);
-    updateProfile({ profile: event.target.checked, firstName: fName }).then(
+    updateProfile({ profile: event.target.checked, firstName: fName, lastName: lName }).then(
       (res) => {
         if (res?.data) {
           dispatch(updateUser(res?.data?.data));
@@ -117,7 +117,7 @@ const Settings = () => {
 
   const handleAllowEmail = (event) => {
     setIsEmailLoading(true);
-    updateProfile({ sendEmails: event.target.checked, firstName: fName }).then(
+    updateProfile({ sendEmails: event.target.checked, firstName: fName, lastName: lName }).then(
       (res) => {
         if (res?.data) {
           dispatch(updateUser(res?.data?.data));
