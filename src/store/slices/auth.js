@@ -15,6 +15,9 @@ const slice = createSlice({
       state.token = null;
       localStorage.removeItem("token");
     },
+    updateUser: (state, action) => {
+      state.user = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addMatcher(
@@ -47,6 +50,6 @@ const slice = createSlice({
   },
 });
 
-export const { logout } = slice.actions;
+export const { logout, updateUser } = slice.actions;
 
 export default slice.reducer;

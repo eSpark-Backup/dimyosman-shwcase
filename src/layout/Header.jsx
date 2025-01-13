@@ -14,17 +14,17 @@ import {
   space,
   spaceHover,
   user,
-  userProfile,
 } from "../assets";
 import { BadgeComp, SearchBar } from "../components";
 import { addIcon, chatIcon, bellIcon } from "../assets";
 import { useNavigate } from "react-router-dom";
 import { useClickOutside } from "../utils";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout as logoutFunc } from "../store/slices/auth";
 import { removeMychat } from "../store/slices/chat";
 
 const Header = ({ isLogin }) => {
+  const userData = useSelector((state) => state.auth);
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -190,15 +190,40 @@ const Header = ({ isLogin }) => {
                   bg={theme.palette.error.danger}
                 />
               </li>
-              <Box sx={{ width: "50px", height: "50px" }} ref={profileRef}>
-                <img
-                  onClick={() => setOpenProfilePopup(true)}
-                  src={userProfile}
-                  alt="User"
-                  style={{ cursor: "pointer" }}
-                />
-                <Popup open={openProfilePopup} data={profilePopuptabs} />
-              </Box>
+              {userData?.user?.profileImage ? (
+                <Box sx={{ width: "50px", height: "50px" }} ref={profileRef}>
+                  <img
+                    onClick={() => setOpenProfilePopup(true)}
+                    src={userData?.user?.profileImage}
+                    alt="User"
+                    style={{
+                      cursor: "pointer",
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: "4px",
+                    }}
+                  />
+                  <Popup open={openProfilePopup} data={profilePopuptabs} />
+                </Box>
+              ) : (
+                <Box sx={{ width: "32px", height: "32px" }} ref={profileRef}>
+                  <Button
+                    onClick={() => setOpenProfilePopup(true)}
+                    className="user-btn1"
+                    sx={{
+                      minWidth: "32px",
+                      height: "32px",
+                      backgroundColor: "rgba(0, 20, 28, 0.8)",
+                      ":hover": {
+                        backgroundColor: "rgba(0, 20, 28, 0.8)",
+                      },
+                    }}
+                  >
+                    <img src={user} alt="User" />
+                  </Button>
+                  <Popup open={openProfilePopup} data={profilePopuptabs} />
+                </Box>
+              )}
             </ul>
           ) : (
             <ul className="nav-links">
