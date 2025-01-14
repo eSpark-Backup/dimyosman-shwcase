@@ -1,5 +1,7 @@
 import Login from "./auth/login";
 import Register from "./auth/register";
+import ForgotPassword from "./auth/forgot-password";
+import ResetPassword from "./auth/reset-password";
 import Activity from "./dashboard/activity";
 import Brand from "./dashboard/brand";
 import BrandDetails from "./dashboard/brand/brand-detail";
@@ -22,6 +24,8 @@ import EditSpace from "./dashboard/edit-space";
 export {
   Login,
   Register,
+  ForgotPassword,
+  ResetPassword,
   Activity,
   Brand,
   BrandDetails,

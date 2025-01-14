@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 
 import { useFormik } from "formik";
 
-import { Box, Button, IconButton, Stack, Typography, useTheme } from "@mui/material";
+import { CircularProgress, Box, Button, IconButton, Stack, Typography, useTheme } from "@mui/material";
 
 import Input from "../../../components/Setting/SettingInput";
 import { CheckBox } from "../../../components";
@@ -20,7 +20,7 @@ import {
   nameSchema,
   passwordSchema,
 } from "../../../validation/validation";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   useChangeProfileImageMutation,
   useChangePwMutation,
@@ -28,6 +28,7 @@ import {
 } from "../../../services/auth";
 import { toast } from "react-toastify";
 import { LoadingButton } from "@mui/lab";
+import { updateUser } from "../../../store/slices/auth";
 
 const buttonStyle = {
   background:
@@ -79,6 +80,8 @@ const labelStyle = {
 const Settings = () => {
   const [updateProfile] = useUpdateProfileMutation();
   const [isLoading, setIsLoading] = useState(false);
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
   const [changePw, { isLoading: loading }] = useChangePwMutation();
   const [changeProfileImage, { isLoading: imgLoading }] =
     useChangeProfileImageMutation();
@@ -97,15 +100,32 @@ const Settings = () => {
   const [image, setImage] = useState(null);
   const [isPublic, setIsPublic] = useState(user?.profile);
   const [allowEmail, setAllowEmail] = useState(user?.sendEmails);
+  const dispatch = useDispatch();
 
   const handleisPublic = (event) => {
-    updateProfile({ profile: event.target.checked });
-    setIsPublic(event.target.checked);
+    setIsProfileLoading(true);
+    updateProfile({ profile: event.target.checked, firstName: fName, lastName: lName }).then(
+      (res) => {
+        if (res?.data) {
+          dispatch(updateUser(res?.data?.data));
+          setIsPublic(res?.data?.data?.profile);
+        }
+        setIsProfileLoading(false);
+      }
+    );
   };
 
   const handleAllowEmail = (event) => {
-    updateProfile({ sendEmails: event.target.checked });
-    setAllowEmail(event.target.checked);
+    setIsEmailLoading(true);
+    updateProfile({ sendEmails: event.target.checked, firstName: fName, lastName: lName }).then(
+      (res) => {
+        if (res?.data) {
+          dispatch(updateUser(res?.data?.data));
+          setAllowEmail(res?.data?.data?.sendEmails);
+        }
+        setIsEmailLoading(false);
+      }
+    );
   };
 
   const nameFormik = useFormik({
@@ -119,9 +139,12 @@ const Settings = () => {
         lastName: values?.lName,
       };
       updateProfile(objToSend).then((res) => {
-        res?.data && toast.success("Profile name updated successfully");
-        setIsLoading(false);
-        setChangeName(false);
+        dispatch(updateUser(res?.data?.data));
+        if (res?.data) {
+          toast.success("Profile name updated successfully");
+          setIsLoading(false);
+          setChangeName(false);
+        }
       });
     },
   });
@@ -156,7 +179,15 @@ const Settings = () => {
       if (image) {
         const formdata = new FormData();
         formdata.append("image", image);
-        changeProfileImage(formdata).then((res) => console.log(res, "res"));
+        changeProfileImage(formdata).then((res) => {
+          if (res?.error) {
+            toast.error(res?.error?.data?.message || "something went wrong");
+          }
+          if (res?.data) {
+            dispatch(updateUser(res?.data?.data));
+            setChangeImage(false);
+          }
+        });
       } else {
         toast.error("Please select the image first");
       }
@@ -375,9 +406,12 @@ const Settings = () => {
           sx={{
             ...formGroupStyle,
             justifyContent: changePassword ? "space-between" : "inherit",
-            alignItems: changePassword && "center",
+            alignItems: changePassword && "flex-start",
             gap: !changePassword ? 3 : 2,
             display: changePassword ? "flex" : "block",
+            ".MuiStack-root": {
+              width: "280px",
+            },
           }}
         >
           {changePassword ? (
@@ -471,7 +505,7 @@ const Settings = () => {
             <LoadingButton
               loading={loading}
               disabled={loading}
-              sx={{ ...buttonStyle }}
+              sx={{ ...buttonStyle, height: "auto", padding: "5px 23px", marginTop: "24px" }}
               onClick={() =>
                 changePassword
                   ? passwordFormik.handleSubmit()
@@ -498,7 +532,7 @@ const Settings = () => {
                 border: "1px dashed rgb(0, 20, 28, 0.4)",
                 backgroundColor: "rgb(209, 219, 215, 0.2)",
                 ...flexContentCenter,
-                pt: "15px",
+                pt: changeImage ? "15px" : "",
                 overflow: "hidden",
                 mt: 0.3,
               }}
@@ -518,8 +552,10 @@ const Settings = () => {
                     borderRadius: "5px",
                   }}
                 />
-              ) : (
+              ) : !profileImage && !changeImage ? (
                 "No image"
+              ) : (
+                ""
               )}
               {changeImage ? (
                 <Box
@@ -566,27 +602,40 @@ const Settings = () => {
           </LoadingButton>
         </Box>
 
-        <Box
-          display="flex"
-          alignItems="center"
-          marginBottom={1}
-          columnGap={2}
-          sx={{
-            "& img": { width: "18px !important", height: "18px !important" },
-          }}
-        >
-          <CheckBox checked={isPublic} onChange={handleisPublic} />
-          <Typography sx={{ fontWeight: 600 }}>
-            Display My profile publicly and allow search engines to index it.
-          </Typography>
-        </Box>
+        {isProfileLoading ? (
+          <CircularProgress size={20} />
+        ) : (
+          <Box
+            display="flex"
+            alignItems="center"
+            marginBottom={1}
+            columnGap={2}
+            sx={{
+              "& img": { width: "18px !important", height: "18px !important" },
+            }}
+          >
+            <CheckBox checked={isPublic} onChange={handleisPublic} />
+            <Typography sx={{ fontWeight: 600 }}>
+              Display My profile publicly and allow search engines to index it.
+            </Typography>
+          </Box>
+        )}
 
-        <Box display="flex" alignItems="center" marginBottom={1} columnGap={2}>
-          <CheckBox checked={allowEmail} onChange={handleAllowEmail} />
-          <Typography sx={{ fontWeight: 600 }}>
-            Allow SHWcase to send me occasional emails.
-          </Typography>
-        </Box>
+        {isEmailLoading ? (
+          <CircularProgress size={20} />
+        ) : (
+          <Box
+            display="flex"
+            alignItems="center"
+            marginBottom={1}
+            columnGap={2}
+          >
+            <CheckBox checked={allowEmail} onChange={handleAllowEmail} />
+            <Typography sx={{ fontWeight: 600 }}>
+              Allow SHWcase to send me occasional emails.
+            </Typography>
+          </Box>
+        )}
       </Box>
     </>
   );

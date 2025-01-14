@@ -51,6 +51,12 @@ export const passwordSchema = Yup.object({
   password: Yup.reach(registerSchema, "password"), 
   conPassword: Yup.reach(registerSchema, "conPassword"), 
 });
+
+export const resetPasswordSchema = Yup.object({
+  password: Yup.reach(registerSchema, "password"), 
+  conPassword: Yup.reach(registerSchema, "conPassword"), 
+})
+
 export const imageValidationSchema = Yup.object().shape({
   image: Yup.mixed()
     .required("Image is required")
