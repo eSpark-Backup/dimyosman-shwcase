@@ -62,6 +62,31 @@ export function deleteCookie(name) {
   document.cookie = `${name}=; Max-Age=-1; path=/`;
 }
 
+export const addEmoji = (emoji, isCursorActive, quillInstance, setEmojiPickerVisible) => {
+  const isActive = isCursorActive();
+  if (!isActive) {
+    quillInstance.current.focus();
+  }
+
+  const range = quillInstance.current.getSelection();
+  const cursorPosition = range
+    ? range.index
+    : quillInstance.current.getLength();
+
+  quillInstance.current.insertText(cursorPosition, emoji.native, "user");
+
+  quillInstance.current.formatText(
+    cursorPosition,
+    emoji.native.length,
+    "emoji",
+    true
+  );
+
+  quillInstance.current.setSelection(cursorPosition + emoji.native.length, 0);
+
+  setEmojiPickerVisible(false);
+};
+
 export const messageBox = (parentObj, chatDetails, allMessages) => {
   const getParentObject = () => {
     const isSpacesChats = parentObj?.spaceDetails;

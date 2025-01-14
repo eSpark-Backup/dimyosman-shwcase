@@ -1,5 +1,4 @@
 import { Box, Typography, useMediaQuery } from "@mui/material";
-import React from "react";
 
 const Message = ({ ActivityType, theme, message, sender }) => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");

@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import {
   Accordion,
@@ -7,8 +8,11 @@ import {
   Box,
   Typography,
 } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
+
+import ActivityType from "./ActivityType";
+
 import { isActiveMembers } from "../../store/slices/chat";
+
 import { deleteCookie, getCookie, setCookie } from "../../utils";
 
 const MessageItem = ({
@@ -18,9 +22,9 @@ const MessageItem = ({
   onChange,
   setSelectedGroup,
   selectedGroup,
-  ActivityType,
   setSelectedChatId,
   emitEvent,
+  onlineUsers
 }) => {
   const detailsRef = useRef(null);
 
@@ -30,6 +34,7 @@ const MessageItem = ({
     getCookie("unreadChatIds") && JSON.parse(getCookie("unreadChatIds"));
 
   const { user } = useSelector((state) => state.auth);
+
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -142,23 +147,23 @@ const MessageItem = ({
           {message.parentName}
         </Typography>
 
-        {/* {message.read && ( */}
-        {getUnreadMessage?.length &&
-          message?.chatGroups?.some((msg) =>
-            getUnreadChatIds?.includes(msg.chatId)
-          ) && (
-            <Box
-              sx={{
-                width: "10px",
-                height: "10px",
-                borderRadius: "50%",
-                backgroundColor: theme.palette.error.danger,
-                position: "absolute",
-                top: "0px",
-                right: "2px",
-              }}
-            />
-          )}
+        {getUnreadMessage?.length
+          ? message?.chatGroups?.some((msg) =>
+              getUnreadChatIds?.includes(msg.chatId)
+            ) && (
+              <Box
+                sx={{
+                  width: "10px",
+                  height: "10px",
+                  borderRadius: "50%",
+                  backgroundColor: theme.palette.error.danger,
+                  position: "absolute",
+                  top: "0px",
+                  right: "2px",
+                }}
+              />
+            )
+          : null}
       </AccordionSummary>
 
       <AccordionDetails
@@ -194,10 +199,8 @@ const MessageItem = ({
                       userId: user.userChatId,
                       members: el?.members,
                     };
-                    // console.log(obj)
-                    // console.log(obj.members)
-                    // dispatch(isActiveMembers(obj.members));
-                    // emitEvent("CHAT_JOINED", obj);
+                    dispatch(isActiveMembers(obj.members));
+                    emitEvent("CHAT_JOINED", obj);
 
                     setSelectedChatId(el?.chatId);
                     setSelectedGroup({ chatGroup: el, group: message });
@@ -231,19 +234,24 @@ const MessageItem = ({
                             border: "1px solid rgba(209, 219, 215, 0.4)",
                           }}
                         />
-                        {el.isActive && (
-                          <Box
-                            sx={{
-                              width: "10px",
-                              height: "10px",
-                              borderRadius: "50%",
-                              backgroundColor: "#00FF00",
-                              position: "absolute",
-                              top: "-4px",
-                              right: "-3px",
-                            }}
-                          />
-                        )}
+                        {onlineUsers?.length
+                          ? el.members?.some((member) =>
+                              onlineUsers?.includes(member)
+                            ) && (
+                              <Box
+                                sx={{
+                                  width: "10px",
+                                  height: "10px",
+                                  borderRadius: "50%",
+                                  backgroundColor: "#00FF00",
+                                  position: "absolute",
+                                  top: "-4px",
+                                  right: "-3px",
+                                }}
+                              />
+                            )
+                          : null}
+
                         {/* {!el.isActive && (
                           <Box
                             sx={{
