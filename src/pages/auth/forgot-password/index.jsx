@@ -16,8 +16,13 @@ const ForgotPassword = () => {
       email: "",
     },
     validationSchema: emailSchema,
-    onSubmit: (values) => {
-      forgotPassword(values);
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        await forgotPassword(values);
+        resetForm();
+      } catch (error) {
+        console.error("Error while resetting password:", error);
+      }
     },
   });
 
