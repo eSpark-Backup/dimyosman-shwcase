@@ -2,7 +2,7 @@ import { Box, Stack, Typography, useMediaQuery } from "@mui/material";
 
 import { star } from "../../assets";
 
-const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
+const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail,onlineUsers }) => {
   const { chatGroup, group } = selectedGroup;
 
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
@@ -56,6 +56,24 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
             )}
 
             <ActivityType type={chatGroup?.activity} theme={theme} />
+
+            {onlineUsers?.length
+              ? chatGroup.members?.some((member) =>
+                  onlineUsers?.includes(member)
+                ) && (
+                  <Box
+                    sx={{
+                      width: "14px",
+                      height: "14px",
+                      borderRadius: "50%",
+                      backgroundColor: "#00FF00",
+                      position: "absolute",
+                      top: "-4px",
+                      right: "-3px",
+                    }}
+                  />
+                )
+              : null}
           </Box>
 
           <Box
@@ -63,9 +81,8 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail }) => {
             sx={{
               display: "flex",
               flexDirection: "column",
-              justifyContent: chatGroup?.isInquiryRole === "sender"
-                ? "normal"
-                : "center",
+              justifyContent:
+                chatGroup?.isInquiryRole === "sender" ? "normal" : "center",
             }}
           >
             <Typography

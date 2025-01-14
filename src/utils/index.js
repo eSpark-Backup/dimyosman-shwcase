@@ -45,6 +45,48 @@ export function useClickOutside(ref, onClickOutside) {
   }, [ref, onClickOutside]);
 }
 
+export function setCookie(name, value) {
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/`;
+}
+
+export function getCookie(name) {
+  const cookies = document.cookie.split("; ");
+  for (const cookie of cookies) {
+    const [key, value] = cookie.split("=");
+    if (key === name) return decodeURIComponent(value);
+  }
+  return null;
+}
+
+export function deleteCookie(name) {
+  document.cookie = `${name}=; Max-Age=-1; path=/`;
+}
+
+export const addEmoji = (emoji, isCursorActive, quillInstance, setEmojiPickerVisible) => {
+  const isActive = isCursorActive();
+  if (!isActive) {
+    quillInstance.current.focus();
+  }
+
+  const range = quillInstance.current.getSelection();
+  const cursorPosition = range
+    ? range.index
+    : quillInstance.current.getLength();
+
+  quillInstance.current.insertText(cursorPosition, emoji.native, "user");
+
+  quillInstance.current.formatText(
+    cursorPosition,
+    emoji.native.length,
+    "emoji",
+    true
+  );
+
+  quillInstance.current.setSelection(cursorPosition + emoji.native.length, 0);
+
+  setEmojiPickerVisible(false);
+};
+
 export const messageBox = (parentObj, chatDetails, allMessages) => {
   const getParentObject = () => {
     const isSpacesChats = parentObj?.spaceDetails;
@@ -62,7 +104,7 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
   };
 
   const getMatchingChatDetails = (chatId) => {
-    return chatDetails?.find((item) => item.chat._id === chatId)?.chat || {};
+    return chatDetails?.find((item) => item._id === chatId) || {};
   };
 
   const getMessagesForChat = (chatId) => {
@@ -116,12 +158,9 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
         chatName: matchingItem?.name,
         activity,
         read: false,
-        date: matchingItem?.createdAt
-          ? formatDate(matchingItem?.createdAt)
-          : "",
-        time: matchingItem?.createdAt
-          ? formatTime(matchingItem?.createdAt)
-          : "",
+        date: matchingItem?.createdAt ? formatDate(matchingItem?.createdAt) : '',
+        time: matchingItem?.createdAt ? formatTime(matchingItem?.createdAt) : '',
+        isActive: false,
         messages: currentChatMessages.map((messageItem) => {
           return {
             ...messageItem,

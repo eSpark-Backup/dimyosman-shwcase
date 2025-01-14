@@ -2,9 +2,11 @@ import { createSlice, current } from "@reduxjs/toolkit";
 
 const initialState = {
   myChat: [],
-  chatDetails: {},
+  chatDetails: [],
   messages: [],
   hasChats: "",
+  activeMembers: [],
+  allChatIds: [],
 };
 
 const slice = createSlice({
@@ -13,7 +15,21 @@ const slice = createSlice({
   reducers: {
     getMyChat: (state, action) => {
       const newChat = action.payload;
-      state.myChat = newChat;
+
+      const gatherBrands = newChat?.brands?.flatMap((chat) =>
+        chat.chats.map((c) => c)
+      );
+      const gatherSpaces = newChat?.spaces?.flatMap((chat) =>
+        chat.chats.map((c) => c)
+      );
+
+      const mergeAll = [...gatherBrands, ...gatherSpaces];
+      const mergeAllChats = [...newChat?.brands, ...newChat?.spaces];
+
+      const gatherAllIds = mergeAll.map((c) => c._id);
+
+      state.myChat = mergeAllChats;
+      state.allChatIds = gatherAllIds;
     },
     getChatDetails: (state, action) => {
       state.chatDetails = action.payload;
@@ -23,9 +39,18 @@ const slice = createSlice({
     },
     removeMychat(state) {
       state.myChat = [];
+      state.chatDetails = [];
+      state.messages = [];
+      state.allChatIds = [];
     },
-    isUserHasChat(state,action) {
+    isUserHasChat(state, action) {
       state.hasChats = action.payload;
+    },
+    isActiveMembers(state, action) {
+      state.activeMembers = action.payload;
+    },
+    emptyActiveMembers(state) {
+      state.activeMembers = [];
     },
   },
 });
@@ -36,6 +61,8 @@ export const {
   getMessages,
   removeMychat,
   isUserHasChat,
+  isActiveMembers,
+  emptyActiveMembers
 } = slice.actions;
 
 export default slice.reducer;

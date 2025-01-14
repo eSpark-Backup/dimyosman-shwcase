@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 const Activity = () => {
   const { data, isSuccess, isError, error, isLoading, isFetching } = useGetActivityDataQuery({
-    page: 1, pageSize: 7
+    page: 1, pageSize: 10
   }, { refetchOnMountOrArgChange: true })
 
   const [activityData, setActivityData] = useState([]);
