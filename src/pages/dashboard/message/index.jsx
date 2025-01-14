@@ -164,6 +164,15 @@ const Message = () => {
         const getNotReadMessage = JSON.parse(getCookie("unread"));
         const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
 
+        if (!getNotReadMessage) {
+          setCookie(
+            "unread",
+            JSON.stringify([{ chatId: data.chatId, count: 1 }])
+          );
+          setCookie("unreadChatIds", JSON.stringify([data.chatId]));
+          return;
+        }
+
         const updatedMessages = getNotReadMessage?.some(
           (el) => el.chatId === data.chatId
         )
