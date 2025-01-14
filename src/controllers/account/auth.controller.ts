@@ -431,16 +431,21 @@ export class AuthController {
         throw new ApiError("User not found", HTTP_STATUS.NOT_FOUND);
       }
       if (user.passwordResetExpire != expiresAt) {
-        throw new ApiError("Invalid token", HTTP_STATUS.BAD_REQUEST);
+        throw new ApiError(
+          "Invalid token or Link Expired",
+          HTTP_STATUS.BAD_REQUEST
+        );
       }
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(newPassword, salt);
-      if (hashedPassword == user.password) {
+      const isPasswordSame = await bcrypt.compare(newPassword, user.password);
+      if (isPasswordSame) {
         throw new ApiError(
           "New password cannot be the same as the old password",
           HTTP_STATUS.BAD_REQUEST
         );
       }
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
 
       user.password = hashedPassword;
       user.passwordResetExpire = null;
