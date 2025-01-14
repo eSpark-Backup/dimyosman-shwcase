@@ -57,6 +57,7 @@ import {
   getMyChat,
   isUserHasChat,
 } from "../store/slices/chat";
+import { getCookie, setCookie } from "../utils";
 
 const SocketContext = createContext(null);
 
@@ -107,7 +108,7 @@ const SocketProvider = ({ children }) => {
       });
 
       socket.current.on("connect", () => {
-        // console.log("Connected to socket server from client");
+        console.log("Connected to socket server from client");
       });
 
       socket.current.on("connect_error", (error) => {
@@ -135,6 +136,77 @@ const SocketProvider = ({ children }) => {
     }
   }, [user, socket]);
 
+  useEffect(() => {
+    if (user) {
+      if (pathname !== "/message") {
+        socket.current.on("NEW_MESSAGE", (data) => {
+          if (messages?.length > 0) {
+            dispatch(getMessages([...messages, data.message]));
+          } else {
+            refetch();
+          }
+        });
+
+        const handleNewMessageAlert = (data) => {
+          const getNotReadMessage = JSON.parse(getCookie("unread"));
+          const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
+
+          if (!getNotReadMessage) {
+            setCookie(
+              "unread",
+              JSON.stringify([{ chatId: data.chatId, count: 1 }])
+            );
+            setCookie("unreadChatIds", JSON.stringify([data.chatId]));
+            return;
+          }
+
+          const updatedMessages = getNotReadMessage?.some(
+            (el) => el.chatId === data.chatId
+          )
+            ? getNotReadMessage.map((el) =>
+                el.chatId === data.chatId ? { ...el, count: el.count + 1 } : el
+              )
+            : [...getNotReadMessage, { chatId: data.chatId, count: 1 }];
+
+          setCookie("unread", JSON.stringify(updatedMessages));
+          if (!getUnreadChatIds.includes(data.chatId)) {
+            getUnreadChatIds.push(data.chatId);
+            setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
+          }
+        };
+        socket.current.on("NEW_MESSAGE_ALERT", handleNewMessageAlert);
+
+        return () => {
+          // Cleanup event on unmount
+          if (socket.current) {
+            socket.current.off("NEW_MESSAGE");
+            socket.current.off("NEW_MESSAGE_ALERT");
+          }
+        };
+      }
+    }
+  }, [messages, user, socket, pathname]);
+
+  useEffect(() => {
+    if (user) {
+      if (pathname !== "/message" && activeMembers?.length > 0) {
+        const obj = {
+          userId: user.userChatId,
+          members: activeMembers,
+        };
+
+        socket.current.emit("CHAT_LEFT", obj);
+        dispatch(emptyActiveMembers());
+        return () => {
+          // Cleanup event on unmount
+          if (socket.current) {
+            socket.current.off("CHAT_LEFT");
+          }
+        };
+      }
+    }
+  }, [pathname, activeMembers, user, socket]);
+
   const emitEvent = (event, payload) => {
     if (socket.current) {
       socket.current.emit(event, payload);
@@ -152,33 +224,6 @@ const SocketProvider = ({ children }) => {
       socket.current.off(event);
     }
   };
-
-  useEffect(() => {
-    if (user) {
-      socket.current.on("NEW_MESSAGE", (data) => {
-        // console.log("NEW_MESSAGE EVENT TRIGGERED.");
-        if (messages?.length > 0) {
-          dispatch(getMessages([...messages, data.message]));
-        } else {
-          refetch();
-        }
-      });
-    }
-  }, [messages, user, socket,pathname]);
-
-  useEffect(() => {
-    if (user) {
-      if (pathname !== "/message" && activeMembers?.length > 0) {
-        const obj = {
-          userId: user.userChatId,
-          members: activeMembers,
-        };
-
-        socket.current.emit("CHAT_LEFT", obj);
-        dispatch(emptyActiveMembers());
-      }
-    }
-  }, [pathname, activeMembers, user, socket]);
 
   return (
     <SocketContext.Provider

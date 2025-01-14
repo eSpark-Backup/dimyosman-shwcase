@@ -251,20 +251,6 @@ const MessageItem = ({
                               />
                             )
                           : null}
-
-                        {/* {!el.isActive && (
-                          <Box
-                            sx={{
-                              width: "10px",
-                              height: "10px",
-                              borderRadius: "50%",
-                              backgroundColor: "#B0B0B0",
-                              position: "absolute",
-                              top: "-4px",
-                              right: "-3px",
-                            }}
-                          />
-                        )} */}
                       </Box>
                     ) : (
                       <Box
@@ -313,6 +299,7 @@ const MessageItem = ({
                         <span>{el.creator}</span>
                         {getUnreadMessage?.length && getCount(el.chatId) && (
                           <Box
+                            component={"span"}
                             sx={{
                               minWidth: "15px",
                               height: "15px",
