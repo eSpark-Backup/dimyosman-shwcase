@@ -435,6 +435,12 @@ export class AuthController {
       }
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(newPassword, salt);
+      if (hashedPassword == user.password) {
+        throw new ApiError(
+          "New password cannot be the same as the old password",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
 
       user.password = hashedPassword;
       user.passwordResetExpire = null;
