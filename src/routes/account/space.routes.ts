@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { SpaceValidation, validate } from "../../validations";
-import { Brand, Events, Spaces, User } from "../../entity";
+import { Brand, Events, LeaseSpace, Spaces, User } from "../../entity";
 import { AppDataSource } from "../../typeorm.config";
 import { SpaceController } from "../../controllers/account";
 import {
@@ -20,12 +20,15 @@ const spaceRepository = AppDataSource.getRepository(Spaces);
 const userRepository = AppDataSource.getRepository(User);
 const brandRepository = AppDataSource.getRepository(Brand);
 const eventRepository = AppDataSource.getRepository(Events);
+const leaseSpaceRepository = AppDataSource.getRepository(LeaseSpace);
 
 const spaceController = new SpaceController(
   spaceRepository,
   userRepository,
   brandRepository,
   eventRepository,
+  leaseSpaceRepository,
+
   Chat,
   UserForChat,
   Notification,
@@ -363,6 +366,61 @@ router.put(
 
 /**
  * @swagger
+ * /space/leaseSpace:
+ *   post:
+ *     summary: Send a Lease Contract For Space
+ *     description: This endpoint allows users with the USER role to send contract for Lease.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - Space
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               spaceId:
+ *                 type: string
+ *                 description: ID of the space.
+ *               chatId:
+ *                 type: string
+ *                 description: Name of the space.
+ *               tenantId:
+ *                 type: string
+ *                 description: Name of the space.
+ *               contractDetails:
+ *                  type: object
+ *                  properties:
+ *                    description:
+ *                       type: string
+ *                       description: A brief description of the Lease Contract
+ *                    htmlContent:
+ *                       type: string
+ *                       description: HTML content related to the Contract (e.g., description with HTML tags)
+ *     responses:
+ *       201:
+ *         description: space created successfully.
+ *       400:
+ *         description: Validation error.
+ *       403:
+ *         description: Forbidden.
+ *       500:
+ *         description: Server error.
+ */
+
+router.post(
+  "/leaseSpace",
+  checkJwt,
+  validateRoles([ROLES.USER]),
+  parseJsonFields(["contractDetails"]),
+  validate(SpaceValidation.LeasingSpaceValidation, "body"),
+  (req, res, next) => spaceController.leaseSpace(req, res, next)
+);
+
+/**
+ * @swagger
  * /space/{id}:
  *   get:
  *     summary: Get a specific space by ID or all spaces for the authenticated user
@@ -392,6 +450,13 @@ router.put(
  *         schema:
  *           type: integer
  *           example: 1
+ *       - in: query
+ *         name: tab
+ *         required: false
+ *         description: Tab name to filter the spaces.
+ *         schema:
+ *           type: string
+ *           example: Lease
  *     responses:
  *       200:
  *         description: space found by ID or all spaces for the authenticated user.
