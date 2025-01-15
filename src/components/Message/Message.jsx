@@ -1,5 +1,4 @@
 import { Box, Typography, useMediaQuery } from "@mui/material";
-import React from "react";
 
 const Message = ({ ActivityType, theme, message, sender }) => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
@@ -104,6 +103,7 @@ const Message = ({ ActivityType, theme, message, sender }) => {
       <Typography
         sx={{
           marginTop: isLessThan1400 ? 2 : 3,
+          wordBreak:"break-word",
 
           "& a": {
             color: "#00141C !important",

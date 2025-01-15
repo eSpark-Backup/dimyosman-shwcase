@@ -1,27 +1,20 @@
 import { Fragment, useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 
-import {
-  Box,
-  Button,
-  IconButton,
-  MenuItem,
-  Select,
-  Stack,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { toast } from "react-toastify";
+
+import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
 
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 
-import { arrowDown, smile } from "../../../../assets";
-
 import MessageHeader from "../../../../components/Message/MessageHeader";
-import MessageInput from "../../../../components/Message/MessageInput";
 import Message from "../../../../components/Message/Message";
+import ActivityType from "../../../../components/Message/ActivityType";
+import InputBox from "../../../../components/Message/InputBox";
+import EditorSenderSection from "../../../../components/Message/EditorSenderSection";
 
-import { toast } from "react-toastify";
+import { addEmoji } from "../../../../utils";
 
 const GroupDetail = ({ withColon, text }) => (
   <Typography
@@ -42,7 +35,13 @@ const GroupDetail = ({ withColon, text }) => (
   </Typography>
 );
 
-const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
+const AllMesaages = ({
+  selectedGroup,
+  emitEvent,
+  isTypingUser,
+  onlineUsers,
+  setToShare,
+}) => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1100 = useMediaQuery("(max-width:1100px)");
@@ -54,6 +53,7 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
   const pickerRef = useRef(null);
   const buttonRef = useRef(null);
 
+  const { user } = useSelector((state) => state.auth);
 
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
@@ -66,26 +66,26 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [selectedGroup?.messageGroup?.messages]);
+  }, [selectedGroup?.chatGroup?.messages]);
 
   const [sender, setSender] = useState("");
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
   const [finalMessage, setFinalMessage] = useState({
-    chatId: selectedGroup?.messageGroup?.id,
-    members: selectedGroup?.messageGroup?.members,
+    chatId: selectedGroup?.chatGroup?.id,
+    members: selectedGroup?.chatGroup?.members,
     message: "",
   });
   const [buttonDisabled, setButtonDisabled] = useState(true);
 
   useEffect(() => {
-    if (selectedGroup?.group?.brandName) {
-      setSender(selectedGroup.group.brandName);
+    if (selectedGroup?.group?.parentName) {
+      setSender(selectedGroup.group.parentName);
     }
 
-    if (selectedGroup?.messageGroup?.id) {
+    if (selectedGroup?.chatGroup?.id) {
       setFinalMessage({
-        chatId: selectedGroup?.messageGroup?.id,
-        members: selectedGroup?.messageGroup?.members,
+        chatId: selectedGroup?.chatGroup?.id,
+        members: selectedGroup?.chatGroup?.members,
         message: "",
       });
     }
@@ -104,36 +104,32 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
     return selection !== null && selection.length > 0;
   };
 
-  const addEmoji = (emoji) => {
-    const isActive = isCursorActive();
-    if (!isActive) {
-      quillInstance.current.focus(); 
+  const selectedGroupData = useRef(null);
+
+  useEffect(() => {
+    if (selectedGroup?.chatGroup?.members && selectedGroup?.chatGroup?.chatId) {
+      selectedGroupData.current = selectedGroup?.chatGroup;
     }
-
-    const range = quillInstance.current.getSelection();
-    const cursorPosition = range
-      ? range.index
-      : quillInstance.current.getLength();
-
-    quillInstance.current.insertText(cursorPosition, emoji.native, "user");
-
-    quillInstance.current.formatText(
-      cursorPosition,
-      emoji.native.length,
-      "emoji",
-      true
-    );
-
-    quillInstance.current.setSelection(cursorPosition + emoji.native.length, 0);
-
-    setEmojiPickerVisible(false);
-  };
+  }, [selectedGroup]);
 
   const handleInputChange = ({ content, text }) => {
+    const newMessage = text.trim();
+    const dataToSend = {
+      members: selectedGroupData.current?.members,
+      chatId: selectedGroupData.current?.chatId,
+    };
+
     setFinalMessage((prevData) => ({
       ...prevData,
       message: content,
     }));
+
+    if (newMessage.length > 0) {
+      setToShare(dataToSend);
+      emitEvent("START_TYPING", dataToSend);
+    } else {
+      emitEvent("STOP_TYPING", dataToSend);
+    }
   };
 
   // Handle sending the message
@@ -149,6 +145,11 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
     if (!strippedContent) {
       toast?.error("Message can not be empty.");
       return false;
+    }
+
+    if (!finalMessage?.chatId) {
+      toast.error("Chat id is required");
+      return;
     }
 
     emitEvent("NEW_MESSAGE", finalMessage);
@@ -180,12 +181,15 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
 
   return (
     <Box position={"relative"}>
-      <MessageHeader
-        selectedGroup={selectedGroup}
-        theme={theme}
-        ActivityType={ActivityType}
-        GroupDetail={GroupDetail}
-      />
+      {selectedGroup && (
+        <MessageHeader
+          selectedGroup={selectedGroup}
+          theme={theme}
+          ActivityType={ActivityType}
+          GroupDetail={GroupDetail}
+          onlineUsers={onlineUsers}
+        />
+      )}
 
       <Box
         sx={{
@@ -218,7 +222,7 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
               flexDirection: "column-reverse",
             }}
           >
-            {selectedGroup?.messageGroup?.messages
+            {selectedGroup?.chatGroup?.messages
               ?.slice()
               .reverse()
               ?.map((message, i) => {
@@ -232,17 +236,16 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
                         sender={{
                           brandName:
                             message?.sender?.name ===
-                            selectedGroup?.group?.creatorDetail?.name
-                              ? selectedGroup?.messageGroup?.senderBrand
-                                  ?.brandName
-                              : selectedGroup?.messageGroup?.receiverBrand
+                            selectedGroup?.chatGroup?.senderBrand?.user?.name
+                              ? selectedGroup?.chatGroup?.senderBrand?.brandName
+                              : selectedGroup?.chatGroup?.receiverBrand
                                   ?.brandName,
                           brandImage:
                             message?.sender?.name ===
-                            selectedGroup?.group?.creatorDetail?.name
-                              ? selectedGroup?.messageGroup?.senderBrand
+                            selectedGroup?.chatGroup?.senderBrand?.user?.name
+                              ? selectedGroup?.chatGroup?.senderBrand
                                   ?.brandImage
-                              : selectedGroup?.messageGroup?.receiverBrand
+                              : selectedGroup?.chatGroup?.receiverBrand
                                   ?.brandImage,
                         }}
                       />
@@ -251,6 +254,13 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
                 );
               })}
           </Box>
+
+          {isTypingUser?.userId === user?.id &&
+            selectedGroup?.chatGroup?.chatId === isTypingUser?.chatId && (
+              <span className="typing-indicator">
+                <span className="dots">...</span>
+              </span>
+            )}
 
           <Box
             sx={{
@@ -266,212 +276,19 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
               border: "1px solid rgba(209, 219, 215, 0.5)",
             }}
           >
-            <Stack
-              sx={{
-                flexDirection: "row",
-                marginBottom: isLessThan1400 ? 1.5 : 2,
-              }}
-            >
-              <Typography sx={{ fontWeight: 300, lineHeight: "22px" }}>
-                Sender:
-              </Typography>
+            <EditorSenderSection selectedGroup={selectedGroup} />
 
-              <Box
-                sx={{
-                  width: "auto",
-                  bgcolor: "transparent",
-                  padding: 0,
-                  fontSize: "16px",
-                  lineHeight: "22px",
-                  border: "none",
-                  marginLeft: "5px",
-                  fontWeight: 600,
-                  cursor: "default",
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                {selectedGroup?.group?.brandName && (
-                  <>
-                    <span>{selectedGroup.group.brandName}</span>
-                    <img
-                      src={arrowDown}
-                      alt="arrow"
-                      style={{ marginLeft: "8px" }}
-                    />
-                  </>
-                )}
-              </Box>
-
-              {/* <Select
-                sx={{
-                  width: "auto",
-                  bgcolor: "transparent",
-                  padding: 0,
-                  fontSize: "16px",
-                  lineHeight: "22px",
-                  border: "none",
-                  marginLeft: "5px",
-                  fontWeight: 600,
-                  cursor: "default",
-
-                  "& .MuiSelect-select": {
-                    padding: 0,
-                    cursor: "default",
-                  },
-
-                  "& .MuiSelect-icon": {
-                    transform: "none !important", // Prevent rotation
-                  },
-                }}
-                value={sender || ""}
-                onChange={handleChange}
-                onClick={handleSelectClick}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      visibility: "hidden",
-                      pointerEvents: "none",
-                    },
-                  },
-                }}
-              >
-                {selectedGroup?.group?.brandName && (
-                  <MenuItem value={selectedGroup.group.brandName}>
-                    {selectedGroup.group.brandName}
-                  </MenuItem>
-                )}
-              </Select> */}
-            </Stack>
-
-            <Box
-              sx={{
-                position: "relative",
-                display: "flex",
-                flexDirection: "column",
-
-                "& .ql-toolbar.ql-snow+.ql-container.ql-snow": {
-                  border: "1px solid rgba(209, 219, 215, 0.5) !important",
-                  borderTop: "1px solid rgba(209, 219, 215, 0.5) !important",
-                  borderRadius: "5px",
-                  marginBottom: isLessThan1400 ? 1.25 : 1.5,
-                },
-
-                "& .ql-editor": {
-                  padding: "10px 16px",
-                  fontSize: "16px",
-                  fontFamily: `"Segoe UI", "sans-serif"`,
-                  fontStyle: "unset",
-                  fontWeight: 400,
-                  lineHeight: "21px",
-                  // "& img": {
-                  //   width: "80px",
-                  //   height: "80px",
-                  // },
-                },
-
-                "& .ql-blank::before": {
-                  fontStyle: "unset",
-                  color: "rgba(0, 20, 28, 0.5)",
-                },
-
-                "& .ql-tooltip": {
-                  left: "0px !important",
-                },
-
-                "& .ql-toolbar": {
-                  border: "none",
-                  order: 2,
-                  alignItems: "center",
-                  width: isLessThan1280
-                    ? "calc(100% - 135px)"
-                    : "calc(100% - 145px)",
-                  padding: "4px 8px !important",
-
-                  "& .ql-formats": {
-                    columnGap: isLessThan1280 ? "15px" : "25px",
-                  },
-
-                  "& .ql-formats:has(.ql-link)": {
-                    flex: 1,
-                    justifyContent: "end",
-                    columnGap: "10px",
-                  },
-
-                  "& button": {
-                    padding: 0,
-                    width: "25px",
-                  },
-
-                  "& .ql-active": {
-                    "& img": {
-                      filter:
-                        "invert(21%) sepia(80%) saturate(4500%) hue-rotate(190deg) brightness(100%) contrast(90%)",
-                    },
-                  },
-                },
-              }}
-            >
-              <Box
-                sx={{
-                  position: "absolute",
-                  bottom: "0px !important",
-                  right: "0px !important",
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <IconButton
-                  onClick={() => setEmojiPickerVisible(!emojiPickerVisible)}
-                  sx={{
-                    padding: 0,
-                    margin: isLessThan1280
-                      ? "0px 25px 0px 0px !important"
-                      : "0px 35px 0px 0px !important",
-                  }}
-                  disableRipple
-                  onMouseEnter={() => {
-                    buttonRef.current = true;
-                  }}
-                  onMouseLeave={() => {
-                    buttonRef.current = false;
-                  }}
-                >
-                  <img src={smile} />
-                </IconButton>
-
-                <Button
-                  style={{ marginBottom: "10px" }}
-                  sx={{
-                    padding: 0,
-                    margin: "0px !important",
-                    height: "31px",
-                    width: "85px",
-                    fontWeight: 700,
-                    fontSize: "16px",
-                    bgcolor: "rgba(209, 219, 215, 0.4) !important",
-                    borderRadius: "10px",
-                    color: "#00141C",
-                    textTransform: "inherit",
-                    lineHeight: "21px",
-                    letterSpacing: "-0.01em",
-                  }}
-                  onClick={handleSendMessage}
-                  disabled={buttonDisabled}
-                >
-                  Send
-                </Button>
-              </Box>
-
-              <MessageInput
-                emojiPickerVisible={emojiPickerVisible}
-                setEmojiPickerVisible={setEmojiPickerVisible}
-                quillInstance={quillInstance}
-                onChange={handleInputChange}
-                value={finalMessage?.message}
-                setButtonDisabled={setButtonDisabled}
-              />
-            </Box>
+            <InputBox
+              setEmojiPickerVisible={setEmojiPickerVisible}
+              emojiPickerVisible={emojiPickerVisible}
+              buttonRef={buttonRef}
+              handleSendMessage={handleSendMessage}
+              buttonDisabled={buttonDisabled}
+              quillInstance={quillInstance}
+              handleInputChange={handleInputChange}
+              finalMessage={finalMessage}
+              setButtonDisabled={setButtonDisabled}
+            />
 
             {emojiPickerVisible && (
               <Box
@@ -496,7 +313,17 @@ const AllMesaages = ({ selectedGroup, ActivityType, emitEvent }) => {
                 }}
                 ref={pickerRef}
               >
-                <Picker data={data} onEmojiSelect={addEmoji} />
+                <Picker
+                  data={data}
+                  onEmojiSelect={(emoji) =>
+                    addEmoji(
+                      emoji,
+                      isCursorActive,
+                      quillInstance,
+                      setEmojiPickerVisible
+                    )
+                  }
+                />
               </Box>
             )}
           </Box>

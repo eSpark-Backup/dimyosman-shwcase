@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import {
   Box,
   Grid,
-  IconButton,
-  InputAdornment,
   LinearProgress,
   useMediaQuery,
   useTheme,
@@ -14,27 +12,37 @@ import { useSelector, useDispatch } from "react-redux";
 
 import AllMessages from "./messages";
 
-import { Input } from "../../../components";
 import MessageItem from "../../../components/Message/MessageItem";
 import IconBadge from "../../../components/Message/IconBadge";
+import SearchMessage from "../../../components/Message/SearchMessage.jsx";
 
 import {
-  search,
   messageIcon,
   brandIcon,
   flag,
   spaceIcon,
   profileIcon,
-  accountIcon,
 } from "../../../assets";
 
 import {
   useGetChatsForContactsQuery,
   useGetAllChatDetailsQuery,
 } from "../../../services/chats.js";
-import { format } from "date-fns";
-import { getMessages } from "../../../store/slices/chat.js";
+
+import {
+  getChatDetails,
+  getMessages,
+  isActiveMembers,
+} from "../../../store/slices/chat.js";
+
 import { useSocket } from "../../../context/SocketContext.jsx";
+
+import {
+  deleteCookie,
+  getCookie,
+  messageBox,
+  setCookie,
+} from "../../../utils/index.js";
 
 const icons = [
   { icon: messageIcon, bg: "rgba(0, 20, 28, 0.8)", type: "message" },
@@ -44,44 +52,6 @@ const icons = [
   { icon: profileIcon, bg: "rgba(0, 20, 28, 0.1)", type: "profile" },
 ];
 
-const ActivityType = ({ type, theme }) => (
-  <Box
-    sx={{
-      background:
-        type === "event"
-          ? "rgb(148, 185, 134)"
-          : type === "brand"
-          ? "rgb(196, 119, 127)"
-          : type === "space"
-          ? "rgb(120, 150, 195)"
-          : theme.palette.primary.main,
-      width: "16px",
-      height: "16px",
-      position: "absolute",
-      bottom: "0px",
-      right: "0px",
-      borderRadius: "5px",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-    }}
-  >
-    <img
-      src={
-        type === "event"
-          ? flag
-          : type === "brand"
-          ? brandIcon
-          : type === "space"
-          ? spaceIcon
-          : accountIcon
-      }
-      alt="Icon"
-      style={{ width: "12px", height: "10px" }}
-    />
-  </Box>
-);
-
 const Message = () => {
   const theme = useTheme();
 
@@ -89,208 +59,263 @@ const Message = () => {
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
 
-  const { myChat, messages, hasChats } = useSelector((state) => state.chat);
+  const { emitEvent, addListener, removeListener } = useSocket();
+
+  const { myChat, messages, chatDetails, hasChats, allChatIds } = useSelector(
+    (state) => state.chat
+  );
+  const { user } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
 
-  const {
-    data: messageData,
-    isSuccess,
-    isLoading,
-  } = useGetChatsForContactsQuery(
+  const [isNewIdsForChatDetails, setIsNewIdsForChatDetails] = useState([]);
+  const [isNewIdsForAllMessages, setIsNewIdsForAllMessages] = useState([]);
+
+  const filterNewIds = (allIds, existingIds) =>
+    allIds?.filter((id) => !existingIds.includes(id));
+
+  useEffect(() => {
+    const existingDetailsIds = chatDetails.map((item) => item._id);
+    setIsNewIdsForChatDetails(filterNewIds(allChatIds, existingDetailsIds));
+  }, [myChat, chatDetails, allChatIds]);
+
+  useEffect(() => {
+    const existingMessagesIds = messages.map((item) => item.chat);
+    setIsNewIdsForAllMessages(filterNewIds(allChatIds, existingMessagesIds));
+  }, [myChat, messages, allChatIds]);
+
+  const { data: messageData, isSuccess } = useGetChatsForContactsQuery(
     {
-      chats: myChat?.flatMap((chat) => chat.chats.map((c) => c._id)),
+      chats: isNewIdsForAllMessages,
     },
     {
       skip: !myChat?.length,
     }
   );
 
-  const {
-    data: chatDetailsData,
-    isSuccess: chatDetailsSuccess,
-    isLoading: chatDetailsLoading,
-  } = useGetAllChatDetailsQuery(
-    {
-      chats: myChat?.flatMap((chat) => chat.chats.map((c) => c._id)),
-    },
-    {
-      skip: !myChat?.length,
-    }
-  );
+  const { data: chatDetailsData, isSuccess: chatDetailsSuccess } =
+    useGetAllChatDetailsQuery(
+      {
+        chats: isNewIdsForChatDetails,
+      },
+      {
+        skip: !myChat?.length,
+      }
+    );
 
   const [allMessages, setAllMessages] = useState([]);
-
-  useEffect(() => {
-    if (
-      messageData &&
-      !messageData.includes(undefined) &&
-      messageData?.length
-    ) {
-      const filteredMessages = messageData
-        ?.map((message) => message?.messages)
-        ?.flat();
-
-      dispatch(getMessages(filteredMessages));
-    }
-  }, [messageData, isSuccess, myChat]);
-
-  const { emitEvent, addListener, removeListener } = useSocket();
-
-  useEffect(() => {
-    addListener("NEW_MESSAGE", (data) => {
-      console.log("NEW_MESSAGE EVENT TRIGGERED.");
-
-      dispatch(getMessages([...messages, data.message]));
-    });
-
-    return () => {
-      removeListener("NEW_MESSAGE");
-    };
-  }, [addListener, removeListener, messages, emitEvent]);
-
-  useEffect(() => {
-    if (isSuccess && chatDetailsSuccess) {
-      if (chatDetailsData && messages) {
-        const message = myChat.map((el) => {
-          return {
-            id: el?.brandDetails?.id,
-            activity: "brand",
-            brandName: el?.brandDetails?.brandName,
-            brandImage: el?.brandDetails?.brandImage,
-            read: false,
-            creatorDetail: el?.brandDetails?.user,
-            spaces: 1234,
-            followers: 234566,
-            saved: "789k",
-            reviews: 12345,
-            leases: 12345,
-            rating: 5,
-            messageGroups: el?.chats?.map((item) => {
-              let matchingItem = chatDetailsData
-                ?.map((item2) => {
-                  if (item2.chat._id === item._id) {
-                    return {
-                      members: item2.chat?.members,
-                      name: item2.chat?.name,
-                      createdAt: item2.chat?.createdAt,
-                      updatedAt: item2.chat?.updatedAt,
-                      chatId: item2.chat?._id,
-                    };
-                  }
-                })
-                .find((result) => result !== undefined);
-              const currentChatMessages = [];
-
-              messages.forEach((message) => {
-                if (message.chat === item?._id) {
-                  currentChatMessages.push(message);
-                }
-              });
-
-              return {
-                ...item,
-                id: item?._id,
-                chatId: matchingItem && matchingItem?.chatId,
-                members: matchingItem && matchingItem?.members,
-                brandName: item?.receiverBrand?.brandName,
-                activity: "space",
-                brandImage: item?.receiverBrand?.brandImage,
-                creator: item?.receiverBrand?.user?.name,
-                read: false,
-                chatName: matchingItem && matchingItem?.name,
-                date:
-                  matchingItem &&
-                  format(new Date(matchingItem?.createdAt), "MM/dd/yy"),
-                time:
-                  matchingItem &&
-                  format(new Date(matchingItem?.createdAt), "h:mma"),
-                messages: currentChatMessages?.map((messageItem) => {
-                  return {
-                    ...messageItem,
-                    id: messageItem?._id,
-                    brandName: item?.senderBrand?.brandName,
-                    brandImage: item?.senderBrand?.brandImage,
-                    activity: "brand",
-                    creator: el?.name,
-                    date: format(new Date(messageItem?.createdAt), "MM/dd/yy"),
-                    time: format(new Date(messageItem?.createdAt), "h:mma"),
-                  };
-                }),
-              };
-            }),
-          };
-        });
-        setAllMessages(message);
-      }
-    }
-  }, [
-    myChat,
-    messageData,
-    chatDetailsData,
-    messages,
-    isSuccess,
-    chatDetailsSuccess,
-  ]);
+  const [isTypingUser, setIsTypingUser] = useState(null);
 
   const [expanded, setExpanded] = useState(0);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedChatId, setSelectedChatId] = useState(null);
+  const [initialChatId, setInitialChatId] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [toShare, setToShare] = useState();
 
-  const handleAccordionChange = (index) => (event, isExpanded) => {
-    setSelectedChatId(allMessages[index]?.messageGroups[0]?.chatId);
-    setSelectedGroup(() => {
-      if (isExpanded) {
-        return {
-          messageGroup: allMessages[index]?.messageGroups[0],
-          group: allMessages[index],
-        };
+  useEffect(() => {
+    if (isSuccess && messageData && messageData?.length) {
+      const filteredMessages = messageData
+        .map((message) => message?.messages)
+        .flat();
+      // Get existing message IDs from the current state
+      const existingMessageIds = messages.map((message) => message.chat);
+      // Filter new messages that are not already in the current state
+      const newMessages = filteredMessages.filter(
+        (message) => !existingMessageIds.includes(message.chat)
+      );
+      // Dispatch only new messages to add them to the state
+      if (newMessages.length > 0) {
+        dispatch(getMessages([...messages, ...newMessages]));
       } else {
-        setSelectedGroup(null);
+        dispatch(getMessages(filteredMessages));
       }
+    }
+  }, [messageData, isSuccess]);
+
+  useEffect(() => {
+    if (chatDetailsSuccess && chatDetailsData && chatDetailsData?.length) {
+      const filteredChat = chatDetailsData?.map((chat) => chat?.chat);
+      // Get existing chat IDs from the current state
+      const existingChatIds = chatDetails.map((chat) => chat._id);
+      // Filter new chats that are not already in the current state
+      const newChats = filteredChat.filter(
+        (chat) => !existingChatIds.includes(chat._id)
+      );
+      // Dispatch only new chats to add them to the state
+      if (newChats.length > 0) {
+        dispatch(getChatDetails([...chatDetails, ...newChats]));
+      } else {
+        dispatch(getChatDetails(filteredChat));
+      }
+    }
+  }, [chatDetailsData, chatDetailsSuccess]);
+
+  useEffect(() => {
+    addListener("NEW_MESSAGE", (data) => {
+      dispatch(getMessages([...messages, data.message]));
     });
 
-    setExpanded(isExpanded ? index : null);
+    const handleNewMessageAlert = (data) => {
+      if (
+        allMessages.length > 0 &&
+        data.chatId !== (initialChatId || selectedChatId)
+      ) {
+        const getNotReadMessage = JSON.parse(getCookie("unread"));
+        const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
+
+        if (!getNotReadMessage) {
+          setCookie(
+            "unread",
+            JSON.stringify([{ chatId: data.chatId, count: 1 }])
+          );
+          setCookie("unreadChatIds", JSON.stringify([data.chatId]));
+          return;
+        }
+
+        const updatedMessages = getNotReadMessage?.some(
+          (el) => el.chatId === data.chatId
+        )
+          ? getNotReadMessage.map((el) =>
+              el.chatId === data.chatId ? { ...el, count: el.count + 1 } : el
+            )
+          : [...getNotReadMessage, { chatId: data.chatId, count: 1 }];
+
+        setCookie("unread", JSON.stringify(updatedMessages));
+        if (!getUnreadChatIds.includes(data.chatId)) {
+          getUnreadChatIds.push(data.chatId);
+          setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
+        }
+      }
+    };
+
+    addListener("NEW_MESSAGE_ALERT", handleNewMessageAlert);
+
+    return () => {
+      removeListener("NEW_MESSAGE");
+      removeListener("NEW_MESSAGE_ALERT");
+    };
+  }, [addListener, removeListener, messages, emitEvent, allMessages]);
+
+  useEffect(() => {
+    const handleTypingStatus = (event, isTyping) => {
+      setIsTypingUser(
+        isTyping ? { chatId: event.chatId, userId: user.id } : null
+      );
+    };
+
+    addListener("START_TYPING", (data) => handleTypingStatus(data, true));
+    addListener("STOP_TYPING", () => handleTypingStatus(null, false));
+
+    return () => {
+      removeListener("START_TYPING");
+      removeListener("STOP_TYPING");
+    };
+  }, [addListener, removeListener, emitEvent]);
+
+  useEffect(() => {
+    if (chatDetails.length > 0 && messages?.length > 0) {
+      let message = myChat.map((el) => {
+        return messageBox(el, chatDetails, messages);
+      });
+      setAllMessages(message);
+    }
+  }, [myChat, messageData, chatDetailsData, messages, chatDetails, ,]);
+
+  useEffect(() => {
+    addListener("ONLINE_USERS", (data) => {
+      const filterCurrentUser = data?.filter((acc) => acc !== user?.userChatId);
+      setOnlineUsers(filterCurrentUser);
+    });
+
+    return () => {
+      removeListener("ONLINE_USERS");
+    };
+  }, [addListener, removeListener, emitEvent, allMessages, user]);
+
+  const handleAccordionChange = (index) => (event, isExpanded) => {
+    const selectedGroup = {
+      chatGroup: allMessages[index]?.chatGroups[0],
+      group: allMessages[index],
+    };
+    setExpanded(index);
+    setSelectedGroup(selectedGroup);
+    setSelectedChatId(allMessages[index]?.chatGroups[0]?.chatId);
+
+    const obj = {
+      userId: user.userChatId,
+      members: allMessages[index]?.chatGroups[0]?.members,
+    };
+
+    if (index !== expanded) {
+      dispatch(isActiveMembers(obj.members));
+      emitEvent("CHAT_JOINED", obj);
+    }
+    const getUnreadMessage = JSON.parse(getCookie("unread")) || [];
+    const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds")) || [];
+
+    const ifCountExists = getUnreadMessage?.filter(
+      (msg) => msg.chatId !== allMessages[index]?.chatGroups[0]?.id
+    );
+    const ifChatIdExists = getUnreadChatIds?.filter(
+      (id) => id !== allMessages[index]?.chatGroups[0]?.id
+    );
+
+    if (ifCountExists?.length > 0) {
+      setCookie("unread", JSON.stringify(ifCountExists));
+      setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
+    } else {
+      deleteCookie("unread");
+      deleteCookie("unreadChatIds");
+    }
   };
 
   useEffect(() => {
-    if (
-      allMessages.length &&
-      selectedChatId === null &&
-      selectedGroup !== null
-    ) {
-      setSelectedGroup({
-        messageGroup: allMessages[0]?.messageGroups[0],
-        group: allMessages[0],
-      });
-    }
-  }, [allMessages, selectedChatId, messages]);
+    if (allMessages.length) {
+      if (
+        (selectedChatId === null && selectedGroup === null) ||
+        (selectedChatId === null && selectedGroup !== null)
+      ) {
+        setInitialChatId(allMessages[0]?.chatGroups[0]?._id);
+        setSelectedGroup({
+          chatGroup: allMessages[0]?.chatGroups[0],
+          group: allMessages[0],
+        });
 
-  useEffect(() => {
-    if (
-      allMessages.length &&
-      selectedChatId === null &&
-      selectedGroup === null
-    ) {
-      setSelectedGroup({
-        messageGroup: allMessages[0]?.messageGroups[0],
-        group: allMessages[0],
-      });
-    } else if (
-      allMessages.length &&
-      selectedChatId !== null &&
-      expanded !== null
-    ) {
-      setSelectedGroup({
-        messageGroup: allMessages[expanded]?.messageGroups?.find(
+        const obj = {
+          userId: user.userChatId,
+          members: allMessages[0]?.chatGroups[0]?.members,
+        };
+
+        dispatch(isActiveMembers(obj.members));
+        emitEvent("CHAT_JOINED", obj);
+      }
+
+      if (selectedChatId !== null && expanded !== null) {
+        const group = allMessages[expanded];
+        const chatGroup = group?.chatGroups?.find(
           (msg) => msg.id === selectedChatId
-        ),
-        group: allMessages[expanded],
-      });
+        );
+
+        if (chatGroup) {
+          if (toShare && toShare?.chatId !== selectedChatId) {
+            emitEvent("STOP_TYPING", toShare);
+          }
+          setInitialChatId(null);
+          setSelectedGroup({ chatGroup, group });
+
+          setTimeout(() => {
+            setToShare();
+          }, 10);
+        }
+      }
     }
   }, [allMessages, selectedChatId, expanded, messages]);
 
-  if (isLoading || chatDetailsLoading) {
+  if (
+    (chatDetails?.length === 0 || messages.length === 0) &&
+    hasChats != "empty"
+  ) {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />
@@ -312,33 +337,7 @@ const Message = () => {
         <Box sx={{ flexGrow: 1 }}>
           <Grid container spacing={2}>
             <Grid item xs={12} md={4} lg={3}>
-              <Box sx={{ margin: "16px 0px" }}>
-                <Input
-                  name="message"
-                  type="text"
-                  placeholder="Search Messages..."
-                  sx={{
-                    backgroundColor: "white",
-                    border: "1px solid rgba(209, 219, 215, 0.5)",
-                    borderRadius: "5px",
-                    padding: "0 16px",
-                    "& input": {
-                      paddingRight: 0,
-                      paddingLeft: 0,
-                    },
-                    "& input::placeholder": {
-                      color: "rgba(0, 20, 28, 0.5)",
-                    },
-                  }}
-                  endAdornment={
-                    <InputAdornment position="start">
-                      <IconButton edge="end">
-                        <img src={search} alt="Search" />
-                      </IconButton>
-                    </InputAdornment>
-                  }
-                />
-              </Box>
+              <SearchMessage />
 
               <Box
                 sx={{
@@ -377,8 +376,9 @@ const Message = () => {
                     onChange={handleAccordionChange(index)}
                     setSelectedGroup={setSelectedGroup}
                     selectedGroup={selectedGroup}
-                    ActivityType={ActivityType}
                     setSelectedChatId={setSelectedChatId}
+                    emitEvent={emitEvent}
+                    onlineUsers={onlineUsers}
                   />
                 ))}
               </Box>
@@ -403,14 +403,11 @@ const Message = () => {
                 </Box>
               ) : (
                 <AllMessages
-                  setSelectedGroup={setSelectedGroup}
                   selectedGroup={selectedGroup}
-                  ActivityType={ActivityType}
-                  allMessages={allMessages}
-                  setSelectedChatId={selectedChatId}
                   emitEvent={emitEvent}
-                  removeListener={removeListener}
-                  addListener={addListener}
+                  isTypingUser={isTypingUser}
+                  onlineUsers={onlineUsers}
+                  setToShare={setToShare}
                 />
               )}
             </Grid>

@@ -44,10 +44,20 @@
 // Second
 
 import { createContext, useContext, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+
 import { io } from "socket.io-client";
+
 import { useGetMyChatsQuery } from "../services/chats";
-import { getMessages, getMyChat, isUserHasChat } from "../store/slices/chat";
+
+import {
+  emptyActiveMembers,
+  getMessages,
+  getMyChat,
+  isUserHasChat,
+} from "../store/slices/chat";
+import { getCookie, setCookie } from "../utils";
 
 const SocketContext = createContext(null);
 
@@ -58,21 +68,29 @@ const useSocket = () => {
 const SocketProvider = ({ children }) => {
   const socket = useRef(null);
   const { user } = useSelector((state) => state.auth);
-  const { messages } = useSelector((state) => state.chat);
-  const { data, isSuccess, isError, error, refetch } = useGetMyChatsQuery(
-    undefined,
-    { skip: !user }
-  );
+  const { activeMembers, messages } = useSelector((state) => state.chat);
+  const { data, isSuccess, refetch } = useGetMyChatsQuery(undefined, {
+    skip: !user,
+  });
+  const { pathname } = useLocation();
   const dispatch = useDispatch();
 
   useEffect(() => {
     if (isSuccess && data) {
-      if(data.chats && Array.isArray(data.chats)) {
+      if (
+        data.chats &&
+        (Array.isArray(data.chats) ||
+          (data?.chats?.brands?.length === 0 &&
+            data?.chats?.spaces?.length === 0))
+      ) {
         dispatch(isUserHasChat("empty"));
       }
 
-      if (data.chats && data?.chats?.brands?.length > 0) {
-        dispatch(getMyChat(data.chats.brands));
+      if (
+        data.chats &&
+        (data?.chats?.brands?.length > 0 || data?.chats?.spaces?.length > 0)
+      ) {
+        dispatch(getMyChat(data.chats));
         dispatch(isUserHasChat(""));
       }
     }
@@ -98,18 +116,13 @@ const SocketProvider = ({ children }) => {
       });
 
       socket.current.on("REFETCH_CHATS", () => {
-        console.log("REFETCH_CHAT EVENT TRIGGERED.");
+        // console.log("REFETCH_CHAT EVENT TRIGGERED.");
         refetch();
       });
+
       socket.current.on("NEW_REQUEST", () => {
-        console.log("NEW_REQUEST EVENT TRIGGERED.");
+        // console.log("NEW_REQUEST EVENT TRIGGERED.");
         refetch();
-      });
-
-      socket.current.on("NEW_MESSAGE", (data) => {
-        console.log("NEW_MESSAGE EVENT TRIGGERED.");
-
-        dispatch(getMessages([...messages, data.message]));
       });
 
       return () => {
@@ -121,7 +134,78 @@ const SocketProvider = ({ children }) => {
         }
       };
     }
-  }, [user, socket, dispatch]);
+  }, [user, socket]);
+
+  useEffect(() => {
+    if (user) {
+      if (pathname !== "/message") {
+        socket.current.on("NEW_MESSAGE", (data) => {
+          if (messages?.length > 0) {
+            dispatch(getMessages([...messages, data.message]));
+          } else {
+            refetch();
+          }
+        });
+
+        const handleNewMessageAlert = (data) => {
+          const getNotReadMessage = JSON.parse(getCookie("unread"));
+          const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
+
+          if (!getNotReadMessage) {
+            setCookie(
+              "unread",
+              JSON.stringify([{ chatId: data.chatId, count: 1 }])
+            );
+            setCookie("unreadChatIds", JSON.stringify([data.chatId]));
+            return;
+          }
+
+          const updatedMessages = getNotReadMessage?.some(
+            (el) => el.chatId === data.chatId
+          )
+            ? getNotReadMessage.map((el) =>
+                el.chatId === data.chatId ? { ...el, count: el.count + 1 } : el
+              )
+            : [...getNotReadMessage, { chatId: data.chatId, count: 1 }];
+
+          setCookie("unread", JSON.stringify(updatedMessages));
+          if (!getUnreadChatIds.includes(data.chatId)) {
+            getUnreadChatIds.push(data.chatId);
+            setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
+          }
+        };
+        socket.current.on("NEW_MESSAGE_ALERT", handleNewMessageAlert);
+
+        return () => {
+          // Cleanup event on unmount
+          if (socket.current) {
+            socket.current.off("NEW_MESSAGE");
+            socket.current.off("NEW_MESSAGE_ALERT");
+          }
+        };
+      }
+    }
+  }, [messages, user, socket, pathname]);
+
+  useEffect(() => {
+    if (user) {
+      if (pathname !== "/message" && activeMembers?.length > 0) {
+        const obj = {
+          userId: user.userChatId,
+          members: activeMembers,
+        };
+
+        socket.current.emit("CHAT_LEFT", obj);
+        dispatch(emptyActiveMembers());
+        return () => {
+          // Cleanup event on unmount
+          if (socket.current) {
+            socket.current.off("CHAT_LEFT");
+          }
+        };
+      }
+    }
+  }, [pathname, activeMembers, user, socket]);
 
   const emitEvent = (event, payload) => {
     if (socket.current) {
@@ -142,7 +226,9 @@ const SocketProvider = ({ children }) => {
   };
 
   return (
-    <SocketContext.Provider  value={{ socket: socket.current, emitEvent, addListener, removeListener }}>
+    <SocketContext.Provider
+      value={{ socket: socket.current, emitEvent, addListener, removeListener }}
+    >
       {children}
     </SocketContext.Provider>
   );

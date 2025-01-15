@@ -45,9 +45,18 @@ export const emailSchema = Yup.object({
   email: Yup.reach(registerSchema, "email"),
 });
 export const passwordSchema = Yup.object({
-  password: Yup.reach(registerSchema, "password"),
-  conPassword: Yup.reach(registerSchema, "conPassword"),
+  oldPassword: Yup.string()
+    .required("Old password is required")
+    .min(8, "Old password must contain at least 8 characters"),
+  password: Yup.reach(registerSchema, "password"), 
+  conPassword: Yup.reach(registerSchema, "conPassword"), 
 });
+
+export const resetPasswordSchema = Yup.object({
+  password: Yup.reach(registerSchema, "password"), 
+  conPassword: Yup.reach(registerSchema, "conPassword"), 
+})
+
 export const imageValidationSchema = Yup.object().shape({
   image: Yup.mixed()
     .required("Image is required")
