@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useDispatch } from 'react-redux';
 import { Box, Button, Typography, useTheme } from '@mui/material'
 import { LoadingButton } from "@mui/lab";
 import { toast } from "react-toastify";
@@ -9,6 +10,8 @@ import { useFormik } from "formik";
 import { registerSchema } from '../../../validation/validation';
 import { useRegisterMutation } from "../../../services/auth";
 import { useGetMyChatsQuery } from '../../../services/chats';
+import { logout } from '../../../store/slices/auth';
+import { removeMychat } from '../../../store/slices/chat';
 
 const Register = () => {
   const [register, { isLoading, isSuccess, isError, error}] =
@@ -18,6 +21,7 @@ const Register = () => {
     });
   const theme = useTheme();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const formik = useFormik({
     initialValues: {
       fName: "",
@@ -39,6 +43,11 @@ const Register = () => {
       });
     },
   });
+
+  useEffect(() => {
+    dispatch(logout());
+    dispatch(removeMychat());
+  }, []);
 
     useEffect(() => {
         if (isError) {
