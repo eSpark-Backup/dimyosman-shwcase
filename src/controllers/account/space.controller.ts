@@ -702,6 +702,8 @@ export class SpaceController {
         let [leaseSpace, totalItems] = await this.leaseSpaceRepo
           .createQueryBuilder("leaseSpace")
           .leftJoinAndSelect("leaseSpace.space", "space")
+          .leftJoinAndSelect("leaseSpace.tenant", "tenant")
+          .where("tenant.id = :userId", { userId: req.user?.id })
 
           .leftJoinAndSelect("space.brand", "brand")
           .leftJoinAndSelect("space.user", "user")
