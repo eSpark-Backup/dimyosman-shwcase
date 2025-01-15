@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { LoadingButton } from "@mui/lab";
 import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
@@ -10,6 +11,8 @@ import { loginSchema } from "../../../validation/validation";
 import { useTheme } from "@emotion/react";
 import { useLoginMutation } from "../../../services/auth";
 import { useGetMyChatsQuery } from "../../../services/chats";
+import { logout } from "../../../store/slices/auth";
+import { removeMychat } from "../../../store/slices/chat";
 
 const Login = () => {
     const [login, { isLoading, isSuccess, isError, error }] = useLoginMutation();
@@ -18,6 +21,7 @@ const Login = () => {
     });
     const theme = useTheme();
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const formik = useFormik({
         initialValues: {
             email: "",
@@ -28,6 +32,11 @@ const Login = () => {
           login(values);
         },
   });
+
+  useEffect(() => {
+    dispatch(logout());
+    dispatch(removeMychat());
+  }, []);
 
   useEffect(() => {
     if (isError) {
