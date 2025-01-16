@@ -144,9 +144,16 @@ export class SpaceController {
         this.brandRepo
           .createQueryBuilder("brand")
           .where("brand.id = :senderBrandId", { senderBrandId })
-          .leftJoinAndSelect("brand.user", "user")
           .getOne(),
       ]);
+      Notification.metadata = {
+        ChatId: NewChat.id,
+        spaceId: receiverSpace.id,
+        spaceImage: receiverSpace.spaceImage,
+        brandId: senderBrand.id,
+        brandImage: senderBrand.brandImage,
+      };
+      await Notification.save();
       const ChatId = NewChat.id.toString();
       const messageForDB = {
         content: message,
@@ -159,6 +166,7 @@ export class SpaceController {
 
       emitEvent(req, NEW_REQUEST, [receiverBrand.user.userChatId], {
         name: `${senderBrand.brandName} sent you an inquiry for Space ${receiverSpace.spaceName}`,
+        brandImage: senderBrand.brandImage,
       });
 
       res
