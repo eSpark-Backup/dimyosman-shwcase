@@ -124,7 +124,7 @@ export class SpaceController {
       }
       const members = [req.user?._id, receiverBrand.user.userChatId];
 
-      const [NewChat, Notification] = await Promise.all([
+      const [NewChat, Notification, senderBrand] = await Promise.all([
         this.chatModel.create({
           members,
           name: `Inquiring Brand ${receiverBrand.brandName} For Space ${receiverSpace.spaceName}`,
@@ -141,6 +141,11 @@ export class SpaceController {
           message,
           type: "info",
         }),
+        this.brandRepo
+          .createQueryBuilder("brand")
+          .where("brand.id = :senderBrandId", { senderBrandId })
+          .leftJoinAndSelect("brand.user", "user")
+          .getOne(),
       ]);
       const ChatId = NewChat.id.toString();
       const messageForDB = {
@@ -153,7 +158,7 @@ export class SpaceController {
       emitEvent(req, REFETCH_CHATS, members);
 
       emitEvent(req, NEW_REQUEST, [receiverBrand.user.userChatId], {
-        name: Notification.title,
+        name: `${senderBrand.brandName} sent you an inquiry for Space ${receiverSpace.spaceName}`,
       });
 
       res
