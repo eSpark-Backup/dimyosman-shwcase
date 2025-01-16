@@ -124,7 +124,7 @@ export class SpaceController {
       }
       const members = [req.user?._id, receiverBrand.user.userChatId];
 
-      const [NewChat, Noti] = await Promise.all([
+      const [NewChat, Notification] = await Promise.all([
         this.chatModel.create({
           members,
           name: `Inquiring Brand ${receiverBrand.brandName} For Space ${receiverSpace.spaceName}`,
@@ -152,7 +152,10 @@ export class SpaceController {
 
       emitEvent(req, REFETCH_CHATS, members);
 
-      emitEvent(req, NEW_REQUEST, [receiverBrand.user.userChatId]);
+      emitEvent(req, NEW_REQUEST, [receiverBrand.user.userChatId], {
+        name: Notification.title,
+      });
+
       res
         .status(HTTP_STATUS.OK)
         .json(handleResponse("Inquiry Sent Successfully"));
