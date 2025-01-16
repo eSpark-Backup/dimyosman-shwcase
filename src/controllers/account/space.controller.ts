@@ -149,7 +149,7 @@ export class SpaceController {
           .getOne(),
       ]);
       Notification.metadata = {
-        ChatId: NewChat.id,
+        ChatId: NewChat._id,
         spaceId: receiverSpace.id,
         spaceImage: receiverSpace.spaceImage,
         senderBrandId: senderBrand.id,
@@ -171,6 +171,7 @@ export class SpaceController {
         name: `${senderBrand.brandName} sent you an inquiry for Space ${receiverSpace.spaceName}`,
         senderBrandImage: senderBrand.brandImage,
         senderBrandUserName: senderBrand.user.name,
+        chatId: NewChat._id,
       });
 
       res
