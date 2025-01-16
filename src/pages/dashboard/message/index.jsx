@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 
 import { useSelector, useDispatch } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import AllMessages from "./messages";
 
@@ -34,6 +35,7 @@ import {
   getMessages,
   isActiveMembers,
 } from "../../../store/slices/chat.js";
+import { emptyNotificationCount } from "../../../store/slices/notification.js";
 
 import { useSocket } from "../../../context/SocketContext.jsx";
 
@@ -67,6 +69,13 @@ const Message = () => {
   const { user } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { state, pathname } = useLocation();
+
+  useEffect(() => {
+    dispatch(emptyNotificationCount());
+    deleteCookie("newRequest");
+  }, []);
 
   const [isNewIdsForChatDetails, setIsNewIdsForChatDetails] = useState([]);
   const [isNewIdsForAllMessages, setIsNewIdsForAllMessages] = useState([]);
@@ -276,15 +285,43 @@ const Message = () => {
         (selectedChatId === null && selectedGroup === null) ||
         (selectedChatId === null && selectedGroup !== null)
       ) {
-        setInitialChatId(allMessages[0]?.chatGroups[0]?._id);
-        setSelectedGroup({
-          chatGroup: allMessages[0]?.chatGroups[0],
-          group: allMessages[0],
-        });
+        const selected = {
+          chatGroup: {},
+          group: {},
+        };
+        let initialId = null;
+
+        if (state) {
+          const findParentIndex = allMessages?.findIndex(
+            (msg) => msg?.parentName === state?.name?.split("Space ")[1]
+          );
+          if (findParentIndex !== -1) {
+            setExpanded(findParentIndex);
+          }
+
+          selected.chatGroup = allMessages[findParentIndex]?.chatGroups?.find(
+            (gr) => gr?.id === state.chatId
+          );
+          selected.group = allMessages[findParentIndex];
+          initialId = allMessages[findParentIndex]?.chatGroups?.find(
+            (gr) => gr?.id === state.chatId
+          ).id;
+
+          setTimeout(() => {
+            navigate(pathname, { replace: true });
+          }, 3000);
+        } else {
+          selected.chatGroup = allMessages[0]?.chatGroups[0];
+          selected.group = allMessages[0];
+          initialId = allMessages[0]?.chatGroups[0]?._id;
+        }
+
+        setInitialChatId(initialId);
+        setSelectedGroup(selected);
 
         const obj = {
           userId: user.userChatId,
-          members: allMessages[0]?.chatGroups[0]?.members,
+          members: selected?.chatGroup?.members,
         };
 
         dispatch(isActiveMembers(obj.members));

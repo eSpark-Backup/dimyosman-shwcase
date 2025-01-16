@@ -44,12 +44,15 @@
 // Second
 
 import { createContext, useContext, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
 import { io } from "socket.io-client";
 
+import { toast } from "react-toastify";
+
 import { useGetMyChatsQuery } from "../services/chats";
+import { useGetNotificationDataQuery } from "../services/notifications";
 
 import {
   emptyActiveMembers,
@@ -57,6 +60,8 @@ import {
   getMyChat,
   isUserHasChat,
 } from "../store/slices/chat";
+import { getNotificationCount } from "../store/slices/notification";
+
 import { getCookie, setCookie } from "../utils";
 
 const SocketContext = createContext(null);
@@ -72,8 +77,13 @@ const SocketProvider = ({ children }) => {
   const { data, isSuccess, refetch } = useGetMyChatsQuery(undefined, {
     skip: !user,
   });
+  const { refetch: notificationRefetch } = useGetNotificationDataQuery(
+    undefined,
+    { skip: !user }
+  );
   const { pathname } = useLocation();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isSuccess && data) {
@@ -98,7 +108,7 @@ const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (user && !socket.current) {
-      socket.current = io("https://shwcase-stg.esparkconsultants.com/socket", {
+      socket.current = io("https://shwcase-dev.esparkconsultants.com/socket", {
         withCredentials: true,
         extraHeaders: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -120,9 +130,25 @@ const SocketProvider = ({ children }) => {
         refetch();
       });
 
-      socket.current.on("NEW_REQUEST", () => {
+      socket.current.on("NEW_REQUEST", (data) => {
         // console.log("NEW_REQUEST EVENT TRIGGERED.");
-        refetch();
+        if (pathname !== "message") {
+          const getNewRequest = getCookie("newRequest");
+
+          if (getNewRequest) {
+            setCookie("newRequest", getNewRequest + 1);
+            dispatch(getNotificationCount(getNewRequest + 1));
+          } else {
+            setCookie("newRequest", 1);
+            dispatch(getNotificationCount(1));
+          }
+
+          toast.info(data?.name, {
+            position: "bottom-right",
+            onClick: () => navigate("/message", { state: data }),
+          });
+        }
+        notificationRefetch();
       });
 
       return () => {
