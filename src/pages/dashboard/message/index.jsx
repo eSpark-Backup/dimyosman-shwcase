@@ -35,7 +35,6 @@ import {
   getMessages,
   isActiveMembers,
 } from "../../../store/slices/chat.js";
-import { emptyNotificationCount } from "../../../store/slices/notification.js";
 
 import { useSocket } from "../../../context/SocketContext.jsx";
 
@@ -71,11 +70,6 @@ const Message = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { state, pathname } = useLocation();
-
-  useEffect(() => {
-    dispatch(emptyNotificationCount());
-    deleteCookie("newRequest");
-  }, []);
 
   const [isNewIdsForChatDetails, setIsNewIdsForChatDetails] = useState([]);
   const [isNewIdsForAllMessages, setIsNewIdsForAllMessages] = useState([]);
@@ -242,6 +236,27 @@ const Message = () => {
     };
   }, [addListener, removeListener, emitEvent, allMessages, user]);
 
+  const handleNewInquiry = (selected, initialId = null) => {
+    const findParentIndex = allMessages?.findIndex(
+      (msg) => msg?.parentName === state?.spaceName
+    );
+    if (findParentIndex !== -1) {
+      setExpanded(findParentIndex);
+    }
+
+    selected.chatGroup = allMessages[findParentIndex]?.chatGroups?.find(
+      (gr) => gr?.id === state.chatId
+    );
+    selected.group = allMessages[findParentIndex];
+    initialId = allMessages[findParentIndex]?.chatGroups?.find(
+      (gr) => gr?.id === state.chatId
+    ).id;
+
+    setTimeout(() => {
+      navigate(pathname, { replace: true });
+    }, 1000);
+  };
+
   const handleAccordionChange = (index) => (event, isExpanded) => {
     const selectedGroup = {
       chatGroup: allMessages[index]?.chatGroups[0],
@@ -292,24 +307,7 @@ const Message = () => {
         let initialId = null;
 
         if (state) {
-          const findParentIndex = allMessages?.findIndex(
-            (msg) => msg?.parentName === state?.name?.split("Space ")[1]
-          );
-          if (findParentIndex !== -1) {
-            setExpanded(findParentIndex);
-          }
-
-          selected.chatGroup = allMessages[findParentIndex]?.chatGroups?.find(
-            (gr) => gr?.id === state.chatId
-          );
-          selected.group = allMessages[findParentIndex];
-          initialId = allMessages[findParentIndex]?.chatGroups?.find(
-            (gr) => gr?.id === state.chatId
-          ).id;
-
-          setTimeout(() => {
-            navigate(pathname, { replace: true });
-          }, 3000);
+          handleNewInquiry(selected, initialId);
         } else {
           selected.chatGroup = allMessages[0]?.chatGroups[0];
           selected.group = allMessages[0];
@@ -334,12 +332,24 @@ const Message = () => {
           (msg) => msg.id === selectedChatId
         );
 
+        const selected = {
+          chatGroup: {},
+          group: {},
+        };
+
+        if (state) {
+          handleNewInquiry(selected);
+        } else {
+          selected.chatGroup = chatGroup;
+          selected.group = group;
+        }
+
         if (chatGroup) {
           if (toShare && toShare?.chatId !== selectedChatId) {
             emitEvent("STOP_TYPING", toShare);
           }
           setInitialChatId(null);
-          setSelectedGroup({ chatGroup, group });
+          setSelectedGroup(selected);
 
           setTimeout(() => {
             setToShare();

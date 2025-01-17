@@ -1,8 +1,30 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+
+import { Box, LinearProgress, Stack, Typography } from "@mui/material";
 
 import ActivityType from "./Message/ActivityType";
 
-const Notification = ({ open, data, theme }) => {
+const Notification = ({ open, data, theme, isLoading, isFetching }) => {
+
+    const navigate = useNavigate();
+  
+    const navigation = (item) => {
+      const navigateData = {
+        spaceName: item.metadata.spaceName,
+        chatId: item.metadata.ChatId,
+      };
+
+      navigate("/message", { state: navigateData });
+    };
+
+  if (isLoading || isFetching) {
+    return (
+      <Box sx={{ width: "100%" }}>
+        <LinearProgress />
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -10,7 +32,7 @@ const Notification = ({ open, data, theme }) => {
         display: open ? "block" : "none",
         position: "absolute",
         top: "58px",
-        right: '30px',
+        right: "30px",
         border: "1px solid #D1DBD7",
         background: "#fff",
         borderRadius: "0px 0px 5px 5px",
@@ -30,60 +52,85 @@ const Notification = ({ open, data, theme }) => {
         Notifications:
       </Typography>
 
-      <Stack gap={4} sx={{ overflowY: "auto", maxHeight: "220px", }}>
-        {data.map((item) => {
-          return (
-            <Stack key={item._id} flexDirection="row" alignItems="center">
-              <Box
+      <Stack gap={4} sx={{ overflowY: "auto", maxHeight: "220px" }}>
+        {data.length > 0 ? (
+          data.map((item) => {
+            return (
+              <Stack
+                key={item._id}
                 sx={{
-                  width: "48px",
-                  height: "48px",
-                  marginRight: 2,
-                  borderRadius: "5px",
-                  position: "relative",
+                  cursor: "pointer",
+                  flexDirection: "row",
+                  alignItems: "center",
                 }}
+                onClick={() => navigation(item)}
               >
-                {item?.metadata?.senderBrandImage ? (
-                  <img
-                    src={item?.metadata?.senderBrandImage}
-                    alt="Icon"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      borderRadius: "5px",
-                      border: "1px solid rgba(209, 219, 215, 0.4)",
-                    }}
-                  />
-                ) : (
-                  <Box
-                    sx={{
-                      width: "100%",
-                      height: "100%",
-                      bgcolor: "rgba(0, 28, 20, 0.4)",
-                      borderRadius: "5px",
-                    }}
-                  />
-                )}
+                <Box
+                  sx={{
+                    width: "48px",
+                    height: "48px",
+                    marginRight: 2,
+                    borderRadius: "5px",
+                    position: "relative",
+                  }}
+                >
+                  {item?.metadata?.senderBrandImage ? (
+                    <img
+                      src={item?.metadata?.senderBrandImage}
+                      alt="Icon"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: "5px",
+                        border: "1px solid rgba(209, 219, 215, 0.4)",
+                      }}
+                    />
+                  ) : (
+                    <Box
+                      sx={{
+                        width: "100%",
+                        height: "100%",
+                        bgcolor: "rgba(0, 28, 20, 0.4)",
+                        borderRadius: "5px",
+                      }}
+                    />
+                  )}
 
-                <ActivityType type={item?.activity || "brand"} theme={theme} />
-              </Box>
+                  <ActivityType
+                    type={item?.activity || "brand"}
+                    theme={theme}
+                  />
+                </Box>
 
-              <Typography
-                fontSize={16}
-                fontWeight={400}
-                textTransform="lowercase"
-                maxWidth={"270px"}
-              >
-                <strong style={{ textTransform: "capitalize" }}>
-                  {item?.metadata?.senderBrandUserName}
-                </strong>{" "}
-                sent a {item.title?.split("For")[0]} for{" "}
-                <strong style={{ textTransform: "capitalize" }}>{item.title?.split("For")[1]}</strong>
-              </Typography>
-            </Stack>
-          );
-        })}
+                <Typography
+                  fontSize={16}
+                  fontWeight={400}
+                  textTransform="lowercase"
+                  maxWidth={"270px"}
+                >
+                  <strong style={{ textTransform: "capitalize" }}>
+                    {item?.metadata?.senderBrandUserName}
+                  </strong>{" "}
+                  sent a {item.title?.split("For")[0]} for{" "}
+                  <strong style={{ textTransform: "capitalize" }}>
+                    {item.title?.split("For")[1]}
+                  </strong>
+                </Typography>
+              </Stack>
+            );
+          })
+        ) : (
+          <div>
+            <Typography
+              fontSize={16}
+              fontWeight={600}
+              textTransform="capitalize"
+            >
+              You dont have any notifications
+            </Typography>
+          </div>
+        )}
       </Stack>
     </Box>
   );

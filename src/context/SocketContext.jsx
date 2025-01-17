@@ -132,22 +132,26 @@ const SocketProvider = ({ children }) => {
 
       socket.current.on("NEW_REQUEST", (data) => {
         // console.log("NEW_REQUEST EVENT TRIGGERED.");
-        if (pathname !== "message") {
-          const getNewRequest = getCookie("newRequest");
+        const getNewRequest = getCookie("newRequest");
 
-          if (getNewRequest) {
-            setCookie("newRequest", getNewRequest + 1);
-            dispatch(getNotificationCount(getNewRequest + 1));
-          } else {
-            setCookie("newRequest", 1);
-            dispatch(getNotificationCount(1));
-          }
-
-          toast.info(data?.name, {
-            position: "bottom-right",
-            onClick: () => navigate("/message", { state: data }),
-          });
+        if (getNewRequest) {
+          setCookie("newRequest", getNewRequest + 1);
+          dispatch(getNotificationCount(getNewRequest + 1));
+        } else {
+          setCookie("newRequest", 1);
+          dispatch(getNotificationCount(1));
         }
+
+        toast.info(data?.name, {
+          position: "bottom-right",
+          onClick: () =>
+            navigate("/message", {
+              state: {
+                spaceName: data.spaceName,
+                chatId: data.chatId,
+              },
+            }),
+        });
         notificationRefetch();
       });
 

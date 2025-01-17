@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { format } from "date-fns";
+import { emptyNotificationCount } from "../store/slices/notification";
 
 export function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -90,6 +91,11 @@ export const addEmoji = (
   quillInstance.current.setSelection(cursorPosition + emoji.native.length, 0);
 
   setEmojiPickerVisible(false);
+};
+
+export const removeActiveNotifications = (dispatch) => {
+  dispatch(emptyNotificationCount());
+  deleteCookie("newRequest");
 };
 
 export const messageBox = (parentObj, chatDetails, allMessages) => {

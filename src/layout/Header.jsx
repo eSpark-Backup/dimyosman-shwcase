@@ -18,13 +18,12 @@ import {
 import { BadgeComp, SearchBar } from "../components";
 import { addIcon, chatIcon, bellIcon } from "../assets";
 import { useNavigate } from "react-router-dom";
-import { deleteCookie, getCookie, useClickOutside } from "../utils";
+import { getCookie, removeActiveNotifications, useClickOutside } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { logout as logoutFunc } from "../store/slices/auth";
 import { removeMychat } from "../store/slices/chat";
 import Notification from "../components/Notification";
 import { useGetNotificationDataQuery } from "../services/notifications";
-import { emptyNotificationCount } from "../store/slices/notification";
 
 const Header = ({ isLogin }) => {
   const {
@@ -72,8 +71,7 @@ const Header = ({ isLogin }) => {
   };
 
   const iconClick = (type) => {
-    dispatch(emptyNotificationCount());
-    deleteCookie("newRequest");
+    removeActiveNotifications()
 
     if (type === "chat") {
       navigate("/message");
@@ -237,6 +235,8 @@ const Header = ({ isLogin }) => {
                   open={showNotification}
                   data={notificationData?.data?.notifications || []}
                   theme={theme}
+                  isLoading={isLoading}
+                  isFetching={isFetching}
                 />
               </li>
               {userData?.user?.profileImage ? (
