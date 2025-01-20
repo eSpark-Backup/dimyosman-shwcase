@@ -377,7 +377,7 @@ router.put(
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -399,6 +399,10 @@ router.put(
  *                    htmlContent:
  *                       type: string
  *                       description: HTML content related to the Contract (e.g., description with HTML tags)
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: Additional image of the Owner Signature.
  *     responses:
  *       201:
  *         description: space created successfully.
@@ -414,6 +418,7 @@ router.post(
   "/leaseSpace",
   checkJwt,
   validateRoles([ROLES.USER]),
+  handleMultipleFiles([{ name: FILE_FIELDS.IMAGE, maxCount: 1 }]),
   parseJsonFields(["contractDetails"]),
   validate(SpaceValidation.LeasingSpaceValidation, "body"),
   (req, res, next) => spaceController.leaseSpace(req, res, next)

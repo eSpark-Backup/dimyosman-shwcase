@@ -39,6 +39,18 @@ export class LeaseSpace extends BaseEntity {
   @Column({ type: "json", nullable: false })
   contractDetails: object;
 
+  @Column({ type: "varchar", length: 500, nullable: true })
+  ownerSign: string;
+
+  @Column({ type: "varchar", length: 500, nullable: true })
+  ownerSignImageKey: string;
+
+  @Column({ type: "varchar", length: 500, nullable: true })
+  tenantSign: string;
+
+  @Column({ type: "varchar", length: 500, nullable: true })
+  tenantSignImageKey: string;
+
   @Column({
     type: "enum",
     enum: LeaseStatus,

@@ -50,7 +50,7 @@ export class SpaceController {
   ): Promise<void> {
     try {
       const { spaceId, tenantId, chatId, contractDetails } = req.body;
-
+      const imageFilesPath = path.join(process.cwd(), "uploads");
       const space = await this.spaceRepo
         .createQueryBuilder("space")
         .where("space.id = :spaceId", { spaceId })
@@ -59,6 +59,19 @@ export class SpaceController {
       if (!space) {
         throw new ApiError("Space not found", HTTP_STATUS.BAD_REQUEST);
       }
+      const imageFiles = fs
+        .readdirSync(path.join(imageFilesPath))
+        .filter((file) => file.startsWith("image")); // Filter for image files
+
+      if (!imageFiles.length) {
+        throw new ApiError(
+          "Missing required files: 'cover' or 'image'",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+      const imageFileObjects: IFileObject[] = imageFiles.map((file) =>
+        commonHelper.createFileObject(path.join(imageFilesPath, file), "image")
+      );
 
       const tenant = await this.userRepo.findOne({
         where: { id: tenantId },
@@ -77,14 +90,30 @@ export class SpaceController {
           HTTP_STATUS.BAD_REQUEST
         );
       }
+      const FolderName = `${CLOUD_FOLDERS.SPACE}/CONTRACT/${owner.name.trim()}`;
+      const imageUrls = (await uploadService.uploadMultipleFiles(
+        imageFileObjects,
+        FolderName
+      )) as UploadResult[];
       const leaseSpace = new LeaseSpace();
       leaseSpace.owner = owner;
       leaseSpace.space = space;
       leaseSpace.chatId = chatId;
+      leaseSpace.ownerSign = imageUrls[0].url as string;
+      leaseSpace.ownerSignImageKey = imageUrls[0].public_id;
       leaseSpace.tenant = tenant;
       leaseSpace.contractDetails = JSON.stringify(contractDetails) as Object;
 
       await this.leaseSpaceRepo.save(leaseSpace);
+      const uploadsPath = path.join(process.cwd(), "uploads");
+
+      const files = fs.readdirSync(uploadsPath);
+
+      files.forEach((file) => {
+        const filePath = path.join(uploadsPath, file);
+        fs.unlinkSync(filePath);
+        console.log(`Deleted file: ${filePath}`);
+      });
 
       res
         .status(HTTP_STATUS.OK)
@@ -94,6 +123,16 @@ export class SpaceController {
       logger.error(
         `SpaceController :: leaseSpace :: ${(error as Error)?.message}`
       );
+      const uploadsPath = path.join(process.cwd(), "uploads");
+
+      const files = fs.readdirSync(uploadsPath);
+
+      files.forEach((file) => {
+        const filePath = path.join(uploadsPath, file);
+        fs.unlinkSync(filePath);
+        logger.error(`Deleted file: ${filePath}`);
+      });
+
       return next(error);
     }
   }
