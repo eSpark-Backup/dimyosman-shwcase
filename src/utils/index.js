@@ -100,6 +100,7 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
       parentActivity: isSpacesChats ? "space" : "brand",
       parentName: details?.brandName || details?.spaceName,
       parentImage: details?.brandImage || details?.spaceImage,
+      ownerDetails: details?.user,
     };
   };
 

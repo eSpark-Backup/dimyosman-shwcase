@@ -3,7 +3,13 @@ import { useSelector } from "react-redux";
 
 import { toast } from "react-toastify";
 
-import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
@@ -13,6 +19,8 @@ import Message from "../../../../components/Message/Message";
 import ActivityType from "../../../../components/Message/ActivityType";
 import InputBox from "../../../../components/Message/InputBox";
 import EditorSenderSection from "../../../../components/Message/EditorSenderSection";
+import ReusableModal from "../../../../components/Modal";
+import ManageInquiry from "../../../../components/Message/ManageInquiry";
 
 import { addEmoji } from "../../../../utils";
 
@@ -76,6 +84,7 @@ const AllMesaages = ({
     message: "",
   });
   const [buttonDisabled, setButtonDisabled] = useState(true);
+  const [showInquiryModal, setShowIinquiryModal] = useState(false);
 
   useEffect(() => {
     if (selectedGroup?.group?.parentName) {
@@ -160,6 +169,14 @@ const AllMesaages = ({
     }));
   };
 
+  const handleModalClose = () => {
+    setShowIinquiryModal(false);
+  };
+
+  const handleModalOpen = () => {
+    setShowIinquiryModal(true);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       setTimeout(() => {
@@ -191,15 +208,37 @@ const AllMesaages = ({
         />
       )}
 
+      <Box display="flex" justifyContent="end" mt={1} height="31px">
+        {selectedGroup?.chatGroup?.activity !== "space" ? (
+          <Button
+            sx={{
+              padding: "0px 24px",
+              height: "100%",
+              textTransform: "capitalize",
+              background:
+                "linear-gradient(0deg, rgba(0, 20, 28, 0.7), rgba(0, 20, 28, 0.7)), #FFFFFF",
+              borderRadius: "5px",
+              fontWeight: 600,
+              fontSize: "16px",
+              lineHeight: "21px",
+              letterSpacing: "-0.01em",
+            }}
+            onClick={handleModalOpen}
+          >
+            Manage Inquiry
+          </Button>
+        ) : null}
+      </Box>
+
       <Box
         sx={{
           height: isLessThan1100
-            ? "calc(100vh - 210px)"
+            ? "calc(100vh - 249px)"
             : isLessThan1280
-            ? "calc(100vh - 220px)"
+            ? "calc(100vh - 259px)"
             : isLessThan1400
-            ? "calc(100vh - 254px)"
-            : "calc(100vh - 276px)",
+            ? "calc(100vh - 293px)"
+            : "calc(100vh - 315px)",
           marginTop: isLessThan1280 ? 1 : isLessThan1400 ? 1.5 : 2,
           overflowY: "auto",
           marginBottom: isLessThan1280 ? 2.5 : isLessThan1400 ? 4 : 6.25,
@@ -232,6 +271,7 @@ const AllMesaages = ({
                       <Message
                         ActivityType={ActivityType}
                         theme={theme}
+                        index={0}
                         message={message}
                         sender={{
                           brandName:
@@ -329,6 +369,17 @@ const AllMesaages = ({
           </Box>
         </Box>
       </Box>
+
+      <ReusableModal
+        hideHeader={true}
+        open={showInquiryModal}
+        handleClose={handleModalClose}
+      >
+        <ManageInquiry
+          handleModalClose={handleModalClose}
+          details={selectedGroup}
+        />
+      </ReusableModal>
     </Box>
   );
 };
