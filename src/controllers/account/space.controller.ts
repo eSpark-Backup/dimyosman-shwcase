@@ -155,6 +155,7 @@ export class SpaceController {
         senderBrandId: senderBrand.id,
         senderBrandImage: senderBrand.brandImage,
         senderBrandUserName: senderBrand.user.name,
+        receiverSpaceName: receiverSpace.spaceName,
       };
       await Notification.save();
       const ChatId = NewChat.id.toString();
@@ -171,6 +172,7 @@ export class SpaceController {
         name: `${senderBrand.brandName} sent you an inquiry for Space ${receiverSpace.spaceName}`,
         senderBrandImage: senderBrand.brandImage,
         senderBrandUserName: senderBrand.user.name,
+        receiverSpaceName: receiverSpace.spaceName,
         chatId: NewChat._id,
       });
 
