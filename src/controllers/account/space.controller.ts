@@ -1,5 +1,5 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { Brand, Events, Spaces, User } from "../../entity";
+import { Brand, Events, Spaces, User, LeaseSpace } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
 import {
@@ -36,11 +36,106 @@ export class SpaceController {
     private userRepo: Repository<User>,
     private brandRepo: Repository<Brand>,
     private eventsRepo: Repository<Events>,
+    private leaseSpaceRepo: Repository<LeaseSpace>,
     private chatModel: typeof Chat,
     private userModel: typeof UserForChat,
     private notificationModel: typeof Notification,
     private messageModel: typeof Message
   ) {}
+
+  async leaseSpace(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { spaceId, tenantId, chatId, contractDetails } = req.body;
+      const imageFilesPath = path.join(process.cwd(), "uploads");
+      const space = await this.spaceRepo
+        .createQueryBuilder("space")
+        .where("space.id = :spaceId", { spaceId })
+        .leftJoinAndSelect("space.user", "user")
+        .getOne();
+      if (!space) {
+        throw new ApiError("Space not found", HTTP_STATUS.BAD_REQUEST);
+      }
+      const imageFiles = fs
+        .readdirSync(path.join(imageFilesPath))
+        .filter((file) => file.startsWith("image")); // Filter for image files
+
+      if (!imageFiles.length) {
+        throw new ApiError(
+          "Missing required files: 'cover' or 'image'",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+      const imageFileObjects: IFileObject[] = imageFiles.map((file) =>
+        commonHelper.createFileObject(path.join(imageFilesPath, file), "image")
+      );
+
+      const tenant = await this.userRepo.findOne({
+        where: { id: tenantId },
+      });
+      if (!tenant) {
+        throw new ApiError("Tenant not found", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      const owner = await this.userRepo.findOne({ where: { id: req.user.id } });
+      if (!owner) {
+        throw new ApiError("Owner not found", HTTP_STATUS.BAD_REQUEST);
+      }
+      if (owner.id != space.user.id) {
+        throw new ApiError(
+          "You are not the owner of this space",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+      const FolderName = `${CLOUD_FOLDERS.SPACE}/CONTRACT/${owner.name.trim()}`;
+      const imageUrls = (await uploadService.uploadMultipleFiles(
+        imageFileObjects,
+        FolderName
+      )) as UploadResult[];
+      const leaseSpace = new LeaseSpace();
+      leaseSpace.owner = owner;
+      leaseSpace.space = space;
+      leaseSpace.chatId = chatId;
+      leaseSpace.ownerSign = imageUrls[0].url as string;
+      leaseSpace.ownerSignImageKey = imageUrls[0].public_id;
+      leaseSpace.tenant = tenant;
+      leaseSpace.contractDetails = JSON.stringify(contractDetails) as Object;
+
+      await this.leaseSpaceRepo.save(leaseSpace);
+      const uploadsPath = path.join(process.cwd(), "uploads");
+
+      const files = fs.readdirSync(uploadsPath);
+
+      files.forEach((file) => {
+        const filePath = path.join(uploadsPath, file);
+        fs.unlinkSync(filePath);
+        console.log(`Deleted file: ${filePath}`);
+      });
+
+      res
+        .status(HTTP_STATUS.OK)
+        .json(handleResponse("Lease Contract Sent Successfully"));
+      return next();
+    } catch (error) {
+      logger.error(
+        `SpaceController :: leaseSpace :: ${(error as Error)?.message}`
+      );
+      const uploadsPath = path.join(process.cwd(), "uploads");
+
+      const files = fs.readdirSync(uploadsPath);
+
+      files.forEach((file) => {
+        const filePath = path.join(uploadsPath, file);
+        fs.unlinkSync(filePath);
+        logger.error(`Deleted file: ${filePath}`);
+      });
+
+      return next(error);
+    }
+  }
 
   async inquireSpace(
     req: ICustomRequest,
@@ -68,7 +163,7 @@ export class SpaceController {
       }
       const members = [req.user?._id, receiverBrand.user.userChatId];
 
-      const [NewChat, Noti] = await Promise.all([
+      const [NewChat, Notification, senderBrand] = await Promise.all([
         this.chatModel.create({
           members,
           name: `Inquiring Brand ${receiverBrand.brandName} For Space ${receiverSpace.spaceName}`,
@@ -85,7 +180,23 @@ export class SpaceController {
           message,
           type: "info",
         }),
+        this.brandRepo
+          .createQueryBuilder("brand")
+          .where("brand.id = :senderBrandId", { senderBrandId })
+          .leftJoinAndSelect("brand.user", "user")
+
+          .getOne(),
       ]);
+      Notification.metadata = {
+        ChatId: NewChat._id,
+        spaceId: receiverSpace.id,
+        spaceImage: receiverSpace.spaceImage,
+        senderBrandId: senderBrand.id,
+        senderBrandImage: senderBrand.brandImage,
+        senderBrandUserName: senderBrand.user.name,
+        receiverSpaceName: receiverSpace.spaceName,
+      };
+      await Notification.save();
       const ChatId = NewChat.id.toString();
       const messageForDB = {
         content: message,
@@ -96,7 +207,14 @@ export class SpaceController {
 
       emitEvent(req, REFETCH_CHATS, members);
 
-      emitEvent(req, NEW_REQUEST, [receiverBrand.user.userChatId]);
+      emitEvent(req, NEW_REQUEST, [receiverBrand.user.userChatId], {
+        name: `${senderBrand.brandName} sent you an inquiry for Space ${receiverSpace.spaceName}`,
+        senderBrandImage: senderBrand.brandImage,
+        senderBrandUserName: senderBrand.user.name,
+        receiverSpaceName: receiverSpace.spaceName,
+        chatId: NewChat._id,
+      });
+
       res
         .status(HTTP_STATUS.OK)
         .json(handleResponse("Inquiry Sent Successfully"));
@@ -533,7 +651,7 @@ export class SpaceController {
   ): Promise<void> {
     try {
       const { id } = req.params;
-      const { page, take, skip } = req?.query;
+      const { page, take, skip, tab } = req?.query;
       const skipNumber = Number(skip);
       const takeNumber = Number(take);
       if (id && id !== "{id}") {
@@ -577,71 +695,132 @@ export class SpaceController {
         res.status(200).json(handleResponse("Space Found Successfully", space));
         return next();
       }
+      if (tab == "Space") {
+        let [spaces, totalItems] = await this.spaceRepo
+          .createQueryBuilder("space")
+          .leftJoinAndSelect("space.brand", "brand")
+          .where("space.user = :userId", { userId: req.user?.id })
+          .leftJoinAndSelect("space.user", "user")
+          .orderBy("space.createdAt", "DESC")
+          .skip(skipNumber)
+          .take(takeNumber)
+          .getManyAndCount();
 
-      let [spaces, totalItems] = await this.spaceRepo
-        .createQueryBuilder("space")
-        .leftJoinAndSelect("space.brand", "brand")
-        .where("space.user = :userId", { userId: req.user?.id })
-        .leftJoinAndSelect("space.user", "user")
-        .orderBy("space.createdAt", "DESC")
-        .skip(skipNumber)
-        .take(takeNumber)
-        .getManyAndCount();
-
-      if (spaces.length === 0) {
-        res.status(200).json(handleResponse("No Spaces Found"));
-        return next();
-      }
-
-      spaces.forEach((space) => {
-        if (typeof space.coverImages === "string") {
-          space.coverImages = JSON.parse(space.coverImages);
+        if (spaces.length === 0) {
+          res.status(200).json(handleResponse("No Spaces Found"));
+          return next();
         }
-      });
-      for (const space of spaces) {
-        const events = await this.eventsRepo
-          .createQueryBuilder("event")
-          .where("event.space = :spaceId", { spaceId: space.id })
-          .getMany();
 
-        const calendarEvents = events.flatMap((event) => {
-          const eventDates: EventDate[] = Array.isArray(event.eventDate)
-            ? event.eventDate
-            : JSON.parse(event.eventDate as unknown as string);
+        spaces.forEach((space) => {
+          if (typeof space.coverImages === "string") {
+            space.coverImages = JSON.parse(space.coverImages);
+          }
+        });
+        for (const space of spaces) {
+          const events = await this.eventsRepo
+            .createQueryBuilder("event")
+            .where("event.space = :spaceId", { spaceId: space.id })
+            .getMany();
 
-          return eventDates.map((dateRange) => ({
-            eventId: event.id,
-            title: event.eventName,
-            start: new Date(dateRange.startDate),
-            end: new Date(dateRange.endDate),
-          }));
+          const calendarEvents = events.flatMap((event) => {
+            const eventDates: EventDate[] = Array.isArray(event.eventDate)
+              ? event.eventDate
+              : JSON.parse(event.eventDate as unknown as string);
+
+            return eventDates.map((dateRange) => ({
+              eventId: event.id,
+              title: event.eventName,
+              start: new Date(dateRange.startDate),
+              end: new Date(dateRange.endDate),
+            }));
+          });
+
+          (space as any).calendarEvents = calendarEvents;
+        }
+
+        spaces = spaces.map((space) => {
+          const totalPricing = calculatePricing(
+            space.pricing as PricingTerm[],
+            1
+          );
+          return {
+            ...space,
+            totalPricing,
+          };
         });
 
-        (space as any).calendarEvents = calendarEvents;
-      }
-
-      spaces = spaces.map((space) => {
-        const totalPricing = calculatePricing(
-          space.pricing as PricingTerm[],
-          1
+        res.status(200).json(
+          handleResponse("Spaces Fetched Successfully", {
+            spaces,
+            pagination: {
+              totalItems,
+              currentPage: parseInt(page as string, 10),
+              pageSize: takeNumber,
+              totalPages: Math.ceil(totalItems / takeNumber),
+            },
+          })
         );
-        return {
-          ...space,
-          totalPricing,
-        };
-      });
+      } else if (tab == "Lease") {
+        let [leaseSpace, totalItems] = await this.leaseSpaceRepo
+          .createQueryBuilder("leaseSpace")
+          .leftJoinAndSelect("leaseSpace.space", "space")
+          .leftJoinAndSelect("leaseSpace.tenant", "tenant")
+          .where("tenant.id = :userId", { userId: req.user?.id })
 
-      res.status(200).json(
-        handleResponse("Spaces Fetched Successfully", {
-          spaces,
-          pagination: {
-            totalItems,
-            currentPage: parseInt(page as string, 10),
-            pageSize: takeNumber,
-            totalPages: Math.ceil(totalItems / takeNumber),
-          },
-        })
-      );
+          .leftJoinAndSelect("space.brand", "brand")
+          .leftJoinAndSelect("space.user", "user")
+          .orderBy("leaseSpace.createdAt", "DESC")
+          .skip(skipNumber)
+          .take(takeNumber)
+          .getManyAndCount();
+
+        if (leaseSpace.length === 0) {
+          res.status(200).json(handleResponse("No Spaces Found"));
+          return next();
+        }
+
+        leaseSpace.forEach((space) => {
+          if (typeof space.space.coverImages === "string") {
+            space.space.coverImages = JSON.parse(space.space.coverImages);
+            if (typeof space.contractDetails === "string") {
+              space.contractDetails = JSON.parse(space.contractDetails);
+            }
+          }
+        });
+        for (const space of leaseSpace) {
+          const events = await this.eventsRepo
+            .createQueryBuilder("event")
+            .where("event.space = :spaceId", { spaceId: space.space.id })
+            .getMany();
+
+          const calendarEvents = events.flatMap((event) => {
+            const eventDates: EventDate[] = Array.isArray(event.eventDate)
+              ? event.eventDate
+              : JSON.parse(event.eventDate as unknown as string);
+
+            return eventDates.map((dateRange) => ({
+              eventId: event.id,
+              title: event.eventName,
+              start: new Date(dateRange.startDate),
+              end: new Date(dateRange.endDate),
+            }));
+          });
+
+          (space as any).calendarEvents = calendarEvents;
+        }
+
+        res.status(200).json(
+          handleResponse("Spaces Fetched Successfully", {
+            leaseSpace,
+            pagination: {
+              totalItems,
+              currentPage: parseInt(page as string, 10),
+              pageSize: takeNumber,
+              totalPages: Math.ceil(totalItems / takeNumber),
+            },
+          })
+        );
+      }
       return next();
     } catch (error) {
       next(error);
