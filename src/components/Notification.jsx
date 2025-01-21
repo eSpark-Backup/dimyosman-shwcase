@@ -4,16 +4,16 @@ import { Box, LinearProgress, Stack, Typography } from "@mui/material";
 
 import ActivityType from "./Message/ActivityType";
 
-const Notification = ({ open, data, theme, isLoading, isFetching }) => {
+const Notification = ({ open, data, theme, isLoading, isFetching,setShowNotification }) => {
 
     const navigate = useNavigate();
   
     const navigation = (item) => {
       const navigateData = {
-        spaceName: item.metadata.spaceName,
+        spaceName: item.metadata.receiverSpaceName,
         chatId: item.metadata.ChatId,
       };
-
+      setShowNotification(false)
       navigate("/message", { state: navigateData });
     };
 

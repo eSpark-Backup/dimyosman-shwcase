@@ -62,6 +62,7 @@ const Header = ({ isLogin }) => {
     dispatch(removeMychat());
     setAddPopup(false);
     setOpenProfilePopup(false);
+    setShowNotification(false);
     navigate("/auth?type=login");
   };
 
@@ -71,7 +72,7 @@ const Header = ({ isLogin }) => {
   };
 
   const iconClick = (type) => {
-    removeActiveNotifications()
+    removeActiveNotifications(dispatch)
 
     if (type === "chat") {
       navigate("/message");
@@ -237,6 +238,7 @@ const Header = ({ isLogin }) => {
                   theme={theme}
                   isLoading={isLoading}
                   isFetching={isFetching}
+                  setShowNotification={setShowNotification}
                 />
               </li>
               {userData?.user?.profileImage ? (
