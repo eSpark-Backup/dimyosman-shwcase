@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import {
   Box,
   Button,
+  Stack,
   Typography,
   useMediaQuery,
   useTheme,
@@ -20,9 +21,25 @@ import ActivityType from "../../../../components/Message/ActivityType";
 import InputBox from "../../../../components/Message/InputBox";
 import EditorSenderSection from "../../../../components/Message/EditorSenderSection";
 import ReusableModal from "../../../../components/Modal";
-import ManageInquiry from "../../../../components/Message/ManageInquiry";
 
-import { addEmoji } from "../../../../utils";
+import { addEmoji, convertToSameKeys } from "../../../../utils";
+import AfterSignature from "../../../../components/AfterSignature";
+import ManageInquiry from "../../../../components/ManageInquiry";
+
+const TopHeading = ({ name, size, my = 0 }) => {
+  return (
+    <Typography
+      sx={{
+        fontWeight: 600,
+        fontSize: size,
+        color: "#00141C",
+        my,
+      }}
+    >
+      {name}
+    </Typography>
+  );
+};
 
 const GroupDetail = ({ withColon, text }) => (
   <Typography
@@ -85,6 +102,7 @@ const AllMesaages = ({
   });
   const [buttonDisabled, setButtonDisabled] = useState(true);
   const [showInquiryModal, setShowIinquiryModal] = useState(false);
+  const [afterSignature, setAfterSignature] = useState(false);
 
   useEffect(() => {
     if (selectedGroup?.group?.parentName) {
@@ -171,6 +189,7 @@ const AllMesaages = ({
 
   const handleModalClose = () => {
     setShowIinquiryModal(false);
+    setAfterSignature(false);
   };
 
   const handleModalOpen = () => {
@@ -377,7 +396,28 @@ const AllMesaages = ({
       >
         <ManageInquiry
           handleModalClose={handleModalClose}
-          details={selectedGroup}
+          details={convertToSameKeys(selectedGroup)}
+          setAfterSignature={setAfterSignature}
+          TopHeading={TopHeading}
+          setShowIinquiryModal={setShowIinquiryModal}
+        />
+      </ReusableModal>
+
+      <ReusableModal
+        hideHeader={true}
+        open={afterSignature}
+        handleClose={handleModalClose}
+      >
+        <AfterSignature
+          image={selectedGroup?.group?.parentImage}
+          alt="SpaceImage"
+          activity={selectedGroup?.group?.parentActivity}
+          TopHeading={TopHeading}
+          name={selectedGroup?.group?.parentName}
+          brandName={selectedGroup?.chatGroup?.receiverbrandName}
+          handleClose={handleModalClose}
+          upperPara="Your Lease document has been sent to Tenant for Signature."
+          lowerPara="Lease details are available under Spaces -> Tenancy."
         />
       </ReusableModal>
     </Box>
