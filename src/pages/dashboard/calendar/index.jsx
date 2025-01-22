@@ -11,7 +11,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 
-import { bigCalendar } from "../../../assets";
+import { bigCalendar, calenderIconLight } from "../../../assets";
 import { useGetCalendarQuery } from "../../../services/calendar";
 
 const datePickerStyle = {
@@ -192,7 +192,7 @@ const Calendar = () => {
             }}
             role="space-icon"
           >
-            <img src={bigCalendar} alt="event" />
+            <img src={calenderIconLight} alt="event" />
           </figure>
         </Box>
       </Stack>

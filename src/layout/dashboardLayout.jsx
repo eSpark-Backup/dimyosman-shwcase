@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import SplashScreen from "./splash";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./sidebar";
-import { getSmallSidebar } from "../constant";
+import { getFullSidebar, getSmallSidebar } from "../constant";
 
 const DashboardLayout = ({ isTokenChecking }) => {
   const navigate = useNavigate();
@@ -27,10 +27,13 @@ const DashboardLayout = ({ isTokenChecking }) => {
       sx={{
         padding: "80px 16px 0 16px",
         display:
-          getSmallSidebar(pathname) && pathname !== "/message"
+          getSmallSidebar(pathname) || getFullSidebar(pathname)
             ? "flex"
             : "block",
-        justifyContent: { xs: "flex-end", md: "center" },
+        justifyContent: {
+          xs: "flex-end",
+          md: "center",
+        },
         alignItems: "flex-start",
       }}
     >
@@ -41,14 +44,14 @@ const DashboardLayout = ({ isTokenChecking }) => {
           overflowY: "auto",
           maxHeight: "calc(100vh - 80px)",
           padding:
-            getSmallSidebar(pathname) && pathname === "/message"
-              ? "0 0 0 105px"
-              : getSmallSidebar(pathname)
+            getSmallSidebar(pathname) ||
+            getFullSidebar(pathname) ||
+            pathname === "/message"
               ? "0"
               : { xs: "0 0 0 105px", lg: "0 0 0 320px" },
           "::-webkit-scrollbar": { display: "none" },
           maxWidth:
-            getSmallSidebar(pathname) && pathname !== "/message"
+            getSmallSidebar(pathname) || getFullSidebar(pathname)
               ? {
                   xs: "calc(100% - 111px)",
                   md: "80%",

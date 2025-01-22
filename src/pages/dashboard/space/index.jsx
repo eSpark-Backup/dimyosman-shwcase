@@ -2,7 +2,7 @@ import { Box, Button, Card, LinearProgress, Stack, Typography } from "@mui/mater
 import { act, useEffect, useState } from "react";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { spaceTableData } from "../../../constant";
-import { addIcon, eventIconLight, like, spaceIcon } from "../../../assets";
+import { addIcon, like, spaceIconLight } from "../../../assets";
 import { useNavigate } from "react-router-dom";
 import { useGetAllSpaceQuery } from "../../../services/space";
 import { toast } from "react-toastify";
@@ -189,7 +189,7 @@ const Space = () => {
             }}
             role="space-icon"
           >
-            <img src={spaceIcon} alt="event" />
+            <img src={spaceIconLight} alt="event" />
           </figure>
         </Box>
       </Stack>

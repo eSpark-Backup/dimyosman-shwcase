@@ -379,89 +379,103 @@ const Message = () => {
   }
 
   return (
-    <>
-      {allMessages?.length === 0 ? null : (
-        <Box sx={{ flexGrow: 1 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={4} lg={3}>
-              <SearchMessage />
+    <Box
+      sx={{
+        paddingLeft: "105px",
+        maxWidth: {
+          xs: "calc(100% - 111px)",
+          md: "100%",
+        },
 
+        "@media only screen and (min-width: 1281px)": {
+          maxWidth: "1100px",
+        },
+
+        "@media only screen and (min-width: 1600px)": {
+          maxWidth: "1500px",
+        },
+      }}
+    >
+      {allMessages?.length === 0 ? null : (
+        <Grid container spacing={2} justifyContent="center">
+          <Grid item xs={12} md={3.8}>
+            <SearchMessage />
+
+            <Box
+              sx={{
+                display: "flex",
+                marginBottom: 2,
+                justifyContent: "space-between",
+              }}
+            >
+              {icons.map((icon, i) => (
+                <IconBadge key={i} {...icon} theme={theme} />
+              ))}
+            </Box>
+
+            <Box
+              sx={{
+                fontFamily: '"Segoe UI", "sans-serif"',
+                maxHeight: isLessThan1280
+                  ? "calc(100vh - 240px)"
+                  : isLessThan1400
+                  ? "calc(100vh - 252px)"
+                  : "calc(100vh - 269px)",
+                overflowY: "auto",
+                marginBottom: isLessThan1280
+                  ? "20px"
+                  : isLessThan1400
+                  ? "32px"
+                  : "50px",
+              }}
+            >
+              {allMessages?.map((message, index) => (
+                <MessageItem
+                  key={index}
+                  message={message}
+                  theme={theme}
+                  expanded={expanded === index}
+                  onChange={handleAccordionChange(index)}
+                  setSelectedGroup={setSelectedGroup}
+                  selectedGroup={selectedGroup}
+                  setSelectedChatId={setSelectedChatId}
+                  emitEvent={emitEvent}
+                  onlineUsers={onlineUsers}
+                />
+              ))}
+            </Box>
+          </Grid>
+
+          <Grid
+            sx={{ display: isLessThan900 ? "none" : "block" }}
+            item
+            xs={12}
+            md={8}
+          >
+            {expanded === null ? (
               <Box
                 sx={{
                   display: "flex",
-                  marginBottom: 2,
-                  justifyContent: "space-between",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: "100%",
                 }}
               >
-                {icons.map((icon, i) => (
-                  <IconBadge key={i} {...icon} theme={theme} />
-                ))}
+                <h1>No chat selected</h1>
               </Box>
-
-              <Box
-                sx={{
-                  fontFamily: '"Segoe UI", "sans-serif"',
-                  maxHeight: isLessThan1280
-                    ? "calc(100vh - 240px)"
-                    : isLessThan1400
-                    ? "calc(100vh - 252px)"
-                    : "calc(100vh - 269px)",
-                  overflowY: "auto",
-                  marginBottom: isLessThan1280
-                    ? "20px"
-                    : isLessThan1400
-                    ? "32px"
-                    : "50px",
-                }}
-              >
-                {allMessages?.map((message, index) => (
-                  <MessageItem
-                    key={index}
-                    message={message}
-                    theme={theme}
-                    expanded={expanded === index}
-                    onChange={handleAccordionChange(index)}
-                    setSelectedGroup={setSelectedGroup}
-                    selectedGroup={selectedGroup}
-                    setSelectedChatId={setSelectedChatId}
-                    emitEvent={emitEvent}
-                    onlineUsers={onlineUsers}
-                  />
-                ))}
-              </Box>
-            </Grid>
-
-            <Grid
-              sx={{ display: isLessThan900 ? "none" : "block" }}
-              item
-              md={8}
-              lg={9}
-            >
-              {expanded === null ? (
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    height: "100%",
-                  }}
-                >
-                  <h1>No chat selected</h1>
-                </Box>
-              ) : (
-                <AllMessages
-                  selectedGroup={selectedGroup}
-                  emitEvent={emitEvent}
-                  isTypingUser={isTypingUser}
-                  onlineUsers={onlineUsers}
-                  setToShare={setToShare}
-                />
-              )}
-            </Grid>
+            ) : (
+              <AllMessages
+                selectedGroup={selectedGroup}
+                emitEvent={emitEvent}
+                isTypingUser={isTypingUser}
+                onlineUsers={onlineUsers}
+                setToShare={setToShare}
+              />
+            )}
           </Grid>
-        </Box>
+        </Grid>
       )}
-    </>
+    </Box>
   );
 };
 
