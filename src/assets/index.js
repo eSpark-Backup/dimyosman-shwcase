@@ -66,6 +66,9 @@ import logoText from "./logo-text.svg";
 import brandIconlight from "./brand-icon.png";
 import brandBadge from "./brand-badge.png";
 import eventIconLight from "./event-icon.png";
+import spaceIconLight from "./space-icon.png";
+import calenderIconLight from "./calendar-icon.png";
+import settingsIconLight from "./settings-icon.png";
 import activeItemIcon from "./activeItemIcon.svg";
 import notActiveIcon from "./notActiveItemIcon.svg";
 import add from "./addIcon.svg";
@@ -182,6 +185,9 @@ export {
   brandIconlight,
   brandBadge,
   eventIconLight,
+  spaceIconLight,
+  calenderIconLight,
+  settingsIconLight,
   eventBadge,
   activeItemIcon,
   notActiveIcon,

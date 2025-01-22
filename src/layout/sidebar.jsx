@@ -64,7 +64,7 @@ const Sidebar = () => {
               sx={{
                 width: "196px",
                 color: (theme) => theme.palette.primary.main,
-                display: getSmallSidebar(pathname)
+                display: getSmallSidebar(pathname) || pathname === "/message"
                   ? "none"
                   : { xs: "none", lg: "block" },
               }}
