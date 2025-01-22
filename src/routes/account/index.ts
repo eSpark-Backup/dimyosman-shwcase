@@ -7,6 +7,7 @@ import { router as spaceRoutes } from "./space.routes";
 import { router as eventRoutes } from "./event.routes";
 import { checkJwt, validateRoles } from "../../middleware";
 import { router as UserRoutes } from "./user.routes";
+import { router as generalRoutes } from "./general.routes";
 import { ROLES } from "../../constants";
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use("/category", categoryRoutes);
 router.use("/amenities", AmenitiesRoutes);
 router.use("/space", spaceRoutes);
 router.use("/event", eventRoutes);
+router.use("/general", generalRoutes);
 
 export { router };
