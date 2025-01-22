@@ -115,7 +115,7 @@ const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
   ];
 };
 
-const leasingSpaceColumns = (gotoDetail, handleAction) => {
+const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
   return [
     {
       name: "Event Name",
@@ -128,7 +128,7 @@ const leasingSpaceColumns = (gotoDetail, handleAction) => {
             justifyContent="flex-start"
             gap={2}
             sx={{ cursor: "pointer" }}
-            onClick={() => gotoDetail(item)}
+            onClick={() => gotoDetail(item, "lease")}
           >
             <Box
               sx={{
@@ -143,7 +143,7 @@ const leasingSpaceColumns = (gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="event-icon">
                   <img
-                    style={{ width: "100%" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     src={item?.eventImg}
                     alt="event-img"
                   />
@@ -206,14 +206,15 @@ const leasingSpaceColumns = (gotoDetail, handleAction) => {
       component: (item) => {
         return (
           <Typography
-            sx={{
-              fontSize: "14px",
-              fontWeight: item?.brandUrl ? 600 : 400,
-              cursor: "pointer",
-            }}
-          >
-            {item?.brand}
-          </Typography>
+          sx={{
+            fontSize: "14px",
+            fontWeight: item?.brandUrl ? 600 : 400,
+            cursor: "pointer",
+          }}
+          onClick={() => gotoBrand(item)}
+        >
+          {item?.brand}
+        </Typography>
         );
       },
     },

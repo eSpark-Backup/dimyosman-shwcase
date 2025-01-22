@@ -3,27 +3,21 @@ import { useNavigate } from "react-router-dom";
 import { Box, LinearProgress, Stack, Typography } from "@mui/material";
 
 import ActivityType from "./Message/ActivityType";
+import { useSelector } from "react-redux";
 
-const Notification = ({ open, data, theme, isLoading, isFetching,setShowNotification }) => {
+const Notification = ({ open, theme, setShowNotification }) => {
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
-  
-    const navigation = (item) => {
-      const navigateData = {
-        spaceName: item.metadata.receiverSpaceName,
-        chatId: item.metadata.ChatId,
-      };
-      setShowNotification(false)
-      navigate("/message", { state: navigateData });
+  const { notifications } = useSelector((state) => state.notification);
+
+  const navigation = (item) => {
+    const navigateData = {
+      spaceName: item.metadata.receiverSpaceName,
+      chatId: item.metadata.ChatId,
     };
-
-  if (isLoading || isFetching) {
-    return (
-      <Box sx={{ width: "100%" }}>
-        <LinearProgress />
-      </Box>
-    );
-  }
+    setShowNotification(false);
+    navigate("/message", { state: navigateData });
+  };
 
   return (
     <Box
@@ -39,6 +33,7 @@ const Notification = ({ open, data, theme, isLoading, isFetching,setShowNotifica
         padding: "16px",
         width: "366px",
         overflow: "hidden",
+        zIndex:"99999"
       }}
     >
       <Typography
@@ -53,8 +48,8 @@ const Notification = ({ open, data, theme, isLoading, isFetching,setShowNotifica
       </Typography>
 
       <Stack gap={4} sx={{ overflowY: "auto", maxHeight: "220px" }}>
-        {data.length > 0 ? (
-          data.map((item) => {
+        {notifications.length > 0 ? (
+          notifications.map((item) => {
             return (
               <Stack
                 key={item._id}

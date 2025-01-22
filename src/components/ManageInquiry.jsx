@@ -64,7 +64,9 @@ const EditableInput = ({ value, onInputChange }) => {
         marginTop: "20px",
       }}
     >
-      <label style={{ marginRight: "8px" }}>Additional Info</label>
+      <label style={{ marginRight: "8px", fontWeight: 600 }}>
+        Additional Info:
+      </label>
       <Input
         multiline={true}
         value={value}
@@ -105,6 +107,7 @@ const ManageInquiry = ({
   TopHeading,
   setShowIinquiryModal,
   spc = false,
+  ownerSign = null,
 }) => {
   const theme = useTheme();
 
@@ -242,7 +245,14 @@ const ManageInquiry = ({
         boxShadow: "0px 0px 20px rgba(0, 20, 28, 0.2)",
         borderRadius: "5px",
         overflowY: "auto",
-        height: "90vh",
+
+        "@media only screen and (min-height: 0px)": {
+          height: "90vh",
+        },
+
+        "@media only screen and (min-height: 1100px)": {
+          height: "62vh",
+        },
       }}
     >
       <Box marginBottom={2}>
@@ -300,10 +310,17 @@ const ManageInquiry = ({
       <Box
         sx={{
           padding: "16px",
-          height: "50vh",
           overflowY: "auto",
           border: "1px solid rgba(209, 219, 215, 0.5)",
           borderRadius: "5px",
+
+          "@media only screen and (min-height: 0px)": {
+            height: "50vh",
+          },
+
+          "@media only screen and (min-height: 1100px)": {
+            height: "35vh",
+          },
         }}
       >
         {/* HOST DETAILS */}
@@ -350,8 +367,10 @@ const ManageInquiry = ({
                   color: "#00141C",
                 }}
               >
-                Addional notes:{" "}
-                {inquiryDetails.contractDetails.hostDetails.additionalInfo}
+                Addional notes:
+                <span style={{ paddingLeft: "5px", wordBreak: "break-all" }}>
+                  {inquiryDetails.contractDetails.hostDetails.additionalInfo}
+                </span>
               </Typography>
             </Box>
           )}
@@ -405,8 +424,10 @@ const ManageInquiry = ({
                   color: "#00141C",
                 }}
               >
-                Addional notes:{" "}
-                {inquiryDetails.contractDetails.tenantDetails.additionalInfo}
+                Addional notes:
+                <span style={{ paddingLeft: "5px", wordBreak: "break-all" }}>
+                  {inquiryDetails.contractDetails.tenantDetails.additionalInfo}
+                </span>
               </Typography>
             </Box>
           )}
@@ -486,6 +507,7 @@ const ManageInquiry = ({
               sx={{
                 fontWeight: 300,
                 color: "#00141C",
+                wordBreak: "break-all",
               }}
             >
               {inquiryDetails.contractDetails.description}
@@ -532,16 +554,12 @@ const ManageInquiry = ({
               }}
               onClick={!spc ? handleBoxClick : null}
             >
-              {spc ? (
-                <Typography
-                  sx={{
-                    letterSpacing: "-0.011em",
-                    fontStyle: "italic",
-                    padding: "32px 0px",
-                  }}
-                >
-                  Host Signature
-                </Typography>
+              {spc && ownerSign ? (
+                <img
+                  src={ownerSign}
+                  alt="Preview"
+                  style={{ width: "100%", height: "auto", objectFit: "cover" }}
+                />
               ) : imageWithPreview ? (
                 <img
                   src={imageWithPreview}

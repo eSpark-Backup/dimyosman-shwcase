@@ -23,23 +23,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout as logoutFunc } from "../store/slices/auth";
 import { removeMychat } from "../store/slices/chat";
 import Notification from "../components/Notification";
-import { useGetNotificationDataQuery } from "../services/notifications";
 
 const Header = ({ isLogin }) => {
-  const {
-    data: notificationData,
-    isSuccess,
-    error,
-    isLoading,
-    isFetching,
-  } = useGetNotificationDataQuery(
-    {
-      page: 1,
-      pageSize: 10,
-    },
-    { skip: !localStorage.getItem("token") },
-    { refetchOnMountOrArgChange: true }
-  );
   const getRequestCount = getCookie("newRequest") || 0;
 
   const { count } = useSelector((state) => state.notification);
@@ -234,10 +219,7 @@ const Header = ({ isLogin }) => {
                 />
                 <Notification
                   open={showNotification}
-                  data={notificationData?.data?.notifications || []}
                   theme={theme}
-                  isLoading={isLoading}
-                  isFetching={isFetching}
                   setShowNotification={setShowNotification}
                 />
               </li>

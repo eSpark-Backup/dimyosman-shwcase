@@ -227,27 +227,29 @@ const AllMesaages = ({
         />
       )}
 
-      <Box display="flex" justifyContent="end" mt={1} height="31px">
-        {selectedGroup?.chatGroup?.activity !== "space" ? (
-          <Button
-            sx={{
-              padding: "0px 24px",
-              height: "100%",
-              textTransform: "capitalize",
-              background:
-                "linear-gradient(0deg, rgba(0, 20, 28, 0.7), rgba(0, 20, 28, 0.7)), #FFFFFF",
-              borderRadius: "5px",
-              fontWeight: 600,
-              fontSize: "16px",
-              lineHeight: "21px",
-              letterSpacing: "-0.01em",
-            }}
-            onClick={handleModalOpen}
-          >
-            Manage Inquiry
-          </Button>
-        ) : null}
-      </Box>
+      {selectedGroup && selectedGroup?.chatGroup ? (
+        <Box display="flex" justifyContent="end" mt={1} height="31px">
+          {selectedGroup?.chatGroup?.activity !== "space" ? (
+            <Button
+              sx={{
+                padding: "0px 24px",
+                height: "100%",
+                textTransform: "capitalize",
+                background:
+                  "linear-gradient(0deg, rgba(0, 20, 28, 0.7), rgba(0, 20, 28, 0.7)), #FFFFFF",
+                borderRadius: "5px",
+                fontWeight: 600,
+                fontSize: "16px",
+                lineHeight: "21px",
+                letterSpacing: "-0.01em",
+              }}
+              onClick={handleModalOpen}
+            >
+              Manage Inquiry
+            </Button>
+          ) : null}
+        </Box>
+      ) : null}
 
       <Box
         sx={{

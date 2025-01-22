@@ -95,7 +95,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                         ":hover": {
                             backgroundColor: "rgb(0, 20, 28, 0.2)"
                         },
-                        zIndex: 99
+                        zIndex: 10
                     }}
                 >
                     <figure
@@ -125,7 +125,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                         ":hover": {
                             backgroundColor: isEdit ? "rgb(0, 20, 28, 0.9)" : "#4d5b60"
                         },
-                        zIndex: 99
+                        zIndex: 10
                     }}
                     onClick={() => isEdit ? navigate(`/profile/${location?.pathname.split("/").at(-2)}`) : navigate(`/profile/${location?.pathname.split("/").at(-1)}/edit`)}
                 >
@@ -141,7 +141,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                         top: { xs: "50%", md: "10px", lg: "10px", xl: "20px" },
                         left: "50%",
                         transform: "translate(-50%, -50%)",
-                        zIndex: 99
+                        zIndex: 10
                     }}
                 >
                     <Box
@@ -324,7 +324,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                             position: "absolute",
                             bottom: 0,
                             right: "20px",
-                            zIndex: 99
+                            zIndex: 10
                         }}
                     >
                         <Box

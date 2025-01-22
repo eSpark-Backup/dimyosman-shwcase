@@ -77,6 +77,7 @@ const Space = () => {
     return apiData.map((space, index) => {
       return {
         id: space?.id,
+        spaceId: space?.space?.id,
         type: "space",
         eventName: space?.space?.spaceName,
         eventImg: space?.space?.spaceImage,
@@ -120,9 +121,16 @@ const Space = () => {
     setActiveTab(newValue);
   };
 
-  const gotoDetail = (item) => {
+  const gotoDetail = (item, lease = null) => {
     //go to detail page functionality
-    navigate(`/space/${item?.id}`)
+    let id = null;
+
+    if (lease) {
+      id = item.spaceId;
+    } else {
+      id = item.id;
+    }
+    navigate(`/space/${id}`);
   };
 
   const handleAction = (item, type) => {
@@ -279,6 +287,7 @@ const Space = () => {
           TopHeading={TopHeading}
           setShowIinquiryModal={setShowIinquiryModal}
           spc={true}
+          ownerSign={tenantDetails?.ownerSign}
         />
       </ReusableModal>
 
