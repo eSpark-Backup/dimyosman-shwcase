@@ -743,13 +743,13 @@ export const eventTableData = (gotoDetail, handleAction, myEventData, gotoBrand,
     ),
   },
 ];
-export const spaceTableData = (gotoDetail, handleAction, mySpaceData,gotoBrand) => [
+export const spaceTableData = (gotoDetail, handleAction, mySpaceData, gotoBrand) => [
   {
     data: mySpaceData,
     column: mySpaceColumns(gotoDetail, (item) => handleAction(item, "edit"), gotoBrand),
   },
   {
-    data: leaseSpaceData,
+    data: mySpaceData,
     column: leasingSpaceColumns(gotoDetail, (item) =>
       handleAction(item, item?.action)
     ),

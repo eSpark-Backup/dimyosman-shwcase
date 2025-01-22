@@ -93,6 +93,68 @@ export const addEmoji = (
   setEmojiPickerVisible(false);
 };
 
+export const separateRawData = (rawData) => {
+  // const spaceRegex = /Inquiry for: <strong>(.*?)<\/strong>/;
+  const dateRangeRegex =
+    /Date Range: <strong>(.*?)<\/strong> - <strong>(.*?)<\/strong>/;
+  const leaseTotalRegex = /Lease Total: <strong>(.*?)<\/strong>/;
+
+  // const spaceMatch = rawData.match(spaceRegex);
+  const dateRangeMatch = rawData.match(dateRangeRegex);
+  const leaseTotalMatch = rawData.match(leaseTotalRegex);
+
+  if (dateRangeMatch && leaseTotalMatch) {
+    const startDate = dateRangeMatch[1];
+    const endDate = dateRangeMatch[2];
+    const leaseTotal = leaseTotalMatch[1]?.split(".")[0];
+
+    return {
+      startDate,
+      endDate,
+      leaseTotal,
+    };
+  }
+};
+
+export const convertToSameKeys = (
+  selectedGroup = null,
+  tenancyDetails = null
+) => {
+  return {
+    spaceId: selectedGroup?.group?.parentId || tenancyDetails?.space?.id,
+    chatId: selectedGroup?.chatGroup?.chatId || tenancyDetails?.chatId,
+    tenantId:
+      selectedGroup?.chatGroup?.receiverBrand?.user?.id ||
+      tenancyDetails?.space?.user?.id,
+    host:
+      selectedGroup?.chatGroup?.receiverbrandName ||
+      tenancyDetails?.contractDetails?.hostDetails?.host,
+    space:
+      selectedGroup?.group?.parentName ||
+      tenancyDetails?.contractDetails?.hostDetails?.space,
+    spaceOwner:
+      selectedGroup?.group?.ownerDetails?.name ||
+      tenancyDetails?.contractDetails?.hostDetails?.spaceOwner,
+    tenant:
+      selectedGroup?.chatGroup?.senderBrand?.brandName ||
+      tenancyDetails?.contractDetails?.tenantDetails?.tenant,
+    tenantOwner:
+      selectedGroup?.chatGroup?.senderBrand?.user?.name ||
+      tenancyDetails?.contractDetails?.tenantDetails?.tenantOwner,
+    leaseInfo:
+      selectedGroup?.chatGroup?.messages[0]?.content ||
+      tenancyDetails?.contractDetails?.leaseInfo,
+    spaceImage:
+      selectedGroup?.group?.parentImage || tenancyDetails?.space?.spaceImage,
+    activity: selectedGroup?.group?.parentActivity || "space",
+    hostAdditionalInfo:
+      tenancyDetails?.contractDetails?.hostDetails?.additionalInfo || "",
+    tenantAdditionalInfo:
+      tenancyDetails?.contractDetails?.tenantDetails?.additionalInfo || "",
+    contractDescription: tenancyDetails?.contractDetails?.description || "",
+  };
+};
+
 export const removeActiveNotifications = (dispatch) => {
   dispatch(emptyNotificationCount());
   deleteCookie("newRequest");
@@ -101,7 +163,7 @@ export const removeActiveNotifications = (dispatch) => {
 export const messageBox = (parentObj, chatDetails, allMessages) => {
   const getParentObject = () => {
     const isSpacesChats = parentObj?.spaceDetails;
-   
+
     const details = isSpacesChats
       ? parentObj?.spaceDetails
       : parentObj?.brandDetails;
@@ -111,6 +173,7 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
       parentActivity: isSpacesChats ? "space" : "brand",
       parentName: details?.brandName || details?.spaceName,
       parentImage: details?.brandImage || details?.spaceImage,
+      ownerDetails: details?.user,
     };
   };
 

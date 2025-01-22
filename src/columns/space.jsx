@@ -218,30 +218,6 @@ const leasingSpaceColumns = (gotoDetail, handleAction) => {
       },
     },
     {
-      name: "Col Header",
-      key: "colHeader1",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader2",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader3",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader4",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader5",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader6",
-    },
-    {
       name: "Action",
       key: "action",
       component: (item) => {

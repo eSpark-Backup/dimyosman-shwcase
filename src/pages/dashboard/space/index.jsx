@@ -1,11 +1,30 @@
 import { Box, Button, Card, LinearProgress, Stack, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import { act, useEffect, useState } from "react";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { spaceTableData } from "../../../constant";
 import { addIcon, eventIconLight, like, spaceIcon } from "../../../assets";
 import { useNavigate } from "react-router-dom";
 import { useGetAllSpaceQuery } from "../../../services/space";
 import { toast } from "react-toastify";
+import ReusableModal from "../../../components/Modal";
+import AfterSignature from "../../../components/AfterSignature";
+import ManageInquiry from "../../../components/ManageInquiry";
+import { convertToSameKeys } from "../../../utils";
+
+const TopHeading = ({ name, size, my = 0 }) => {
+  return (
+    <Typography
+      sx={{
+        fontWeight: 600,
+        fontSize: size,
+        color: "#00141C",
+        my,
+      }}
+    >
+      {name}
+    </Typography>
+  );
+};
 
 const Space = () => {
   const tabs = [
@@ -22,17 +41,20 @@ const Space = () => {
       icon: like,
     },
   ];
+  const tabsForApi = ["Space", "Lease", "Saved"];
   const [activeTab, setActiveTab] = useState(0);
   const [page, setPage] = useState(1)
+  const [showInquiryModal,setShowIinquiryModal] = useState(false)
+  const [afterSignature, setAfterSignature] = useState(false);
+  const [tenantDetails, setTenantDetails] = useState(null);
 
   const [mySpaceData, setMySpaceData] = useState([]);
-  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllSpaceQuery({ page, pageSize: 7 }, {
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllSpaceQuery({ page, pageSize: 7, tab: tabsForApi[activeTab] }, {
     refetchOnMountOrArgChange: true,
     refetchOnFocus: true
   });
 
   const navigate = useNavigate()
-
 
   const transformSpaceData = (apiData) => {
     return apiData.map((space, index) => {
@@ -51,8 +73,27 @@ const Space = () => {
     });
   };
 
-  const [hasShownErrorToast, setHasShownErrorToast] = useState(false);
+  const transformLeaseSpaceData = (apiData) => {
+    return apiData.map((space, index) => {
+      return {
+        id: space?.id,
+        type: "space",
+        eventName: space?.space?.spaceName,
+        eventImg: space?.space?.spaceImage,
+        currently:
+          space?.status === "SubmitForSignature" ? "Pending Sign" : "Leasing",
+        price: space?.contractDetails?.leaseInfo?.leaseTotal,
+        term: "Monthly",
+        event: space?.contractDetails?.tenantDetails?.event,
+        brand: space?.space?.brand?.brandName,
+        eventUrl: "-",
+        brandUrl: `/brand/${space?.space?.brand?.id}`,
+        action: space?.status === "SubmitForSignature" ? "Sign" : "Details",
+      };
+    });
+  };
 
+  const [hasShownErrorToast, setHasShownErrorToast] = useState(false);
 
   useEffect(() => {
     if (isError && !hasShownErrorToast) {
@@ -62,7 +103,11 @@ const Space = () => {
     }
 
     if (isSuccess) {
-      setMySpaceData(transformSpaceData(data?.data?.spaces || []));
+      if (data?.data?.spaces?.length) {
+        setMySpaceData(transformSpaceData(data?.data?.spaces || []));
+      } else {
+        setMySpaceData(transformLeaseSpaceData(data?.data?.leaseSpace || []));
+      }
       setHasShownErrorToast(false);
     }
   }, [isError, isSuccess, error, hasShownErrorToast, page, data]);
@@ -84,13 +129,25 @@ const Space = () => {
     if (type === "edit") {
       //edit functionality
       if (location?.pathname === "/space") {
-        navigate(`/space/${item?.id}/edit`)
+        navigate(`/space/${item?.id}/edit`);
       }
+    } else if (type === "Sign") {
+      const findClickedLeaseDetails = data?.data?.leaseSpace?.find(
+        (lease) => lease.id === item.id
+      );
+      setTenantDetails(findClickedLeaseDetails);
+      setShowIinquiryModal(true);
     } else if (type === "remove") {
       //remove functionality
     } else {
       // other action functionality
     }
+  };
+
+  const handleModalClose = () => {
+    setShowIinquiryModal(false);
+    setAfterSignature(false);
+    setTenantDetails(null);
   };
 
   const gotoBrand = (item) => {
@@ -110,6 +167,7 @@ const Space = () => {
       </Box>
     )
   }
+
   return (
     <Box>
       <Stack direction="row" justifyContent="flex-end">
@@ -119,13 +177,18 @@ const Space = () => {
             height: "48px",
             borderRadius: "5px",
             backgroundColor: "rgb(120, 150, 195, 0.3)",
-
-          }}>
-          <figure style={{
-            width: "100%", height: "100%", display: "flex",
-            justifyContent: "center",
-            alignItems: "center"
-          }} role="space-icon">
+          }}
+        >
+          <figure
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            role="space-icon"
+          >
             <img src={spaceIcon} alt="event" />
           </figure>
         </Box>
@@ -137,12 +200,21 @@ const Space = () => {
           handleChange={handleChange}
           handleAdd={handleAdd}
         />
-        {spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand)[activeTab].data.length > 0 ? (
+        {spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand)[
+          activeTab
+        ].data.length > 0 ? (
           <DynamicTable
             isLoading={false}
-            data={spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand)[activeTab].data}
-            columns={spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand)[activeTab].column}
-
+            data={
+              spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand)[
+                activeTab
+              ].data
+            }
+            columns={
+              spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand)[
+                activeTab
+              ].column
+            }
             total={data && data?.data?.pagination?.totalItems}
             handlePageChange={handlePageChange}
             page={page}
@@ -194,6 +266,39 @@ const Space = () => {
           </Stack>
         )}
       </Card>
+
+      <ReusableModal
+        hideHeader={true}
+        open={showInquiryModal}
+        handleClose={handleModalClose}
+      >
+        <ManageInquiry
+          handleModalClose={handleModalClose}
+          details={convertToSameKeys(null, tenantDetails)}
+          setAfterSignature={setAfterSignature}
+          TopHeading={TopHeading}
+          setShowIinquiryModal={setShowIinquiryModal}
+          spc={true}
+        />
+      </ReusableModal>
+
+      <ReusableModal
+        hideHeader={true}
+        open={afterSignature}
+        handleClose={handleModalClose}
+      >
+        <AfterSignature
+          image={convertToSameKeys(null, tenantDetails)?.spaceImage}
+          alt="SpaceImage"
+          activity={"space"}
+          TopHeading={TopHeading}
+          name={convertToSameKeys(null, tenantDetails)?.space}
+          brandName={convertToSameKeys(null, tenantDetails)?.host}
+          handleClose={handleModalClose}
+          upperPara="Your Signature has been sent."
+          lowerPara="From this moment, the Contract is considered active and binding."
+        />
+      </ReusableModal>
     </Box>
   );
 };
