@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { format } from "date-fns";
+import { emptyNotificationCount } from "../store/slices/notification";
 
 export function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -62,7 +63,12 @@ export function deleteCookie(name) {
   document.cookie = `${name}=; Max-Age=-1; path=/`;
 }
 
-export const addEmoji = (emoji, isCursorActive, quillInstance, setEmojiPickerVisible) => {
+export const addEmoji = (
+  emoji,
+  isCursorActive,
+  quillInstance,
+  setEmojiPickerVisible
+) => {
   const isActive = isCursorActive();
   if (!isActive) {
     quillInstance.current.focus();
@@ -85,6 +91,11 @@ export const addEmoji = (emoji, isCursorActive, quillInstance, setEmojiPickerVis
   quillInstance.current.setSelection(cursorPosition + emoji.native.length, 0);
 
   setEmojiPickerVisible(false);
+};
+
+export const removeActiveNotifications = (dispatch) => {
+  dispatch(emptyNotificationCount());
+  deleteCookie("newRequest");
 };
 
 export const messageBox = (parentObj, chatDetails, allMessages) => {
@@ -125,55 +136,61 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
     reviews: 12345,
     leases: 12345,
     rating: 5,
-    chatGroups: parentObj?.chats?.map((item) => {
-      const matchingItem = getMatchingChatDetails(item._id);
-      const currentChatMessages = getMessagesForChat(item._id);
+    chatGroups: parentObj?.chats
+      ?.map((item) => {
+        const matchingItem = getMatchingChatDetails(item._id);
+        const currentChatMessages = getMessagesForChat(item._id);
 
-      const isSpacesChats = parentObj?.spaceDetails;
+        const isSpacesChats = parentObj?.spaceDetails;
 
-      const childName = isSpacesChats
-        ? item?.senderBrand?.brandName
-        : item?.receiverSpace?.spaceName;
-      const childImage = isSpacesChats
-        ? item?.senderBrand?.brandImage
-        : item?.receiverSpace?.spaceImage;
-      const creator = isSpacesChats
-        ? item?.senderBrand?.user?.name
-        : item?.receiverBrand?.user?.name;
-      const receiverbrandName = isSpacesChats
-        ? item?.receiverBrand?.brandName
-        : "";
-      const activity = isSpacesChats ? "brand" : "space";
+        const childName = isSpacesChats
+          ? item?.senderBrand?.brandName
+          : item?.receiverSpace?.spaceName;
+        const childImage = isSpacesChats
+          ? item?.senderBrand?.brandImage
+          : item?.receiverSpace?.spaceImage;
+        const creator = isSpacesChats
+          ? item?.senderBrand?.user?.name
+          : item?.receiverBrand?.user?.name;
+        const receiverbrandName = isSpacesChats
+          ? item?.receiverBrand?.brandName
+          : "";
+        const activity = isSpacesChats ? "brand" : "space";
 
-
-      return {
-        ...item,
-        id: item?._id,
-        chatId: matchingItem?._id,
-        members: matchingItem?.members,
-        childName,
-        childImage,
-        receiverbrandName,
-        creator,
-        chatName: matchingItem?.name,
-        activity,
-        read: false,
-        date: matchingItem?.createdAt ? formatDate(matchingItem?.createdAt) : '',
-        time: matchingItem?.createdAt ? formatTime(matchingItem?.createdAt) : '',
-        isActive: false,
-        messages: currentChatMessages.map((messageItem) => {
-          return {
-            ...messageItem,
-            id: messageItem?._id,
-            childName,
-            childImage,
-            activity: "brand",
-            creator: parentObj?.name,
-            date: formatDate(messageItem?.createdAt),
-            time: formatTime(messageItem?.createdAt),
-          };
-        }),
-      };
-    }),
+        return {
+          ...item,
+          id: item?._id,
+          chatId: matchingItem?._id,
+          members: matchingItem?.members,
+          childName,
+          childImage,
+          receiverbrandName,
+          creator,
+          chatName: matchingItem?.name,
+          activity,
+          read: false,
+          date: matchingItem?.createdAt
+            ? formatDate(matchingItem?.createdAt)
+            : "",
+          time: matchingItem?.createdAt
+            ? formatTime(matchingItem?.createdAt)
+            : "",
+          fulldate: matchingItem?.createdAt,
+          isActive: false,
+          messages: currentChatMessages.map((messageItem) => {
+            return {
+              ...messageItem,
+              id: messageItem?._id,
+              childName,
+              childImage,
+              activity: "brand",
+              creator: parentObj?.name,
+              date: formatDate(messageItem?.createdAt),
+              time: formatTime(messageItem?.createdAt),
+            };
+          }),
+        };
+      })
+      .sort((a, b) => new Date(b.fulldate) - new Date(a.fulldate)),
   };
 };

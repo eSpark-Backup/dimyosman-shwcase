@@ -18,34 +18,67 @@ import {
 import { BadgeComp, SearchBar } from "../components";
 import { addIcon, chatIcon, bellIcon } from "../assets";
 import { useNavigate } from "react-router-dom";
-import { useClickOutside } from "../utils";
+import { getCookie, removeActiveNotifications, useClickOutside } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { logout as logoutFunc } from "../store/slices/auth";
 import { removeMychat } from "../store/slices/chat";
+import Notification from "../components/Notification";
+import { useGetNotificationDataQuery } from "../services/notifications";
 
 const Header = ({ isLogin }) => {
+  const {
+    data: notificationData,
+    isSuccess,
+    error,
+    isLoading,
+    isFetching,
+  } = useGetNotificationDataQuery(
+    {
+      page: 1,
+      pageSize: 10,
+    },
+    { skip: !localStorage.getItem("token") },
+    { refetchOnMountOrArgChange: true }
+  );
+  const getRequestCount = getCookie("newRequest") || 0;
+
+  const { count } = useSelector((state) => state.notification);
   const userData = useSelector((state) => state.auth);
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const addRef = useRef();
   const profileRef = useRef();
+  const notificationRef = useRef();
   const [openProfilePopup, setOpenProfilePopup] = useState(false);
   const [addPopup, setAddPopup] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
   useClickOutside(addRef, () => setAddPopup(false));
   useClickOutside(profileRef, () => setOpenProfilePopup(false));
+  useClickOutside(notificationRef, () => setShowNotification(false));
 
   const handleLogout = () => {
-    dispatch(logoutFunc())
-    dispatch(removeMychat())
+    dispatch(logoutFunc());
+    dispatch(removeMychat());
     setAddPopup(false);
     setOpenProfilePopup(false);
-    navigate("/auth?type=login")
+    setShowNotification(false);
+    navigate("/auth?type=login");
   };
 
   const handleNavigate = (link) => {
     navigate(link);
     setAddPopup(false);
+  };
+
+  const iconClick = (type) => {
+    removeActiveNotifications(dispatch)
+
+    if (type === "chat") {
+      navigate("/message");
+    } else {
+      setShowNotification(true);
+    }
   };
 
   const addPopuptabs = [
@@ -160,7 +193,12 @@ const Header = ({ isLogin }) => {
         <nav>
           <div className="logo">
             <img width={42} height={42} src={logoIcon} alt="Icon" />
-            <img className="text-icon" src={logoText} alt="Icon" style={{ height: "22px" }} />
+            <img
+              className="text-icon"
+              src={logoText}
+              alt="Icon"
+              style={{ height: "22px" }}
+            />
           </div>
           {isLogin && (
             <div className="search-bar">
@@ -170,24 +208,37 @@ const Header = ({ isLogin }) => {
             </div>
           )}
           {isLogin ? (
-            <ul
-              style={{ position: "relative" }}
-              className="nav-links2"
-            >
+            <ul style={{ position: "relative" }} className="nav-links2">
               <li ref={addRef}>
-                <BadgeComp onClick={() => setAddPopup(true)} imageSrc={addIcon} bg={theme.palette.transparent} />
+                <BadgeComp
+                  onClick={() => setAddPopup(true)}
+                  imageSrc={addIcon}
+                  bg={theme.palette.transparent}
+                />
                 <Popup open={addPopup} title="Add New:" data={addPopuptabs} />
               </li>
               <li>
                 <BadgeComp
+                  onClick={() => iconClick("chat")}
                   imageSrc={chatIcon}
                   bg={theme.palette.error.danger}
+                  count={count || getRequestCount}
                 />
               </li>
-              <li>
+              <li ref={notificationRef}>
                 <BadgeComp
+                  onClick={() => iconClick("bell")}
                   imageSrc={bellIcon}
                   bg={theme.palette.error.danger}
+                  count={count || getRequestCount}
+                />
+                <Notification
+                  open={showNotification}
+                  data={notificationData?.data?.notifications || []}
+                  theme={theme}
+                  isLoading={isLoading}
+                  isFetching={isFetching}
+                  setShowNotification={setShowNotification}
                 />
               </li>
               {userData?.user?.profileImage ? (
@@ -233,7 +284,7 @@ const Header = ({ isLogin }) => {
               <hr className="nav-items-breaker" />
               <li>Help</li>
               <Button
-                onClick={() => isLogin ? setOpenProfilePopup(true) : ()=>{}}
+                onClick={() => (isLogin ? setOpenProfilePopup(true) : () => {})}
                 className="user-btn1"
                 sx={{
                   minWidth: "32px",
