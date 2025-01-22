@@ -23,6 +23,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout as logoutFunc } from "../store/slices/auth";
 import { removeMychat } from "../store/slices/chat";
 import Notification from "../components/Notification";
+import { emptyNotification } from "../store/slices/notification";
 
 const Header = ({ isLogin }) => {
   const getRequestCount = getCookie("newRequest") || 0;
@@ -45,6 +46,7 @@ const Header = ({ isLogin }) => {
   const handleLogout = () => {
     dispatch(logoutFunc());
     dispatch(removeMychat());
+    dispatch(emptyNotification());
     setAddPopup(false);
     setOpenProfilePopup(false);
     setShowNotification(false);
