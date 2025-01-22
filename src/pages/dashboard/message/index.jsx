@@ -53,6 +53,22 @@ const icons = [
   { icon: profileIcon, bg: "rgba(0, 20, 28, 0.1)", type: "profile" },
 ];
 
+const style ={
+  paddingLeft: "105px",
+  maxWidth: {
+    xs: "calc(100% - 111px)",
+    md: "100%",
+  },
+
+  "@media only screen and (min-width: 1281px)": {
+    maxWidth: "1100px",
+  },
+
+  "@media only screen and (min-width: 1600px)": {
+    maxWidth: "1500px",
+  },
+}
+
 const Message = () => {
   const theme = useTheme();
 
@@ -364,7 +380,7 @@ const Message = () => {
     hasChats != "empty"
   ) {
     return (
-      <Box sx={{ width: "100%" }}>
+      <Box sx={style}>
         <LinearProgress />
       </Box>
     );
@@ -372,30 +388,14 @@ const Message = () => {
 
   if (hasChats === "empty") {
     return (
-      <Box sx={{ width: "100%" }}>
+      <Box sx={style}>
         <h1>You don't have any conversations.</h1>
       </Box>
     );
   }
 
   return (
-    <Box
-      sx={{
-        paddingLeft: "105px",
-        maxWidth: {
-          xs: "calc(100% - 111px)",
-          md: "100%",
-        },
-
-        "@media only screen and (min-width: 1281px)": {
-          maxWidth: "1100px",
-        },
-
-        "@media only screen and (min-width: 1600px)": {
-          maxWidth: "1500px",
-        },
-      }}
-    >
+    <Box sx={style}>
       {allMessages?.length === 0 ? null : (
         <Grid container spacing={2} justifyContent="center">
           <Grid item xs={12} md={3.8}>
