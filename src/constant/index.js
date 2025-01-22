@@ -753,9 +753,7 @@ export const spaceTableData = (gotoDetail, handleAction, mySpaceData, gotoBrand)
   },
   {
     data: mySpaceData,
-    column: leasingSpaceColumns(gotoDetail, (item) =>
-      handleAction(item, item?.action)
-    ),
+    column: leasingSpaceColumns(gotoDetail, (item) => handleAction(item, item?.action), gotoBrand),
   },
   {
     data: likedSpaceData,

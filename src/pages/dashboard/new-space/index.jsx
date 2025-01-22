@@ -387,7 +387,7 @@ const NewSpace = () => {
                     width: "max-content",
                     justifyContent: "center",
                     alignItems: "center",
-                    zIndex: 99,
+                    zIndex: 10,
                     right: 0,
                     marginRight: "16px",
                 }}

@@ -60,7 +60,10 @@ import {
   getMyChat,
   isUserHasChat,
 } from "../store/slices/chat";
-import { getNotificationCount } from "../store/slices/notification";
+import {
+  getNotification,
+  getNotificationCount,
+} from "../store/slices/notification";
 
 import { getCookie, setCookie } from "../utils";
 
@@ -77,13 +80,21 @@ const SocketProvider = ({ children }) => {
   const { data, isSuccess, refetch } = useGetMyChatsQuery(undefined, {
     skip: !user,
   });
-  const { refetch: notificationRefetch } = useGetNotificationDataQuery(
-    undefined,
-    { skip: !user }
-  );
+  const {
+    data: notificationData,
+    isSuccess: notificationSuccess,
+    refetch: notificationRefetch,
+  } = useGetNotificationDataQuery(undefined, { skip: !user });
+
   const { pathname } = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (notificationSuccess && notificationData) {
+      dispatch(getNotification(notificationData?.data?.notifications));
+    }
+  }, [notificationSuccess, notificationData]);
 
   useEffect(() => {
     if (isSuccess && data) {
