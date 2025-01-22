@@ -4,6 +4,7 @@ import brand from "./slices/brand";
 import event from "./slices/event";
 import space from "./slices/space";
 import chat from "./slices/chat";
+import notification from "./slices/notification";
 import { authApi } from "../services/auth";
 
 const store = configureStore({
@@ -13,11 +14,11 @@ const store = configureStore({
     event,
     space,
     chat,
+    notification,
     [authApi.reducerPath]: authApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware()
-      .concat(authApi.middleware)
+    getDefaultMiddleware().concat(authApi.middleware),
 });
 
 export default store;

@@ -43,6 +43,19 @@ const MessageItem = ({
     }
   }, [expanded]);
 
+  const handleGroup = (el)=>{
+    const obj = {
+      userId: user.userChatId,
+      members: el?.members,
+    };
+    dispatch(isActiveMembers(obj.members));
+    emitEvent("CHAT_JOINED", obj);
+
+    setSelectedChatId(el?.chatId);
+    setSelectedGroup({ chatGroup: el, group: message });
+    getCount(el.chatId) && filterCount(el?.chatId);
+  }
+
   const getCount = (id) => {
     const ifCountExists = getUnreadMessage?.filter((msg) => msg.chatId === id);
 
@@ -194,18 +207,7 @@ const MessageItem = ({
                     position: "relative",
                     borderRadius: "3px",
                   }}
-                  onClick={() => {
-                    const obj = {
-                      userId: user.userChatId,
-                      members: el?.members,
-                    };
-                    dispatch(isActiveMembers(obj.members));
-                    emitEvent("CHAT_JOINED", obj);
-
-                    setSelectedChatId(el?.chatId);
-                    setSelectedGroup({ chatGroup: el, group: message });
-                    getCount(el.chatId) && filterCount(el?.chatId);
-                  }}
+                  onClick={() => handleGroup(el)}
                 >
                   <Box
                     sx={{

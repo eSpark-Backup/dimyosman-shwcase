@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 
 import { useSelector, useDispatch } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import AllMessages from "./messages";
 
@@ -67,6 +68,8 @@ const Message = () => {
   const { user } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { state, pathname } = useLocation();
 
   const [isNewIdsForChatDetails, setIsNewIdsForChatDetails] = useState([]);
   const [isNewIdsForAllMessages, setIsNewIdsForAllMessages] = useState([]);
@@ -233,6 +236,27 @@ const Message = () => {
     };
   }, [addListener, removeListener, emitEvent, allMessages, user]);
 
+  const handleNewInquiry = (selected, initialId = null) => {
+    const findParentIndex = allMessages?.findIndex(
+      (msg) => msg?.parentName === state?.spaceName
+    );
+    if (findParentIndex !== -1) {
+      setExpanded(findParentIndex);
+    }
+
+    selected.chatGroup = allMessages[findParentIndex]?.chatGroups?.find(
+      (gr) => gr?.id === state.chatId
+    );
+    selected.group = allMessages[findParentIndex];
+    initialId = allMessages[findParentIndex]?.chatGroups?.find(
+      (gr) => gr?.id === state.chatId
+    ).id;
+
+    setTimeout(() => {
+      navigate(pathname, { replace: true });
+    }, 1000);
+  };
+
   const handleAccordionChange = (index) => (event, isExpanded) => {
     const selectedGroup = {
       chatGroup: allMessages[index]?.chatGroups[0],
@@ -276,15 +300,26 @@ const Message = () => {
         (selectedChatId === null && selectedGroup === null) ||
         (selectedChatId === null && selectedGroup !== null)
       ) {
-        setInitialChatId(allMessages[0]?.chatGroups[0]?._id);
-        setSelectedGroup({
-          chatGroup: allMessages[0]?.chatGroups[0],
-          group: allMessages[0],
-        });
+        const selected = {
+          chatGroup: {},
+          group: {},
+        };
+        let initialId = null;
+
+        if (state) {
+          handleNewInquiry(selected, initialId);
+        } else {
+          selected.chatGroup = allMessages[0]?.chatGroups[0];
+          selected.group = allMessages[0];
+          initialId = allMessages[0]?.chatGroups[0]?._id;
+        }
+
+        setInitialChatId(initialId);
+        setSelectedGroup(selected);
 
         const obj = {
           userId: user.userChatId,
-          members: allMessages[0]?.chatGroups[0]?.members,
+          members: selected?.chatGroup?.members,
         };
 
         dispatch(isActiveMembers(obj.members));
@@ -297,12 +332,24 @@ const Message = () => {
           (msg) => msg.id === selectedChatId
         );
 
+        const selected = {
+          chatGroup: {},
+          group: {},
+        };
+
+        if (state) {
+          handleNewInquiry(selected);
+        } else {
+          selected.chatGroup = chatGroup;
+          selected.group = group;
+        }
+
         if (chatGroup) {
           if (toShare && toShare?.chatId !== selectedChatId) {
             emitEvent("STOP_TYPING", toShare);
           }
           setInitialChatId(null);
-          setSelectedGroup({ chatGroup, group });
+          setSelectedGroup(selected);
 
           setTimeout(() => {
             setToShare();
