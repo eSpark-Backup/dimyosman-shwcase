@@ -10,10 +10,11 @@ import {
 import { User, Spaces, BaseEntity } from "./index";
 
 export enum LeaseStatus {
-  PENDING = "Pending",
+  PENDING = "PendingforApproval",
   SUBMIT_FOR_SIGNATURE = "SubmitForSignature",
   VERIFY_AND_PAY = "VerifyAndPay",
   READY_FOR_REVIEW = "ReadyForReview",
+  ACTIVE = "Active",
 }
 
 @Entity()

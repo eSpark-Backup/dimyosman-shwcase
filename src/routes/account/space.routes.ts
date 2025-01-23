@@ -426,6 +426,41 @@ router.post(
 
 /**
  * @swagger
+ * /space/paymentVerification/{id}:
+ *   post:
+ *     summary: Send a Lease Contract For Space
+ *     description: This endpoint allows users with the USER role to send contract for Lease.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - Space
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the Lease Space to Post Signature .
+ *         schema:
+ *           type: string
+ *     responses:
+ *       201:
+ *         description: space created successfully.
+ *       400:
+ *         description: Validation error.
+ *       403:
+ *         description: Forbidden.
+ *       500:
+ *         description: Server error.
+ */
+
+router.post(
+  "/paymentVerification/:id",
+  checkJwt,
+  validateRoles([ROLES.USER]),
+  (req, res, next) => spaceController.paymentVerification(req, res, next)
+);
+
+/**
+ * @swagger
  * /space/tenantSign/{id}:
  *   post:
  *     summary: Send a Lease Contract For Space

@@ -339,10 +339,13 @@ export class EventController {
       const skipNumber = Number(skip);
       const takeNumber = Number(take);
       if (id && id !== "{id}") {
-        const event = await this.eventRepo.findOne({
-          where: { id },
-          relations: ["brand", "space"],
-        });
+        const event = await this.eventRepo
+          .createQueryBuilder("event")
+          .where("event.id = :id", { id })
+          .leftJoinAndSelect("event.brand", "brand")
+          .leftJoinAndSelect("event.space", "space")
+          .leftJoinAndSelect("space.brand", "brand")
+          .getOne();
 
         if (!event) {
           res.status(200).json(handleResponse("Event not found"));
@@ -357,16 +360,17 @@ export class EventController {
         return next();
       }
 
-      const [events, totalItems] = await this.eventRepo.findAndCount({
-        where: { user: { id: req.user?.id } },
-        relations: ["brand", "space"],
+      const [events, totalItems] = await this.eventRepo
+        .createQueryBuilder("event")
+        .leftJoinAndSelect("event.brand", "brand")
+        .leftJoinAndSelect("event.space", "space")
+        .leftJoinAndSelect("space.brand", "spaceBrand")
 
-        skip: skipNumber,
-        take: takeNumber,
-        order: {
-          createdAt: "DESC",
-        },
-      });
+        .where("event.user = :userId", { userId: req.user?.id })
+        .skip(skipNumber)
+        .take(takeNumber)
+        .orderBy("event.createdAt", "DESC")
+        .getManyAndCount();
 
       if (events.length === 0) {
         res.status(200).json(handleResponse("No Events Found"));

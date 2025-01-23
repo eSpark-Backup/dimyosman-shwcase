@@ -19,6 +19,7 @@ import {
   CLOUD_FOLDERS,
   HTTP_STATUS,
   NEW_MESSAGE,
+  NEW_NOTIFICATION,
   NEW_REQUEST,
   PAGINATION,
   REFETCH_CHATS,
@@ -50,6 +51,86 @@ export class SpaceController {
     private messageModel: typeof Message
   ) {}
 
+  async paymentVerification(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const leaseSpace = await this.leaseSpaceRepo
+      .createQueryBuilder("leaseSpace")
+      .where("leaseSpace.id = :id", { id })
+      .leftJoinAndSelect("leaseSpace.tenant", "tenant")
+      .leftJoinAndSelect("leaseSpace.owner", "owner")
+      .getOne();
+    if (!leaseSpace) {
+      throw new ApiError("Lease space not found", HTTP_STATUS.BAD_REQUEST);
+    }
+    if (userId !== leaseSpace.tenant.id && userId !== leaseSpace.owner.id) {
+      throw new ApiError(
+        "You are not authorized to verify this payment",
+        HTTP_STATUS.FORBIDDEN
+      );
+    }
+    if (userId == leaseSpace.tenant.id) {
+      if (leaseSpace.status !== LeaseStatus.VERIFY_AND_PAY) {
+        throw new ApiError(
+          "You are not authorized to verify this payment",
+          HTTP_STATUS.FORBIDDEN
+        );
+      }
+      leaseSpace.status = LeaseStatus.PENDING;
+      await this.leaseSpaceRepo.save(leaseSpace);
+      await this.notificationModel.create({
+        user: leaseSpace.owner.userChatId,
+        title: `Received Request For Payment Verification`,
+
+        message: `Tenant ${leaseSpace.tenant.name} has requested for payment verification of the ${leaseSpace.space.spaceName} space`,
+        type: "info",
+      }),
+        emitEvent(req, NEW_NOTIFICATION, [leaseSpace.owner.userChatId], {
+          name: `Tenant ${leaseSpace.tenant.name} has requested for payment verification of the ${leaseSpace.space.spaceName} space`,
+        });
+      res
+        .status(HTTP_STATUS.OK)
+        .json(handleResponse("Payment Verification Request Sent Successfully"));
+      return next();
+    } else if (userId == leaseSpace.owner.id) {
+      if (leaseSpace.status !== LeaseStatus.PENDING) {
+        throw new ApiError(
+          "You are not authorized to verify this payment",
+          HTTP_STATUS.FORBIDDEN
+        );
+      }
+      leaseSpace.status = LeaseStatus.ACTIVE;
+      await this.leaseSpaceRepo.save(leaseSpace);
+      await this.notificationModel.create({
+        user: leaseSpace.tenant.userChatId,
+        title: `Payment Verified`,
+
+        message: `Owner ${leaseSpace.owner.name} has verified the payment for the ${leaseSpace.space.spaceName} space`,
+        type: "info",
+      }),
+        emitEvent(req, NEW_NOTIFICATION, [leaseSpace.tenant.userChatId], {
+          name: `Owner ${leaseSpace.owner.name} has verified the payment`,
+        });
+      res
+        .status(HTTP_STATUS.OK)
+        .json(handleResponse("Payment Verified Successfully"));
+      return next();
+    }
+
+    try {
+    } catch (error) {
+      logger.error(
+        `SpaceController :: paymentVerification :: ${(error as Error)?.message}`
+      );
+
+      return next(error);
+    }
+  }
   async tenantUploadSignature(
     req: ICustomRequest,
     res: Response,
