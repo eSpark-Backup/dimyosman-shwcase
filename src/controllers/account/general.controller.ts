@@ -18,12 +18,15 @@ import {
   parseCoverImages,
 } from "../../utils";
 import {
+  BRAND_STATUS,
   CLOUD_FOLDERS,
+  EVENT_STATUS,
   HTTP_STATUS,
   NEW_MESSAGE,
   NEW_REQUEST,
   PAGINATION,
   REFETCH_CHATS,
+  SPACE_STATUS,
 } from "../../constants";
 import { uploadService } from "../../services";
 import { Chat, UserForChat, Notification, Message } from "../../models";
@@ -82,18 +85,22 @@ export class GeneralController {
         .createQueryBuilder("space")
         .leftJoinAndSelect("space.brand", "brand")
         .andWhere("space.user != :userId", { userId })
+        .andWhere("space.status = :STATUS", { STATUS: SPACE_STATUS.PUBLISH })
         .skip(skipNumber)
         .take(takeNumber);
 
       let eventQuery = this.eventsRepo
         .createQueryBuilder("event")
         .leftJoinAndSelect("event.brand", "brand")
+        .andWhere("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
         .andWhere("event.user != :userId", { userId })
         .skip(skipNumber)
         .take(takeNumber);
 
       let brandQuery = this.brandRepo
         .createQueryBuilder("brand")
+        .andWhere("brand.status = :STATUS", { STATUS: BRAND_STATUS.PUBLISH })
+        .andWhere("brand.user != :userId", { userId })
         .skip(skipNumber)
         .take(takeNumber);
 

@@ -51,6 +51,119 @@ export class SpaceController {
     private messageModel: typeof Message
   ) {}
 
+  async getSpaceForEvent(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = req.user.id;
+      const { page, pageSize } = req.query;
+      const skipNumber = Number(page);
+      const takeNumber = Number(pageSize);
+
+      // Fetching spaces where the user is the space owner
+      const [spaces, totalSpaces] = await this.spaceRepo
+        .createQueryBuilder("space")
+        .leftJoinAndSelect("space.brand", "brand")
+        .leftJoinAndSelect("space.user", "user")
+        .where("space.user = :userId", { userId })
+
+        .skip(Number(skipNumber) || 0)
+        .take(Number(takeNumber) || 10)
+        .select([
+          "space.id",
+          "space.spaceName",
+          "space.spaceCategory",
+          "space.createdAt",
+        ])
+        .orderBy("space.createdAt", "DESC")
+        .getManyAndCount();
+
+      // Fetching spaces leased by the user (tenant)
+      const [tenantSpaces, totalTenantSpaces] = await this.leaseSpaceRepo
+        .createQueryBuilder("leaseSpace")
+        .leftJoinAndSelect("leaseSpace.space", "space")
+        .leftJoinAndSelect("leaseSpace.owner", "owner")
+        .leftJoinAndSelect("space.brand", "brand")
+        .leftJoinAndSelect("space.user", "user")
+        .select([
+          "leaseSpace.id",
+          "leaseSpace.contractDetails",
+          "leaseSpace.status",
+          "owner.id",
+          "space.id",
+          "space.spaceName",
+          "space.createdAt",
+          "brand.brandName",
+          "brand.location",
+        ])
+        .where("owner.id = :userId", { userId })
+        .andWhere("leaseSpace.status = :status", {
+          status: LeaseStatus.ACTIVE,
+        })
+        .skip(Number(skipNumber) || 0)
+        .take(Number(takeNumber) || 10)
+        .getManyAndCount();
+
+      if (totalSpaces === 0 && totalTenantSpaces === 0) {
+        throw new ApiError("No spaces found", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      if (spaces.length > 0) {
+        for (const space of spaces) {
+          const events = await this.eventsRepo
+            .createQueryBuilder("event")
+            .where("event.space = :spaceId", { spaceId: space.id })
+            .getMany();
+
+          const calendarEvents = events.flatMap((event) => {
+            const eventDates: EventDate[] = Array.isArray(event.eventDate)
+              ? event.eventDate
+              : JSON.parse(event.eventDate as unknown as string);
+
+            return eventDates.map((dateRange) => ({
+              eventId: event.id,
+              title: event.eventName,
+              start: new Date(dateRange.startDate),
+              end: new Date(dateRange.endDate),
+            }));
+          });
+
+          (space as any).calendarEvents = calendarEvents;
+        }
+      }
+      if (tenantSpaces.length > 0) {
+        //parse the contractDetails field
+        for (const tenantSpace of tenantSpaces) {
+          tenantSpace.contractDetails = JSON.parse(
+            tenantSpace.contractDetails as unknown as string
+          );
+        }
+      }
+      // Preparing the result to return in the response
+      const result = {
+        availableSpaces: spaces,
+        tenantSpaces: tenantSpaces,
+        pagination: {
+          totalItems: totalSpaces + totalTenantSpaces,
+          currentPage: Number(skipNumber) || 0,
+          pageSize: Number(takeNumber) || 10,
+          totalPages: Math.ceil(
+            (totalSpaces + totalTenantSpaces) / (Number(takeNumber) || 10)
+          ),
+        },
+      };
+      res.status(HTTP_STATUS.OK).json(handleResponse("Spaces fetched", result));
+      return next();
+    } catch (error) {
+      logger.error(
+        `Error fetching available spaces: ${(error as Error).message}`
+      );
+      return next(error);
+    }
+  }
+
   async paymentVerification(
     req: ICustomRequest,
     res: Response,
