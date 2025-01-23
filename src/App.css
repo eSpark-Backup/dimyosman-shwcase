@@ -585,9 +585,9 @@ a:hover{
 }
 
 
-@media screen and (min-width:769px) and (max-width:950px) {
+@media screen and (max-width:950px) {
   .header .nav-links2 {
-    column-gap: 20px;
+    column-gap: 10px;
     margin-right: 20px;
   }
 }

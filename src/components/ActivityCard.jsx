@@ -606,7 +606,7 @@ const ActivityCard = ({
           {activity !== "space" && <img src={comment} alt="Comment Icon" />}
           <img src={share} alt="Share Icon" />
         </Box>
-        <Stack direction="row" alignItems="center" justifyContent="center" gap={2}>
+        <Stack direction="row" flexDirection={{ xs: "column", sm: "row" }} alignItems="center" justifyContent="center" gap={2}>
         <Button
           variant="text"
           onClick={
