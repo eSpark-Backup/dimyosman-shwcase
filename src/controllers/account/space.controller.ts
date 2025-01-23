@@ -254,7 +254,7 @@ export class SpaceController {
         spaceName,
         spaceCategory,
         details,
-        location,
+        // location,
         status,
         brandId,
         amenity,
@@ -297,7 +297,7 @@ export class SpaceController {
       newSpace.spaceName = spaceName;
       newSpace.spaceCategory = spaceCategory;
       newSpace.details = details;
-      newSpace.location = location;
+      // newSpace.location = location;
       newSpace.status = status;
       newSpace.pricing = pricing;
       newSpace.user = user as User;
@@ -370,7 +370,7 @@ export class SpaceController {
         spaceName,
         spaceCategory,
         details,
-        location,
+        // location,
         status,
         amenity,
         pricing,
@@ -488,7 +488,7 @@ export class SpaceController {
       existingSpace.spaceCategory =
         spaceCategory || existingSpace.spaceCategory;
       existingSpace.details = details || existingSpace.details;
-      existingSpace.location = location || existingSpace.location;
+      // existingSpace.location = location || existingSpace.location;
       existingSpace.amenity = amenity || existingSpace.amenity;
       existingSpace.status = status || existingSpace.status;
       existingSpace.pricing = pricing || existingSpace.pricing;

@@ -229,7 +229,7 @@ router.post(
   parseJsonFields([
     "spaceCategory",
     "details",
-    "location",
+    // "location",
     "amenity",
     "pricing",
   ]),
@@ -356,7 +356,7 @@ router.put(
   parseJsonFields([
     "spaceCategory",
     "details",
-    "location",
+    // "location",
     "amenity",
     "pricing",
   ]),
