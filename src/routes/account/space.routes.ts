@@ -426,6 +426,53 @@ router.post(
 
 /**
  * @swagger
+ * /space/tenantSign/{id}:
+ *   post:
+ *     summary: Send a Lease Contract For Space
+ *     description: This endpoint allows users with the USER role to send contract for Lease.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - Space
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the Lease Space to Post Signature .
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: Image of the Tenant Signature.
+ *     responses:
+ *       201:
+ *         description: space created successfully.
+ *       400:
+ *         description: Validation error.
+ *       403:
+ *         description: Forbidden.
+ *       500:
+ *         description: Server error.
+ */
+
+router.post(
+  "/tenantSign/:id",
+  checkJwt,
+  validateRoles([ROLES.USER]),
+  handleMultipleFiles([{ name: FILE_FIELDS.IMAGE, maxCount: 1 }]),
+  (req, res, next) => spaceController.tenantUploadSignature(req, res, next)
+);
+
+/**
+ * @swagger
  * /space/{id}:
  *   get:
  *     summary: Get a specific space by ID or all spaces for the authenticated user
