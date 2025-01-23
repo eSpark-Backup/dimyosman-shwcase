@@ -1,19 +1,19 @@
-import { useState, useRef,  useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Input from './input'
 import { Box, Button, IconButton, InputAdornment, Typography, useTheme } from '@mui/material'
 import { locationIcon, mapMarker } from '../assets'
 
 const MapModal = ({
-    value, setValue, addressLine, address, handleClose, buttonVal, initialPosition, setBrandData, instructionValue, setInstructionValue, disabled
+  value, setValue, addressLine, address, handleClose, buttonVal, initialPosition, setBrandData, instructionValue, setInstructionValue, disabled
 }) => {
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    const mapRef = useRef(null);
-    const markerRef = useRef(null);
-    const [map, setMap] = useState(null);
-    const [streetAddress, setStreetAddress] = useState(address);
-    const theme = useTheme()
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
+  const [map, setMap] = useState(null);
+  const [streetAddress, setStreetAddress] = useState(address);
+  const theme = useTheme()
 
-    const [position, setPosition] = useState(initialPosition)
+  const [position, setPosition] = useState(initialPosition)
 
   const handleSearch = (e) => {
     if (disabled) return;
@@ -40,6 +40,7 @@ const MapModal = ({
             setBrandData((prevData) => ({
               ...prevData,
               location: { lat, long: lng },
+              streetAddress: address
             }));
           }
         })
@@ -60,6 +61,7 @@ const MapModal = ({
           setBrandData((prevData) => ({
             ...prevData,
             address,
+            streetAddress: address
           }));
         }
       })
@@ -112,53 +114,53 @@ const MapModal = ({
     initializeMap();
   }, [mapRef, position, disabled]);
 
-    return (
-        <>
-            <Input
-                sx={{ border: "1px solid #D1DBD7 !important" }}
-                value={value}
-                type={"text"}
-                placeholder={"Type Address..."}
-                onInputChange={handleSearch}
-                endAdornment={
-                    <InputAdornment position="end">
-                        <IconButton>
-                            <img src={locationIcon} alt="" />
-                        </IconButton>
-                    </InputAdornment>
-                }
-                disabled={disabled}
-                
-            />
+  return (
+    <>
+      <Input
+        sx={{ border: "1px solid #D1DBD7 !important" }}
+        value={value}
+        type={"text"}
+        placeholder={"Type Address..."}
+        onInputChange={handleSearch}
+        endAdornment={
+          <InputAdornment position="end">
+            <IconButton>
+              <img src={locationIcon} alt="" />
+            </IconButton>
+          </InputAdornment>
+        }
+        disabled={disabled}
 
-            <Box sx={{ height: '300px', width: '100%' }} ref={mapRef} />
+      />
 
-            <Box sx={{ display: "flex", flexDirection: "column", rowGap: "3px" }}>
-                <Typography variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "600" }}>
-                    <span style={{ fontWeight: "300" }}>{addressLine} </span>
-                    {streetAddress}
-                </Typography>
-                <Input disabled={disabled} type={"text"} placeholder={"Additional instructions like entrances, floors..."} value={instructionValue} onInputChange={setInstructionValue} />
-            </Box>
+      <Box sx={{ height: '300px', width: '100%' }} ref={mapRef} />
 
-            <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                <Button
-                    sx={{
-                        height: "31px",
-                        width: "92px",
-                        background: "rgba(209, 219, 215, 0.4)",
-                        fontSize: "16px",
-                        fontWeight: "700",
-                        color: theme.palette.primary.main,
-                        "&:hover": { backgroundColor: "rgba(209, 219, 215, 0.4)" }
-                    }}
-                    onClick={handleClose}
-                >
-                    {buttonVal}
-                </Button>
-            </Box>
-        </>
-    )
+      <Box sx={{ display: "flex", flexDirection: "column", rowGap: "3px" }}>
+        <Typography variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "600" }}>
+          <span style={{ fontWeight: "300" }}>{addressLine} </span>
+          {streetAddress}
+        </Typography>
+        <Input disabled={disabled} type={"text"} placeholder={"Additional instructions like entrances, floors..."} value={instructionValue} onInputChange={setInstructionValue} />
+      </Box>
+
+      <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+        <Button
+          sx={{
+            height: "31px",
+            width: "92px",
+            background: "rgba(209, 219, 215, 0.4)",
+            fontSize: "16px",
+            fontWeight: "700",
+            color: theme.palette.primary.main,
+            "&:hover": { backgroundColor: "rgba(209, 219, 215, 0.4)" }
+          }}
+          onClick={handleClose}
+        >
+          {buttonVal}
+        </Button>
+      </Box>
+    </>
+  )
 }
 
 export default MapModal

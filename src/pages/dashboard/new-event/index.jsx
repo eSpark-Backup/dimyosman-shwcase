@@ -30,13 +30,14 @@ const NewEvent = () => {
         selectedDate: [null, null],
         brand: "",
         space: "",
+        streetAddress: "Address line will be filled automatically."
     });
     const [bookedRanges, setBookedRanges] = useState([])
     const { data: brandData, isError: isBrandError, isLoading: BrandLoading, isSuccess: isBrandSuccess, error: brandError, isFetching: isBrandFetching } = useGetAllBrandsQuery({}, {
         refetchOnMountOrArgChange: true,
     });
 
-    const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useGetAllSpaceQuery({}, {
+    const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useGetAllSpaceQuery({ tab: "Space" }, {
         refetchOnMountOrArgChange: true,
     });
 
@@ -451,7 +452,7 @@ const NewEvent = () => {
                     rowGap: "32px",
                 }}
             >
-                <InputWithMap inputLabel={"Event Overview:"} inputValue={eventData?.eventOverview} setInputValue={(value) => setEventData({ ...eventData, eventOverview: value })} mapDescription={"Address line will be filled automatically."} activity={"event"} eventName={"Space name"} eventAddress={"Brand name"} defaultDate={eventData.selectedDate || [new Date(), new Date()]} onDateChange={handleDateChange} handleClick={() => setMapModal(true)}
+                <InputWithMap inputLabel={"Event Overview:"} inputValue={eventData?.eventOverview} setInputValue={(value) => setEventData({ ...eventData, eventOverview: value })} mapDescription={eventData?.streetAddress} activity={"event"} eventName={"Space name"} eventAddress={"Brand name"} defaultDate={eventData.selectedDate || [new Date(), new Date()]} onDateChange={handleDateChange} handleClick={() => setMapModal(true)}
                     options={spaceOptions}
                     selectedValue={eventData?.space || ''}
                     eventData={eventData}

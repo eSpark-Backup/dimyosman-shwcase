@@ -14,6 +14,7 @@ import { useGetAllSpaceQuery } from '../../../services/space'
 import { toast } from 'react-toastify'
 import ReusableModal from '../../../components/Modal'
 import { LoadingButton } from '@mui/lab'
+import { fetchAddressFromCoordinates } from '../../../utils'
 
 const EditEvent = () => {
     const navigate = useNavigate();
@@ -53,54 +54,67 @@ const EditEvent = () => {
         eventDate: "",
         selectedDate: [],
         brand: "",
-        space: ""
+        space: "",
+        streetAddress: ""
     });
 
-    const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useGetAllSpaceQuery({}, {
+    const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useGetAllSpaceQuery({ tab: "Space" }, {
         refetchOnMountOrArgChange: true,
     });
 
     useEffect(() => {
-        if (GetCategorySuccess && isSuccess) {
-            const allCategories = Array.isArray(GetCategoryData?.data)
-                ? GetCategoryData.data.map((cat, index) => ({
-                    id: index,
-                    name: cat?.name,
-                    selected: false,
-                }))
-                : [];
+        const fetchAddress = async () => {
+            if (GetCategorySuccess && isSuccess) {
+                const allCategories = Array.isArray(GetCategoryData?.data)
+                    ? GetCategoryData.data.map((cat, index) => ({
+                        id: index,
+                        name: cat?.name,
+                        selected: false,
+                    }))
+                    : [];
 
-            const selectedCategories = Array.isArray(data?.data?.eventCategory)
-                ? data?.data?.eventCategory.map((cat) => cat?.name)
-                : [];
+                const selectedCategories = Array.isArray(data?.data?.eventCategory)
+                    ? data?.data?.eventCategory.map((cat) => cat?.name)
+                    : [];
 
-            const mergedCategories = allCategories.map((category) => ({
-                ...category,
-                selected: selectedCategories?.includes(category.name),
-            }));
+                const mergedCategories = allCategories.map((category) => ({
+                    ...category,
+                    selected: selectedCategories?.includes(category.name),
+                }));
 
-            setEventData((prevState) => ({
-                ...prevState,
-                eventCategories: mergedCategories,
-            }));
-            setEventData((prevState) => ({
-                ...prevState,
-                eventCategories: mergedCategories,
-                eventName: data?.data?.eventName,
-                profileImage: data?.data?.eventImage,
-                eventOverview: data?.data?.details?.description,
-                cover: data?.data?.coverImages,
-                selectedDate: Array.isArray(data?.data?.eventDate) && data?.data?.eventDate[0]
-                    ? [
-                        new Date(data.data.eventDate[0]?.startDate),
-                        new Date(data.data.eventDate[0]?.endDate)
-                    ]
-                    : [],
-                eventTitle: data?.data?.details?.htmlContent,
-                space: data?.data?.space?.id,
-                location: { lat: data?.data?.space?.location?.lat, long: data?.data?.space?.location?.long }
-            }));
+                let address = "";
+                if (data?.data?.space?.location?.lat && data?.data?.space?.location?.long) {
+                    address = await fetchAddressFromCoordinates(
+                        data?.data?.space?.location?.lat,
+                        data?.data?.space?.location?.long
+                    );
+                }
+
+                setEventData((prevState) => ({
+                    ...prevState,
+                    eventCategories: mergedCategories,
+                }));
+                setEventData((prevState) => ({
+                    ...prevState,
+                    eventCategories: mergedCategories,
+                    eventName: data?.data?.eventName,
+                    profileImage: data?.data?.eventImage,
+                    eventOverview: data?.data?.details?.description,
+                    cover: data?.data?.coverImages,
+                    selectedDate: Array.isArray(data?.data?.eventDate) && data?.data?.eventDate[0]
+                        ? [
+                            new Date(data.data.eventDate[0]?.startDate),
+                            new Date(data.data.eventDate[0]?.endDate)
+                        ]
+                        : [],
+                    eventTitle: data?.data?.details?.htmlContent,
+                    space: data?.data?.space?.id,
+                    location: { lat: data?.data?.space?.location?.lat, long: data?.data?.space?.location?.long },
+                    streetAddress: address
+                }));
+            }
         }
+        fetchAddress()
     }, [GetCategorySuccess, isSuccess, data]);
     // States and Ref
     const mainImageRef = useRef(null)
@@ -535,7 +549,7 @@ const EditEvent = () => {
                     activeTab?.label === "Details"
                         ?
                         <>
-                            <InputWithMap edit inputLabel={"Event Overview:"} inputValue={eventData?.eventOverview} setInputValue={(value) => setEventData({ ...eventData, eventOverview: value })} mapDescription={"123 Williamsburg Ave, Brooklyn, NY 11211"} activity={"event"} eventName={"Urban Pop-Up Studio 3B"} eventAddress={"Urban Pop-Up Pavilion"} defaultDate={eventData.selectedDate || [new Date(), new Date()]} onDateChange={handleDateChange}
+                            <InputWithMap edit inputLabel={"Event Overview:"} inputValue={eventData?.eventOverview} setInputValue={(value) => setEventData({ ...eventData, eventOverview: value })} mapDescription={eventData?.streetAddress} activity={"event"} eventName={"Urban Pop-Up Studio 3B"} eventAddress={"Urban Pop-Up Pavilion"} defaultDate={eventData.selectedDate || [new Date(), new Date()]} onDateChange={handleDateChange}
                                 options={spaceOptions}
                                 selectedValue={eventData?.space || ''}
                                 eventData={eventData}
