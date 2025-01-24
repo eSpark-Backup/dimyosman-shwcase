@@ -287,4 +287,217 @@ export class GeneralController {
       return next(error);
     }
   }
+
+  // async getActivity(
+  //   req: ICustomRequest,
+  //   res: Response,
+  //   next: NextFunction
+  // ): Promise<void> {
+  //   try {
+  //     const { page, take, skip } = req?.query;
+  //     const skipNumber = Number(skip);
+  //     const takeNumber = Number(take);
+
+  //     let [spaces, totalItems] = await this.spaceRepo
+  //       .createQueryBuilder("space")
+  //       .leftJoinAndSelect("space.brand", "brand")
+  //       .where("space.user != :userId", { userId: req.user?.id })
+  //       .leftJoinAndSelect("space.user", "user")
+  //       .orderBy("space.createdAt", "DESC")
+  //       .skip(skipNumber)
+  //       .take(takeNumber)
+  //       .getManyAndCount();
+
+  //     if (spaces.length === 0) {
+  //       res.status(200).json(handleResponse("No Spaces Found"));
+  //       return next();
+  //     }
+
+  //     spaces.forEach((space) => {
+  //       if (typeof space.coverImages === "string") {
+  //         space.coverImages = JSON.parse(space.coverImages);
+  //       }
+  //     });
+  //     for (const space of spaces) {
+  //       const events = await this.eventsRepo
+  //         .createQueryBuilder("event")
+  //         .where("event.space = :spaceId", { spaceId: space.id })
+  //         .getMany();
+
+  //       const calendarEvents = events.flatMap((event) => {
+  //         const eventDates: EventDate[] = Array.isArray(event.eventDate)
+  //           ? event.eventDate
+  //           : JSON.parse(event.eventDate as unknown as string);
+
+  //         return eventDates.map((dateRange) => ({
+  //           eventId: event.id,
+  //           title: event.eventName,
+  //           start: new Date(dateRange.startDate),
+  //           end: new Date(dateRange.endDate),
+  //         }));
+  //       });
+
+  //       (space as any).calendarEvents = calendarEvents;
+  //     }
+
+  //     spaces = spaces.map((space) => {
+  //       const totalPricing = calculatePricing(
+  //         space.pricing as PricingTerm[],
+  //         1
+  //       );
+  //       return {
+  //         ...space,
+  //         totalPricing,
+  //       };
+  //     });
+
+  //     res.status(200).json(
+  //       handleResponse("Spaces Fetched Successfully", {
+  //         spaces,
+  //         pagination: {
+  //           totalItems,
+  //           currentPage: parseInt(page as string, 10),
+  //           pageSize: takeNumber,
+  //           totalPages: Math.ceil(totalItems / takeNumber),
+  //         },
+  //       })
+  //     );
+  //     return next();
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // }
+
+  async getActivity(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { page, take, skip } = req?.query;
+      const skipNumber = Number(skip);
+      const takeNumber = Number(take);
+      const [events] = await this.eventsRepo
+        .createQueryBuilder("event")
+        .leftJoinAndSelect("event.brand", "brand")
+        .leftJoinAndSelect("event.space", "space")
+        .leftJoinAndSelect("space.brand", "spaceBrand")
+        .where("event.user != :userId", { userId: req.user?.id })
+        .leftJoinAndSelect("event.user", "user")
+
+        .orderBy("event.createdAt", "DESC")
+        .getManyAndCount();
+
+      const [brands] = await this.brandRepo
+        .createQueryBuilder("brand")
+        .leftJoinAndSelect("brand.user", "user")
+        .where("brand.user != :userId", { userId: req.user?.id })
+        .orderBy("brand.createdAt", "DESC")
+        .getManyAndCount();
+      let [spaces] = await this.spaceRepo
+        .createQueryBuilder("space")
+        .leftJoinAndSelect("space.brand", "brand")
+        .where("space.user != :userId", { userId: req.user?.id })
+        .leftJoinAndSelect("space.user", "user")
+        .orderBy("space.createdAt", "DESC")
+        .getManyAndCount();
+
+      spaces.forEach((space) => {
+        parseCoverImages(space);
+      });
+      brands.forEach((brand) => {
+        parseCoverImages(brand);
+      });
+      events.forEach((event) => {
+        parseCoverImages(event);
+        parseCoverImages(event.brand);
+        parseCoverImages(event.space);
+      });
+      for (const space of spaces) {
+        const events = await this.eventsRepo
+          .createQueryBuilder("event")
+          .where("event.space = :spaceId", { spaceId: space.id })
+          .getMany();
+
+        const calendarEvents = events.flatMap((event) => {
+          const eventDates: EventDate[] = Array.isArray(event.eventDate)
+            ? event.eventDate
+            : JSON.parse(event.eventDate as unknown as string);
+
+          return eventDates.map((dateRange) => ({
+            eventId: event.id,
+            title: event.eventName,
+            start: new Date(dateRange.startDate),
+            end: new Date(dateRange.endDate),
+          }));
+        });
+
+        (space as any).calendarEvents = calendarEvents;
+      }
+
+      spaces = spaces.map((space) => {
+        const totalPricing = calculatePricing(
+          space.pricing as PricingTerm[],
+          1
+        );
+        return {
+          ...space,
+          totalPricing,
+        };
+      });
+
+      const eventsWithType = events.map((event: any) => ({
+        ...event,
+        type: "event",
+      }));
+
+      const brandsWithType = brands.map((brand: any) => ({
+        ...brand,
+        type: "brand",
+      }));
+
+      const spacesWithType = spaces.map((space: any) => ({
+        ...space,
+        type: "space",
+      }));
+
+      const activity = [
+        ...eventsWithType,
+        ...brandsWithType,
+        ...spacesWithType,
+      ];
+
+      const sortedActivity = activity.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+
+      const paginatedActivity = sortedActivity.slice(
+        skipNumber,
+        skipNumber + takeNumber
+      );
+
+      const totalItems = sortedActivity.length;
+      const totalPages = Math.ceil(totalItems / takeNumber);
+
+      res.status(200).json(
+        handleResponse("Activity Fetched Successfully", {
+          activity: paginatedActivity,
+          pagination: {
+            totalItems,
+            currentPage: Number(page),
+            pageSize: takeNumber,
+            totalPages,
+          },
+        })
+      );
+
+      return next();
+    } catch (error) {
+      logger.error(
+        `GeneralController :: General Activity :: ${(error as Error)?.message}`
+      );
+      return next(error);
+    }
+  }
 }

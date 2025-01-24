@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { EventValidation, SpaceValidation, validate } from "../../validations";
-import { Brand, Events, Spaces, User } from "../../entity";
+import { Brand, Events, RSVP, Spaces, User } from "../../entity";
 import { AppDataSource } from "../../typeorm.config";
 import { EventController } from "../../controllers/account";
 import {
@@ -19,11 +19,13 @@ const spaceRepository = AppDataSource.getRepository(Spaces);
 const userRepository = AppDataSource.getRepository(User);
 const brandRepository = AppDataSource.getRepository(Brand);
 const eventRepository = AppDataSource.getRepository(Events);
+const rsvpEventRepository = AppDataSource.getRepository(RSVP);
 const eventController = new EventController(
   spaceRepository,
   userRepository,
   brandRepository,
-  eventRepository
+  eventRepository,
+  rsvpEventRepository
 );
 
 /**
@@ -224,6 +226,56 @@ router.put(
 
 /**
  * @swagger
+ * /event/rsvp/{id}:
+ *   post:
+ *     summary: RSVP an existing event
+ *     description: This endpoint allows users with the USER role to RSVP an existing event.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - Event
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the event to RSVP
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               attendanceDates:
+ *                  type: object
+ *                  properties:
+ *                    dateTime:
+ *                       type: string
+ *                       description: Date and Time to RSVP
+ *     responses:
+ *       200:
+ *         description: event rsvp successfully.
+ *       400:
+ *         description: Validation error.
+ *       403:
+ *         description: Forbidden.
+ *       404:
+ *         description: event not found.
+ *       500:
+ *         description: Server error.
+ */
+router.post(
+  "/rsvp/:id",
+  checkJwt,
+  validateRoles([ROLES.USER]),
+  parseJsonFields(["attendanceDates"]),
+  validate(EventValidation.RsvpEvent, "body"),
+  (req, res, next) => eventController.rsvpEvent(req, res, next)
+);
+
+/**
+ * @swagger
  * /event/{id}:
  *   get:
  *     summary: Get a specific event by ID or all events for the authenticated user
@@ -253,6 +305,13 @@ router.put(
  *         schema:
  *           type: integer
  *           example: 1
+ *       - in: query
+ *         name: tab
+ *         required: false
+ *         description: Tab name to filter the spaces.
+ *         schema:
+ *           type: string
+ *           example: Event
  *     responses:
  *       200:
  *         description: event found by ID or all events for the authenticated user.

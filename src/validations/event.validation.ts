@@ -64,4 +64,10 @@ export class EventValidation {
       .valid(...Object.values(EVENT_STATUS))
       .optional(),
   });
+
+  static RsvpEvent = Joi.object({
+    attendanceDates: Joi.object({
+      dateTime: Joi.string().required(),
+    }).optional(),
+  });
 }

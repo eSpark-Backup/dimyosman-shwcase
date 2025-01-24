@@ -1,5 +1,5 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { Brand, Events, Spaces, User } from "../../entity";
+import { Brand, Events, RSVP, Spaces, User } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
 import { handleResponse, logger, parseCoverImages } from "../../utils";
@@ -19,7 +19,8 @@ export class EventController {
     private spaceRepo: Repository<Spaces>,
     private userRepo: Repository<User>,
     private brandRepo: Repository<Brand>,
-    private eventRepo: Repository<Events>
+    private eventRepo: Repository<Events>,
+    private rsvpEventRepo: Repository<RSVP>
   ) {}
 
   async createEvent(
@@ -327,6 +328,37 @@ export class EventController {
     }
   }
 
+  async rsvpEvent(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { attendanceDates } = req.body;
+      const event = await this.eventRepo.findOne({ where: { id } });
+      if (!event) {
+        throw new ApiError("Event not found", HTTP_STATUS.NOT_FOUND);
+      }
+      const user = await this.userRepo.findOne({ where: { id: req.user?.id } });
+      if (!user) {
+        throw new ApiError("User not found", HTTP_STATUS.NOT_FOUND);
+      }
+      const newRsvpEvent = new RSVP();
+      newRsvpEvent.user = user;
+      newRsvpEvent.event = event;
+      newRsvpEvent.attendanceDates = attendanceDates;
+      await this.rsvpEventRepo.save(newRsvpEvent);
+
+      res.status(200).json(handleResponse("RSVP Successful"));
+      return next();
+    } catch (error) {
+      logger.error(
+        `EventController :: RSVP Event :: ${(error as Error)?.message}`
+      );
+      return next(error);
+    }
+  }
   async getAllEvents(
     req: ICustomRequest,
     res: Response,
@@ -334,7 +366,7 @@ export class EventController {
   ): Promise<void> {
     try {
       const { id } = req.params;
-      const { page, take, skip } = req?.query;
+      const { page, take, skip, tab } = req?.query;
       // Ensure skip and take are numbers
       const skipNumber = Number(skip);
       const takeNumber = Number(take);
@@ -360,43 +392,147 @@ export class EventController {
         return next();
       }
 
-      const [events, totalItems] = await this.eventRepo
-        .createQueryBuilder("event")
-        .leftJoinAndSelect("event.brand", "brand")
-        .leftJoinAndSelect("event.space", "space")
-        .leftJoinAndSelect("space.brand", "spaceBrand")
+      if (tab == "Event") {
+        const [events, totalItems] = await this.eventRepo
+          .createQueryBuilder("event")
+          .leftJoinAndSelect("event.brand", "brand")
+          .leftJoinAndSelect("event.space", "space")
+          .leftJoinAndSelect("space.brand", "spaceBrand")
 
-        .where("event.user = :userId", { userId: req.user?.id })
-        .skip(skipNumber)
-        .take(takeNumber)
-        .orderBy("event.createdAt", "DESC")
-        .getManyAndCount();
+          .where("event.user = :userId", { userId: req.user?.id })
+          .skip(skipNumber)
+          .take(takeNumber)
+          .orderBy("event.createdAt", "DESC")
+          .getManyAndCount();
 
-      if (events.length === 0) {
-        res.status(200).json(handleResponse("No Events Found"));
-        return next();
+        if (events.length === 0) {
+          res.status(200).json(handleResponse("No Events Found"));
+          return next();
+        }
+
+        events.forEach((event) => {
+          parseCoverImages(event);
+          parseCoverImages(event.brand);
+          parseCoverImages(event.space);
+        });
+
+        res.status(200).json(
+          handleResponse("Events Fetched Successfully", {
+            events,
+            pagination: {
+              totalItems,
+              currentPage: parseInt(page as string, 10),
+              pageSize: takeNumber,
+              totalPages: Math.ceil(totalItems / takeNumber),
+            },
+          })
+        );
       }
+      if (tab === "RSVP") {
+        try {
+          const rsvpEventsWithCounts = await this.rsvpEventRepo
+            .createQueryBuilder("rsvp")
+            .leftJoinAndSelect("rsvp.event", "event")
+            .leftJoinAndSelect("event.brand", "brand")
+            .leftJoinAndSelect("event.space", "space")
+            .leftJoinAndSelect("space.brand", "spaceBrand")
+            .leftJoin(
+              (qb) => {
+                return qb
+                  .select("rsvp_sub.event", "eventId")
+                  .addSelect("COUNT(rsvp_sub.id)", "rsvpCount")
+                  .from("rsvp", "rsvp_sub")
+                  .groupBy("rsvp_sub.event");
+              },
+              "rsvpCountSubquery",
+              "rsvpCountSubquery.eventId = event.id"
+            )
+            .addSelect(
+              "COALESCE(rsvpCountSubquery.rsvpCount, 0)",
+              "event_rsvpCount"
+            ) // Include RSVP count
+            .where("rsvp.user = :userId", { userId: req.user?.id })
+            .skip(skipNumber)
+            .take(takeNumber)
+            .orderBy("rsvp.createdAt", "DESC")
+            .getRawAndEntities();
 
-      events.forEach((event) => {
-        parseCoverImages(event);
-        parseCoverImages(event.brand);
-        parseCoverImages(event.space);
-      });
+          // Extract entities and raw data
+          const { entities: rsvpEvents, raw } = rsvpEventsWithCounts;
 
-      res.status(200).json(
-        handleResponse("Events Fetched Successfully", {
-          events,
-          pagination: {
-            totalItems,
-            currentPage: parseInt(page as string, 10),
-            pageSize: takeNumber,
-            totalPages: Math.ceil(totalItems / takeNumber),
-          },
-        })
-      );
-      return next();
+          // Format the results with RSVP count
+          const formattedRsvpEvents = rsvpEvents.map((rsvp, index) => {
+            const rawData = raw[index];
+            parseCoverImages(rsvp.event);
+            parseCoverImages(rsvp.event.brand);
+            parseCoverImages(rsvp.event.space);
+
+            const eventDate =
+              rsvp.event.eventDate &&
+              (rsvp.event.eventDate as [
+                { startDate: string; endDate: string }
+              ]);
+
+            if (eventDate) {
+              const currentDate = new Date();
+
+              let eventStatus = "Ended"; // Default to ended if no condition is met
+
+              if (currentDate < new Date(eventDate[0].startDate)) {
+                eventStatus = "Upcoming"; // Event has not started yet
+              } else if (
+                currentDate >= new Date(eventDate[0].startDate) &&
+                currentDate <= new Date(eventDate[0].endDate)
+              ) {
+                eventStatus = "Ongoing"; // Event is happening now
+              }
+
+              return {
+                ...rsvp,
+                rsvpCount: Number(rawData.event_rsvpCount) || 0,
+                eventStatus, // Update the event status (Upcoming, Ongoing, Ended)
+              };
+            }
+
+            return {
+              ...rsvp,
+              rsvpCount: Number(rawData.event_rsvpCount) || 0,
+            };
+          });
+
+          // Handle empty results
+          if (rsvpEvents.length === 0) {
+            res.status(200).json(handleResponse("No RSVP Events Found"));
+            return next();
+          }
+          const [, totalItems] = await this.rsvpEventRepo
+            .createQueryBuilder("rsvp")
+            .where("rsvp.user = :userId", { userId: req.user?.id })
+            .getManyAndCount();
+
+          // Return response
+          res.status(200).json({
+            data: formattedRsvpEvents,
+            pagination: {
+              totalItems: totalItems,
+              currentPage: Math.ceil(skipNumber / takeNumber) + 1,
+              pageSize: takeNumber,
+            },
+          });
+        } catch (error) {
+          logger.error(
+            `EventController :: Fetch RSVP Events :: ${
+              (error as Error)?.message
+            }`
+          );
+          return next(error);
+        }
+      }
     } catch (error) {
-      next(error);
+      logger.error(
+        `EventController :: getAllEvents :: ${(error as Error)?.message}`
+      );
+      return next(error);
     }
   }
 }
