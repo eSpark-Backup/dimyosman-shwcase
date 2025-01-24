@@ -1,4 +1,11 @@
-import { Box, Button, Card, LinearProgress, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  LinearProgress,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { act, useEffect, useState } from "react";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { spaceTableData } from "../../../constant";
@@ -10,6 +17,9 @@ import ReusableModal from "../../../components/Modal";
 import AfterSignature from "../../../components/AfterSignature";
 import ManageInquiry from "../../../components/ManageInquiry";
 import { convertToSameKeys } from "../../../utils";
+import { useDispatch } from "react-redux";
+import { whenVerifyClicked } from "../../../store/slices/space";
+import PaymentConfirmation from "../../../components/PaymentConfirmation";
 
 const TopHeading = ({ name, size, my = 0 }) => {
   return (
@@ -27,6 +37,8 @@ const TopHeading = ({ name, size, my = 0 }) => {
 };
 
 const Space = () => {
+  const dispatch = useDispatch();
+
   const tabs = [
     {
       label: "My Spaces",
@@ -40,21 +52,32 @@ const Space = () => {
       label: "Saved Spaces",
       icon: like,
     },
+    {
+      label: "Tenant",
+      icon: null,
+    },
   ];
-  const tabsForApi = ["Space", "Lease", "Saved"];
+  const tabsForApi = ["Space", "Lease", "Saved", "Tenant"];
   const [activeTab, setActiveTab] = useState(0);
-  const [page, setPage] = useState(1)
-  const [showInquiryModal,setShowIinquiryModal] = useState(false)
+  const [page, setPage] = useState(1);
+  const [showInquiryModal, setShowIinquiryModal] = useState(false);
   const [afterSignature, setAfterSignature] = useState(false);
   const [tenantDetails, setTenantDetails] = useState(null);
+  const [refetchTriggered, setRefetchTriggered] = useState(false);
+  const [verifyPayModal, setVerifyPayModal] = useState(false);
+  const [verifyDetail, setVerifyDetail] = useState(null);
 
   const [mySpaceData, setMySpaceData] = useState([]);
-  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllSpaceQuery({ page, pageSize: 7, tab: tabsForApi[activeTab] }, {
-    refetchOnMountOrArgChange: true,
-    refetchOnFocus: true
-  });
+  const { data, isError, isLoading, isSuccess, error, isFetching, refetch } =
+    useGetAllSpaceQuery(
+      { page, pageSize: 7, tab: tabsForApi[activeTab] },
+      {
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true,
+      }
+    );
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const transformSpaceData = (apiData) => {
     return apiData.map((space, index) => {
@@ -64,12 +87,12 @@ const Space = () => {
         type: "space",
         eventName: space?.spaceName,
         eventImg: space?.spaceImage,
-        price: dayFilter?.length > 0 ? "$"+dayFilter[0]?.price : "-",
+        price: dayFilter?.length > 0 ? "$" + dayFilter[0]?.price : "-",
         term: dayFilter?.length > 0 ? dayFilter[0]?.term : "-",
         brand: space?.brand?.brandName,
         brandUrl: `/brand/${space?.brand?.id}`,
-        action: "Edit"
-      }
+        action: "Edit",
+      };
     });
   };
 
@@ -82,14 +105,56 @@ const Space = () => {
         eventName: space?.space?.spaceName,
         eventImg: space?.space?.spaceImage,
         currently:
-          space?.status === "SubmitForSignature" ? "Pending Sign" : "Leasing",
+          space?.status === "SubmitForSignature"
+            ? "Pending Sign"
+            : space?.status === "VerifyAndPay"
+            ? "Pending Pay"
+            : "Leasing",
         price: space?.contractDetails?.leaseInfo?.leaseTotal,
-        term: "Monthly",
+        term: "Daily",
         event: space?.contractDetails?.tenantDetails?.event,
         brand: space?.space?.brand?.brandName,
         eventUrl: "-",
         brandUrl: `/brand/${space?.space?.brand?.id}`,
-        action: space?.status === "SubmitForSignature" ? "Sign" : "Details",
+        action:
+          space?.status === "SubmitForSignature"
+            ? "Sign"
+            : space?.status === "VerifyAndPay"
+            ? "Verify Pay 1/2"
+            : "Details",
+      };
+    });
+  };
+
+  const transformTenantSpaceData = (apiData) => {
+    return apiData.map((space, index) => {
+      return {
+        id: space?.id,
+        spaceId: space?.space?.id,
+        type: "space",
+        eventName: space?.space?.spaceName,
+        eventImg: space?.space?.spaceImage,
+        brand: space?.space?.brand?.brandName,
+        owner: space?.owner?.name,
+        event: space?.contractDetails?.tenantDetails?.event,
+        starting: space?.contractDetails?.leaseInfo?.startDate,
+        ending: space?.contractDetails?.leaseInfo?.endDate,
+        lease: space?.contractDetails?.leaseInfo?.leaseTotal,
+        status:
+          space?.status === "SubmitForSignature"
+            ? "Pending Sign"
+            : space?.status === "VerifyAndPay"
+            ? "Pending Pay"
+            : "Leasing",
+        eventUrl: "-",
+        brandUrl: `/brand/${space?.space?.brand?.id}`,
+        action:
+          space?.status === "SubmitForSignature"
+            ? "Message"
+            : space?.status === "VerifyAndPay"
+            ? "Verify 2/2"
+            : "Details",
+        spaceStatus: space?.status,
       };
     });
   };
@@ -106,8 +171,10 @@ const Space = () => {
     if (isSuccess) {
       if (data?.data?.spaces?.length) {
         setMySpaceData(transformSpaceData(data?.data?.spaces || []));
-      } else {
+      } else if (data?.data?.leaseSpace?.length) {
         setMySpaceData(transformLeaseSpaceData(data?.data?.leaseSpace || []));
+      } else {
+        setMySpaceData(transformTenantSpaceData(data?.data?.tenantSpace || []));
       }
       setHasShownErrorToast(false);
     }
@@ -118,6 +185,12 @@ const Space = () => {
   };
 
   const handleChange = (event, newValue) => {
+    const obj = {
+      page,
+      activeTab: tabsForApi[newValue],
+    };
+
+    dispatch(whenVerifyClicked(obj));
     setActiveTab(newValue);
   };
 
@@ -145,8 +218,18 @@ const Space = () => {
       );
       setTenantDetails(findClickedLeaseDetails);
       setShowIinquiryModal(true);
-    } else if (type === "remove") {
-      //remove functionality
+    } else if (type === "Verify Pay 1/2") {
+      const findClickedLeaseDetails = data?.data?.leaseSpace?.find(
+        (lease) => lease.id === item.id
+      );
+      setVerifyPayModal(true);
+      setVerifyDetail(findClickedLeaseDetails);
+    } else if (type === "Verify 2/2") {
+      const findClickedLeaseDetails = data?.data?.tenantSpace?.find(
+        (tenant) => tenant.id === item.id
+      );
+      setVerifyPayModal(true);
+      setVerifyDetail(findClickedLeaseDetails);
     } else {
       // other action functionality
     }
@@ -155,25 +238,27 @@ const Space = () => {
   const handleModalClose = () => {
     setShowIinquiryModal(false);
     setAfterSignature(false);
+    setVerifyPayModal(false);
     setTenantDetails(null);
+    setVerifyDetail(null);
   };
 
   const gotoBrand = (item) => {
     //go to detail page functionality
-    navigate(item?.brandUrl)
+    navigate(item?.brandUrl);
   };
 
   const handleAdd = () => {
     //add functionality
-    navigate("/new-space")
+    navigate("/new-space");
   };
 
-  if (isLoading || isFetching) {
+  if ((isLoading || isFetching) && !refetchTriggered) {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />
       </Box>
-    )
+    );
   }
 
   return (
@@ -288,6 +373,11 @@ const Space = () => {
           setShowIinquiryModal={setShowIinquiryModal}
           spc={true}
           ownerSign={tenantDetails?.ownerSign}
+          refetch={refetch}
+          tabsForApi={tabsForApi}
+          activeTab={activeTab}
+          page={page}
+          setRefetchTriggered={setRefetchTriggered}
         />
       </ReusableModal>
 
@@ -306,6 +396,30 @@ const Space = () => {
           handleClose={handleModalClose}
           upperPara="Your Signature has been sent."
           lowerPara="From this moment, the Contract is considered active and binding."
+        />
+      </ReusableModal>
+
+      <ReusableModal
+        hideHeader={true}
+        open={verifyPayModal}
+        handleClose={handleModalClose}
+      >
+        <PaymentConfirmation
+          id={verifyDetail?.id}
+          image={convertToSameKeys(null, verifyDetail)?.spaceImage}
+          alt="SpaceImage"
+          activity={"space"}
+          TopHeading={TopHeading}
+          name={convertToSameKeys(null, verifyDetail)?.space}
+          brandName={convertToSameKeys(null, verifyDetail)?.host}
+          contractDetails={verifyDetail?.contractDetails}
+          handleClose={handleModalClose}
+          upperPara="Please verify your payment for below contract details."
+          setRefetchTriggered={setRefetchTriggered}
+          page={page}
+          activeTab={tabsForApi[activeTab]}
+          refetch={refetch}
+          setVerifyPayModal={setVerifyPayModal}
         />
       </ReusableModal>
     </Box>

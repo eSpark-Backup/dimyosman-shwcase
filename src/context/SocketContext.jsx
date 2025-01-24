@@ -43,7 +43,7 @@
 
 // Second
 
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -66,6 +66,7 @@ import {
 } from "../store/slices/notification";
 
 import { getCookie, setCookie } from "../utils";
+import { useGetAllSpaceQuery } from "../services/space";
 
 const SocketContext = createContext(null);
 
@@ -77,6 +78,10 @@ const SocketProvider = ({ children }) => {
   const socket = useRef(null);
   const { user } = useSelector((state) => state.auth);
   const { activeMembers, messages } = useSelector((state) => state.chat);
+  const { page, activeTab } = useSelector((state) => state.space);
+
+  const [skipSpace, setSkipSpace] = useState(true);
+
   const { data, isSuccess, refetch } = useGetMyChatsQuery(undefined, {
     skip: !user,
   });
@@ -85,6 +90,10 @@ const SocketProvider = ({ children }) => {
     isSuccess: notificationSuccess,
     refetch: notificationRefetch,
   } = useGetNotificationDataQuery(undefined, { skip: !user });
+  const { refetch: spaceRefetch } = useGetAllSpaceQuery(
+    { page, pageSize: 7, tab: "Tenant" },
+    { skip: skipSpace }
+  );
 
   const { pathname } = useLocation();
   const dispatch = useDispatch();
@@ -117,9 +126,22 @@ const SocketProvider = ({ children }) => {
     }
   }, [isSuccess, data]);
 
+  const callForSpace = () => {
+    setSkipSpace(false);
+    spaceRefetch();
+  };
+
+  const handleNotificationUpdate = (cookieName, action) => {
+    const currentValue = getCookie(cookieName);
+    const newCount = currentValue ? parseInt(currentValue) + 1 : 1;
+
+    setCookie(cookieName, newCount);
+    dispatch(action(newCount));
+  };
+
   useEffect(() => {
     if (user && !socket.current) {
-      socket.current = io("https://shwcase-stg.esparkconsultants.com/socket", {
+      socket.current = io("https://shwcase-dev.esparkconsultants.com/socket", {
         withCredentials: true,
         extraHeaders: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -141,17 +163,29 @@ const SocketProvider = ({ children }) => {
         refetch();
       });
 
+      socket.current.on("NEW_NOTIFICATION", () => {
+        console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
+
+        if (pathname === "/space") {
+          if (activeTab !== "Space" || activeTab !== "Saved") {
+            callForSpace();
+          }
+        } else {
+          callForSpace();
+        }
+
+        handleNotificationUpdate("newNotification", getNotificationCount);
+        notificationRefetch();
+      });
+
       socket.current.on("NEW_REQUEST", (data) => {
         // console.log("NEW_REQUEST EVENT TRIGGERED.");
-        const getNewRequest = getCookie("newRequest");
 
-        if (getNewRequest) {
-          setCookie("newRequest", parseInt(getNewRequest) + 1);
-          dispatch(getNotificationCount(parseInt(getNewRequest) + 1));
-        } else {
-          setCookie("newRequest", 1);
-          dispatch(getNotificationCount(1));
+        handleNotificationUpdate("newNotification", getNotificationCount);
+        if (pathname !== "/message") {
+          handleNotificationUpdate("newInquiry", getNotificationCount);
         }
+
         toast.info(data?.name, {
           position: "bottom-right",
           onClick:

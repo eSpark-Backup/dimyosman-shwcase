@@ -19,7 +19,7 @@ import { close } from "../assets";
 
 import { separateRawData } from "../utils";
 
-import { useLeaseSpaceInquireMutation } from "../services/space";
+import { useLeaseSpaceInquireMutation, useTenantSignMutation } from "../services/space";
 
 const Heading = ({ name, mb = 0, mt = 0 }) => {
   return (
@@ -108,10 +108,16 @@ const ManageInquiry = ({
   setShowIinquiryModal,
   spc = false,
   ownerSign = null,
+  refetch = null,
+  tabsForApi = null,
+  activeTab = null,
+  page = null,
+  setRefetchTriggered = null,
 }) => {
   const theme = useTheme();
 
   const [leaseSpace, { isLoading }] = useLeaseSpaceInquireMutation();
+  const [tenantSpace, { isLoading: isTenantLoading }] = useTenantSignMutation();
 
   const profileImageRef = useRef(null);
 
@@ -204,35 +210,60 @@ const ManageInquiry = ({
       ...inquiryDetails,
       image,
     };
-    leaseSpace({ data: updateInquiryObject }).then((res) => {
-      if (res?.error) {
-        toast.error(res?.error?.data?.message || "something went wrong");
-      }
-      if (res?.data) {
-        setShowIinquiryModal(false);
+    if (spc) {
+      const passObj = { page, pageSize: 7, tab: tabsForApi[activeTab] };
 
-        // toast.success(res?.data?.message || "Lease Contract Sent Successfully");
-        setInquiryDetails((prevState) => ({
-          ...prevState,
-          contractDetails: {
-            ...prevState.contractDetails,
-            hostDetails: {
-              ...prevState.contractDetails.hostDetails,
-              additionalInfo: "",
+      const tenantDetails = {
+        id: inquiryDetails.tenantId,
+        image,
+      };
+
+      tenantSpace({ data: tenantDetails }).then((res) => {
+        if (res?.error) {
+          toast.error(res?.error?.data?.message || "something went wrong");
+        }
+
+        if (res?.data) {
+          setRefetchTriggered(true);
+
+          setShowIinquiryModal(false);
+          setChecked(false);
+          setImageWithPreview(null);
+          setImage(null);
+          setAfterSignature(true);
+          refetch(passObj);
+        }
+      });
+    } else {
+      leaseSpace({ data: updateInquiryObject }).then((res) => {
+        if (res?.error) {
+          toast.error(res?.error?.data?.message || "something went wrong");
+        }
+        if (res?.data) {
+          setShowIinquiryModal(false);
+          // toast.success(res?.data?.message || "Lease Contract Sent Successfully");
+          setInquiryDetails((prevState) => ({
+            ...prevState,
+            contractDetails: {
+              ...prevState.contractDetails,
+              hostDetails: {
+                ...prevState.contractDetails.hostDetails,
+                additionalInfo: "",
+              },
+              tenantDetails: {
+                ...prevState.contractDetails.tenantDetails,
+                additionalInfo: "",
+              },
+              description: "",
             },
-            tenantDetails: {
-              ...prevState.contractDetails.tenantDetails,
-              additionalInfo: "",
-            },
-            description: "",
-          },
-        }));
-        setChecked(false);
-        setImageWithPreview(null);
-        setImage(null);
-        setAfterSignature(true);
-      }
-    });
+          }));
+          setChecked(false);
+          setImageWithPreview(null);
+          setImage(null);
+          setAfterSignature(true);
+        }
+      });
+    }
   };
 
   return (
@@ -649,7 +680,7 @@ const ManageInquiry = ({
               letterSpacing: "-0.01em",
             }}
             onClick={onSubmit}
-            loading={isLoading}
+            loading={isLoading || isTenantLoading}
             loadingIndicator={
               <CircularProgress size={15} sx={{ color: "#ffffff" }} />
             }

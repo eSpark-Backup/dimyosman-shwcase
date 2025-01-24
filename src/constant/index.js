@@ -66,6 +66,7 @@ import {
   leasingSpaceColumns,
   likedSpaceColumns,
   mySpaceColumns,
+  tenantSpaceColumns,
 } from "../columns/space";
 
 export const sidebarRoutes = [
@@ -749,16 +750,32 @@ export const eventTableData = (gotoDetail, handleAction, myEventData, gotoBrand,
 export const spaceTableData = (gotoDetail, handleAction, mySpaceData, gotoBrand) => [
   {
     data: mySpaceData,
-    column: mySpaceColumns(gotoDetail, (item) => handleAction(item, "edit"), gotoBrand),
+    column: mySpaceColumns(
+      gotoDetail,
+      (item) => handleAction(item, "edit"),
+      gotoBrand
+    ),
   },
   {
     data: mySpaceData,
-    column: leasingSpaceColumns(gotoDetail, (item) => handleAction(item, item?.action), gotoBrand),
+    column: leasingSpaceColumns(
+      gotoDetail,
+      (item) => handleAction(item, item?.action),
+      gotoBrand
+    ),
   },
   {
     data: likedSpaceData,
     column: likedSpaceColumns(gotoDetail, (item) =>
       handleAction(item, "remove")
+    ),
+  },
+  {
+    data: mySpaceData,
+    column: tenantSpaceColumns(
+      gotoDetail,
+      (item) => handleAction(item, item?.action),
+      gotoBrand,
     ),
   },
 ];

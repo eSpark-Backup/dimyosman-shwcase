@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { format } from "date-fns";
-import { emptyNotificationCount } from "../store/slices/notification";
+import { emptyInquiryCount, emptyNotificationCount } from "../store/slices/notification";
 
 export function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -124,8 +124,8 @@ export const convertToSameKeys = (
     spaceId: selectedGroup?.group?.parentId || tenancyDetails?.space?.id,
     chatId: selectedGroup?.chatGroup?.chatId || tenancyDetails?.chatId,
     tenantId:
-      selectedGroup?.chatGroup?.receiverBrand?.user?.id ||
-      tenancyDetails?.space?.user?.id,
+      selectedGroup?.chatGroup?.senderBrand?.user?.id ||
+      tenancyDetails?.id,
     host:
       selectedGroup?.chatGroup?.receiverbrandName ||
       tenancyDetails?.contractDetails?.hostDetails?.host,
@@ -157,7 +157,12 @@ export const convertToSameKeys = (
 
 export const removeActiveNotifications = (dispatch) => {
   dispatch(emptyNotificationCount());
-  deleteCookie("newRequest");
+  deleteCookie("newNotification");
+};
+
+export const removeNewInquiry = (dispatch) => {
+  dispatch(emptyInquiryCount());
+  deleteCookie("newInquiry");
 };
 
 export const messageBox = (parentObj, chatDetails, allMessages) => {

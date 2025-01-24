@@ -193,6 +193,27 @@ export const spaceApi = api.injectEndpoints({
         };
       },
     }),
+    tenantSign: builder.mutation({
+      query: ({ data }) => {
+        const formData = new FormData();
+
+        formData.append("image", data.image);
+
+        return {
+          url: `/space/tenantSign/${data.id}`,
+          method: "POST",
+          body: formData,
+        };
+      },
+    }),
+    paymentVerification: builder.mutation({
+      query: ({ id }) => {
+        return {
+          url: `/space/paymentVerification/${id}`,
+          method: "POST",
+        };
+      },
+    }),
   }),
 });
 
@@ -203,4 +224,6 @@ export const {
   useSpacePriceMutation,
   useSpaceInquireMutation,
   useLeaseSpaceInquireMutation,
+  useTenantSignMutation,
+  usePaymentVerificationMutation,
 } = spaceApi;
