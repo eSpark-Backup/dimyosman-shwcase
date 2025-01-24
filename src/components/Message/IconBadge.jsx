@@ -14,7 +14,7 @@ const isMessageRead = (type) => {
   return allMessages.some((item) => item.activity === type && item.read);
 };
 
-const IconBadge = ({ icon, bg, type, theme }) => {
+const IconBadge = ({ icon, bg, type, onClick }) => {
   const isRead =
     isMessageRead(type) || (hasReadTrue(allMessages) && type === "message");
 
@@ -30,10 +30,14 @@ const IconBadge = ({ icon, bg, type, theme }) => {
         borderRadius: "5px",
         marginRight: 2,
         position: "relative",
+        cursor: "pointer",
 
         "&:last-child": {
           marginRight: 0,
         },
+      }}
+      onClick={() => {
+        onClick(type);
       }}
     >
       <img src={icon} alt="Icon" />

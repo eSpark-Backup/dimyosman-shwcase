@@ -13,7 +13,7 @@ import ActivityType from "./ActivityType";
 
 import { isActiveMembers } from "../../store/slices/chat";
 
-import { deleteCookie, getCookie, setCookie } from "../../utils";
+import { getCookie } from "../../utils";
 
 const MessageItem = ({
   message,
@@ -24,7 +24,7 @@ const MessageItem = ({
   selectedGroup,
   setSelectedChatId,
   emitEvent,
-  onlineUsers
+  onlineUsers,
 }) => {
   const detailsRef = useRef(null);
 
@@ -43,7 +43,7 @@ const MessageItem = ({
     }
   }, [expanded]);
 
-  const handleGroup = (el)=>{
+  const handleGroup = (el) => {
     const obj = {
       userId: user.userChatId,
       members: el?.members,
@@ -53,30 +53,6 @@ const MessageItem = ({
 
     setSelectedChatId(el?.chatId);
     setSelectedGroup({ chatGroup: el, group: message });
-    getCount(el.chatId) && filterCount(el?.chatId);
-  }
-
-  const getCount = (id) => {
-    const ifCountExists = getUnreadMessage?.filter((msg) => msg.chatId === id);
-
-    if (ifCountExists?.length > 0) {
-      const count = getUnreadMessage?.find((msg) => msg.chatId === id)?.count;
-
-      return count;
-    }
-  };
-
-  const filterCount = (id) => {
-    const ifCountExists = getUnreadMessage?.filter((msg) => msg.chatId !== id);
-    const ifChatIdExists = getUnreadChatIds?.filter((id) => id !== id);
-
-    if (ifCountExists?.length > 0) {
-      setCookie("unread", JSON.stringify(ifCountExists));
-      setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
-    } else {
-      deleteCookie("unread");
-      deleteCookie("unreadChatIds");
-    }
   };
 
   return (
@@ -299,26 +275,6 @@ const MessageItem = ({
                         }}
                       >
                         <span>{el.creator}</span>
-                        {getUnreadMessage?.length && getCount(el.chatId) && (
-                          <Box
-                            component={"span"}
-                            sx={{
-                              minWidth: "15px",
-                              height: "15px",
-                              borderRadius: "50%",
-                              backgroundColor: "#ee6161",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: "10px",
-                              color: "#ffffff",
-                              padding:
-                                getCount(el.chatId) > 10 ? "0px 4px" : "0px",
-                            }}
-                          >
-                            {getCount(el.chatId)}
-                          </Box>
-                        )}
                       </Typography>
                     )}
 
