@@ -1,0 +1,57 @@
+import { createSlice } from "@reduxjs/toolkit";
+
+const initialState = {
+  skip: true,
+  parameters: {
+    entity: "Select Filter",
+    name: "",
+    locaion: "",
+    long: "",
+    lat: "",
+    radius: "",
+    additional: "",
+    categoryNames: "",
+  },
+};
+
+const slice = createSlice({
+  name: "search",
+  initialState,
+  reducers: {
+    setEntity: (state, action) => {
+      state.parameters.entity = action.payload;
+    },
+    setName: (state, action) => {
+      state.parameters.name = action.payload;
+    },
+    setLocation: (state, { payload }) => {
+      state.parameters.long = payload.long;
+      state.parameters.lat = payload.lat;
+      state.parameters.locaion = payload.locaion;
+    },
+    setRadius: (state, action) => {
+      state.parameters.radius = action.payload;
+    },
+    setAdditional: (state, action) => {
+      state.parameters.additional = action.payload;
+    },
+    setCategoryNames: (state, action) => {
+      state.parameters.categoryNames = action.payload;
+    },
+    setSkip: (state, action) => {
+      state.skip = action.payload;
+    },
+  },
+});
+
+export const {
+  setEntity,
+  setName,
+  setLocation,
+  setAdditional,
+  setCategoryNames,
+  setSkip,
+  setRadius,
+} = slice.actions;
+
+export default slice.reducer;
