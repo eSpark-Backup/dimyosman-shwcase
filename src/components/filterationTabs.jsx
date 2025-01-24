@@ -36,6 +36,7 @@ const FilterationTabs = ({ tabs, activeTab, handleChange, handleAdd }) => {
               }
               iconPosition="start"
               label={tab.label}
+              sx={{ minHeight: { xs: "45px", md: "31px" } }}
             />
           );
         })}

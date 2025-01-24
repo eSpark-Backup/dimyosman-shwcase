@@ -133,7 +133,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
         >
           <Stack
             component="section"
-            direction="row"
+            direction={{ xs: "row", md: "row" }}
             justifyContent="center"
             alignItems={{ xs: "flex-start", md: "center" }}
             gap="10px"
@@ -142,10 +142,12 @@ const BESProfile = ({ spaceInquire, type, data }) => {
             <Box
               sx={{
                 borderRadius: "5px",
-                width: "96px",
-                height: "96px",
+                width: { xs: "69px", md: "96px" },
+                height: { xs: "69px", md: "96px" },
                 position: "relative",
+                flexShrink: 0,
               }}
+              
             >
               <figure
                 style={{ width: "100%", height: "100%" }}
@@ -219,7 +221,8 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                 direction="row"
                 justifyContent="flex-start"
                 alignItems="center"
-                gap="16px"
+                columnGap={"16px"}
+                rowGap={"5px"}
                 flexWrap={{ xs: "wrap", md: "nowrap" }}
               >
                 {Object.entries(myProfile?.details).map(([key, values], ind) => {
@@ -312,7 +315,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: "65%",
+            width: { xs: "90%", md: "65%" },
             ".swiper": {
               height: "80vh !important",
             },
