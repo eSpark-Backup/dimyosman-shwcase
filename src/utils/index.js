@@ -323,3 +323,20 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
       .sort((a, b) => new Date(b.fulldate) - new Date(a.fulldate)),
   };
 };
+
+
+export const fetchAddressFromCoordinates = async (lat, lng) => {
+  try {
+    const response = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
+    );
+    const data = await response.json();
+    if (data.results[0]) {
+      return data.results[0].formatted_address;
+    }
+    return "";
+  } catch (error) {
+    console.error("Error fetching address:", error);
+    return "";
+  }
+};
