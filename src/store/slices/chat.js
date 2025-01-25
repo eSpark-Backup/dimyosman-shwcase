@@ -58,21 +58,21 @@ const slice = createSlice({
       state.allGroups = action.payload;
     },
     filterAllMyGroups: (state, action) => {
-      const { type, allMessages } = action.payload;
-    
-      const filterGroups = type !== "all" ? allMessages?.filter(group => group?.parentActivity === type) : allMessages;
-    
+      const { type, filterGroups } = action.payload;
+
+      state.allGroups = filterGroups;
+
       if (type === "all") {
         state.hasMessages = "";
-        state.allGroups = allMessages;
       } else if (filterGroups?.length > 0) {
-        state.allGroups = filterGroups;
         state.hasMessages = "";
       } else {
         state.hasMessages = "No Chats";
-        state.allGroups = filterGroups;
       }
-    }
+    },
+    changeMessageType: (state) => {
+      state.hasMessages = "";
+    },
   },
 });
 
@@ -85,7 +85,8 @@ export const {
   isActiveMembers,
   emptyActiveMembers,
   getAllMyGroups,
-  filterAllMyGroups
+  filterAllMyGroups,
+  changeMessageType,
 } = slice.actions;
 
 export default slice.reducer;

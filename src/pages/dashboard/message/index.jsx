@@ -31,6 +31,7 @@ import {
 } from "../../../services/chats.js";
 
 import {
+  changeMessageType,
   filterAllMyGroups,
   getAllMyGroups,
   getChatDetails,
@@ -48,11 +49,11 @@ import {
 } from "../../../utils/index.js";
 
 const icons = [
-  { icon: messageIcon, bg: "rgba(0, 20, 28, 0.8)", type: "all" },
-  { icon: brandIcon, bg: "rgba(196, 119, 127, 0.2)", type: "brand" },
-  { icon: flag, bg: "rgba(148, 185, 134, 0.2)", type: "event" },
-  { icon: spaceIcon, bg: "rgba(120, 150, 195, 0.2)", type: "space" },
-  { icon: profileIcon, bg: "rgba(0, 20, 28, 0.1)", type: "profile" },
+  { icon: messageIcon, bg: "rgba(0, 20, 28, 0.8)", activeBG: "rgba(0, 5, 7, 1)", type: "all", },
+  { icon: brandIcon, bg: "rgba(196, 119, 127, 0.2)", activeBG: "rgba(196, 119, 127, 0.8)", type: "brand", },
+  { icon: flag, bg: "rgba(148, 185, 134, 0.2)", activeBG: "rgba(148, 185, 134, 0.8)", type: "event", },
+  { icon: spaceIcon, bg: "rgba(120, 150, 195, 0.2)", activeBG: "rgba(120, 150, 195, 0.8)", type: "space", },
+  { icon: profileIcon, bg: "rgba(0, 20, 28, 0.1)", activeBG: "rgba(0, 20, 28, 0.8)", type: "profile", },
 ];
 
 const style = {
@@ -111,24 +112,8 @@ const Message = () => {
     setIsNewIdsForAllMessages(filterNewIds(allChatIds, existingMessagesIds));
   }, [myChat, messages, allChatIds]);
 
-  const { data: messageData, isSuccess } = useGetChatsForContactsQuery(
-    {
-      chats: isNewIdsForAllMessages,
-    },
-    {
-      skip: !myChat?.length,
-    }
-  );
-
-  const { data: chatDetailsData, isSuccess: chatDetailsSuccess } =
-    useGetAllChatDetailsQuery(
-      {
-        chats: isNewIdsForChatDetails,
-      },
-      {
-        skip: !myChat?.length,
-      }
-    );
+  const { data: messageData, isSuccess } = useGetChatsForContactsQuery({ chats: isNewIdsForAllMessages }, { skip: !myChat?.length } );
+  const { data: chatDetailsData, isSuccess: chatDetailsSuccess } = useGetAllChatDetailsQuery( { chats: isNewIdsForChatDetails }, { skip: !myChat?.length, } );
 
   const [allMessages, setAllMessages] = useState([]);
   const [isTypingUser, setIsTypingUser] = useState(null);
@@ -139,6 +124,7 @@ const Message = () => {
   const [initialChatId, setInitialChatId] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [toShare, setToShare] = useState();
+  const [activeTab, setActiveTab] = useState("all");
 
   useEffect(() => {
     if (isSuccess && messageData && messageData?.length) {
@@ -188,27 +174,13 @@ const Message = () => {
         allGroups?.length > 0 &&
         data.chatId !== (initialChatId || selectedChatId)
       ) {
-        const getNotReadMessage = JSON.parse(getCookie("unread"));
         const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
 
-        if (!getNotReadMessage) {
-          setCookie(
-            "unread",
-            JSON.stringify([{ chatId: data.chatId, count: 1 }])
-          );
+        if (!getUnreadChatIds) {
           setCookie("unreadChatIds", JSON.stringify([data.chatId]));
           return;
         }
 
-        const updatedMessages = getNotReadMessage?.some(
-          (el) => el.chatId === data.chatId
-        )
-          ? getNotReadMessage.map((el) =>
-              el.chatId === data.chatId ? { ...el, count: el.count + 1 } : el
-            )
-          : [...getNotReadMessage, { chatId: data.chatId, count: 1 }];
-
-        setCookie("unread", JSON.stringify(updatedMessages));
         if (!getUnreadChatIds.includes(data.chatId)) {
           getUnreadChatIds.push(data.chatId);
           setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
@@ -246,10 +218,14 @@ const Message = () => {
         return messageBox(el, chatDetails, messages);
       });
 
-      dispatch(getAllMyGroups(message))
-      setAllMessages(message)
+      dispatch(getAllMyGroups(message));
+      setAllMessages(message);
+
+      return () => {
+        dispatch(changeMessageType());
+      };
     }
-  }, [myChat, messageData, chatDetailsData, messages, chatDetails, ,]);
+  }, [myChat, messageData, chatDetailsData, messages, chatDetails]);
 
   useEffect(() => {
     addListener("ONLINE_USERS", (data) => {
@@ -262,21 +238,22 @@ const Message = () => {
     };
   }, [addListener, removeListener, emitEvent, allGroups, user]);
 
-  const handleNewInquiry = (selected, initialId = null) => {
+  const handleNewInquiry = (selected, initialId) => {
     const findParentIndex = allGroups?.findIndex(
       (msg) => msg?.parentName === state?.spaceName
     );
+
     if (findParentIndex !== -1) {
       setExpanded(findParentIndex);
-    }
+      const parentGroup = allGroups[findParentIndex];
+      const selectedGroup = parentGroup?.chatGroups?.find(
+        (gr) => gr?.id === state.chatId
+      );
 
-    selected.chatGroup = allGroups[findParentIndex]?.chatGroups?.find(
-      (gr) => gr?.id === state.chatId
-    );
-    selected.group = allGroups[findParentIndex];
-    initialId = allGroups[findParentIndex]?.chatGroups?.find(
-      (gr) => gr?.id === state.chatId
-    ).id;
+      selected.chatGroup = selectedGroup;
+      selected.group = parentGroup;
+      initialId = selectedGroup.id;
+    }
 
     setTimeout(() => {
       navigate(pathname, { replace: true });
@@ -284,12 +261,8 @@ const Message = () => {
   };
 
   const handleAccordionChange = (index) => (event, isExpanded) => {
-    const selectedGroup = {
-      chatGroup: allGroups[index]?.chatGroups[0],
-      group: allGroups[index],
-    };
     setExpanded(index);
-    setSelectedGroup(selectedGroup);
+    setSelectedGroup(commonSelectedChatGroup(allGroups, index));
     setSelectedChatId(allGroups[index]?.chatGroups[0]?.chatId);
 
     const obj = {
@@ -301,21 +274,15 @@ const Message = () => {
       dispatch(isActiveMembers(obj.members));
       emitEvent("CHAT_JOINED", obj);
     }
-    const getUnreadMessage = JSON.parse(getCookie("unread")) || [];
     const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds")) || [];
 
-    const ifCountExists = getUnreadMessage?.filter(
-      (msg) => msg.chatId !== allGroups[index]?.chatGroups[0]?.id
-    );
     const ifChatIdExists = getUnreadChatIds?.filter(
       (id) => id !== allGroups[index]?.chatGroups[0]?.id
     );
 
-    if (ifCountExists?.length > 0) {
-      setCookie("unread", JSON.stringify(ifCountExists));
+    if (ifChatIdExists?.length > 0) {
       setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
     } else {
-      deleteCookie("unread");
       deleteCookie("unreadChatIds");
     }
   };
@@ -364,7 +331,7 @@ const Message = () => {
         };
 
         if (state) {
-          handleNewInquiry(selected);
+          handleNewInquiry(selected, null);
         } else {
           selected.chatGroup = chatGroup;
           selected.group = group;
@@ -386,11 +353,30 @@ const Message = () => {
   }, [allGroups, selectedChatId, expanded, messages]);
 
   const filterChats = (type) => {
+    const filterGroups =
+      type !== "all"
+        ? allMessages?.filter((group) => group?.parentActivity === type)
+        : allMessages;
+
     const obj = {
       type,
-      allMessages
+      filterGroups,
+    };
+
+    if (type !== activeTab) {
+      setActiveTab(type);
+      dispatch(filterAllMyGroups(obj));
+      setExpanded(0);
+      setSelectedGroup(commonSelectedChatGroup(filterGroups, 0));
+      setSelectedChatId(filterGroups[0]?.chatGroups[0]?.chatId);
     }
-    dispatch(filterAllMyGroups(obj));
+  };
+
+  const commonSelectedChatGroup = (all, index) => {
+    return {
+      chatGroup: all[index]?.chatGroups[0],
+      group: all[index],
+    };
   };
 
   if (
@@ -432,6 +418,7 @@ const Message = () => {
                 theme={theme}
                 onClick={filterChats}
                 allGroups={allGroups}
+                activeTab={activeTab}
               />
             ))}
           </Box>

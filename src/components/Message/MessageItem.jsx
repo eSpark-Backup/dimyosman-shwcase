@@ -13,7 +13,7 @@ import ActivityType from "./ActivityType";
 
 import { isActiveMembers } from "../../store/slices/chat";
 
-import { getCookie } from "../../utils";
+import { deleteCookie, getCookie, setCookie } from "../../utils";
 
 const MessageItem = ({
   message,
@@ -28,8 +28,6 @@ const MessageItem = ({
 }) => {
   const detailsRef = useRef(null);
 
-  const getUnreadMessage =
-    getCookie("unread") && JSON.parse(getCookie("unread"));
   const getUnreadChatIds =
     getCookie("unreadChatIds") && JSON.parse(getCookie("unreadChatIds"));
 
@@ -53,6 +51,17 @@ const MessageItem = ({
 
     setSelectedChatId(el?.chatId);
     setSelectedGroup({ chatGroup: el, group: message });
+    getUnreadChatIds && filterCount(el?.chatId);
+  };
+
+  const filterCount = (chatId) => {
+    const ifChatIdExists = getUnreadChatIds?.filter((id) => id !== chatId);
+
+    if (ifChatIdExists?.length > 0) {
+      setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
+    } else {
+      deleteCookie("unreadChatIds");
+    }
   };
 
   return (
@@ -136,7 +145,7 @@ const MessageItem = ({
           {message.parentName}
         </Typography>
 
-        {getUnreadMessage?.length
+        {getUnreadChatIds?.length
           ? message?.chatGroups?.some((msg) =>
               getUnreadChatIds?.includes(msg.chatId)
             ) && (
@@ -303,19 +312,21 @@ const MessageItem = ({
                     </Box>
                   </Box>
 
-                  {el.read && (
-                    <Box
-                      sx={{
-                        width: "10px",
-                        height: "10px",
-                        borderRadius: "50%",
-                        backgroundColor: theme.palette.error.danger,
-                        position: "absolute",
-                        top: "-4px",
-                        right: "-3px",
-                      }}
-                    />
-                  )}
+                  {getUnreadChatIds?.length
+                    ? getUnreadChatIds?.includes(el.chatId) && (
+                        <Box
+                          sx={{
+                            width: "10px",
+                            height: "10px",
+                            borderRadius: "50%",
+                            backgroundColor: theme.palette.error.danger,
+                            position: "absolute",
+                            top: "-4px",
+                            right: "-3px",
+                          }}
+                        />
+                      )
+                    : null}
                 </Box>
               );
             })
