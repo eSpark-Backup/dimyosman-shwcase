@@ -180,6 +180,7 @@ export const keysForBrandsSapcesEvents = (object, type) => {
     userImage: object?.brand?.brandImage || "",
     userRole: "brand",
     slides: coverArray,
+    location: object?.location || [],
   };
 
   if (type === "space") {
@@ -202,7 +203,7 @@ export const keysForBrandsSapcesEvents = (object, type) => {
         ? `minimum lease: ${filterPrice[0]?.minimum} days`
         : "N/A",
       features: spaceFeatures,
-    activityImage: object?.spaceImage || "",
+      activityImage: object?.spaceImage || "",
     };
   } else if (type === "event") {
 

@@ -18,14 +18,7 @@ const Search = () => {
     isSuccess,
     isLoading,
     isFetching,
-  } = useGetGeneralSearchQuery(
-    {
-      parameters,
-    },
-    {
-      skip,
-    }
-  );
+  } = useGetGeneralSearchQuery({ parameters }, { skip });
 
   const [data, setData] = useState(null);
   const [hasFetchedData, setHasFetchedData] = useState(false);
@@ -138,7 +131,10 @@ const Search = () => {
             display: { xs: "none", lg: "flex" },
           }}
         >
-          <Filters />
+          <Filters
+            allDataLocation={data?.map((loc) => loc.location)?.flat()}
+            loadLocation={isLoading || isFetching}
+          />
         </Grid>
       </Grid>
     </>

@@ -12,12 +12,16 @@ const initialState = {
     additional: "",
     categoryNames: "",
   },
+  allFilterCategories:[]
 };
 
 const slice = createSlice({
   name: "search",
   initialState,
   reducers: {
+    setAllFilterCategories:(state,action) => {
+      state.allFilterCategories = action.payload;
+    },
     setEntity: (state, action) => {
       state.parameters.entity = action.payload;
     },
@@ -41,10 +45,23 @@ const slice = createSlice({
     setSkip: (state, action) => {
       state.skip = action.payload;
     },
+    emptyFilters: (state) => {
+      state.parameters = {
+        entity: "Select Filter",
+        name: "",
+        locaion: "",
+        long: "",
+        lat: "",
+        radius: "",
+        additional: "",
+        categoryNames: "",
+      };
+    },
   },
 });
 
 export const {
+  setAllFilterCategories,
   setEntity,
   setName,
   setLocation,
@@ -52,6 +69,7 @@ export const {
   setCategoryNames,
   setSkip,
   setRadius,
+  emptyFilters
 } = slice.actions;
 
 export default slice.reducer;

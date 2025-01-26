@@ -13,6 +13,7 @@ import {
 
 import Input from "./input";
 import CheckBox from "./CheckBox";
+import MapDisplay from "./MapDisplay";
 
 import {
   allIconLight,
@@ -27,6 +28,8 @@ import {
 import { useGetGeneralCategoriesQuery } from "../services/general";
 
 import {
+  emptyFilters,
+  setAllFilterCategories,
   setCategoryNames,
   setEntity,
   setLocation,
@@ -42,14 +45,23 @@ const icons = [
   { icon: memberIconLight, type: "Profile" },
 ];
 
-const Filters = ({ setOpenFilterDrawer = null }) => {
+const Filters = ({
+  setOpenFilterDrawer = null,
+  allDataLocation = [],
+  loadLocation = false,
+}) => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
 
-  const { parameters } = useSelector((state) => state.search);
-  console.log(parameters)
+  useEffect(() => {
+    if (pathname !== "/search") {
+      dispatch(emptyFilters());
+    }
+  }, [pathname]);
+
+  const { parameters, allFilterCategories } = useSelector((state) => state.search);
 
   const {
     data: generalCategories,
@@ -60,6 +72,9 @@ const Filters = ({ setOpenFilterDrawer = null }) => {
 
   const [allCategories, setAllCategories] = useState([]);
   const [searchCategory, setSearchCategory] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState(new Map());
+  const [address, setAddress] = useState("");
+  const [radiusKm, setRadiusKm] = useState("");
 
   useEffect(() => {
     if (isGeneralCategorySuccess) {
@@ -75,10 +90,16 @@ const Filters = ({ setOpenFilterDrawer = null }) => {
               index === self.findIndex((t) => t.name === value.name)
           );
 
-        setAllCategories(updatedCategories);
+        dispatch(setAllFilterCategories(updatedCategories))
       }
     }
   }, [isGeneralCategorySuccess, generalCategories]);
+  
+  useEffect(() => {
+    if (allFilterCategories?.length) {
+      setAllCategories(allFilterCategories);
+    }
+  }, [allFilterCategories]);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -102,6 +123,19 @@ const Filters = ({ setOpenFilterDrawer = null }) => {
     }
   }, []);
 
+  useEffect(() => {
+    if (pathname === "/search") {
+      if (parameters?.categoryNames) {
+        const newCategories = allFilterCategories?.map((cat) =>
+          cat?.name === parameters?.categoryNames
+            ? { ...cat, selected: true }
+            : cat
+        );
+        dispatch(setAllFilterCategories(newCategories));
+      }
+    }
+  }, [pathname]);
+
   const filterClick = (entity) => {
     dispatch(setEntity(entity.type));
     dispatch(setSkip(false));
@@ -118,34 +152,56 @@ const Filters = ({ setOpenFilterDrawer = null }) => {
   const handleFilteringCategories = (e) => {
     const searchTerm = e.target.value.toLowerCase();
     setSearchCategory(searchTerm);
-
+  
+    const updatedCategories = allFilterCategories.map((cat) => ({
+      ...cat,
+      selected: selectedCategories.get(cat.id) || false,
+    }));
+  
     if (searchTerm.length === 0) {
-      setAllCategories(allCategories);
+      setAllCategories(updatedCategories);
     } else {
-      const filteredNames = allCategories.filter((cat) =>
+      const filteredNames = updatedCategories.filter((cat) =>
         cat.name.toLowerCase().includes(searchTerm)
       );
+  
       setAllCategories(filteredNames);
     }
   };
 
-  const handleCategoryChange = (index) => {
-    const newCategories = allCategories?.map((cat) =>
-      cat?.id === index ? { ...cat, selected: !cat.selected } : cat
+  const handleCategoryChange = (id) => {
+    setSelectedCategories((prev) => {
+      const newSelected = new Map(prev);
+      newSelected.set(id, !prev.get(id)); 
+      return newSelected;
+    });
+
+    setAllCategories((prevCategories) =>
+      prevCategories.map((cat) =>
+        cat.id === id ? { ...cat, selected: !cat.selected } : cat
+      )
     );
 
-    const names = newCategories
-      .filter((item) => item.selected)
-      .map((item) => item.name)
+    const selectedNames = Array.from(selectedCategories.entries())
+      .filter(([_, selected]) => selected)
+      .map(([id]) => allFilterCategories.find((cat) => cat.id === id)?.name)
       .join(", ");
 
-    dispatch(setCategoryNames(names));
+    dispatch(setCategoryNames(selectedNames));
     dispatch(setSkip(false));
-
     setOpenFilterDrawer?.(false);
-    setAllCategories(newCategories);
 
     pathname !== "/search" && navigate("/search");
+  };
+
+  const inputStyles = {
+    border: "1px solid rgba(209, 219, 215, 0.5)",
+    backgroundColor: "white",
+    pl: 0,
+    "& ::placeholder": {
+      color: "rgba(0, 20, 28, 0.5)",
+      fontWeight: 300,
+    },
   };
 
   return (
@@ -217,21 +273,15 @@ const Filters = ({ setOpenFilterDrawer = null }) => {
                 Location:
               </Typography>
               <Input
-                sx={{
-                  border: "1px solid rgba(209, 219, 215, 0.5)",
-                  backgroundColor: "white",
-                  pl: 0,
-                  "& ::placeholder": {
-                    color: "rgba(0, 20, 28, 0.5)",
-                    fontWeight: 300,
-                  },
-                }}
-                value={parameters.locaion}
+                sx={inputStyles}
+                // value={parameters.locaion}
+                // onInputChange={(e) =>
+                //   dispatch(setLocation({ locaion: e.target.value }))
+                // }
+                value={address}
+                onInputChange={(e) => setAddress(e.target.value)}
                 type="text"
                 placeholder="Type Address..."
-                onInputChange={(e) =>
-                  dispatch(setLocation({ locaion: e.target.value }))
-                }
                 endAdornment={
                   <InputAdornment position="end">
                     <IconButton>
@@ -254,17 +304,11 @@ const Filters = ({ setOpenFilterDrawer = null }) => {
                 Radius:
               </Typography>
               <Input
-                sx={{
-                  border: "1px solid rgba(209, 219, 215, 0.5)",
-                  backgroundColor: "white",
-                  pl: 0,
-                  "& ::placeholder": {
-                    color: "rgba(0, 20, 28, 0.5)",
-                    fontWeight: 300,
-                  },
-                }}
-                value={parameters.radius}
-                onInputChange={(e) => dispatch(setRadius(e.target.value))}
+                sx={inputStyles}
+                // value={parameters.radius}
+                // onInputChange={(e) => dispatch(setRadius(e.target.value))}
+                value={radiusKm}
+                onInputChange={(e) => setRadiusKm(e.target.value)}
                 type="text"
                 placeholder="100km"
               />
@@ -272,11 +316,13 @@ const Filters = ({ setOpenFilterDrawer = null }) => {
           </Grid>
 
           <Box sx={{ width: "100%", height: "411px", mt: 2, mb: 4 }}>
-            <img
-              src={mediumMap}
-              alt="Map"
-              style={{ width: "100%", height: "!100%", objectFit: "cover" }}
-            />
+            {loadLocation ? (
+              <Box sx={{ width: "100%" }}>
+                <LinearProgress />
+              </Box>
+            ) : (
+              <MapDisplay locations={allDataLocation} />
+            )}
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -291,16 +337,10 @@ const Filters = ({ setOpenFilterDrawer = null }) => {
             </Typography>
             <Input
               sx={{
-                border: "1px solid rgba(209, 219, 215, 0.5)",
-                backgroundColor: "white",
-                pl: 0,
+                ...inputStyles,
                 height: "32px",
                 "& input": {
                   padding: "10.5px 14px",
-                },
-                "& ::placeholder": {
-                  color: "rgba(0, 20, 28, 0.5)",
-                  fontWeight: 300,
                 },
               }}
               value={searchCategory}

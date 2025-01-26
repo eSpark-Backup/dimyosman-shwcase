@@ -301,9 +301,10 @@ const Header = ({ isLogin }) => {
         open={openFilterDrawer}
         onClose={() => setOpenFilterDrawer(false)}
         sx={{
-          transition: "none",
+          "& .MuiPaper-root": {
+            padding: 0,
+          },
         }}
-        // transitionDuration={200}
       >
         <Filters setOpenFilterDrawer={setOpenFilterDrawer} />
       </Drawer>
