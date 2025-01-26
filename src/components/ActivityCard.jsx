@@ -21,6 +21,7 @@ import DynamicPaginationSwiper from "./Slider.jsx";
 import { useNavigate } from "react-router-dom";
 
 const ActivityCard = ({
+  fullItem = {},
   id,
   activityId,
   userName,
@@ -40,6 +41,7 @@ const ActivityCard = ({
   deadline,
   features,
   slides,
+  handleAction = () => {},
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -642,6 +644,7 @@ const ActivityCard = ({
               backgroundColor: "rgb(209, 219, 215, 0.4)",
             },
           }}
+          onClick={() => handleAction(fullItem)}
         >
           {activity === "event" ? (
             "RSVP"

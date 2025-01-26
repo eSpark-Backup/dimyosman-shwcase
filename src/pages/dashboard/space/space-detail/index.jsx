@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { BESProfile } from "../../../../components";
-import SpaceInquireModal from "./space-inquire-modal";
-import { useGetAllSpaceQuery } from "../../../../services/space";
 import { useParams } from "react-router-dom";
-import { spaceMain3 } from "../../../../assets";
-import { updateSpace } from "../../../../store/slices/space";
-import { spaceFeatures } from "../../../../constant";
+
 import { Box, LinearProgress } from "@mui/material";
+
+import SpaceInquireModal from "../../../../components/SpaceInquireModal";
+import { BESProfile } from "../../../../components";
+
+import { useGetAllSpaceQuery } from "../../../../services/space";
+
+import { updateSpace } from "../../../../store/slices/space";
 
 const SpaceDetails = () => {
   const { id: spaceId } = useParams()

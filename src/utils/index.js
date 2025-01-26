@@ -62,7 +62,7 @@ export function getCookie(name) {
 export function deleteCookie(name) {
   document.cookie = `${name}=; Max-Age=-1; path=/`;
 }
-
+// FOR PICKER
 export const addEmoji = (
   emoji,
   isCursorActive,
@@ -91,6 +91,69 @@ export const addEmoji = (
   quillInstance.current.setSelection(cursorPosition + emoji.native.length, 0);
 
   setEmojiPickerVisible(false);
+};
+
+export const inquireInputStyles = (isLessThan1400, isLessThan1280) => {
+  return {
+    position: "relative",
+    display: "flex",
+    flexDirection: "column",
+
+    "& .ql-toolbar.ql-snow+.ql-container.ql-snow": {
+      border: "1px solid rgba(209, 219, 215, 0.5) !important",
+      borderTop: "1px solid rgba(209, 219, 215, 0.5) !important",
+      borderRadius: "5px",
+      marginBottom: isLessThan1400 ? 1.25 : 1.5,
+    },
+
+    "& .ql-editor": {
+      padding: "10px 16px",
+      fontSize: "16px",
+      fontFamily: `"Segoe UI", "sans-serif"`,
+      fontStyle: "unset",
+      fontWeight: 400,
+      lineHeight: "21px",
+    },
+
+    "& .ql-blank::before": {
+      fontStyle: "unset",
+      color: "rgba(0, 20, 28, 0.5)",
+    },
+
+    "& .ql-tooltip": {
+      left: "0px !important",
+    },
+
+    "& .ql-toolbar": {
+      border: "none",
+      order: 2,
+      alignItems: "center",
+      width: isLessThan1280 ? "calc(100% - 135px)" : "calc(100% - 145px)",
+      padding: "4px 8px !important",
+
+      "& .ql-formats": {
+        columnGap: isLessThan1280 ? "15px" : "25px",
+      },
+
+      "& .ql-formats:has(.ql-link)": {
+        flex: 1,
+        justifyContent: "end",
+        columnGap: "10px",
+      },
+
+      "& button": {
+        padding: 0,
+        width: "25px",
+      },
+
+      "& .ql-active": {
+        "& img": {
+          filter:
+            "invert(21%) sepia(80%) saturate(4500%) hue-rotate(190deg) brightness(100%) contrast(90%)",
+        },
+      },
+    },
+  };
 };
 
 export const separateRawData = (rawData) => {
