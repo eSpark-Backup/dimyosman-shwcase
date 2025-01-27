@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { User, Spaces, BaseEntity } from "./index";
+import { User, Spaces, BaseEntity, Brand } from "./index";
 
 export enum LeaseStatus {
   PENDING = "PendingforApproval",
@@ -25,6 +25,10 @@ export class LeaseSpace extends BaseEntity {
   @ManyToOne(() => Spaces, (space) => space.id, { nullable: false })
   @JoinColumn({ name: "spaceId" })
   space: Spaces;
+
+  @ManyToOne(() => Brand, (brand) => brand.id, { nullable: true })
+  @JoinColumn({ name: "brandId" })
+  brand: Brand;
 
   @Column({ type: "varchar", length: 100, nullable: false })
   chatId: string;

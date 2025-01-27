@@ -384,6 +384,9 @@ router.put(
  *               spaceId:
  *                 type: string
  *                 description: ID of the space.
+ *               brandId:
+ *                 type: string
+ *                 description: ID of the brand.
  *               chatId:
  *                 type: string
  *                 description: Name of the space.

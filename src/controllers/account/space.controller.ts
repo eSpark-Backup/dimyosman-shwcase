@@ -339,7 +339,7 @@ export class SpaceController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { spaceId, tenantId, chatId, contractDetails } = req.body;
+      const { spaceId, tenantId, chatId, contractDetails, brandId } = req.body;
       const imageFilesPath = path.join(process.cwd(), "uploads");
       const space = await this.spaceRepo
         .createQueryBuilder("space")
@@ -349,6 +349,10 @@ export class SpaceController {
       if (!space) {
         throw new ApiError("Space not found", HTTP_STATUS.BAD_REQUEST);
       }
+      const brand = await this.brandRepo
+        .createQueryBuilder("brand")
+        .where("brand.id = :brandId", { brandId })
+        .getOne();
       const imageFiles = fs
         .readdirSync(path.join(imageFilesPath))
         .filter((file) => file.startsWith("image")); // Filter for image files
@@ -388,6 +392,7 @@ export class SpaceController {
       const leaseSpace = new LeaseSpace();
       leaseSpace.owner = owner;
       leaseSpace.space = space;
+      leaseSpace.brand = brand;
       leaseSpace.chatId = chatId;
       leaseSpace.ownerSign = imageUrls[0].url as string;
       leaseSpace.ownerSignImageKey = imageUrls[0].public_id;
@@ -1054,6 +1059,7 @@ export class SpaceController {
         let [leaseSpace, totalItems] = await this.leaseSpaceRepo
           .createQueryBuilder("leaseSpace")
           .leftJoinAndSelect("leaseSpace.space", "space")
+          .leftJoinAndSelect("leaseSpace.brand", "leaseBrand")
           .leftJoinAndSelect("leaseSpace.tenant", "tenant")
           .where("tenant.id = :userId", { userId: req.user?.id })
 

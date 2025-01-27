@@ -49,6 +49,7 @@ export class SpaceValidation {
   });
   static LeasingSpaceValidation = Joi.object({
     spaceId: Joi.string().optional(),
+    brandId: Joi.string().optional(),
     chatId: Joi.string().required(),
     tenantId: Joi.string().required(),
     contractDetails: Joi.object().required(),

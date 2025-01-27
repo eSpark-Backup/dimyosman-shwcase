@@ -200,11 +200,31 @@ export class GeneralController {
       // Execute the queries in parallel
       const results = await Promise.all(queries);
 
-      // Process the results
-      const [spacesResult, eventsResult, brandsResult] = results;
-      const [spaces, spaceCount] = spacesResult || [[], 0];
-      const [events, eventCount] = eventsResult || [[], 0];
-      const [brands, brandCount] = brandsResult || [[], 0];
+      const entityMap: {
+        Space: [Spaces[], number] | null;
+        Event: [Events[], number] | null;
+        Brand: [Brand[], number] | null;
+      } = {
+        Space: null,
+        Event: null,
+        Brand: null,
+      };
+
+      // Assign results to corresponding entities
+      results.forEach((result, index) => {
+        if (entity === "SPACE") {
+          entityMap.Space = result as [Spaces[], number];
+        } else if (entity === "EVENT") {
+          entityMap.Event = result as [Events[], number];
+        } else if (entity === "BRAND") {
+          entityMap.Brand = result as [Brand[], number];
+        }
+      });
+
+      // Extract results for spaces, events, and brands
+      const [spaces, spaceCount] = entityMap.Space || [[], 0];
+      const [events, eventCount] = entityMap.Event || [[], 0];
+      const [brands, brandCount] = entityMap.Brand || [[], 0];
 
       if (events.length > 0) {
         events.forEach((event) => {
