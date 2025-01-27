@@ -176,6 +176,7 @@ export class SpaceController {
         .createQueryBuilder("leaseSpace")
         .where("leaseSpace.id = :id", { id })
         .leftJoinAndSelect("leaseSpace.tenant", "tenant")
+        .leftJoinAndSelect("leaseSpace.brand", "brand")
         .leftJoinAndSelect("leaseSpace.space", "space")
         .leftJoinAndSelect("leaseSpace.owner", "owner")
         .getOne();
@@ -200,12 +201,18 @@ export class SpaceController {
         await this.notificationModel.create({
           user: leaseSpace.owner.userChatId,
           title: `Received Request For Payment Verification`,
+          metadata: {
+            senderImage: leaseSpace.brand.brandImage,
+            redirect: "Tenant",
+          },
 
           message: `Tenant ${leaseSpace.tenant.name} has requested for payment verification of the ${leaseSpace.space.spaceName} space`,
           type: "info",
         }),
           emitEvent(req, NEW_NOTIFICATION, [leaseSpace.owner.userChatId], {
             name: `Tenant ${leaseSpace.tenant.name} has requested for payment verification of the ${leaseSpace.space.spaceName} space`,
+            senderImage: leaseSpace.brand.brandImage,
+            redirect: "Tenant",
           });
         res
           .status(HTTP_STATUS.OK)
@@ -225,12 +232,17 @@ export class SpaceController {
         await this.notificationModel.create({
           user: leaseSpace.tenant.userChatId,
           title: `Payment Verified`,
-
+          metadata: {
+            senderImage: leaseSpace.space.spaceImage,
+            redirect: "Lease",
+          },
           message: `Owner ${leaseSpace.owner.name} has verified the payment for the ${leaseSpace.space.spaceName} space`,
           type: "info",
         }),
           emitEvent(req, NEW_NOTIFICATION, [leaseSpace.tenant.userChatId], {
             name: `Owner ${leaseSpace.owner.name} has verified the payment`,
+            senderImage: leaseSpace.space.spaceImage,
+            redirect: "Lease",
           });
         res
           .status(HTTP_STATUS.OK)
