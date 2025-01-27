@@ -6,7 +6,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { act, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { spaceTableData } from "../../../constant";
 import { addIcon, like, spaceIconLight } from "../../../assets";
@@ -16,9 +16,9 @@ import { toast } from "react-toastify";
 import ReusableModal from "../../../components/Modal";
 import AfterSignature from "../../../components/AfterSignature";
 import ManageInquiry from "../../../components/ManageInquiry";
-import { convertToSameKeys } from "../../../utils";
-import { useDispatch } from "react-redux";
-import { whenVerifyClicked } from "../../../store/slices/space";
+import { convertToSameKeys, spacesAction } from "../../../utils";
+import { useDispatch, useSelector } from "react-redux";
+import { setHasPaymentDone, setRedirectTab, setTabForNotification } from "../../../store/slices/space";
 import PaymentConfirmation from "../../../components/PaymentConfirmation";
 
 const TopHeading = ({ name, size, my = 0 }) => {
@@ -39,6 +39,8 @@ const TopHeading = ({ name, size, my = 0 }) => {
 const Space = () => {
   const dispatch = useDispatch();
 
+  const { hasPaymentDone, navigationActiveTab } = useSelector((state) => state.space);
+
   const tabs = [
     {
       label: "My Spaces",
@@ -53,7 +55,7 @@ const Space = () => {
       icon: like,
     },
     {
-      label: "Tenant",
+      label: "Tenancy",
       icon: null,
     },
   ];
@@ -68,9 +70,23 @@ const Space = () => {
   const [verifyDetail, setVerifyDetail] = useState(null);
 
   const [mySpaceData, setMySpaceData] = useState([]);
+
+  useEffect(() => {
+    if (navigationActiveTab !== "") {
+      const indexOfNav = tabsForApi?.findIndex(
+        (t) => t === navigationActiveTab
+      );
+
+      if (indexOfNav !== -1) {
+        setActiveTab(indexOfNav);
+        dispatch(setRedirectTab(""));
+      }
+    }
+  }, [navigationActiveTab]);
+
   const { data, isError, isLoading, isSuccess, error, isFetching, refetch } =
     useGetAllSpaceQuery(
-      { page, pageSize: 7, tab: tabsForApi[activeTab] },
+      { page, pageSize: 7, tab: navigationActiveTab ? navigationActiveTab : tabsForApi[activeTab] },
       {
         refetchOnMountOrArgChange: true,
         refetchOnFocus: true,
@@ -107,9 +123,12 @@ const Space = () => {
         currently:
           space?.status === "SubmitForSignature"
             ? "Pending Sign"
-            : space?.status === "VerifyAndPay"
+            : space?.status === "VerifyAndPay" ||
+              space?.status === "PendingforApproval"
             ? "Pending Pay"
-            : "Leasing",
+            : space?.status === "Active"
+            ? "Leasing"
+            : "Lease Ended",
         price: space?.contractDetails?.leaseInfo?.leaseTotal,
         term: "Daily",
         event: space?.contractDetails?.tenantDetails?.event,
@@ -120,8 +139,12 @@ const Space = () => {
           space?.status === "SubmitForSignature"
             ? "Sign"
             : space?.status === "VerifyAndPay"
+            ? "Verify Pay 0/2"
+            : space?.status === "PendingforApproval"
             ? "Verify Pay 1/2"
-            : "Details",
+            : space?.status === "Active"
+            ? "Details"
+            : "Review",
       };
     });
   };
@@ -134,7 +157,7 @@ const Space = () => {
         type: "space",
         eventName: space?.space?.spaceName,
         eventImg: space?.space?.spaceImage,
-        brand: space?.space?.brand?.brandName,
+        brand: space?.brand?.brandName,
         owner: space?.owner?.name,
         event: space?.contractDetails?.tenantDetails?.event,
         starting: space?.contractDetails?.leaseInfo?.startDate,
@@ -143,23 +166,47 @@ const Space = () => {
         status:
           space?.status === "SubmitForSignature"
             ? "Pending Sign"
-            : space?.status === "VerifyAndPay"
+            : space?.status === "VerifyAndPay" ||
+              space?.status === "PendingforApproval"
             ? "Pending Pay"
-            : "Leasing",
+            : space?.status === "Active"
+            ? "Leasing"
+            : "Lease Ended",
         eventUrl: "-",
         brandUrl: `/brand/${space?.space?.brand?.id}`,
         action:
           space?.status === "SubmitForSignature"
             ? "Message"
             : space?.status === "VerifyAndPay"
-            ? "Verify 2/2"
-            : "Details",
+            ? "Verify 0/2"
+            : space?.status === "PendingforApproval"
+            ? "Verify 1/2"
+            : space?.status === "Active"
+            ? "Message"
+            : "Review",
         spaceStatus: space?.status,
       };
     });
   };
 
   const [hasShownErrorToast, setHasShownErrorToast] = useState(false);
+
+  useEffect(() => {
+    if (hasPaymentDone) {
+      setRefetchTriggered(true);
+
+      if (
+        tabsForApi[activeTab] === "Lease" ||
+        tabsForApi[activeTab] === "Tenant"
+      ) {
+        const passObj = { page, pageSize: 7, tab: activeTab };
+
+        refetch(passObj).finally(() => {
+          dispatch(setHasPaymentDone(false));
+        });
+      }
+    }
+  }, [hasPaymentDone, activeTab]);
 
   useEffect(() => {
     if (isError && !hasShownErrorToast) {
@@ -185,12 +232,7 @@ const Space = () => {
   };
 
   const handleChange = (event, newValue) => {
-    const obj = {
-      page,
-      activeTab: tabsForApi[newValue],
-    };
-
-    dispatch(whenVerifyClicked(obj));
+    dispatch(setTabForNotification(tabsForApi[newValue]))
     setActiveTab(newValue);
   };
 
@@ -207,32 +249,27 @@ const Space = () => {
   };
 
   const handleAction = (item, type) => {
-    if (type === "edit") {
-      //edit functionality
-      if (location?.pathname === "/space") {
-        navigate(`/space/${item?.id}/edit`);
+    const findLeaseDetails = (type, itemId) => {
+      if (type === "Verify Pay 0/2") {
+        return data?.data?.leaseSpace?.find((lease) => lease.id === itemId);
+      } else if (type === "Verify 1/2") {
+        return data?.data?.tenantSpace?.find((tenant) => tenant.id === itemId);
       }
-    } else if (type === "Sign") {
-      const findClickedLeaseDetails = data?.data?.leaseSpace?.find(
-        (lease) => lease.id === item.id
-      );
-      setTenantDetails(findClickedLeaseDetails);
-      setShowIinquiryModal(true);
-    } else if (type === "Verify Pay 1/2") {
-      const findClickedLeaseDetails = data?.data?.leaseSpace?.find(
-        (lease) => lease.id === item.id
-      );
-      setVerifyPayModal(true);
-      setVerifyDetail(findClickedLeaseDetails);
-    } else if (type === "Verify 2/2") {
-      const findClickedLeaseDetails = data?.data?.tenantSpace?.find(
-        (tenant) => tenant.id === item.id
-      );
-      setVerifyPayModal(true);
-      setVerifyDetail(findClickedLeaseDetails);
-    } else {
-      // other action functionality
-    }
+      return null;
+    };
+
+    spacesAction(
+      item,
+      type,
+      navigate,
+      setTenantDetails,
+      setShowIinquiryModal,
+      setVerifyPayModal,
+      setVerifyDetail,
+      data?.data?.leaseSpace,
+      data?.data?.tenantSpace,
+      findLeaseDetails
+    );
   };
 
   const handleModalClose = () => {
@@ -373,6 +410,8 @@ const Space = () => {
           setShowIinquiryModal={setShowIinquiryModal}
           spc={true}
           ownerSign={tenantDetails?.ownerSign}
+          tenantSign={tenantDetails?.tenantSign}
+          status={tenantDetails?.status}
           refetch={refetch}
           tabsForApi={tabsForApi}
           activeTab={activeTab}

@@ -176,6 +176,7 @@ export const spaceApi = api.injectEndpoints({
         formData.append("spaceId", data.spaceId);
         formData.append("chatId", data.chatId);
         formData.append("tenantId", data.tenantId);
+        formData.append("brandId", data.brandId);
         if (data.contractDetails) {
           formData.append(
             "contractDetails",

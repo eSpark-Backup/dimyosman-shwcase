@@ -2,8 +2,10 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   spaces: [],
-  page: 1,
-  activeTab: "Space",
+  navigationActiveTab: "",
+  activeTabForNotif: "Space",
+  refetchTriggered: false,
+  hasPaymentDone: false,
 };
 
 const slice = createSlice({
@@ -23,14 +25,29 @@ const slice = createSlice({
     updateSpace(state, action) {
       state.spaces = action.payload;
     },
-    whenVerifyClicked: (state, { payload }) => {
-      state.page = payload.page;
-      state.activeTab = payload.activeTab;
+    setRefetchTriggered: (state, action) => {
+      state.refetchTriggered = action.payload;
+    },
+    setHasPaymentDone: (state, action) => {
+      state.hasPaymentDone = action.payload;
+    },
+    setRedirectTab: (state, action) => {
+      state.navigationActiveTab = action.payload;
+    },
+    setTabForNotification: (state, action) => {
+      state.activeTabForNotif = action.payload;
     },
   },
 });
 
-export const { addSpace, editSpace, updateSpace, whenVerifyClicked } =
-  slice.actions;
+export const {
+  addSpace,
+  editSpace,
+  updateSpace,
+  setRefetchTriggered,
+  setHasPaymentDone,
+  setRedirectTab,
+  setTabForNotification
+} = slice.actions;
 
 export default slice.reducer;

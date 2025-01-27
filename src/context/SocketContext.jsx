@@ -43,7 +43,7 @@
 
 // Second
 
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -66,7 +66,8 @@ import {
 } from "../store/slices/notification";
 
 import { getCookie, setCookie } from "../utils";
-import { useGetAllSpaceQuery } from "../services/space";
+
+import { setHasPaymentDone } from "../store/slices/space";
 
 const SocketContext = createContext(null);
 
@@ -78,9 +79,6 @@ const SocketProvider = ({ children }) => {
   const socket = useRef(null);
   const { user } = useSelector((state) => state.auth);
   const { activeMembers, messages } = useSelector((state) => state.chat);
-  const { page, activeTab } = useSelector((state) => state.space);
-
-  const [skipSpace, setSkipSpace] = useState(true);
 
   const { data, isSuccess, refetch } = useGetMyChatsQuery(undefined, {
     skip: !user,
@@ -90,10 +88,6 @@ const SocketProvider = ({ children }) => {
     isSuccess: notificationSuccess,
     refetch: notificationRefetch,
   } = useGetNotificationDataQuery(undefined, { skip: !user });
-  const { refetch: spaceRefetch } = useGetAllSpaceQuery(
-    { page, pageSize: 7, tab: "Tenant" },
-    { skip: skipSpace }
-  );
 
   const { pathname } = useLocation();
   const dispatch = useDispatch();
@@ -125,11 +119,6 @@ const SocketProvider = ({ children }) => {
       }
     }
   }, [isSuccess, data]);
-
-  const callForSpace = () => {
-    setSkipSpace(false);
-    spaceRefetch();
-  };
 
   const handleNotificationUpdate = (cookieName, action) => {
     const currentValue = getCookie(cookieName);
@@ -164,14 +153,10 @@ const SocketProvider = ({ children }) => {
       });
 
       socket.current.on("NEW_NOTIFICATION", () => {
-        console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
+        // console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
 
         if (pathname === "/space") {
-          if (activeTab !== "Space" || activeTab !== "Saved") {
-            callForSpace();
-          }
-        } else {
-          callForSpace();
+          dispatch(setHasPaymentDone(true));
         }
 
         handleNotificationUpdate("newNotification", getNotificationCount);

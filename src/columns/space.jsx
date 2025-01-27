@@ -227,7 +227,7 @@ const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
             sx={{
               width: "100%",
               display: "flex",
-              justifyContent: "flex-end"
+              justifyContent: "flex-end",
             }}
           >
             <Button
@@ -241,7 +241,10 @@ const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
+                color: "#fff !important",
+                opacity: item?.action === "Verify Pay 1/2" ? "0.7" : 1,
               }}
+              disabled={item?.action === "Verify Pay 1/2"}
             >
               {item?.action}
             </Button>
@@ -499,9 +502,7 @@ const tenantSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
           >
             <Button
               onClick={() => {
-                if (item?.spaceStatus !== "SubmitForSignature") {
-                  handleAction(item);
-                }
+                handleAction(item);
               }}
               sx={{
                 minWidth: "56px",
@@ -512,11 +513,12 @@ const tenantSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
+                color: "#fff !important",
+                opacity: item?.action === "Verify 0/2" ? "0.7" : 1,
               }}
+              disabled={item?.action === "Verify 0/2"}
             >
-              {item?.spaceStatus === "SubmitForSignature"
-                ? "Pending"
-                : item?.action}
+              {item?.action}
             </Button>
           </Box>
         );

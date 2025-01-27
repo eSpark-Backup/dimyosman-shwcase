@@ -108,8 +108,10 @@ const ManageInquiry = ({
   setShowIinquiryModal,
   spc = false,
   ownerSign = null,
+  tenantSign = null,
+  status = null,
   refetch = null,
-  tabsForApi = null,
+  tabsForApi = [],
   activeTab = null,
   page = null,
   setRefetchTriggered = null,
@@ -128,6 +130,7 @@ const ManageInquiry = ({
     spaceId: "",
     chatId: "",
     tenantId: "",
+    brandId: "",
     contractDetails: {
       hostDetails: {
         host: "",
@@ -169,6 +172,7 @@ const ManageInquiry = ({
         spaceId: details?.spaceId,
         chatId: details?.chatId,
         tenantId: details?.tenantId,
+        brandId: details?.brandId,
         contractDetails: {
           hostDetails: {
             host: details?.host,
@@ -554,7 +558,10 @@ const ManageInquiry = ({
           alignItems="center"
           sx={{ width: "100%", marginBottom: "10px", columnGap: 1 }}
         >
-          <CheckBox checked={checked} onChange={handleChange} />
+          <CheckBox
+            checked={spc && status === "Active" ? true : checked}
+            onChange={handleChange}
+          />
           <Typography
             sx={{
               fontWeight: 600,
@@ -630,15 +637,29 @@ const ManageInquiry = ({
                   sx={{
                     backgroundColor: "rgba(209, 219, 215, 0.2)",
                     width: { xs: "100%", lg: "200px", xl: "278px" },
-                    padding: imageWithPreview ? 0 : "32px 0px",
-                    border: "1px dashed rgba(0, 20, 28, 0.4)",
+                    padding: !tenantSign
+                      ? imageWithPreview
+                        ? 0
+                        : "32px 0px"
+                      : 0,
+                    border: !tenantSign && "1px dashed rgba(0, 20, 28, 0.4)",
                     borderRadius: "3px",
                     textAlign: "center",
-                    cursor: "pointer",
+                    cursor: !tenantSign && "pointer",
                   }}
                   onClick={handleBoxClick}
                 >
-                  {imageWithPreview ? (
+                  {spc && tenantSign ? (
+                    <img
+                      src={tenantSign}
+                      alt="Preview"
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : imageWithPreview ? (
                     <img
                       src={imageWithPreview}
                       alt="Preview"
@@ -665,29 +686,31 @@ const ManageInquiry = ({
           </Box>
         </Stack>
 
-        <Box display="flex" justifyContent="end" mt={1}>
-          <LoadingButton
-            sx={{
-              padding: "0px 24px",
-              height: "31px",
-              textTransform: "capitalize",
-              background:
-                "linear-gradient(0deg, rgba(0, 20, 28, 0.7), rgba(0, 20, 28, 0.7)), #FFFFFF",
-              borderRadius: "5px",
-              fontWeight: 600,
-              fontSize: "16px",
-              lineHeight: "21px",
-              letterSpacing: "-0.01em",
-            }}
-            onClick={onSubmit}
-            loading={isLoading || isTenantLoading}
-            loadingIndicator={
-              <CircularProgress size={15} sx={{ color: "#ffffff" }} />
-            }
-          >
-            {spc ? "Submit" : "Submit for Signature"}
-          </LoadingButton>
-        </Box>
+        {status && status === "Active" ? null : (
+          <Box display="flex" justifyContent="end" mt={2}>
+            <LoadingButton
+              sx={{
+                padding: "0px 24px",
+                height: "31px",
+                textTransform: "capitalize",
+                background:
+                  "linear-gradient(0deg, rgba(0, 20, 28, 0.7), rgba(0, 20, 28, 0.7)), #FFFFFF",
+                borderRadius: "5px",
+                fontWeight: 600,
+                fontSize: "16px",
+                lineHeight: "21px",
+                letterSpacing: "-0.01em",
+              }}
+              onClick={onSubmit}
+              loading={isLoading || isTenantLoading}
+              loadingIndicator={
+                <CircularProgress size={15} sx={{ color: "#ffffff" }} />
+              }
+            >
+              {spc ? "Submit" : "Submit for Signature"}
+            </LoadingButton>
+          </Box>
+        )}
         <Heading name="Go to Message History" mt="16px" />
       </Box>
     </Box>

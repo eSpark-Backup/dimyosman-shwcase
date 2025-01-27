@@ -141,7 +141,7 @@ const PaymentConfirmation = ({
           >
             <DetailHeading name="Starting:" weight={300} />
             <DetailHeading
-              name={contractDetails.leaseInfo?.startDate}
+              name={contractDetails?.leaseInfo?.startDate}
               weight={600}
             />
           </Box>
@@ -156,7 +156,7 @@ const PaymentConfirmation = ({
           >
             <DetailHeading name="Ending:" weight={300} />
             <DetailHeading
-              name={contractDetails.leaseInfo?.endDate}
+              name={contractDetails?.leaseInfo?.endDate}
               weight={600}
             />
           </Box>
@@ -171,7 +171,7 @@ const PaymentConfirmation = ({
           >
             <DetailHeading name="Lease amount:" weight={300} />
             <DetailHeading
-              name={contractDetails.leaseInfo?.leaseTotal}
+              name={contractDetails?.leaseInfo?.leaseTotal}
               weight={600}
             />
           </Box>

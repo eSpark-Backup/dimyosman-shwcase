@@ -186,9 +186,10 @@ export const convertToSameKeys = (
   return {
     spaceId: selectedGroup?.group?.parentId || tenancyDetails?.space?.id,
     chatId: selectedGroup?.chatGroup?.chatId || tenancyDetails?.chatId,
+    brandId:
+      selectedGroup?.chatGroup?.senderBrand?.id || tenancyDetails?.brand?.id,
     tenantId:
-      selectedGroup?.chatGroup?.senderBrand?.user?.id ||
-      tenancyDetails?.id,
+      selectedGroup?.chatGroup?.senderBrand?.user?.id || tenancyDetails?.id,
     host:
       selectedGroup?.chatGroup?.receiverbrandName ||
       tenancyDetails?.contractDetails?.hostDetails?.host,
@@ -216,6 +217,56 @@ export const convertToSameKeys = (
       tenancyDetails?.contractDetails?.tenantDetails?.additionalInfo || "",
     contractDescription: tenancyDetails?.contractDetails?.description || "",
   };
+};
+
+export const spacesAction = (
+  item,
+  type,
+  navigate,
+  setTenantDetails,
+  setShowIinquiryModal,
+  setVerifyPayModal,
+  setVerifyDetail,
+  leaseSpace,
+  tenantSpace,
+  findLeaseDetails
+) => {
+  switch (type) {
+    case "edit":
+      if (location?.pathname === "/space") {
+        navigate(`/space/${item?.id}/edit`);
+      }
+      break;
+
+    case "Sign":
+    case "Details":
+      const findClickedLeaseDetails = leaseSpace?.find(
+        (lease) => lease.id === item.id
+      );
+      setTenantDetails(findClickedLeaseDetails);
+      setShowIinquiryModal(true);
+      break;
+      
+    case "Message":
+      const navDetails = tenantSpace?.find((tenant) => tenant.id === item.id);
+      navigate("/message", {
+        state: {
+          spaceName: navDetails?.space?.spaceName,
+          chatId: navDetails.chatId,
+        },
+      })
+      break;
+
+    case "Verify Pay 0/2":
+    case "Verify 1/2":
+      const details = findLeaseDetails(type, item.id);
+      setVerifyPayModal(true);
+      setVerifyDetail(details);
+      break;
+
+    default:
+      break;
+  }
 };
 
 export const removeActiveNotifications = (dispatch) => {

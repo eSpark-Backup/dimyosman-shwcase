@@ -1,22 +1,46 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 
-import { Box, LinearProgress, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 
 import ActivityType from "./Message/ActivityType";
-import { useSelector } from "react-redux";
+
+import { setRedirectTab } from "../store/slices/space";
 
 const Notification = ({ open, theme, setShowNotification }) => {
+  const {pathname} = useLocation()
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const { notifications } = useSelector((state) => state.notification);
+  const { activeTabForNotif } = useSelector((state) => state.space);
 
   const navigation = (item) => {
-    const navigateData = {
-      spaceName: item.metadata.receiverSpaceName,
-      chatId: item.metadata.ChatId,
-    };
+    if (item?.metadata?.redirect) {
+      let redName = item.metadata.redirect;
+
+      if (pathname === "/space") {
+        if ( item.metadata?.redirect === "Lease" && activeTabForNotif !== "Lease" ) {
+          redName = "Lease";
+        } else if ( item.metadata?.redirect === "Tenant" && activeTabForNotif !== "Tenant" ) {
+          redName = "Tenant";
+        }
+        dispatch(setRedirectTab(redName));
+        
+      } else {
+        dispatch(setRedirectTab(redName));
+        navigate("/space");
+      }
+
+    } else {
+      const navigateToMessage = {
+        spaceName: item?.metadata?.receiverSpaceName,
+        chatId: item?.metadata?.ChatId,
+      };
+      navigate("/message", { state: navigateToMessage });
+    }
+
     setShowNotification(false);
-    navigate("/message", { state: navigateData });
   };
 
   return (
@@ -33,7 +57,7 @@ const Notification = ({ open, theme, setShowNotification }) => {
         padding: "16px",
         width: "366px",
         overflow: "hidden",
-        zIndex:"99999"
+        zIndex: "99999",
       }}
     >
       <Typography
@@ -69,9 +93,13 @@ const Notification = ({ open, theme, setShowNotification }) => {
                     position: "relative",
                   }}
                 >
-                  {item?.metadata?.senderBrandImage ? (
+                  {item?.metadata?.senderBrandImage ||
+                  item?.metadata?.senderImage ? (
                     <img
-                      src={item?.metadata?.senderBrandImage}
+                      src={
+                        item?.metadata?.senderBrandImage ||
+                        item?.metadata?.senderImage
+                      }
                       alt="Icon"
                       style={{
                         width: "100%",
@@ -104,13 +132,19 @@ const Notification = ({ open, theme, setShowNotification }) => {
                   textTransform="lowercase"
                   maxWidth={"270px"}
                 >
-                  <strong style={{ textTransform: "capitalize" }}>
-                    {item?.metadata?.senderBrandUserName}
-                  </strong>{" "}
-                  sent a {item.title?.split("For")[0]} for{" "}
-                  <strong style={{ textTransform: "capitalize" }}>
-                    {item.title?.split("For")[1]}
-                  </strong>
+                  {item?.metadata?.redirect ? (
+                    item?.message
+                  ) : (
+                    <>
+                      <strong style={{ textTransform: "capitalize" }}>
+                        {item?.metadata?.senderBrandUserName}
+                      </strong>{" "}
+                      sent a {item.title?.split("For")[0]} for{" "}
+                      <strong style={{ textTransform: "capitalize" }}>
+                        {item.title?.split("For")[1]}
+                      </strong>
+                    </>
+                  )}
                 </Typography>
               </Stack>
             );
