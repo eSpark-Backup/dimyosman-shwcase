@@ -115,6 +115,9 @@ import messageIcon from "./message-icon.svg";
 import profileIcon from "./profile-icon.svg";
 import settingsIcon from "./settings-icon.svg";
 import profilePicture from "./profile-picture.png";
+import allIconLight from "./shw-icon.png";
+import memberIconLight from "./member-icon.png";
+import mediumMap from "./medium-map.png"
 
 export {
   react,
@@ -232,5 +235,8 @@ export {
   profileIcon,
   attachment,
   settingsIcon,
-  profilePicture
+  profilePicture,
+  allIconLight,
+  memberIconLight,
+  mediumMap
 };

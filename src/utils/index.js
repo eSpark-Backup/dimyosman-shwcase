@@ -155,6 +155,73 @@ export const convertToSameKeys = (
   };
 };
 
+export const keysForBrandsSapcesEvents = (object, type) => {
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const year = date.getUTCFullYear();
+
+    return `${day}.${month}.${year}`;
+  };
+
+  const coverArray =
+    object?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
+
+  const coverObject = {
+    profileId: 2,
+    activity: type,
+    userName: object?.brand?.brandName || "",
+    activityMaker: object?.brand?.brandName || "",
+    content: [object?.details?.description || ""],
+    activityLocation: object?.brand?.brandName || "",
+    activityAddress: "123 Williamsburg Ave, Brooklyn, NY 11211",
+    userImage: object?.brand?.brandImage || "",
+    userRole: "brand",
+    slides: coverArray,
+    location: object?.location || [],
+  };
+
+  if (type === "space") {
+    const filterPrice =
+      object?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") ||
+      [];
+
+    const spaceFeatures =
+      object?.amenity?.map((amenityItem) => ({
+        icon: amenityItem?.iconUrl || "",
+        description: amenityItem?.name || "",
+      })) || [];
+
+    return {
+      ...coverObject,
+      spaceId: object?.id || "",
+      activityName: object?.spaceName || "",
+      value: filterPrice[0]?.price ? `$${filterPrice[0]?.price}/day` : "N/A",
+      deadline: filterPrice[0]?.minimum
+        ? `minimum lease: ${filterPrice[0]?.minimum} days`
+        : "N/A",
+      features: spaceFeatures,
+      activityImage: object?.spaceImage || "",
+    };
+  } else if (type === "event") {
+
+    return {
+      ...coverObject,
+      eventId: object?.id || "",
+      activityName: object?.eventName || "",
+      activityImage: object?.eventImage || "",
+      value: object?.eventDate[0]?.startDate
+        ? formatDate(object?.eventDate[0]?.startDate)
+        : "N/A",
+      deadline: object?.eventDate[0]?.endDate
+        ? formatDate(object?.eventDate[0]?.endDate)
+        : "N/A",
+    };
+  }
+};
+
 export const removeActiveNotifications = (dispatch) => {
   dispatch(emptyNotificationCount());
   deleteCookie("newRequest");
