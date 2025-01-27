@@ -24,12 +24,10 @@ const MessageItem = ({
   selectedGroup,
   setSelectedChatId,
   emitEvent,
-  onlineUsers
+  onlineUsers,
 }) => {
   const detailsRef = useRef(null);
 
-  const getUnreadMessage =
-    getCookie("unread") && JSON.parse(getCookie("unread"));
   const getUnreadChatIds =
     getCookie("unreadChatIds") && JSON.parse(getCookie("unreadChatIds"));
 
@@ -43,7 +41,7 @@ const MessageItem = ({
     }
   }, [expanded]);
 
-  const handleGroup = (el)=>{
+  const handleGroup = (el) => {
     const obj = {
       userId: user.userChatId,
       members: el?.members,
@@ -53,28 +51,15 @@ const MessageItem = ({
 
     setSelectedChatId(el?.chatId);
     setSelectedGroup({ chatGroup: el, group: message });
-    getCount(el.chatId) && filterCount(el?.chatId);
-  }
-
-  const getCount = (id) => {
-    const ifCountExists = getUnreadMessage?.filter((msg) => msg.chatId === id);
-
-    if (ifCountExists?.length > 0) {
-      const count = getUnreadMessage?.find((msg) => msg.chatId === id)?.count;
-
-      return count;
-    }
+    getUnreadChatIds && filterCount(el?.chatId);
   };
 
-  const filterCount = (id) => {
-    const ifCountExists = getUnreadMessage?.filter((msg) => msg.chatId !== id);
-    const ifChatIdExists = getUnreadChatIds?.filter((id) => id !== id);
+  const filterCount = (chatId) => {
+    const ifChatIdExists = getUnreadChatIds?.filter((id) => id !== chatId);
 
-    if (ifCountExists?.length > 0) {
-      setCookie("unread", JSON.stringify(ifCountExists));
+    if (ifChatIdExists?.length > 0) {
       setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
     } else {
-      deleteCookie("unread");
       deleteCookie("unreadChatIds");
     }
   };
@@ -160,7 +145,7 @@ const MessageItem = ({
           {message.parentName}
         </Typography>
 
-        {getUnreadMessage?.length
+        {getUnreadChatIds?.length
           ? message?.chatGroups?.some((msg) =>
               getUnreadChatIds?.includes(msg.chatId)
             ) && (
@@ -299,26 +284,6 @@ const MessageItem = ({
                         }}
                       >
                         <span>{el.creator}</span>
-                        {getUnreadMessage?.length && getCount(el.chatId) && (
-                          <Box
-                            component={"span"}
-                            sx={{
-                              minWidth: "15px",
-                              height: "15px",
-                              borderRadius: "50%",
-                              backgroundColor: "#ee6161",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: "10px",
-                              color: "#ffffff",
-                              padding:
-                                getCount(el.chatId) > 10 ? "0px 4px" : "0px",
-                            }}
-                          >
-                            {getCount(el.chatId)}
-                          </Box>
-                        )}
                       </Typography>
                     )}
 
@@ -347,19 +312,21 @@ const MessageItem = ({
                     </Box>
                   </Box>
 
-                  {el.read && (
-                    <Box
-                      sx={{
-                        width: "10px",
-                        height: "10px",
-                        borderRadius: "50%",
-                        backgroundColor: theme.palette.error.danger,
-                        position: "absolute",
-                        top: "-4px",
-                        right: "-3px",
-                      }}
-                    />
-                  )}
+                  {getUnreadChatIds?.length
+                    ? getUnreadChatIds?.includes(el.chatId) && (
+                        <Box
+                          sx={{
+                            width: "10px",
+                            height: "10px",
+                            borderRadius: "50%",
+                            backgroundColor: theme.palette.error.danger,
+                            position: "absolute",
+                            top: "-4px",
+                            right: "-3px",
+                          }}
+                        />
+                      )
+                    : null}
                 </Box>
               );
             })
