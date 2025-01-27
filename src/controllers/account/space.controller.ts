@@ -176,6 +176,7 @@ export class SpaceController {
       .createQueryBuilder("leaseSpace")
       .where("leaseSpace.id = :id", { id })
       .leftJoinAndSelect("leaseSpace.tenant", "tenant")
+      .leftJoinAndSelect("leaseSpace.space", "space")
       .leftJoinAndSelect("leaseSpace.owner", "owner")
       .getOne();
     if (!leaseSpace) {
