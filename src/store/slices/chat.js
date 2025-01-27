@@ -7,6 +7,8 @@ const initialState = {
   hasChats: "",
   activeMembers: [],
   allChatIds: [],
+  allGroups: [],
+  hasMessages: "",
 };
 
 const slice = createSlice({
@@ -52,6 +54,25 @@ const slice = createSlice({
     emptyActiveMembers(state) {
       state.activeMembers = [];
     },
+    getAllMyGroups: (state, action) => {
+      state.allGroups = action.payload;
+    },
+    filterAllMyGroups: (state, action) => {
+      const { type, filterGroups } = action.payload;
+
+      state.allGroups = filterGroups;
+
+      if (type === "all") {
+        state.hasMessages = "";
+      } else if (filterGroups?.length > 0) {
+        state.hasMessages = "";
+      } else {
+        state.hasMessages = "No Chats";
+      }
+    },
+    changeMessageType: (state) => {
+      state.hasMessages = "";
+    },
   },
 });
 
@@ -62,7 +83,10 @@ export const {
   removeMychat,
   isUserHasChat,
   isActiveMembers,
-  emptyActiveMembers
+  emptyActiveMembers,
+  getAllMyGroups,
+  filterAllMyGroups,
+  changeMessageType,
 } = slice.actions;
 
 export default slice.reducer;

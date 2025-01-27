@@ -5,7 +5,7 @@ import Input from './input';
 import DatePicker from 'react-date-picker';
 import 'react-date-picker/dist/DatePicker.css';
 import 'react-calendar/dist/Calendar.css';
-import { formatDate } from '../utils';
+import { fetchAddressFromCoordinates, formatDate } from '../utils';
 import CheckBox from './CheckBox';
 import { useClickOutside } from '../utils';
 import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers';
@@ -161,15 +161,31 @@ const InputWithMap = ({
   };
 
 
-  const handleSelectChange = (e) => {
+  const handleSelectChange = async (e) => {
     const selectedValue = e.target.value;
     const selectedSpaceData = options.filter((item) => item.value === e.target.value)
     const updatedLocation = { lat: selectedSpaceData[0]?.item?.location?.lat, long: selectedSpaceData[0]?.item?.location?.long }
+    let address = "";
+    if (selectedSpaceData[0]?.item?.location?.lat && selectedSpaceData[0]?.item?.location?.long) {
+      address = await fetchAddressFromCoordinates(
+        selectedSpaceData[0]?.item?.location?.lat,
+        selectedSpaceData[0]?.item?.location?.long
+      );
+    }
     if (activity === "event") {
       if (eventData.space !== selectedValue) {
         updateEventData("space", selectedValue);
         updateEventData("location", updatedLocation);
         updateEventData("mapInstructions", selectedSpaceData[0]?.item?.location?.additional);
+        updateEventData("streetAddress", address);
+      }
+    }
+    else if (activity === "space") {
+      if (eventData.selectedBrand !== selectedValue) {
+        updateEventData("selectedBrand", selectedValue);
+        updateEventData("location", updatedLocation);
+        updateEventData("mapInstructions", selectedSpaceData[0]?.item?.location?.additional);
+        updateEventData("streetAddress", address);
       }
     }
 
@@ -303,7 +319,7 @@ const InputWithMap = ({
         {(activity === "brand" && !edit) &&
           <Typography fontSize={14} fontWeight={300} sx={{ fontStyle: "italic" }}>Click on the map to select Address.</Typography>
         }
-        <figure role="img" aria-labelledby="profile-map" onClick={(activity === 'event' && selectedValue !== "") || activity === 'space' || activity === 'brand' ? handleClick : undefined} style={{ cursor: activity === 'space' || selectedValue !== "" ? 'pointer' : 'default' }}>
+        <figure role="img" aria-labelledby="profile-map" onClick={(activity === 'event' && selectedValue !== "") || (activity === 'space' && selectedValue !== "") || activity === 'brand' ? handleClick : undefined} style={{ cursor: activity === 'space' || selectedValue !== "" ? 'pointer' : 'default' }}>
           <img width="100%" height="auto" src={miniMap} alt="map" />
           <figcaption
             style={activity === "brand" && !edit ?

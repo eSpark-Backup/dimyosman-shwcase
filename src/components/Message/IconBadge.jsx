@@ -14,14 +14,14 @@ const isMessageRead = (type) => {
   return allMessages.some((item) => item.activity === type && item.read);
 };
 
-const IconBadge = ({ icon, bg, type, theme }) => {
+const IconBadge = ({ icon, bg, type, activeBG, onClick, activeTab }) => {
   const isRead =
     isMessageRead(type) || (hasReadTrue(allMessages) && type === "message");
 
   return (
     <Box
       sx={{
-        bgcolor: bg,
+        bgcolor: activeTab === type ? activeBG : bg,
         height: "48px",
         width: "48px",
         display: "flex",
@@ -30,10 +30,19 @@ const IconBadge = ({ icon, bg, type, theme }) => {
         borderRadius: "5px",
         marginRight: 2,
         position: "relative",
+        cursor: "pointer",
+        transition: "background-color 0.3s ease-in-out",
+
+        "&:hover": {
+          bgcolor: activeBG,
+        },
 
         "&:last-child": {
           marginRight: 0,
         },
+      }}
+      onClick={() => {
+        onClick(type);
       }}
     >
       <img src={icon} alt="Icon" />

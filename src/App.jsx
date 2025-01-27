@@ -28,6 +28,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useVerifyTokenQuery } from './services/auth';
 import { useSelector } from 'react-redux';
+import Search from './pages/dashboard/search';
 
 function App() {
   const { pathname } = useLocation();
@@ -86,6 +87,7 @@ function App() {
           <Route path="/new-space" element={<NewSpace />} />
           <Route path="/space/:spaceId/edit" element={<EditSpace />} />
           <Route path="/event/:eventId/edit" element={<EditEvent />} />
+          <Route path="/search" element={<Search />} />
         </Route>
       </Routes>
       <ToastContainer

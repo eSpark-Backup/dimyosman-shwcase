@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Box, Button, Stack, Typography, useTheme } from "@mui/material";
+import { Box, Button, Drawer, Stack, Typography, useTheme } from "@mui/material";
 import {
   brand,
   brandHover,
@@ -28,6 +28,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout as logoutFunc } from "../store/slices/auth";
 import { removeMychat } from "../store/slices/chat";
 import Notification from "../components/Notification";
+import Filters from "../components/Filters";
 import { emptyNotification } from "../store/slices/notification";
 
 const Header = ({ isLogin }) => {
@@ -42,6 +43,7 @@ const Header = ({ isLogin }) => {
   const addRef = useRef();
   const profileRef = useRef();
   const notificationRef = useRef();
+  const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
   const [openProfilePopup, setOpenProfilePopup] = useState(false);
   const [addPopup, setAddPopup] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
@@ -62,6 +64,10 @@ const Header = ({ isLogin }) => {
   const handleNavigate = (link) => {
     navigate(link);
     setAddPopup(false);
+  };
+
+  const handleFilterDrawer = (link) => {
+    setOpenFilterDrawer(true);
   };
 
   const iconClick = (type) => {
@@ -196,7 +202,11 @@ const Header = ({ isLogin }) => {
           {isLogin && (
             <div className="search-bar">
               <div className="search-box">
-                <SearchBar name={"query"} placeholder={"Search..."} />
+                <SearchBar
+                  name={"query"}
+                  placeholder={"Search..."}
+                  handleFilterDrawer={handleFilterDrawer}
+                />
               </div>
             </div>
           )}
@@ -291,6 +301,19 @@ const Header = ({ isLogin }) => {
           )}
         </nav>
       </div>
+
+      <Drawer
+        anchor="right"
+        open={openFilterDrawer}
+        onClose={() => setOpenFilterDrawer(false)}
+        sx={{
+          "& .MuiPaper-root": {
+            padding: 0,
+          },
+        }}
+      >
+        <Filters setOpenFilterDrawer={setOpenFilterDrawer} />
+      </Drawer>
     </>
   );
 };
