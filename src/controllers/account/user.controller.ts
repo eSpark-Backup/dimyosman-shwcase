@@ -1,5 +1,5 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { Events, User } from "../../entity";
+import { Events, SavedEntity, User } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
 import {
@@ -30,7 +30,8 @@ export class UserController {
   constructor(
     private usersRepo: Repository<User>,
     private eventsRepo: Repository<Events>,
-    private notificationModel: typeof Notification
+    private notificationModel: typeof Notification,
+    private SavedEntityRepo: Repository<SavedEntity>
   ) {}
 
   async verifyTokenAPI(

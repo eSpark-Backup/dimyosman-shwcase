@@ -2,7 +2,7 @@ import { Router } from "express";
 import Joi from "joi";
 import { AuthValidation, UserValidation, validate } from "../../validations";
 import { UserController } from "../../controllers/account";
-import { Events, User } from "../../entity";
+import { Events, SavedEntity, User } from "../../entity";
 import { getRepository } from "typeorm";
 import { AppDataSource } from "../../typeorm.config";
 import {
@@ -17,10 +17,12 @@ import { FILE_FIELDS, ROLES } from "../../constants";
 const router = Router();
 const userRepository = AppDataSource.getRepository(User);
 const eventRepository = AppDataSource.getRepository(Events);
+const savedEntityRepo = AppDataSource.getRepository(SavedEntity);
 const userController = new UserController(
   userRepository,
   eventRepository,
-  Notification
+  Notification,
+  savedEntityRepo
 );
 
 /**
