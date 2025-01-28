@@ -450,17 +450,15 @@ export class EventController {
             .addSelect(
               "COALESCE(rsvpCountSubquery.rsvpCount, 0)",
               "event_rsvpCount"
-            ) // Include RSVP count
+            )
             .where("rsvp.user = :userId", { userId: req.user?.id })
             .skip(skipNumber)
             .take(takeNumber)
             .orderBy("rsvp.createdAt", "DESC")
             .getRawAndEntities();
 
-          // Extract entities and raw data
           const { entities: rsvpEvents, raw } = rsvpEventsWithCounts;
 
-          // Format the results with RSVP count
           const formattedRsvpEvents = rsvpEvents.map((rsvp, index) => {
             const rawData = raw[index];
             parseCoverImages(rsvp.event);
@@ -476,21 +474,20 @@ export class EventController {
             if (eventDate) {
               const currentDate = new Date();
 
-              let eventStatus = "Ended"; // Default to ended if no condition is met
-
+              let eventStatus = "Ended";
               if (currentDate < new Date(eventDate[0].startDate)) {
-                eventStatus = "Upcoming"; // Event has not started yet
+                eventStatus = "Upcoming";
               } else if (
                 currentDate >= new Date(eventDate[0].startDate) &&
                 currentDate <= new Date(eventDate[0].endDate)
               ) {
-                eventStatus = "Ongoing"; // Event is happening now
+                eventStatus = "Ongoing";
               }
 
               return {
                 ...rsvp,
                 rsvpCount: Number(rawData.event_rsvpCount) || 0,
-                eventStatus, // Update the event status (Upcoming, Ongoing, Ended)
+                eventStatus,
               };
             }
 
@@ -500,7 +497,6 @@ export class EventController {
             };
           });
 
-          // Handle empty results
           if (rsvpEvents.length === 0) {
             res.status(200).json(handleResponse("No RSVP Events Found"));
             return next();
@@ -510,7 +506,6 @@ export class EventController {
             .where("rsvp.user = :userId", { userId: req.user?.id })
             .getManyAndCount();
 
-          // Return response
           res.status(200).json({
             data: formattedRsvpEvents,
             pagination: {

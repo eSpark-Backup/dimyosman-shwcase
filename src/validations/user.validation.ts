@@ -21,6 +21,11 @@ export class UserValidation {
     socialId: Joi.string().optional(),
   });
 
+  static addToFavorites = Joi.object({
+    entityId: Joi.string().required(),
+    entityType: Joi.string().required(),
+  });
+
   static verifyOtp = Joi.object({
     email: Joi.string().email(),
     phone: Joi.string(),
