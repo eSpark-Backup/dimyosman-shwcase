@@ -240,7 +240,7 @@ const Message = () => {
 
   const handleNewInquiry = (selected, initialId) => {
     const findParentIndex = allGroups?.findIndex(
-      (msg) => msg?.parentName === state?.spaceName
+      (msg) => msg?.parentName === (state?.spaceName || state?.brandName)
     );
 
     if (findParentIndex !== -1) {

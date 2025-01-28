@@ -73,7 +73,7 @@ const Space = () => {
 
   useEffect(() => {
     if (navigationActiveTab !== "") {
-      const indexOfNav = tabsForApi?.findIndex(
+      const indexOfNav = tabsForApi.findIndex(
         (t) => t === navigationActiveTab
       );
 
@@ -86,7 +86,7 @@ const Space = () => {
 
   const { data, isError, isLoading, isSuccess, error, isFetching, refetch } =
     useGetAllSpaceQuery(
-      { page, pageSize: 7, tab: navigationActiveTab ? navigationActiveTab : tabsForApi[activeTab] },
+      { page, pageSize: 7, tab: tabsForApi[activeTab] },
       {
         refetchOnMountOrArgChange: true,
         refetchOnFocus: true,

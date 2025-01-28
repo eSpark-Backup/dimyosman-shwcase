@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { toast } from "react-toastify";
 
@@ -21,7 +22,7 @@ import { separateRawData } from "../utils";
 
 import { useLeaseSpaceInquireMutation, useTenantSignMutation } from "../services/space";
 
-const Heading = ({ name, mb = 0, mt = 0 }) => {
+const Heading = ({ name, mb = 0, mt = 0, onClick = () => {}, cursor = "default" }) => {
   return (
     <Typography
       sx={{
@@ -30,7 +31,9 @@ const Heading = ({ name, mb = 0, mt = 0 }) => {
         color: "#1E1E1E",
         mb,
         mt,
+        cursor
       }}
+      onClick={onClick}
     >
       {name}
     </Typography>
@@ -117,6 +120,8 @@ const ManageInquiry = ({
   setRefetchTriggered = null,
 }) => {
   const theme = useTheme();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const [leaseSpace, { isLoading }] = useLeaseSpaceInquireMutation();
   const [tenantSpace, { isLoading: isTenantLoading }] = useTenantSignMutation();
@@ -711,7 +716,26 @@ const ManageInquiry = ({
             </LoadingButton>
           </Box>
         )}
-        <Heading name="Go to Message History" mt="16px" />
+        <Heading
+          name="Go to Message History"
+          mt="16px"
+          cursor="pointer"
+          onClick={() => {
+            if (pathname === "/message") {
+              setShowIinquiryModal(false);
+              setChecked(false);
+              setImageWithPreview(null);
+              setImage(null);
+            } else {
+              navigate("/message", {
+                state: {
+                  brandName: details.tenant,
+                  chatId: details.chatId,
+                },
+              });
+            }
+          }}
+        />
       </Box>
     </Box>
   );
