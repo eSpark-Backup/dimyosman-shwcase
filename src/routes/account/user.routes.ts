@@ -807,4 +807,179 @@ router.post(
   (req, res, next) => userController.addToFavourites(req, res, next)
 );
 
+/**
+ * @swagger
+ * /user/follow:
+ *   get:
+ *     summary: Get a specific Follow by Entity for the authenticated user
+ *     description: This endpoint retrieves all entities associated with the authenticated user. Pagination is supported for retrieving multiple spaces.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - User
+ *     parameters:
+ *       - in: query
+ *         name: pageSize
+ *         required: false
+ *         description: Number of items per page (for paginated results).
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         description: Page number to retrieve (for paginated results).
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *       - in: query
+ *         name: entity
+ *         required: true
+ *         description: Name of the Entity.
+ *         schema:
+ *          type: string
+ *          enum:
+ *            - SPACE
+ *            - EVENT
+ *            - BRAND
+ *     responses:
+ *       200:
+ *         description: space found by ID or all spaces for the authenticated user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 spaces:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       spaceName:
+ *                         type: string
+ *                         description: Name of the space.
+ *                       spaceCategory:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             name:
+ *                               type: string
+ *                               description: Name of the category.
+ *                             description:
+ *                               type: string
+ *                               description: Description of the category.
+ *                         description: Categories of the space.
+ *                       details:
+ *                         type: object
+ *                         description: Details about the space.
+ *                       location:
+ *                         type: object
+ *                         properties:
+ *                           long:
+ *                             type: number
+ *                             description: Longitude of the space's location.
+ *                           lat:
+ *                             type: number
+ *                             description: Latitude of the space's location.
+ *                           additional:
+ *                             type: string
+ *                             description: Additional information about the location.
+ *                       status:
+ *                         type: string
+ *                         enum:
+ *                           - PUBLISH
+ *                           - DRAFT
+ *                           - ARCHIVE
+ *                       coverImages:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             url:
+ *                               type: string
+ *                               description: URL of the cover image.
+ *                             public_id:
+ *                               type: string
+ *                               description: Public ID of the cover image.
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     totalItems:
+ *                       type: integer
+ *                       description: Total number of items.
+ *                     currentPage:
+ *                       type: integer
+ *                       description: Current page number.
+ *                     pageSize:
+ *                       type: integer
+ *                       description: Number of items per page.
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages.
+ *       404:
+ *         description: space not found (if ID is provided) or no spaces found for the user.
+ *       500:
+ *         description: Server error.
+ */
+router.get(
+  "/follow",
+  checkJwt,
+  validateRoles([ROLES.USER]),
+  setPagination,
+  (req, res, next) => userController.getFollow(req, res, next)
+);
+
+/**
+ * @swagger
+ * /user/follow:
+ *   post:
+ *     summary: Calculate total price for a space based on pricing and date range
+ *     description: Calculate the total price dynamically for a given date range and pricing structure.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - User
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               entityId:
+ *                 type: string
+ *                 description: The Id of the Entity.
+ *                 example: 223232
+ *               entityType:
+ *                 type: string
+ *                 description: The Type of the Entity.
+ *                 example: BRAND
+ *     responses:
+ *       200:
+ *         description: Entity Added To Favourites completed successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalPrice:
+ *                   type: string
+ *                   description: Calculated total price.
+ *                 termDetails:
+ *                   type: object
+ *                   description: The term used for calculation.
+ *       400:
+ *         description: Invalid request data.
+ *       500:
+ *         description: Server error.
+ */
+router.post(
+  "/follow",
+  checkJwt,
+  validateRoles([ROLES.USER]),
+  validate(UserValidation.addToFavorites, "body"),
+  (req, res, next) => userController.addToFollow(req, res, next)
+);
+
 export { router };

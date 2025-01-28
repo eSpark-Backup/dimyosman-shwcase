@@ -13,6 +13,11 @@ export enum SavedEntityType {
   SPACE = "SPACE",
 }
 
+export enum ActionType {
+  FOLLOW = "FOLLOW",
+  FAVORITE = "FAVORITE",
+}
+
 @Entity()
 export class SavedEntity extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
@@ -28,6 +33,13 @@ export class SavedEntity extends BaseEntity {
     nullable: false,
   })
   type: SavedEntityType;
+
+  @Column({
+    type: "enum",
+    enum: ActionType,
+    nullable: true,
+  })
+  actionType: ActionType;
 
   @ManyToOne(() => Brand, (brand) => brand.id, { nullable: true })
   @JoinColumn({ name: "brandId" })

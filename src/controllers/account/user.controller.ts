@@ -1,5 +1,12 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { Events, RSVP, SavedEntity, SavedEntityType, User } from "../../entity";
+import {
+  ActionType,
+  Events,
+  RSVP,
+  SavedEntity,
+  SavedEntityType,
+  User,
+} from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
 import {
@@ -415,10 +422,11 @@ export class UserController {
       const takeNumber = Number(take);
       const userId = req.user?.id;
 
-      let query = this.SavedEntityRepo.createQueryBuilder("savedEntity").where(
-        "savedEntity.user = :userId",
-        { userId }
-      );
+      let query = this.SavedEntityRepo.createQueryBuilder("savedEntity")
+        .where("savedEntity.user = :userId", { userId })
+        .andWhere("savedEntity.actionType = :actionType", {
+          actionType: ActionType.FAVORITE,
+        });
 
       if (entity == "EVENT") {
         query
@@ -460,6 +468,68 @@ export class UserController {
     } catch (error) {
       logger.error(
         `UserController :: getFavourites :: ${(error as Error)?.message}`
+      );
+      return next(error);
+    }
+  }
+
+  async getFollow(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { page, take, skip, entity } = req?.query;
+      const skipNumber = Number(skip);
+      const takeNumber = Number(take);
+      const userId = req.user?.id;
+
+      let query = this.SavedEntityRepo.createQueryBuilder("savedEntity")
+        .where("savedEntity.user = :userId", { userId })
+        .andWhere("savedEntity.actionType = :actionType", {
+          actionType: ActionType.FOLLOW,
+        });
+
+      if (entity == "EVENT") {
+        query
+          .leftJoinAndSelect("savedEntity.event", "event")
+          .andWhere("savedEntity.type = :type", {
+            type: SavedEntityType.EVENT,
+          });
+      } else if (entity == "SPACE") {
+        query
+          .leftJoinAndSelect("savedEntity.space", "space")
+          .andWhere("savedEntity.type = :type", {
+            type: SavedEntityType.SPACE,
+          });
+      } else if (entity == "BRAND") {
+        query
+          .leftJoinAndSelect("savedEntity.brand", "brand")
+          .andWhere("savedEntity.type = :type", {
+            type: SavedEntityType.BRAND,
+          });
+      }
+
+      const [followedEntities, totalItems] = await query
+        .skip(skipNumber)
+        .take(takeNumber)
+        .getManyAndCount();
+
+      res.status(HTTP_STATUS.OK).json(
+        handleResponse(`Followed ${entity} fetched Successfully`, {
+          followedEntities,
+
+          pagination: {
+            totalItems,
+            currentPage: parseInt(page as string, 10),
+            pageSize: takeNumber,
+            totalPages: Math.ceil(totalItems / takeNumber),
+          },
+        })
+      );
+    } catch (error) {
+      logger.error(
+        `UserController :: getFollows :: ${(error as Error)?.message}`
       );
       return next(error);
     }
@@ -568,6 +638,7 @@ export class UserController {
           where: {
             user: { id: userId },
             type: SavedEntityType.EVENT,
+            actionType: ActionType.FAVORITE,
             event: { id: entityId },
           },
           relations: ["event"],
@@ -577,6 +648,7 @@ export class UserController {
           where: {
             user: { id: userId },
             type: SavedEntityType.SPACE,
+            actionType: ActionType.FAVORITE,
             space: { id: entityId },
           },
           relations: ["space"],
@@ -586,6 +658,7 @@ export class UserController {
           where: {
             user: { id: userId },
             type: SavedEntityType.BRAND,
+            actionType: ActionType.FAVORITE,
             brand: { id: entityId },
           },
           relations: ["brand"],
@@ -604,6 +677,94 @@ export class UserController {
       const newFavourite = this.SavedEntityRepo.create({
         user: { id: userId },
         type: entityType,
+        actionType: ActionType.FAVORITE,
+        [entityType.toLowerCase()]: { id: entityId }, // Map the relationship dynamically
+      });
+
+      // Save the favourite entity
+      await this.SavedEntityRepo.save(newFavourite);
+
+      res
+        .status(HTTP_STATUS.CREATED)
+        .json(
+          handleResponse(
+            "Entity added to favourites successfully",
+            newFavourite
+          )
+        );
+    } catch (error) {
+      logger.error(
+        `UserController :: addToFavourites :: ${(error as Error)?.message}`
+      );
+      return next(error);
+    }
+  }
+
+  async addToFollow(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { entityId, entityType } = req.body; // Expecting entityId and entityType in the request body
+      const userId = req.user?.id;
+
+      // Validate the entity type
+      if (!Object.values(SavedEntityType).includes(entityType)) {
+        res
+          .status(HTTP_STATUS.BAD_REQUEST)
+          .json(handleResponse("Invalid entity type"));
+        return next();
+      }
+
+      let existingFavourite;
+
+      // Check for existing favourite based on the entity type
+      if (entityType === SavedEntityType.EVENT) {
+        existingFavourite = await this.SavedEntityRepo.findOne({
+          where: {
+            user: { id: userId },
+            type: SavedEntityType.EVENT,
+            event: { id: entityId },
+            actionType: ActionType.FOLLOW,
+          },
+          relations: ["event"],
+        });
+      } else if (entityType === SavedEntityType.SPACE) {
+        existingFavourite = await this.SavedEntityRepo.findOne({
+          where: {
+            user: { id: userId },
+            type: SavedEntityType.SPACE,
+            space: { id: entityId },
+            actionType: ActionType.FOLLOW,
+          },
+          relations: ["space"],
+        });
+      } else if (entityType === SavedEntityType.BRAND) {
+        existingFavourite = await this.SavedEntityRepo.findOne({
+          where: {
+            user: { id: userId },
+            type: SavedEntityType.BRAND,
+            brand: { id: entityId },
+            actionType: ActionType.FOLLOW,
+          },
+          relations: ["brand"],
+        });
+      }
+
+      if (existingFavourite) {
+        await this.SavedEntityRepo.remove(existingFavourite);
+        res
+          .status(HTTP_STATUS.OK)
+          .json(handleResponse("Entity removed from favourites successfully"));
+        return next();
+      }
+
+      // Create a new SavedEntity object
+      const newFavourite = this.SavedEntityRepo.create({
+        user: { id: userId },
+        type: entityType,
+        actionType: ActionType.FOLLOW,
         [entityType.toLowerCase()]: { id: entityId }, // Map the relationship dynamically
       });
 
