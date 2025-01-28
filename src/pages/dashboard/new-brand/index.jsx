@@ -27,7 +27,8 @@ const NewBrand = () => {
         brandOverview: "Add a brief brand overview that highlights the core aspects of the brand.\n\nClearly explain the brand’s mission, what makes it unique, and why it stands out in the market. Mention key products or services, emphasizing any unique selling points or values the brand embodies (e.g., sustainability, luxury, innovation).\n \nKeep it concise and informative, focusing on the brand’s identity and what customers can expect. \n\nThis description will be used as an excerpt.",
         brandTitle: defaultTemplate,
         location: { lat: 30.188760426055236, long: 70.22460937500001 },
-        mapInstructions: ""
+        mapInstructions: "",
+        streetAddress: "123 Williamsburg Ave, Brooklyn, NY 11211"
     });
 
     const { isError, isSuccess, error, data, isLoading } = useGetCategoriesQuery('BRANDS')
@@ -183,7 +184,7 @@ const NewBrand = () => {
             setCurrentIndex(nextIndex);
         }
     };
-    
+
 
     const handleRemoveImage = () => {
         const updatedCover = brandData.cover.filter((_, index) => index !== currentIndex);
@@ -228,7 +229,7 @@ const NewBrand = () => {
                 },
             });
 
-            
+
             quillRef.current.root.innerHTML = brandData.brandTitle || defaultTemplate;
 
             // Update brandData's brandTitle on text change
@@ -395,7 +396,7 @@ const NewBrand = () => {
                     rowGap: "32px",
                 }}
             >
-                <InputWithMap mapDescription="123 Williamsburg Ave, Brooklyn, NY 11211" inputLabel={"Brand Overview:"} inputValue={brandData.brandOverview} setInputValue={(value) => setBrandData({ ...brandData, brandOverview: value })} handleClick={() => setMapModal(true)} activity={"brand"} />
+                <InputWithMap mapDescription={brandData?.streetAddress} inputLabel={"Brand Overview:"} inputValue={brandData.brandOverview} setInputValue={(value) => setBrandData({ ...brandData, brandOverview: value })} handleClick={() => setMapModal(true)} activity={"brand"} />
                 <Box sx={{ width: "98%" }}>
                     {
                         !isEditorVisible &&
@@ -437,7 +438,7 @@ const NewBrand = () => {
 
             </Box>
             <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-                <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[brandData?.location?.lat, brandData?.location?.long]} setBrandData={setBrandData} instructionValue={brandData?.mapInstructions}
+                <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={brandData?.streetAddress} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[brandData?.location?.lat, brandData?.location?.long]} setBrandData={setBrandData} instructionValue={brandData?.mapInstructions}
                     setInstructionValue={(e) => setBrandData((prev) => ({
                         ...prev,
                         mapInstructions: e.target.value

@@ -31,7 +31,8 @@ const NewSpace = () => {
         selectedBrand: "",
         price: [],
         amenities: [],
-        mapInstructions: ""
+        mapInstructions: "",
+        streetAddress: "Brand Address is displayed automatically"
     });
 
     const mainImageRef = useRef(null)
@@ -469,7 +470,7 @@ const NewSpace = () => {
                     rowGap: "32px",
                 }}
             >
-                <InputWithMap inputLabel={"Space Overview:"} inputValue={spaceData?.spaceOverview} setInputValue={(value) => setSpaceData({ ...spaceData, spaceOverview: value })} mapInstruction={"Click on the map to change/adjust."} mapDescription={"Brand Address is displayed automatically"} activity={"space"} eventName={"Select your Brand"}
+                <InputWithMap inputLabel={"Space Overview:"} inputValue={spaceData?.spaceOverview} setInputValue={(value) => setSpaceData({ ...spaceData, spaceOverview: value })} mapInstruction={"Click on the map to change/adjust."} mapDescription={spaceData?.streetAddress} activity={"space"} eventName={"Select your Brand"}
                     // defaultPrice={spaceData?.price === "" ? "$xxx/day" : spaceData?.price?.price + "/" + spaceData?.price?.term}
                     defaultPrice={
                         spaceData?.price?.length > 0
@@ -543,7 +544,7 @@ const NewSpace = () => {
                     setInstructionValue={(e) => setSpaceData((prev) => ({
                         ...prev,
                         mapInstructions: e.target.value
-                    }))} setBrandData={setSpaceData} />
+                    }))} setBrandData={setSpaceData} disabled={true} />
             </ReusableModal>
             <ReusableModal open={priceModal} handleClose={() => setPriceModal(false)} heading={"Pricing and terms"}>
                 <PriceModal handleClose={HandlePriceSelect} data={spaceData?.price} />

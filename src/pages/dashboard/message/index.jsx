@@ -31,6 +31,9 @@ import {
 } from "../../../services/chats.js";
 
 import {
+  changeMessageType,
+  filterAllMyGroups,
+  getAllMyGroups,
   getChatDetails,
   getMessages,
   isActiveMembers,
@@ -46,11 +49,11 @@ import {
 } from "../../../utils/index.js";
 
 const icons = [
-  { icon: messageIcon, bg: "rgba(0, 20, 28, 0.8)", type: "message" },
-  { icon: brandIcon, bg: "rgba(196, 119, 127, 0.2)", type: "brand" },
-  { icon: flag, bg: "rgba(148, 185, 134, 0.2)", type: "event" },
-  { icon: spaceIcon, bg: "rgba(120, 150, 195, 0.2)", type: "space" },
-  { icon: profileIcon, bg: "rgba(0, 20, 28, 0.1)", type: "profile" },
+  { icon: messageIcon, bg: "rgba(0, 20, 28, 0.8)", activeBG: "rgba(0, 5, 7, 1)", type: "all", },
+  { icon: brandIcon, bg: "rgba(196, 119, 127, 0.2)", activeBG: "rgba(196, 119, 127, 0.8)", type: "brand", },
+  { icon: flag, bg: "rgba(148, 185, 134, 0.2)", activeBG: "rgba(148, 185, 134, 0.8)", type: "event", },
+  { icon: spaceIcon, bg: "rgba(120, 150, 195, 0.2)", activeBG: "rgba(120, 150, 195, 0.8)", type: "space", },
+  { icon: profileIcon, bg: "rgba(0, 20, 28, 0.1)", activeBG: "rgba(0, 20, 28, 0.8)", type: "profile", },
 ];
 
 const style = {
@@ -66,9 +69,15 @@ const Message = () => {
 
   const { emitEvent, addListener, removeListener } = useSocket();
 
-  const { myChat, messages, chatDetails, hasChats, allChatIds } = useSelector(
-    (state) => state.chat
-  );
+  const {
+    myChat,
+    messages,
+    chatDetails,
+    hasChats,
+    allChatIds,
+    allGroups,
+    hasMessages,
+  } = useSelector((state) => state.chat);
   const { user } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
@@ -91,24 +100,8 @@ const Message = () => {
     setIsNewIdsForAllMessages(filterNewIds(allChatIds, existingMessagesIds));
   }, [myChat, messages, allChatIds]);
 
-  const { data: messageData, isSuccess } = useGetChatsForContactsQuery(
-    {
-      chats: isNewIdsForAllMessages,
-    },
-    {
-      skip: !myChat?.length,
-    }
-  );
-
-  const { data: chatDetailsData, isSuccess: chatDetailsSuccess } =
-    useGetAllChatDetailsQuery(
-      {
-        chats: isNewIdsForChatDetails,
-      },
-      {
-        skip: !myChat?.length,
-      }
-    );
+  const { data: messageData, isSuccess } = useGetChatsForContactsQuery({ chats: isNewIdsForAllMessages }, { skip: !myChat?.length } );
+  const { data: chatDetailsData, isSuccess: chatDetailsSuccess } = useGetAllChatDetailsQuery( { chats: isNewIdsForChatDetails }, { skip: !myChat?.length, } );
 
   const [allMessages, setAllMessages] = useState([]);
   const [isTypingUser, setIsTypingUser] = useState(null);
@@ -119,6 +112,7 @@ const Message = () => {
   const [initialChatId, setInitialChatId] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [toShare, setToShare] = useState();
+  const [activeTab, setActiveTab] = useState("all");
 
   useEffect(() => {
     if (isSuccess && messageData && messageData?.length) {
@@ -165,30 +159,16 @@ const Message = () => {
 
     const handleNewMessageAlert = (data) => {
       if (
-        allMessages.length > 0 &&
+        allGroups?.length > 0 &&
         data.chatId !== (initialChatId || selectedChatId)
       ) {
-        const getNotReadMessage = JSON.parse(getCookie("unread"));
         const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
 
-        if (!getNotReadMessage) {
-          setCookie(
-            "unread",
-            JSON.stringify([{ chatId: data.chatId, count: 1 }])
-          );
+        if (!getUnreadChatIds) {
           setCookie("unreadChatIds", JSON.stringify([data.chatId]));
           return;
         }
 
-        const updatedMessages = getNotReadMessage?.some(
-          (el) => el.chatId === data.chatId
-        )
-          ? getNotReadMessage.map((el) =>
-              el.chatId === data.chatId ? { ...el, count: el.count + 1 } : el
-            )
-          : [...getNotReadMessage, { chatId: data.chatId, count: 1 }];
-
-        setCookie("unread", JSON.stringify(updatedMessages));
         if (!getUnreadChatIds.includes(data.chatId)) {
           getUnreadChatIds.push(data.chatId);
           setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
@@ -202,7 +182,7 @@ const Message = () => {
       removeListener("NEW_MESSAGE");
       removeListener("NEW_MESSAGE_ALERT");
     };
-  }, [addListener, removeListener, messages, emitEvent, allMessages]);
+  }, [addListener, removeListener, messages, emitEvent, allGroups]);
 
   useEffect(() => {
     const handleTypingStatus = (event, isTyping) => {
@@ -225,9 +205,15 @@ const Message = () => {
       let message = myChat.map((el) => {
         return messageBox(el, chatDetails, messages);
       });
+
+      dispatch(getAllMyGroups(message));
       setAllMessages(message);
+
+      return () => {
+        dispatch(changeMessageType());
+      };
     }
-  }, [myChat, messageData, chatDetailsData, messages, chatDetails, ,]);
+  }, [myChat, messageData, chatDetailsData, messages, chatDetails]);
 
   useEffect(() => {
     addListener("ONLINE_USERS", (data) => {
@@ -238,23 +224,24 @@ const Message = () => {
     return () => {
       removeListener("ONLINE_USERS");
     };
-  }, [addListener, removeListener, emitEvent, allMessages, user]);
+  }, [addListener, removeListener, emitEvent, allGroups, user]);
 
-  const handleNewInquiry = (selected, initialId = null) => {
-    const findParentIndex = allMessages?.findIndex(
+  const handleNewInquiry = (selected, initialId) => {
+    const findParentIndex = allGroups?.findIndex(
       (msg) => msg?.parentName === state?.spaceName
     );
+
     if (findParentIndex !== -1) {
       setExpanded(findParentIndex);
-    }
+      const parentGroup = allGroups[findParentIndex];
+      const selectedGroup = parentGroup?.chatGroups?.find(
+        (gr) => gr?.id === state.chatId
+      );
 
-    selected.chatGroup = allMessages[findParentIndex]?.chatGroups?.find(
-      (gr) => gr?.id === state.chatId
-    );
-    selected.group = allMessages[findParentIndex];
-    initialId = allMessages[findParentIndex]?.chatGroups?.find(
-      (gr) => gr?.id === state.chatId
-    ).id;
+      selected.chatGroup = selectedGroup;
+      selected.group = parentGroup;
+      initialId = selectedGroup.id;
+    }
 
     setTimeout(() => {
       navigate(pathname, { replace: true });
@@ -262,44 +249,34 @@ const Message = () => {
   };
 
   const handleAccordionChange = (index) => (event, isExpanded) => {
-    const selectedGroup = {
-      chatGroup: allMessages[index]?.chatGroups[0],
-      group: allMessages[index],
-    };
     setExpanded(index);
-    setSelectedGroup(selectedGroup);
-    setSelectedChatId(allMessages[index]?.chatGroups[0]?.chatId);
+    setSelectedGroup(commonSelectedChatGroup(allGroups, index));
+    setSelectedChatId(allGroups[index]?.chatGroups[0]?.chatId);
 
     const obj = {
       userId: user.userChatId,
-      members: allMessages[index]?.chatGroups[0]?.members,
+      members: allGroups[index]?.chatGroups[0]?.members,
     };
 
     if (index !== expanded) {
       dispatch(isActiveMembers(obj.members));
       emitEvent("CHAT_JOINED", obj);
     }
-    const getUnreadMessage = JSON.parse(getCookie("unread")) || [];
     const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds")) || [];
 
-    const ifCountExists = getUnreadMessage?.filter(
-      (msg) => msg.chatId !== allMessages[index]?.chatGroups[0]?.id
-    );
     const ifChatIdExists = getUnreadChatIds?.filter(
-      (id) => id !== allMessages[index]?.chatGroups[0]?.id
+      (id) => id !== allGroups[index]?.chatGroups[0]?.id
     );
 
-    if (ifCountExists?.length > 0) {
-      setCookie("unread", JSON.stringify(ifCountExists));
+    if (ifChatIdExists?.length > 0) {
       setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
     } else {
-      deleteCookie("unread");
       deleteCookie("unreadChatIds");
     }
   };
 
   useEffect(() => {
-    if (allMessages.length) {
+    if (allGroups?.length) {
       if (
         (selectedChatId === null && selectedGroup === null) ||
         (selectedChatId === null && selectedGroup !== null)
@@ -313,9 +290,9 @@ const Message = () => {
         if (state) {
           handleNewInquiry(selected, initialId);
         } else {
-          selected.chatGroup = allMessages[0]?.chatGroups[0];
-          selected.group = allMessages[0];
-          initialId = allMessages[0]?.chatGroups[0]?._id;
+          selected.chatGroup = allGroups[0]?.chatGroups[0];
+          selected.group = allGroups[0];
+          initialId = allGroups[0]?.chatGroups[0]?._id;
         }
 
         setInitialChatId(initialId);
@@ -331,7 +308,7 @@ const Message = () => {
       }
 
       if (selectedChatId !== null && expanded !== null) {
-        const group = allMessages[expanded];
+        const group = allGroups[expanded];
         const chatGroup = group?.chatGroups?.find(
           (msg) => msg.id === selectedChatId
         );
@@ -342,7 +319,7 @@ const Message = () => {
         };
 
         if (state) {
-          handleNewInquiry(selected);
+          handleNewInquiry(selected, null);
         } else {
           selected.chatGroup = chatGroup;
           selected.group = group;
@@ -361,7 +338,34 @@ const Message = () => {
         }
       }
     }
-  }, [allMessages, selectedChatId, expanded, messages]);
+  }, [allGroups, selectedChatId, expanded, messages]);
+
+  const filterChats = (type) => {
+    const filterGroups =
+      type !== "all"
+        ? allMessages?.filter((group) => group?.parentActivity === type)
+        : allMessages;
+
+    const obj = {
+      type,
+      filterGroups,
+    };
+
+    if (type !== activeTab) {
+      setActiveTab(type);
+      dispatch(filterAllMyGroups(obj));
+      setExpanded(0);
+      setSelectedGroup(commonSelectedChatGroup(filterGroups, 0));
+      setSelectedChatId(filterGroups[0]?.chatGroups[0]?.chatId);
+    }
+  };
+
+  const commonSelectedChatGroup = (all, index) => {
+    return {
+      chatGroup: all[index]?.chatGroups[0],
+      group: all[index],
+    };
+  };
 
   if (
     (chatDetails?.length === 0 || messages.length === 0) &&
@@ -384,9 +388,8 @@ const Message = () => {
 
   return (
     <Box sx={style}>
-      {allMessages?.length === 0 ? null : (
-        <Grid container spacing={2} justifyContent="center">
-          <Grid
+      <Grid container spacing={2} justifyContent="center">
+        <Grid
             sx={{
               display: isLessThan768
                 ? selectedGroup
@@ -399,23 +402,31 @@ const Message = () => {
             md={3.8}
             lg={3}
           >
-            <SearchMessage />
+          <SearchMessage />
 
-            <Box
-              sx={{
-                display: "flex",
-                margin: "0 auto 16px auto",
-                justifyContent: "flex-start",
+          <Box
+            sx={{
+              display: "flex",
+              margin: "0 auto 16px auto",
+              justifyContent: "flex-start",
                 overflowX: "auto",
                 maxWidth: "302px",
                 gap: 2,
-              }}
-            >
-              {icons.map((icon, i) => (
-                <IconBadge key={i} {...icon} theme={theme} />
-              ))}
-            </Box>
+            }}
+          >
+            {icons.map((icon, i) => (
+              <IconBadge
+                key={i}
+                {...icon}
+                theme={theme}
+                onClick={filterChats}
+                allGroups={allGroups}
+                activeTab={activeTab}
+              />
+            ))}
+          </Box>
 
+          {hasMessages === "No Chats" ? null : (
             <Box
               sx={{
                 fontFamily: '"Segoe UI", "sans-serif"',
@@ -432,7 +443,7 @@ const Message = () => {
                   : "50px",
               }}
             >
-              {allMessages?.map((message, index) => (
+              {allGroups?.map((message, index) => (
                 <MessageItem
                   key={index}
                   message={message}
@@ -447,45 +458,60 @@ const Message = () => {
                 />
               ))}
             </Box>
-          </Grid>
+          )}
+        </Grid>
 
-          <Grid
-            sx={{
+        <Grid
+          sx={{
               display: isLessThan768
                 ? selectedGroup
                   ? "block"
                   : "none"
                 : "block",
             }}
-            item
-            xs={12}
-            md={8}
+          item
+          xs={12}
+          md={8}
             lg={9}
-          >
-            {expanded === null ? (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "100%",
-                }}
-              >
-                <h1>No chat selected</h1>
-              </Box>
-            ) : (
-              <AllMessages
+        >
+          {hasMessages === "No Chats" ? (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "100%",
+              }}
+            >
+              <h1>No chats available</h1>
+            </Box>
+          ) : (
+            <>
+              {expanded === null ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "100%",
+                  }}
+                >
+                  <h1>No chat selected</h1>
+                </Box>
+              ) : (
+                <AllMessages
                 setSelectedGroup={setSelectedGroup}
-                selectedGroup={selectedGroup}
-                emitEvent={emitEvent}
-                isTypingUser={isTypingUser}
-                onlineUsers={onlineUsers}
-                setToShare={setToShare}
-              />
-            )}
-          </Grid>
+                  selectedGroup={selectedGroup}
+                  emitEvent={emitEvent}
+                  isTypingUser={isTypingUser}
+                  onlineUsers={onlineUsers}
+                  setToShare={setToShare}
+                />
+              )}
+            </>
+          )}
         </Grid>
-      )}
+      </Grid>
     </Box>
   );
 };

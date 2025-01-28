@@ -191,27 +191,13 @@ const SocketProvider = ({ children }) => {
         });
 
         const handleNewMessageAlert = (data) => {
-          const getNotReadMessage = JSON.parse(getCookie("unread"));
           const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
 
-          if (!getNotReadMessage) {
-            setCookie(
-              "unread",
-              JSON.stringify([{ chatId: data.chatId, count: 1 }])
-            );
+          if (!getUnreadChatIds) {
             setCookie("unreadChatIds", JSON.stringify([data.chatId]));
             return;
           }
 
-          const updatedMessages = getNotReadMessage?.some(
-            (el) => el.chatId === data.chatId
-          )
-            ? getNotReadMessage.map((el) =>
-                el.chatId === data.chatId ? { ...el, count: el.count + 1 } : el
-              )
-            : [...getNotReadMessage, { chatId: data.chatId, count: 1 }];
-
-          setCookie("unread", JSON.stringify(updatedMessages));
           if (!getUnreadChatIds.includes(data.chatId)) {
             getUnreadChatIds.push(data.chatId);
             setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
