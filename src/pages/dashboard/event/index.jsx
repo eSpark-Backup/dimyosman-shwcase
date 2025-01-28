@@ -118,7 +118,7 @@ const Event = () => {
 
   return (
     <Box>
-      <Stack direction="row" justifyContent="flex-end">
+      <Stack direction="row" justifyContent={{ xs: "center", sm: "flex-end" }} >
         <img src={eventIconLight} alt="event" />
       </Stack>
       <Card sx={{ marginY: 2 }}>

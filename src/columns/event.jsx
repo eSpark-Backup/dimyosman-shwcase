@@ -42,7 +42,7 @@ const myEventsColumns = (gotoDetail, handleAction, gotoBrand, gotoSpace) => {
                     position: "absolute",
                     bottom: 0,
                     right: 0,
-                    zIndex: 99,
+                    zIndex: 8,
                   }}
                   width={16}
                   height={16}
