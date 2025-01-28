@@ -12,13 +12,17 @@ import { useGetGeneralSearchQuery } from "../../../services/general";
 
 const Search = () => {
   const { parameters, skip } = useSelector((state) => state.search);
+  const { user } = useSelector((state) => state.auth);
 
   const {
     data: searchedData,
     isSuccess,
     isLoading,
     isFetching,
-  } = useGetGeneralSearchQuery({ parameters }, { skip });
+  } = useGetGeneralSearchQuery(
+    { parameters },
+    { skip, refetchOnMountOrArgChange: skip ? false : true }
+  );
 
   const [data, setData] = useState(null);
   const [hasFetchedData, setHasFetchedData] = useState(false);
@@ -39,7 +43,10 @@ const Search = () => {
 
         if (getObject?.spaces?.length) {
           const onlySpaceData = getObject?.spaces?.map((space) => {
-            return keysForBrandsSapcesEvents(space, "space");
+            
+            return space?.brandName
+              ? makeBrandsData(space)
+              : keysForBrandsSapcesEvents(space, "space");
           });
 
           updatedData = [...updatedData, ...onlySpaceData];
@@ -52,6 +59,34 @@ const Search = () => {
       setHasFetchedData(true);
     }
   }, [searchedData?.data, isSuccess, isLoading, isFetching, skip, parameters]);
+
+  const makeBrandsData = (el) => {
+    const coverArray =
+      el?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
+
+    return {
+      brandId: el?.id,
+      activity: "brand",
+      userName: "user name",
+      userImage: user?.profileImage ? user.profileImage : "",
+      activityImage: el?.brandImage || "",
+      activityName: el?.brandName || "",
+      activityMaker:
+        el?.brandCategory?.map((item) => item.name).join(",") || "",
+      content: [el?.details?.description || ""],
+      userRole: "profile",
+      slides: coverArray,
+      location: el?.location || [],
+    };
+  };
+
+  if(isLoading || isFetching){
+    return (
+      <Box sx={{ width: "100%" }}>
+      <LinearProgress />
+    </Box>
+    )
+  }
 
   return (
     <>
@@ -74,11 +109,7 @@ const Search = () => {
             rowGap: "12px",
           }}
         >
-          {isLoading || isFetching ? (
-            <Box sx={{ width: "100%" }}>
-              <LinearProgress />
-            </Box>
-          ) : !skip && data !== null && data.length === 0 && hasFetchedData ? (
+          {!skip && data !== null && data.length === 0 && hasFetchedData ? (
             <Box sx={{ width: "100%" }}>
               <h1>No Results Found</h1>
             </Box>

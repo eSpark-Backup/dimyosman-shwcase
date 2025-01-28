@@ -180,7 +180,7 @@ export const keysForBrandsSapcesEvents = (object, type) => {
     userImage: object?.brand?.brandImage || "",
     userRole: "brand",
     slides: coverArray,
-    location: object?.location || [],
+    location: object?.brand?.location || [],
   };
 
   if (type === "space") {

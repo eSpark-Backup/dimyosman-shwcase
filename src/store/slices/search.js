@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   skip: true,
   parameters: {
-    entity: "Select Filter",
+    entity: "",
     name: "",
     locaion: "",
     long: "",
@@ -47,7 +47,7 @@ const slice = createSlice({
     },
     emptyFilters: (state) => {
       state.parameters = {
-        entity: "Select Filter",
+        entity: "",
         name: "",
         locaion: "",
         long: "",
