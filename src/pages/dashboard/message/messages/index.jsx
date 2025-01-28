@@ -61,6 +61,7 @@ const GroupDetail = ({ withColon, text }) => (
 );
 
 const AllMesaages = ({
+  setSelectedGroup,
   selectedGroup,
   emitEvent,
   isTypingUser,
@@ -219,6 +220,7 @@ const AllMesaages = ({
     <Box position={"relative"}>
       {selectedGroup && (
         <MessageHeader
+          setSelectedGroup={setSelectedGroup}
           selectedGroup={selectedGroup}
           theme={theme}
           ActivityType={ActivityType}
