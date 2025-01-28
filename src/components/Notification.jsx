@@ -1,23 +1,52 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import { Box, LinearProgress, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 
 import ActivityType from "./Message/ActivityType";
-import { useSelector } from "react-redux";
+
+import {
+  emptyGoToMessage,
+  setFromNotification,
+  setGoToMessage,
+} from "../store/slices/notification";
 
 const Notification = ({ open, theme, setShowNotification }) => {
+  const notifRef = useRef();
+
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { pathname } = useLocation();
 
   const { notifications } = useSelector((state) => state.notification);
 
   const navigation = (item) => {
+    dispatch(emptyGoToMessage());
+    dispatch(setFromNotification(false));
+
     const navigateData = {
       spaceName: item.metadata.receiverSpaceName,
       chatId: item.metadata.ChatId,
     };
     setShowNotification(false);
-    navigate("/message", { state: navigateData });
+
+    dispatch(setGoToMessage(navigateData));
+    dispatch(setFromNotification(true));
+
+    if (pathname !== "/message") {
+      navigate("/message");
+    }
   };
+
+  useEffect(() => {
+    if (open && notifRef.current) {
+      notifRef.current.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+  }, [open]);
 
   return (
     <Box
@@ -33,7 +62,7 @@ const Notification = ({ open, theme, setShowNotification }) => {
         padding: "16px",
         width: "366px",
         overflow: "hidden",
-        zIndex:"99999"
+        zIndex: "99999",
       }}
     >
       <Typography
@@ -47,7 +76,11 @@ const Notification = ({ open, theme, setShowNotification }) => {
         Notifications:
       </Typography>
 
-      <Stack gap={4} sx={{ overflowY: "auto", maxHeight: "220px" }}>
+      <Stack
+        gap={4}
+        sx={{ overflowY: "auto", maxHeight: "220px" }}
+        ref={notifRef}
+      >
         {notifications.length > 0 ? (
           notifications.map((item) => {
             return (

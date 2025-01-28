@@ -36,6 +36,8 @@ const Sidebar = () => {
         const hover = hovered === ind;
         return (
           <Stack
+            className="sidebar-item"
+            id={item.title}
             onClick={() => navigate(item.link)}
             onMouseOver={() => setHovered(ind)}
             onMouseOut={() => setHovered(false)}
@@ -64,9 +66,10 @@ const Sidebar = () => {
               sx={{
                 width: "196px",
                 color: (theme) => theme.palette.primary.main,
-                display: getSmallSidebar(pathname) || pathname === "/message"
-                  ? "none"
-                  : { xs: "none", lg: "block" },
+                display:
+                  getSmallSidebar(pathname) || pathname === "/message"
+                    ? "none"
+                    : { xs: "none", lg: "block" },
               }}
             >
               {item.title}

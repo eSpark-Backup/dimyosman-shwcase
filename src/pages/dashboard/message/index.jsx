@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 
 import { useSelector, useDispatch } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
 
 import AllMessages from "./messages";
 
@@ -38,6 +37,7 @@ import {
   getMessages,
   isActiveMembers,
 } from "../../../store/slices/chat.js";
+import { emptyGoToMessage, setFromNotification } from "../../../store/slices/notification.js";
 
 import { useSocket } from "../../../context/SocketContext.jsx";
 
@@ -91,10 +91,9 @@ const Message = () => {
     hasMessages,
   } = useSelector((state) => state.chat);
   const { user } = useSelector((state) => state.auth);
+  const { gotToMessage, fromNotification } = useSelector((state) => state.notification);
 
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { state, pathname } = useLocation();
 
   const [isNewIdsForChatDetails, setIsNewIdsForChatDetails] = useState([]);
   const [isNewIdsForAllMessages, setIsNewIdsForAllMessages] = useState([]);
@@ -112,8 +111,25 @@ const Message = () => {
     setIsNewIdsForAllMessages(filterNewIds(allChatIds, existingMessagesIds));
   }, [myChat, messages, allChatIds]);
 
-  const { data: messageData, isSuccess } = useGetChatsForContactsQuery({ chats: isNewIdsForAllMessages }, { skip: !myChat?.length } );
-  const { data: chatDetailsData, isSuccess: chatDetailsSuccess } = useGetAllChatDetailsQuery( { chats: isNewIdsForChatDetails }, { skip: !myChat?.length, } );
+  const {
+    data: messageData,
+    isSuccess,
+    isFetching: isFetchingMessage,
+  } = useGetChatsForContactsQuery(
+    { chats: isNewIdsForAllMessages },
+    { refetchOnMountOrArgChange: true, refetchOnFocus: true },
+    { skip: !myChat?.length }
+  );
+
+  const {
+    data: chatDetailsData,
+    isSuccess: chatDetailsSuccess,
+    isFetching,
+  } = useGetAllChatDetailsQuery(
+    { chats: isNewIdsForChatDetails },
+    { refetchOnMountOrArgChange: true, refetchOnFocus: true },
+    { skip: !myChat?.length }
+  );
 
   const [allMessages, setAllMessages] = useState([]);
   const [isTypingUser, setIsTypingUser] = useState(null);
@@ -240,27 +256,26 @@ const Message = () => {
 
   const handleNewInquiry = (selected, initialId) => {
     const findParentIndex = allGroups?.findIndex(
-      (msg) => msg?.parentName === state?.spaceName
+      (msg) => msg?.parentName === gotToMessage?.spaceName
     );
 
     if (findParentIndex !== -1) {
       setExpanded(findParentIndex);
       const parentGroup = allGroups[findParentIndex];
       const selectedGroup = parentGroup?.chatGroups?.find(
-        (gr) => gr?.id === state.chatId
+        (gr) => gr?.id === gotToMessage?.chatId
       );
 
       selected.chatGroup = selectedGroup;
       selected.group = parentGroup;
-      initialId = selectedGroup.id;
+      initialId = selectedGroup?.id;
     }
-
-    setTimeout(() => {
-      navigate(pathname, { replace: true });
-    }, 1000);
   };
 
   const handleAccordionChange = (index) => (event, isExpanded) => {
+    dispatch(emptyGoToMessage());
+    dispatch(setFromNotification(false));
+
     setExpanded(index);
     setSelectedGroup(commonSelectedChatGroup(allGroups, index));
     setSelectedChatId(allGroups[index]?.chatGroups[0]?.chatId);
@@ -299,7 +314,7 @@ const Message = () => {
         };
         let initialId = null;
 
-        if (state) {
+        if (gotToMessage) {
           handleNewInquiry(selected, initialId);
         } else {
           selected.chatGroup = allGroups[0]?.chatGroups[0];
@@ -330,7 +345,7 @@ const Message = () => {
           group: {},
         };
 
-        if (state) {
+        if (gotToMessage) {
           handleNewInquiry(selected, null);
         } else {
           selected.chatGroup = chatGroup;
@@ -350,7 +365,7 @@ const Message = () => {
         }
       }
     }
-  }, [allGroups, selectedChatId, expanded, messages]);
+  }, [allGroups, selectedChatId, expanded, messages, gotToMessage]);
 
   const filterChats = (type) => {
     const filterGroups =
@@ -380,8 +395,8 @@ const Message = () => {
   };
 
   if (
-    (chatDetails?.length === 0 || messages.length === 0) &&
-    hasChats != "empty"
+    ((chatDetails?.length === 0 || messages.length === 0) && hasChats != "empty") ||
+    (fromNotification && (isFetching || isFetchingMessage))
   ) {
     return (
       <Box sx={style}>
