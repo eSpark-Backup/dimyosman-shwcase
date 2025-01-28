@@ -118,6 +118,8 @@ import profilePicture from "./profile-picture.png";
 import allIconLight from "./shw-icon.png";
 import memberIconLight from "./member-icon.png";
 import mediumMap from "./medium-map.png"
+import mapMarkerSpace from "./map_marker_space.svg"
+import mapMarkerBrand from "./map_marker_brand.svg"
 
 export {
   react,
@@ -238,5 +240,8 @@ export {
   profilePicture,
   allIconLight,
   memberIconLight,
-  mediumMap
+  // mediumMap
+  mediumMap,
+  mapMarkerBrand,
+  mapMarkerSpace
 };
