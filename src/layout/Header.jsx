@@ -142,7 +142,7 @@ const Header = ({ isLogin }) => {
           display: open ? "block" : "none",
           position: "absolute",
           top: "58px",
-          right: title ? "210px" : 0,
+          right: title ? { xs: "120px", sm: "210px" } : 0,
           border: "1px solid #D1DBD7",
           background: "#fff",
           borderRadius: "0px 0px 5px 5px",

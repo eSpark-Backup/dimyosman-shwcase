@@ -57,25 +57,13 @@ const icons = [
 ];
 
 const style = {
-  paddingLeft: "105px",
-  maxWidth: {
-    xs: "calc(100% - 111px)",
-    md: "100%",
-  },
-
-  "@media only screen and (min-width: 1281px)": {
-    maxWidth: "1100px",
-  },
-
-  "@media only screen and (min-width: 1600px)": {
-    maxWidth: "1500px",
-  },
+  maxWidth: "1500px",
 };
 
 const Message = () => {
   const theme = useTheme();
 
-  const isLessThan900 = useMediaQuery("(max-width:900px)");
+  const isLessThan768 = useMediaQuery("(max-width:768px)");
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
 
@@ -323,7 +311,7 @@ const Message = () => {
         }
 
         setInitialChatId(initialId);
-        setSelectedGroup(selected);
+        !isLessThan768 && setSelectedGroup(selected);
 
         const obj = {
           userId: user.userChatId,
@@ -416,14 +404,29 @@ const Message = () => {
   return (
     <Box sx={style}>
       <Grid container spacing={2} justifyContent="center">
-        <Grid item xs={12} md={3.8}>
+        <Grid
+            sx={{
+              display: isLessThan768
+                ? selectedGroup
+                  ? "none"
+                  : "block"
+                : "block",
+            }}
+            item
+            xs={12}
+            md={3.8}
+            lg={3}
+          >
           <SearchMessage />
 
           <Box
             sx={{
               display: "flex",
-              marginBottom: 2,
-              justifyContent: "space-between",
+              margin: "0 auto 16px auto",
+              justifyContent: "flex-start",
+                overflowX: "auto",
+                maxWidth: "302px",
+                gap: 2,
             }}
           >
             {icons.map((icon, i) => (
@@ -474,10 +477,17 @@ const Message = () => {
         </Grid>
 
         <Grid
-          sx={{ display: isLessThan900 ? "none" : "block" }}
+          sx={{
+              display: isLessThan768
+                ? selectedGroup
+                  ? "block"
+                  : "none"
+                : "block",
+            }}
           item
           xs={12}
           md={8}
+            lg={9}
         >
           {hasMessages === "No Chats" ? (
             <Box
@@ -505,6 +515,7 @@ const Message = () => {
                 </Box>
               ) : (
                 <AllMessages
+                setSelectedGroup={setSelectedGroup}
                   selectedGroup={selectedGroup}
                   emitEvent={emitEvent}
                   isTypingUser={isTypingUser}

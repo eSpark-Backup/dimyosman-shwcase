@@ -18,7 +18,8 @@ const Sidebar = () => {
       alignItems="center"
       gap={1}
       sx={{
-        zIndex: 999,
+        display: { xs: "none", sm: "block" },
+        zIndex: 9,
         position: "fixed",
         left: "16px",
         top: "80px",

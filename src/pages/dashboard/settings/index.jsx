@@ -53,6 +53,8 @@ const flexContentCenter = {
 const formGroupStyle = {
   ...flexItemCenter,
   width: "100%",
+  alignItems: { xs: "flex-start", sm: "center"},
+  flexDirection: { xs: "column", sm: "row" }
 };
 
 const authBtnStyle = {
@@ -455,7 +457,13 @@ const Settings = () => {
                 change password
               </Typography>
 
-              <Box sx={{ display: "flex" }}>
+              <Box
+                sx={{
+                  display: "flex",   
+                  alignItems: { xs: "flex-start", sm: "center"},
+                  flexDirection: { xs: "column", sm: "row" }
+                }}
+              >
                 <Typography
                   style={{
                     fontWeight: 300,

@@ -178,7 +178,7 @@ const Space = () => {
 
   return (
     <Box>
-      <Stack direction="row" justifyContent="flex-end">
+      <Stack direction="row" justifyContent={{ xs: "center", sm: "flex-end" }}>
         <Box
           sx={{
             width: "48px",

@@ -24,15 +24,19 @@ const OutlinedTabs = ({ tabs, onTabChange }) => {
       <Stack
         paddingX={2}
         direction="row"
-        justifyContent="space-between"
+        justifyContent={{ xs: "flex-start", md: "space-between" }}
         alignItems="center"
+        sx={{
+          overflowX: "auto",
+        }}
       >
         {tabs.map((tab) => {
           const active = tab.label === selectedTab.label;
           return (
             <Box
               sx={{
-                width: `${100 / tabs.length}%`,
+                width: { xs: "150px", md: `${100 / tabs.length}%` },
+                flexShrink: 0,
                 textAlign: "center",
                 cursor: "pointer",
                 padding: "10px 0",
