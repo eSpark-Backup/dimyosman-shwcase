@@ -117,7 +117,7 @@ const Brand = () => {
 
   return (
     <Box>
-      <Stack direction="row" justifyContent="flex-end">
+      <Stack direction="row" justifyContent={{ xs: "center", sm: "flex-end" }}>
         <img src={brandIconlight} alt="brand" />
       </Stack>
       <Card sx={{ marginY: 2 }}>
