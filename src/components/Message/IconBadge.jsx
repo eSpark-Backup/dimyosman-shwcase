@@ -24,11 +24,12 @@ const IconBadge = ({ icon, bg, type, theme }) => {
         bgcolor: bg,
         height: "48px",
         width: "48px",
+        minHeight: "48px",
+        minWidth: "48px",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         borderRadius: "5px",
-        marginRight: 2,
         position: "relative",
 
         "&:last-child": {
