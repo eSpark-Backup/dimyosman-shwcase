@@ -1,5 +1,12 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { Brand, Events, Spaces, User, LeaseSpace } from "../../entity";
+import {
+  Brand,
+  Events,
+  Spaces,
+  User,
+  LeaseSpace,
+  LeaseStatus,
+} from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
 import {
@@ -12,6 +19,7 @@ import {
   CLOUD_FOLDERS,
   HTTP_STATUS,
   NEW_MESSAGE,
+  NEW_NOTIFICATION,
   NEW_REQUEST,
   PAGINATION,
   REFETCH_CHATS,
@@ -43,13 +51,307 @@ export class SpaceController {
     private messageModel: typeof Message
   ) {}
 
+  async getSpaceForEvent(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = req.user.id;
+      const { page, pageSize } = req.query;
+      const skipNumber = Number(page);
+      const takeNumber = Number(pageSize);
+
+      // Fetching spaces where the user is the space owner
+      const [spaces, totalSpaces] = await this.spaceRepo
+        .createQueryBuilder("space")
+        .leftJoinAndSelect("space.brand", "brand")
+        .leftJoinAndSelect("space.user", "user")
+        .where("space.user = :userId", { userId })
+
+        .skip(Number(skipNumber) || 0)
+        .take(Number(takeNumber) || 10)
+        .select([
+          "space.id",
+          "space.spaceName",
+          "space.spaceCategory",
+          "space.createdAt",
+        ])
+        .orderBy("space.createdAt", "DESC")
+        .getManyAndCount();
+
+      // Fetching spaces leased by the user (tenant)
+      const [tenantSpaces, totalTenantSpaces] = await this.leaseSpaceRepo
+        .createQueryBuilder("leaseSpace")
+        .leftJoinAndSelect("leaseSpace.space", "space")
+        .leftJoinAndSelect("leaseSpace.owner", "owner")
+        .leftJoinAndSelect("space.brand", "brand")
+        .leftJoinAndSelect("space.user", "user")
+        .select([
+          "leaseSpace.id",
+          "leaseSpace.contractDetails",
+          "leaseSpace.status",
+          "owner.id",
+          "space.id",
+          "space.spaceName",
+          "space.createdAt",
+          "brand.brandName",
+          "brand.location",
+        ])
+        .where("owner.id = :userId", { userId })
+        .andWhere("leaseSpace.status = :status", {
+          status: LeaseStatus.ACTIVE,
+        })
+        .skip(Number(skipNumber) || 0)
+        .take(Number(takeNumber) || 10)
+        .getManyAndCount();
+
+      if (totalSpaces === 0 && totalTenantSpaces === 0) {
+        throw new ApiError("No spaces found", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      if (spaces.length > 0) {
+        for (const space of spaces) {
+          const events = await this.eventsRepo
+            .createQueryBuilder("event")
+            .where("event.space = :spaceId", { spaceId: space.id })
+            .getMany();
+
+          const calendarEvents = events.flatMap((event) => {
+            const eventDates: EventDate[] = Array.isArray(event.eventDate)
+              ? event.eventDate
+              : JSON.parse(event.eventDate as unknown as string);
+
+            return eventDates.map((dateRange) => ({
+              eventId: event.id,
+              title: event.eventName,
+              start: new Date(dateRange.startDate),
+              end: new Date(dateRange.endDate),
+            }));
+          });
+
+          (space as any).calendarEvents = calendarEvents;
+        }
+      }
+      if (tenantSpaces.length > 0) {
+        //parse the contractDetails field
+        for (const tenantSpace of tenantSpaces) {
+          tenantSpace.contractDetails = JSON.parse(
+            tenantSpace.contractDetails as unknown as string
+          );
+        }
+      }
+      // Preparing the result to return in the response
+      const result = {
+        availableSpaces: spaces,
+        tenantSpaces: tenantSpaces,
+        pagination: {
+          totalItems: totalSpaces + totalTenantSpaces,
+          currentPage: Number(skipNumber) || 0,
+          pageSize: Number(takeNumber) || 10,
+          totalPages: Math.ceil(
+            (totalSpaces + totalTenantSpaces) / (Number(takeNumber) || 10)
+          ),
+        },
+      };
+      res.status(HTTP_STATUS.OK).json(handleResponse("Spaces fetched", result));
+      return next();
+    } catch (error) {
+      logger.error(
+        `Error fetching available spaces: ${(error as Error).message}`
+      );
+      return next(error);
+    }
+  }
+
+  async paymentVerification(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const { id } = req.params;
+    const userId = req.user.id;
+    try {
+      const leaseSpace = await this.leaseSpaceRepo
+        .createQueryBuilder("leaseSpace")
+        .where("leaseSpace.id = :id", { id })
+        .leftJoinAndSelect("leaseSpace.tenant", "tenant")
+        .leftJoinAndSelect("leaseSpace.brand", "brand")
+        .leftJoinAndSelect("leaseSpace.space", "space")
+        .leftJoinAndSelect("leaseSpace.owner", "owner")
+        .getOne();
+      if (!leaseSpace) {
+        throw new ApiError("Lease space not found", HTTP_STATUS.BAD_REQUEST);
+      }
+      if (userId !== leaseSpace.tenant.id && userId !== leaseSpace.owner.id) {
+        throw new ApiError(
+          "You are not authorized to verify this payment",
+          HTTP_STATUS.FORBIDDEN
+        );
+      }
+      if (userId == leaseSpace.tenant.id) {
+        if (leaseSpace.status !== LeaseStatus.VERIFY_AND_PAY) {
+          throw new ApiError(
+            "You are not authorized to verify this payment",
+            HTTP_STATUS.FORBIDDEN
+          );
+        }
+        leaseSpace.status = LeaseStatus.PENDING;
+        await this.leaseSpaceRepo.save(leaseSpace);
+        await this.notificationModel.create({
+          user: leaseSpace.owner.userChatId,
+          title: `Received Request For Payment Verification`,
+          metadata: {
+            senderImage: leaseSpace.brand.brandImage,
+            redirect: "Tenant",
+          },
+
+          message: `Tenant ${leaseSpace.tenant.name} has requested for payment verification of the ${leaseSpace.space.spaceName} space`,
+          type: "info",
+        }),
+          emitEvent(req, NEW_NOTIFICATION, [leaseSpace.owner.userChatId], {
+            name: `Tenant ${leaseSpace.tenant.name} has requested for payment verification of the ${leaseSpace.space.spaceName} space`,
+            senderImage: leaseSpace.brand.brandImage,
+            redirect: "Tenant",
+          });
+        res
+          .status(HTTP_STATUS.OK)
+          .json(
+            handleResponse("Payment Verification Request Sent Successfully")
+          );
+        return next();
+      } else if (userId == leaseSpace.owner.id) {
+        if (leaseSpace.status !== LeaseStatus.PENDING) {
+          throw new ApiError(
+            "You are not authorized to verify this payment",
+            HTTP_STATUS.FORBIDDEN
+          );
+        }
+        leaseSpace.status = LeaseStatus.ACTIVE;
+        await this.leaseSpaceRepo.save(leaseSpace);
+        await this.notificationModel.create({
+          user: leaseSpace.tenant.userChatId,
+          title: `Payment Verified`,
+          metadata: {
+            senderImage: leaseSpace.space.spaceImage,
+            redirect: "Lease",
+          },
+          message: `Owner ${leaseSpace.owner.name} has verified the payment for the ${leaseSpace.space.spaceName} space`,
+          type: "info",
+        }),
+          emitEvent(req, NEW_NOTIFICATION, [leaseSpace.tenant.userChatId], {
+            name: `Owner ${leaseSpace.owner.name} has verified the payment`,
+            senderImage: leaseSpace.space.spaceImage,
+            redirect: "Lease",
+          });
+        res
+          .status(HTTP_STATUS.OK)
+          .json(handleResponse("Payment Verified Successfully"));
+        return next();
+      }
+    } catch (error) {
+      logger.error(
+        `SpaceController :: paymentVerification :: ${(error as Error)?.message}`
+      );
+
+      return next(error);
+    }
+  }
+  async tenantUploadSignature(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const imageFilesPath = path.join(process.cwd(), "uploads");
+
+      const tenant = await this.userRepo.findOne({
+        where: { id: req.user.id },
+      });
+      if (!tenant) {
+        throw new ApiError("Tenant not found", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      const leaseSpace = await this.leaseSpaceRepo
+        .createQueryBuilder("leaseSpace")
+        .where("leaseSpace.id = :id", { id })
+        .leftJoinAndSelect("leaseSpace.tenant", "tenant")
+        .getOne();
+      if (!leaseSpace) {
+        throw new ApiError("Lease space not found", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      if (leaseSpace.tenant.id !== tenant.id) {
+        throw new ApiError(
+          "You are not authorized to sign this lease",
+          HTTP_STATUS.FORBIDDEN
+        );
+      }
+
+      const imageFiles = fs
+        .readdirSync(imageFilesPath)
+        .filter((file) => file.startsWith("image"));
+      if (!imageFiles.length) {
+        throw new ApiError(
+          "Missing required signature file",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+
+      const imageFileObjects = imageFiles.map((file) =>
+        commonHelper.createFileObject(path.join(imageFilesPath, file), "image")
+      );
+
+      const FolderName = `${
+        CLOUD_FOLDERS.SPACE
+      }/CONTRACT/${tenant.name.trim()}`;
+      const imageUrls = (await uploadService.uploadMultipleFiles(
+        imageFileObjects,
+        FolderName
+      )) as UploadResult[];
+
+      leaseSpace.tenantSign = imageUrls[0].url as string;
+      leaseSpace.tenantSignImageKey = imageUrls[0].public_id;
+      leaseSpace.status = LeaseStatus.VERIFY_AND_PAY;
+
+      await this.leaseSpaceRepo.save(leaseSpace);
+
+      imageFiles.forEach((file) => {
+        const filePath = path.join(imageFilesPath, file);
+        fs.unlinkSync(filePath);
+        console.log(`Deleted file: ${filePath}`);
+      });
+
+      res
+        .status(HTTP_STATUS.OK)
+        .json(handleResponse("Tenant Signature Uploaded Successfully"));
+    } catch (error) {
+      logger.error(
+        `SpaceController :: tenantUploadSignature :: ${
+          (error as Error)?.message
+        }`
+      );
+
+      const uploadsPath = path.join(process.cwd(), "uploads");
+
+      fs.readdirSync(uploadsPath).forEach((file) => {
+        const filePath = path.join(uploadsPath, file);
+        fs.unlinkSync(filePath);
+        logger.error(`Deleted file: ${filePath}`);
+      });
+
+      return next(error);
+    }
+  }
+
   async leaseSpace(
     req: ICustomRequest,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
-      const { spaceId, tenantId, chatId, contractDetails } = req.body;
+      const { spaceId, tenantId, chatId, contractDetails, brandId } = req.body;
       const imageFilesPath = path.join(process.cwd(), "uploads");
       const space = await this.spaceRepo
         .createQueryBuilder("space")
@@ -59,13 +361,17 @@ export class SpaceController {
       if (!space) {
         throw new ApiError("Space not found", HTTP_STATUS.BAD_REQUEST);
       }
+      const brand = await this.brandRepo
+        .createQueryBuilder("brand")
+        .where("brand.id = :brandId", { brandId })
+        .getOne();
       const imageFiles = fs
         .readdirSync(path.join(imageFilesPath))
         .filter((file) => file.startsWith("image")); // Filter for image files
 
       if (!imageFiles.length) {
         throw new ApiError(
-          "Missing required files: 'cover' or 'image'",
+          "Missing required files: 'image'",
           HTTP_STATUS.BAD_REQUEST
         );
       }
@@ -98,6 +404,7 @@ export class SpaceController {
       const leaseSpace = new LeaseSpace();
       leaseSpace.owner = owner;
       leaseSpace.space = space;
+      leaseSpace.brand = brand;
       leaseSpace.chatId = chatId;
       leaseSpace.ownerSign = imageUrls[0].url as string;
       leaseSpace.ownerSignImageKey = imageUrls[0].public_id;
@@ -254,7 +561,7 @@ export class SpaceController {
         spaceName,
         spaceCategory,
         details,
-        location,
+        // location,
         status,
         brandId,
         amenity,
@@ -297,7 +604,7 @@ export class SpaceController {
       newSpace.spaceName = spaceName;
       newSpace.spaceCategory = spaceCategory;
       newSpace.details = details;
-      newSpace.location = location;
+      // newSpace.location = location;
       newSpace.status = status;
       newSpace.pricing = pricing;
       newSpace.user = user as User;
@@ -370,7 +677,7 @@ export class SpaceController {
         spaceName,
         spaceCategory,
         details,
-        location,
+        // location,
         status,
         amenity,
         pricing,
@@ -488,7 +795,7 @@ export class SpaceController {
       existingSpace.spaceCategory =
         spaceCategory || existingSpace.spaceCategory;
       existingSpace.details = details || existingSpace.details;
-      existingSpace.location = location || existingSpace.location;
+      // existingSpace.location = location || existingSpace.location;
       existingSpace.amenity = amenity || existingSpace.amenity;
       existingSpace.status = status || existingSpace.status;
       existingSpace.pricing = pricing || existingSpace.pricing;
@@ -764,6 +1071,7 @@ export class SpaceController {
         let [leaseSpace, totalItems] = await this.leaseSpaceRepo
           .createQueryBuilder("leaseSpace")
           .leftJoinAndSelect("leaseSpace.space", "space")
+          .leftJoinAndSelect("leaseSpace.brand", "leaseBrand")
           .leftJoinAndSelect("leaseSpace.tenant", "tenant")
           .where("tenant.id = :userId", { userId: req.user?.id })
 
@@ -812,6 +1120,67 @@ export class SpaceController {
         res.status(200).json(
           handleResponse("Spaces Fetched Successfully", {
             leaseSpace,
+            pagination: {
+              totalItems,
+              currentPage: parseInt(page as string, 10),
+              pageSize: takeNumber,
+              totalPages: Math.ceil(totalItems / takeNumber),
+            },
+          })
+        );
+      } else if (tab == "Tenant") {
+        let [tenantSpace, totalItems] = await this.leaseSpaceRepo
+          .createQueryBuilder("leaseSpace")
+          .leftJoinAndSelect("leaseSpace.space", "space")
+          .leftJoinAndSelect("leaseSpace.owner", "owner")
+          .leftJoinAndSelect("leaseSpace.brand", "leaseBrand")
+          .where("owner.id = :userId", { userId: req.user?.id })
+
+          .leftJoinAndSelect("space.brand", "brand")
+          .leftJoinAndSelect("space.user", "user")
+          .orderBy("leaseSpace.createdAt", "DESC")
+          .skip(skipNumber)
+          .take(takeNumber)
+          .getManyAndCount();
+
+        if (tenantSpace.length === 0) {
+          res.status(200).json(handleResponse("No Spaces Found"));
+          return next();
+        }
+
+        tenantSpace.forEach((space) => {
+          if (typeof space.space.coverImages === "string") {
+            space.space.coverImages = JSON.parse(space.space.coverImages);
+            if (typeof space.contractDetails === "string") {
+              space.contractDetails = JSON.parse(space.contractDetails);
+            }
+          }
+        });
+        for (const space of tenantSpace) {
+          const events = await this.eventsRepo
+            .createQueryBuilder("event")
+            .where("event.space = :spaceId", { spaceId: space.space.id })
+            .getMany();
+
+          const calendarEvents = events.flatMap((event) => {
+            const eventDates: EventDate[] = Array.isArray(event.eventDate)
+              ? event.eventDate
+              : JSON.parse(event.eventDate as unknown as string);
+
+            return eventDates.map((dateRange) => ({
+              eventId: event.id,
+              title: event.eventName,
+              start: new Date(dateRange.startDate),
+              end: new Date(dateRange.endDate),
+            }));
+          });
+
+          (space as any).calendarEvents = calendarEvents;
+        }
+
+        res.status(200).json(
+          handleResponse("Spaces Fetched Successfully", {
+            tenantSpace,
             pagination: {
               totalItems,
               currentPage: parseInt(page as string, 10),

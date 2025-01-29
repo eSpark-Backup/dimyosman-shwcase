@@ -31,11 +31,11 @@ export class SpaceValidation {
         minimum: Joi.string().required(),
       })
     ),
-    location: Joi.object({
-      long: Joi.number().required(),
-      lat: Joi.number().required(),
-      additional: Joi.string().optional(),
-    }).optional(),
+    // location: Joi.object({
+    //   long: Joi.number().required(),
+    //   lat: Joi.number().required(),
+    //   additional: Joi.string().optional(),
+    // }).optional(),
     status: Joi.string()
       .valid(...Object.values(SPACE_STATUS))
       .required(),
@@ -49,6 +49,7 @@ export class SpaceValidation {
   });
   static LeasingSpaceValidation = Joi.object({
     spaceId: Joi.string().optional(),
+    brandId: Joi.string().optional(),
     chatId: Joi.string().required(),
     tenantId: Joi.string().required(),
     contractDetails: Joi.object().required(),
@@ -85,11 +86,11 @@ export class SpaceValidation {
     coverKeys: Joi.alternatives()
       .try(Joi.string(), Joi.array().items(Joi.string()))
       .optional(),
-    location: Joi.object({
-      long: Joi.number().optional(),
-      lat: Joi.number().optional(),
-      additional: Joi.string().optional(),
-    }).optional(),
+    // location: Joi.object({
+    //   long: Joi.number().optional(),
+    //   lat: Joi.number().optional(),
+    //   additional: Joi.string().optional(),
+    // }).optional(),
     status: Joi.string()
       .valid(...Object.values(SPACE_STATUS))
       .optional(),

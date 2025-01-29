@@ -10,6 +10,8 @@ import { BaseEntity } from "./base.entity";
 import { Spaces } from "./spaces.entity";
 import { Events } from "./events.entity";
 import { Brand } from "./brands.entity";
+import { RSVP } from "./rsvp.event.entity";
+import { SavedEntity } from "./saved.entity";
 export enum LoginType {
   LOCAL = "local",
   FACEBOOK = "facebook",
@@ -81,4 +83,10 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Brand, (brand) => brand.user)
   brands: Brand[];
+
+  @OneToMany(() => RSVP, (rsvp) => rsvp.user)
+  rsvps: RSVP[];
+
+  @OneToMany(() => SavedEntity, (savedEntity) => savedEntity.user)
+  savedEntities: SavedEntity[];
 }

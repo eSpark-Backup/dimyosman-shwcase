@@ -229,7 +229,7 @@ router.post(
   parseJsonFields([
     "spaceCategory",
     "details",
-    "location",
+    // "location",
     "amenity",
     "pricing",
   ]),
@@ -356,7 +356,7 @@ router.put(
   parseJsonFields([
     "spaceCategory",
     "details",
-    "location",
+    // "location",
     "amenity",
     "pricing",
   ]),
@@ -384,6 +384,9 @@ router.put(
  *               spaceId:
  *                 type: string
  *                 description: ID of the space.
+ *               brandId:
+ *                 type: string
+ *                 description: ID of the brand.
  *               chatId:
  *                 type: string
  *                 description: Name of the space.
@@ -422,6 +425,88 @@ router.post(
   parseJsonFields(["contractDetails"]),
   validate(SpaceValidation.LeasingSpaceValidation, "body"),
   (req, res, next) => spaceController.leaseSpace(req, res, next)
+);
+
+/**
+ * @swagger
+ * /space/paymentVerification/{id}:
+ *   post:
+ *     summary: Send a Lease Contract For Space
+ *     description: This endpoint allows users with the USER role to send contract for Lease.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - Space
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the Lease Space to Post Signature .
+ *         schema:
+ *           type: string
+ *     responses:
+ *       201:
+ *         description: space created successfully.
+ *       400:
+ *         description: Validation error.
+ *       403:
+ *         description: Forbidden.
+ *       500:
+ *         description: Server error.
+ */
+
+router.post(
+  "/paymentVerification/:id",
+  checkJwt,
+  validateRoles([ROLES.USER]),
+  (req, res, next) => spaceController.paymentVerification(req, res, next)
+);
+
+/**
+ * @swagger
+ * /space/tenantSign/{id}:
+ *   post:
+ *     summary: Send a Lease Contract For Space
+ *     description: This endpoint allows users with the USER role to send contract for Lease.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - Space
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the Lease Space to Post Signature .
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: Image of the Tenant Signature.
+ *     responses:
+ *       201:
+ *         description: space created successfully.
+ *       400:
+ *         description: Validation error.
+ *       403:
+ *         description: Forbidden.
+ *       500:
+ *         description: Server error.
+ */
+
+router.post(
+  "/tenantSign/:id",
+  checkJwt,
+  validateRoles([ROLES.USER]),
+  handleMultipleFiles([{ name: FILE_FIELDS.IMAGE, maxCount: 1 }]),
+  (req, res, next) => spaceController.tenantUploadSignature(req, res, next)
 );
 
 /**
@@ -669,6 +754,103 @@ router.get(
   (req, res, next) => spaceController.getAllPublishedSpaces(req, res, next)
 );
 
+/**
+ * @swagger
+ * /space/SpaceForEvent:
+ *   post:
+ *     summary: Get Space for Creating Event for the authenticated user
+ *     description: This endpoint retrieves a specific space by its ID (if provided) or all spaces associated with the authenticated user. Pagination is supported for retrieving multiple spaces.
+ *     security:
+ *      - bearerAuth: []
+ *     tags:
+ *       - Space
+ *     responses:
+ *       200:
+ *         description: space found by ID or all spaces for the authenticated user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 spaces:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       spaceName:
+ *                         type: string
+ *                         description: Name of the space.
+ *                       spaceCategory:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             name:
+ *                               type: string
+ *                               description: Name of the category.
+ *                             description:
+ *                               type: string
+ *                               description: Description of the category.
+ *                         description: Categories of the space.
+ *                       details:
+ *                         type: object
+ *                         description: Details about the space.
+ *                       location:
+ *                         type: object
+ *                         properties:
+ *                           long:
+ *                             type: number
+ *                             description: Longitude of the space's location.
+ *                           lat:
+ *                             type: number
+ *                             description: Latitude of the space's location.
+ *                           additional:
+ *                             type: string
+ *                             description: Additional information about the location.
+ *                       status:
+ *                         type: string
+ *                         enum:
+ *                           - PUBLISH
+ *                           - DRAFT
+ *                           - ARCHIVE
+ *                       coverImages:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             url:
+ *                               type: string
+ *                               description: URL of the cover image.
+ *                             public_id:
+ *                               type: string
+ *                               description: Public ID of the cover image.
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     totalItems:
+ *                       type: integer
+ *                       description: Total number of items.
+ *                     currentPage:
+ *                       type: integer
+ *                       description: Current page number.
+ *                     pageSize:
+ *                       type: integer
+ *                       description: Number of items per page.
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages.
+ *       404:
+ *         description: space not found (if ID is provided) or no spaces found for the user.
+ *       500:
+ *         description: Server error.
+ */
+
+router.post(
+  "/SpaceForEvent",
+  checkJwt,
+  validateRoles([ROLES.USER]),
+  (req, res, next) => spaceController.getSpaceForEvent(req, res, next)
+);
 /**
  * @swagger
  * /space/price:

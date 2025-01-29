@@ -6,3 +6,5 @@ export * from "./amenities.entity";
 export * from "./spaces.entity";
 export * from "./events.entity";
 export * from "./leaseSpace.entity";
+export * from "./rsvp.event.entity";
+export * from "./saved.entity";
