@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 
 import { toast } from "react-toastify";
 
@@ -21,9 +22,17 @@ import { close } from "../assets";
 
 import { separateRawData } from "../utils";
 
+import { setGoToMessage } from "../store/slices/notification";
+
 import { useLeaseSpaceInquireMutation, useTenantSignMutation } from "../services/space";
 
-const Heading = ({ name, mb = 0, mt = 0, onClick = () => {}, cursor = "default" }) => {
+const Heading = ({
+  name,
+  mb = 0,
+  mt = 0,
+  onClick = () => {},
+  cursor = "default",
+}) => {
   return (
     <Typography
       sx={{
@@ -123,6 +132,7 @@ const ManageInquiry = ({
   const theme = useTheme();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const dispatch = useDispatch();
 
   const [leaseSpace, { isLoading }] = useLeaseSpaceInquireMutation();
   const [tenantSpace, { isLoading: isTenantLoading }] = useTenantSignMutation();
@@ -743,12 +753,13 @@ const ManageInquiry = ({
               setImageWithPreview(null);
               setImage(null);
             } else {
-              navigate("/message", {
-                state: {
-                  brandName: details.tenant,
-                  chatId: details.chatId,
-                },
-              });
+              const navigateData = {
+                brandName: details.tenant,
+                chatId: details.chatId,
+              };
+
+              dispatch(setGoToMessage(navigateData));
+              navigate("/message");
             }
           }}
         />

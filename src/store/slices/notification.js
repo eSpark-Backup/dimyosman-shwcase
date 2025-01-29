@@ -31,19 +31,24 @@ const slice = createSlice({
       state.notifications = [];
     },
     setGoToMessage: (state, { payload }) => {
-      const { chatId, spaceName } = payload;
-
-      state.gotToMessage = {
-        spaceName,
-        chatId,
-      };
+      if (payload?.brandName) {
+        state.gotToMessage = {
+          brandName: payload?.brandName,
+          chatId: payload?.chatId,
+        };
+      } else {
+        state.gotToMessage = {
+          spaceName: payload?.spaceName,
+          chatId: payload?.chatId,
+        };
+      }
     },
     emptyGoToMessage: (state) => {
       state.gotToMessage = null;
     },
     setFromNotification: (state, action) => {
       state.fromNotification = action.payload;
-    }
+    },
   },
 });
 

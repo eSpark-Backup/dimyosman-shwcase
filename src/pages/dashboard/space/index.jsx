@@ -73,9 +73,7 @@ const Space = () => {
 
   useEffect(() => {
     if (navigationActiveTab !== "") {
-      const indexOfNav = tabsForApi.findIndex(
-        (t) => t === navigationActiveTab
-      );
+      const indexOfNav = tabsForApi.findIndex((t) => t === navigationActiveTab);
 
       if (indexOfNav !== -1) {
         setActiveTab(indexOfNav);
@@ -194,12 +192,11 @@ const Space = () => {
   useEffect(() => {
     if (hasPaymentDone) {
       setRefetchTriggered(true);
-
       if (
         tabsForApi[activeTab] === "Lease" ||
         tabsForApi[activeTab] === "Tenant"
       ) {
-        const passObj = { page, pageSize: 7, tab: activeTab };
+        const passObj = { page, pageSize: 7, tab: tabsForApi[activeTab] };
 
         refetch(passObj).finally(() => {
           dispatch(setHasPaymentDone(false));
@@ -232,7 +229,7 @@ const Space = () => {
   };
 
   const handleChange = (event, newValue) => {
-    dispatch(setTabForNotification(tabsForApi[newValue]))
+    dispatch(setTabForNotification(tabsForApi[newValue]));
     setActiveTab(newValue);
   };
 
@@ -268,7 +265,8 @@ const Space = () => {
       setVerifyDetail,
       data?.data?.leaseSpace,
       data?.data?.tenantSpace,
-      findLeaseDetails
+      findLeaseDetails,
+      dispatch
     );
   };
 

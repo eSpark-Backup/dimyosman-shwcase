@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { format } from "date-fns";
-import { emptyInquiryCount, emptyNotificationCount } from "../store/slices/notification";
+import { emptyInquiryCount, emptyNotificationCount, setGoToMessage } from "../store/slices/notification";
 
 export function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -229,7 +229,8 @@ export const spacesAction = (
   setVerifyDetail,
   leaseSpace,
   tenantSpace,
-  findLeaseDetails
+  findLeaseDetails,
+  dispatch
 ) => {
   switch (type) {
     case "edit":
@@ -249,12 +250,13 @@ export const spacesAction = (
 
     case "Message":
       const navDetails = tenantSpace?.find((tenant) => tenant.id === item.id);
-      navigate("/message", {
-        state: {
-          spaceName: navDetails?.space?.spaceName,
-          chatId: navDetails.chatId,
-        },
-      });
+      const navigateData = {
+        spaceName: navDetails?.space?.spaceName,
+        chatId: navDetails.chatId,
+      };
+      dispatch(setGoToMessage(navigateData));
+      
+      navigate("/message");
       break;
 
     case "Verify Pay 0/2":
