@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { Box, Grid, LinearProgress } from "@mui/material";
+import { Box, Grid, Typography, LinearProgress } from "@mui/material";
 
 import { ActivityCard } from "../../../components";
 import SpaceInquireModal from "../../../components/SpaceInquireModal";
@@ -8,8 +8,11 @@ import SpaceInquireModal from "../../../components/SpaceInquireModal";
 import { useGetActivityDataQuery } from "../../../services/activity";
 
 const Activity = () => {
-  const { data, isSuccess, isError, error, isLoading, isFetching } = useGetActivityDataQuery({
-    page: 1, pageSize: 10
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const { data, isSuccess, isError, error, isFetching } = useGetActivityDataQuery({
+    page, pageSize: 10
   }, { refetchOnMountOrArgChange: true })
 
   const [activityData, setActivityData] = useState([]);
@@ -18,7 +21,14 @@ const Activity = () => {
   const [inquiredDetail, setInquiredDetail] = useState({});
 
   useEffect(() => {
+    setIsLoading(true);
     if (isSuccess) {
+      if (!data?.data && page === 1) {
+        setActivityData([]);
+        setHasFetchedData(true); 
+        setIsLoading(false);
+        return;
+      }
       if (data?.data) {
         const updatedData = data.data.spaces?.map((item) => {
           const filterPrice = item?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") || [];
@@ -47,15 +57,45 @@ const Activity = () => {
             slides: coverArray
           };
         }) || [];
-        setActivityData(updatedData);
-      } else {
-        setActivityData([]);
+        const filteredData1 = activityData.filter((item, index, self) => 
+          index === self.findIndex((t) => t.spaceId === item.spaceId)
+        );
+        const filteredData2 = updatedData.filter((item, index, self) => 
+          index === self.findIndex((t) => t.spaceId === item.spaceId)
+        );
+        setActivityData([...filteredData1, ...filteredData2]);
+        setTotal(data?.data?.pagination?.totalItems);
       }
       setHasFetchedData(true); 
+      setIsLoading(false);
     }
-  }, [isSuccess, data]);
+  }, [isSuccess, data, page]);
 
-  if (isLoading || isFetching) {
+  const scrollContainerRef = useRef(null);
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!scrollContainerRef.current) return;
+      const { scrollTop, scrollHeight, clientHeight } =
+        scrollContainerRef.current;
+      if (
+        scrollTop + clientHeight >= scrollHeight - 5 &&
+        !isLoading &&
+        !isFetching &&
+        activityData.length < total
+      ) {
+        setPage((prev) => prev + 1);
+      }
+    };
+
+    const scrollContainer = scrollContainerRef.current;
+    scrollContainer?.addEventListener("scroll", handleScroll);
+
+    return () => {
+      scrollContainer?.removeEventListener("scroll", handleScroll);
+    };
+  }, [isLoading, isFetching, activityData.length, total]);
+
+  if ((isLoading && page === 1)) {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />
@@ -63,7 +103,7 @@ const Activity = () => {
     )
   }
 
-  if (hasFetchedData && activityData?.length === 0) {
+  if (hasFetchedData && !isLoading && activityData?.length === 0) {
     return (
       <Box sx={{ width: "100%" }}>
         <h1>No Data Found</h1>
@@ -76,6 +116,7 @@ const Activity = () => {
 
       <Grid container sx={{ display: 'flex', justifyContent: "space-between" }}>
         <Grid
+          ref={scrollContainerRef}
           item
           xs={12}
           lg={8}
@@ -129,6 +170,11 @@ const Activity = () => {
               }}
             />
           ))}
+          {!isLoading && activityData.length >= total &&
+            <Typography textAlign="center">
+              You have seen all!
+            </Typography>
+          }
         </Grid>
         <Grid
           item
