@@ -18,7 +18,12 @@ import {
 import { BadgeComp, SearchBar } from "../components";
 import { addIcon, chatIcon, bellIcon } from "../assets";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getCookie, removeActiveNotifications, useClickOutside } from "../utils";
+import {
+  getCookie,
+  removeActiveNotifications,
+  removeNewInquiry,
+  useClickOutside,
+} from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { logout as logoutFunc } from "../store/slices/auth";
 import { removeMychat } from "../store/slices/chat";
@@ -27,9 +32,10 @@ import Filters from "../components/Filters";
 import { emptyGoToMessage, emptyNotification, setFromNotification } from "../store/slices/notification";
 
 const Header = ({ isLogin }) => {
-  const getRequestCount = getCookie("newRequest") || 0;
+  const getInquiryCount = getCookie("newInquiry") || 0;
+  const getNotificationCount = getCookie("newNotification") || 0;
 
-  const { count } = useSelector((state) => state.notification);
+  const { count, countInquiry } = useSelector((state) => state.notification);
   const userData = useSelector((state) => state.auth);
   const theme = useTheme();
   const navigate = useNavigate();
@@ -66,11 +72,11 @@ const Header = ({ isLogin }) => {
   };
 
   const iconClick = (type) => {
-    removeActiveNotifications(dispatch)
-
     if (type === "chat") {
       navigate("/message");
+      removeNewInquiry(dispatch);
     } else {
+      removeActiveNotifications(dispatch);
       setShowNotification(true);
     }
   };
@@ -242,7 +248,7 @@ const Header = ({ isLogin }) => {
                   onClick={() => iconClick("chat")}
                   imageSrc={chatIcon}
                   bg={theme.palette.error.danger}
-                  count={count || getRequestCount}
+                  count={countInquiry || getInquiryCount}
                 />
               </li>
               <li ref={notificationRef}>
@@ -250,7 +256,7 @@ const Header = ({ isLogin }) => {
                   onClick={() => iconClick("bell")}
                   imageSrc={bellIcon}
                   bg={theme.palette.error.danger}
-                  count={count || getRequestCount}
+                  count={count || getNotificationCount}
                 />
                 <Notification
                   open={showNotification}

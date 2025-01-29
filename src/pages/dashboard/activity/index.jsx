@@ -1,8 +1,11 @@
-import { Box, Grid, LinearProgress } from "@mui/material";
-import { ActivityCard } from "../../../components";
-import { activityItems } from "../../../constant";
-import { useGetActivityDataQuery } from "../../../services/activity";
 import { useEffect, useState } from "react";
+
+import { Box, Grid, LinearProgress } from "@mui/material";
+
+import { ActivityCard } from "../../../components";
+import SpaceInquireModal from "../../../components/SpaceInquireModal";
+
+import { useGetActivityDataQuery } from "../../../services/activity";
 
 const Activity = () => {
   const { data, isSuccess, isError, error, isLoading, isFetching } = useGetActivityDataQuery({
@@ -11,6 +14,8 @@ const Activity = () => {
 
   const [activityData, setActivityData] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
+  const [openInquiryModal, setOpenInquiryModal] = useState(false);
+  const [inquiredDetail, setInquiredDetail] = useState({});
 
   useEffect(() => {
     if (isSuccess) {
@@ -49,7 +54,6 @@ const Activity = () => {
       setHasFetchedData(true); 
     }
   }, [isSuccess, data]);
-  
 
   if (isLoading || isFetching) {
     return (
@@ -66,6 +70,7 @@ const Activity = () => {
       </Box>
     )
   }
+
   return (
     <>
 
@@ -86,10 +91,10 @@ const Activity = () => {
             // border:"1px solid red"
           }}
         >
-
           {activityData?.map((item, index) => (
             <ActivityCard
               key={index}
+              fullItem={item}
               id={item?.profileId}
               activityId={
                 item?.activity === "event"
@@ -115,6 +120,13 @@ const Activity = () => {
               userRole={item?.userRole}
               slides={item?.slides}
               features={item?.features}
+              handleAction={(fullItem) => {
+                const detail = data?.data?.spaces?.find(
+                  (spc) => spc.id === fullItem.spaceId
+                );
+                setInquiredDetail(detail);
+                setOpenInquiryModal(true);
+              }}
             />
           ))}
         </Grid>
@@ -148,7 +160,17 @@ const Activity = () => {
         </Grid>
       </Grid>
 
-
+      <SpaceInquireModal
+        open={openInquiryModal}
+        handleClose={() => setOpenInquiryModal(false)}
+        spaceName={inquiredDetail?.spaceName}
+        brandName={inquiredDetail?.brand?.brandName}
+        spaceImage={inquiredDetail?.spaceImage}
+        bookedDates={inquiredDetail?.calendarEvents}
+        pricing={inquiredDetail?.pricing}
+        spaceId={inquiredDetail?.id}
+        brandId={inquiredDetail?.brand?.id}
+      />
     </>
   );
 };

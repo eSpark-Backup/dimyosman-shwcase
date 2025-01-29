@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 
 import { toast } from "react-toastify";
 
@@ -20,9 +22,17 @@ import { close } from "../assets";
 
 import { separateRawData } from "../utils";
 
-import { useLeaseSpaceInquireMutation } from "../services/space";
+import { setGoToMessage } from "../store/slices/notification";
 
-const Heading = ({ name, mb = 0, mt = 0 }) => {
+import { useLeaseSpaceInquireMutation, useTenantSignMutation } from "../services/space";
+
+const Heading = ({
+  name,
+  mb = 0,
+  mt = 0,
+  onClick = () => {},
+  cursor = "default",
+}) => {
   return (
     <Typography
       sx={{
@@ -31,7 +41,9 @@ const Heading = ({ name, mb = 0, mt = 0 }) => {
         color: "#1E1E1E",
         mb,
         mt,
+        cursor
       }}
+      onClick={onClick}
     >
       {name}
     </Typography>
@@ -109,10 +121,21 @@ const ManageInquiry = ({
   setShowIinquiryModal,
   spc = false,
   ownerSign = null,
+  tenantSign = null,
+  status = null,
+  refetch = null,
+  tabsForApi = [],
+  activeTab = null,
+  page = null,
+  setRefetchTriggered = null,
 }) => {
   const theme = useTheme();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const dispatch = useDispatch();
 
   const [leaseSpace, { isLoading }] = useLeaseSpaceInquireMutation();
+  const [tenantSpace, { isLoading: isTenantLoading }] = useTenantSignMutation();
 
   const profileImageRef = useRef(null);
 
@@ -123,6 +146,7 @@ const ManageInquiry = ({
     spaceId: "",
     chatId: "",
     tenantId: "",
+    brandId: "",
     contractDetails: {
       hostDetails: {
         host: "",
@@ -164,6 +188,7 @@ const ManageInquiry = ({
         spaceId: details?.spaceId,
         chatId: details?.chatId,
         tenantId: details?.tenantId,
+        brandId: details?.brandId,
         contractDetails: {
           hostDetails: {
             host: details?.host,
@@ -205,35 +230,60 @@ const ManageInquiry = ({
       ...inquiryDetails,
       image,
     };
-    leaseSpace({ data: updateInquiryObject }).then((res) => {
-      if (res?.error) {
-        toast.error(res?.error?.data?.message || "something went wrong");
-      }
-      if (res?.data) {
-        setShowIinquiryModal(false);
+    if (spc) {
+      const passObj = { page, pageSize: 7, tab: tabsForApi[activeTab] };
 
-        // toast.success(res?.data?.message || "Lease Contract Sent Successfully");
-        setInquiryDetails((prevState) => ({
-          ...prevState,
-          contractDetails: {
-            ...prevState.contractDetails,
-            hostDetails: {
-              ...prevState.contractDetails.hostDetails,
-              additionalInfo: "",
+      const tenantDetails = {
+        id: inquiryDetails.tenantId,
+        image,
+      };
+
+      tenantSpace({ data: tenantDetails }).then((res) => {
+        if (res?.error) {
+          toast.error(res?.error?.data?.message || "something went wrong");
+        }
+
+        if (res?.data) {
+          setRefetchTriggered(true);
+
+          setShowIinquiryModal(false);
+          setChecked(false);
+          setImageWithPreview(null);
+          setImage(null);
+          setAfterSignature(true);
+          refetch(passObj);
+        }
+      });
+    } else {
+      leaseSpace({ data: updateInquiryObject }).then((res) => {
+        if (res?.error) {
+          toast.error(res?.error?.data?.message || "something went wrong");
+        }
+        if (res?.data) {
+          setShowIinquiryModal(false);
+          // toast.success(res?.data?.message || "Lease Contract Sent Successfully");
+          setInquiryDetails((prevState) => ({
+            ...prevState,
+            contractDetails: {
+              ...prevState.contractDetails,
+              hostDetails: {
+                ...prevState.contractDetails.hostDetails,
+                additionalInfo: "",
+              },
+              tenantDetails: {
+                ...prevState.contractDetails.tenantDetails,
+                additionalInfo: "",
+              },
+              description: "",
             },
-            tenantDetails: {
-              ...prevState.contractDetails.tenantDetails,
-              additionalInfo: "",
-            },
-            description: "",
-          },
-        }));
-        setChecked(false);
-        setImageWithPreview(null);
-        setImage(null);
-        setAfterSignature(true);
-      }
-    });
+          }));
+          setChecked(false);
+          setImageWithPreview(null);
+          setImage(null);
+          setAfterSignature(true);
+        }
+      });
+    }
   };
 
   return (
@@ -539,7 +589,10 @@ const ManageInquiry = ({
           alignItems="center"
           sx={{ width: "100%", marginBottom: "10px", columnGap: 1 }}
         >
-          <CheckBox checked={checked} onChange={handleChange} />
+          <CheckBox
+            checked={spc && status === "Active" ? true : checked}
+            onChange={handleChange}
+          />
           <Typography
             sx={{
               fontWeight: 600,
@@ -615,15 +668,29 @@ const ManageInquiry = ({
                   sx={{
                     backgroundColor: "rgba(209, 219, 215, 0.2)",
                     width: { xs: "100%", lg: "200px", xl: "278px" },
-                    padding: imageWithPreview ? 0 : "32px 0px",
-                    border: "1px dashed rgba(0, 20, 28, 0.4)",
+                    padding: !tenantSign
+                      ? imageWithPreview
+                        ? 0
+                        : "32px 0px"
+                      : 0,
+                    border: !tenantSign && "1px dashed rgba(0, 20, 28, 0.4)",
                     borderRadius: "3px",
                     textAlign: "center",
-                    cursor: "pointer",
+                    cursor: !tenantSign && "pointer",
                   }}
                   onClick={handleBoxClick}
                 >
-                  {imageWithPreview ? (
+                  {spc && tenantSign ? (
+                    <img
+                      src={tenantSign}
+                      alt="Preview"
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : imageWithPreview ? (
                     <img
                       src={imageWithPreview}
                       alt="Preview"
@@ -650,30 +717,52 @@ const ManageInquiry = ({
           </Box>
         </Stack>
 
-        <Box display="flex" justifyContent="end" mt={1}>
-          <LoadingButton
-            sx={{
-              padding: "0px 24px",
-              height: "31px",
-              textTransform: "capitalize",
-              background:
-                "linear-gradient(0deg, rgba(0, 20, 28, 0.7), rgba(0, 20, 28, 0.7)), #FFFFFF",
-              borderRadius: "5px",
-              fontWeight: 600,
-              fontSize: "16px",
-              lineHeight: "21px",
-              letterSpacing: "-0.01em",
-            }}
-            onClick={onSubmit}
-            loading={isLoading}
-            loadingIndicator={
-              <CircularProgress size={15} sx={{ color: "#ffffff" }} />
+        {status && status === "Active" ? null : (
+          <Box display="flex" justifyContent="end" mt={2}>
+            <LoadingButton
+              sx={{
+                padding: "0px 24px",
+                height: "31px",
+                textTransform: "capitalize",
+                background:
+                  "linear-gradient(0deg, rgba(0, 20, 28, 0.7), rgba(0, 20, 28, 0.7)), #FFFFFF",
+                borderRadius: "5px",
+                fontWeight: 600,
+                fontSize: "16px",
+                lineHeight: "21px",
+                letterSpacing: "-0.01em",
+              }}
+              onClick={onSubmit}
+              loading={isLoading || isTenantLoading}
+              loadingIndicator={
+                <CircularProgress size={15} sx={{ color: "#ffffff" }} />
+              }
+            >
+              {spc ? "Submit" : "Submit for Signature"}
+            </LoadingButton>
+          </Box>
+        )}
+        <Heading
+          name="Go to Message History"
+          mt="16px"
+          cursor="pointer"
+          onClick={() => {
+            if (pathname === "/message") {
+              setShowIinquiryModal(false);
+              setChecked(false);
+              setImageWithPreview(null);
+              setImage(null);
+            } else {
+              const navigateData = {
+                brandName: details.tenant,
+                chatId: details.chatId,
+              };
+
+              dispatch(setGoToMessage(navigateData));
+              navigate("/message");
             }
-          >
-            {spc ? "Submit" : "Submit for Signature"}
-          </LoadingButton>
-        </Box>
-        <Heading name="Go to Message History" mt="16px" />
+          }}
+        />
       </Box>
     </Box>
   );

@@ -244,7 +244,7 @@ const Message = () => {
 
   const handleNewInquiry = (selected, initialId) => {
     const findParentIndex = allGroups?.findIndex(
-      (msg) => msg?.parentName === gotToMessage?.spaceName
+      (msg) => msg?.parentName === (gotToMessage?.spaceName || gotToMessage?.brandName)
     );
 
     if (findParentIndex !== -1) {

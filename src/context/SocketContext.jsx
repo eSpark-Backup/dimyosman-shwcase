@@ -69,6 +69,8 @@ import {
 
 import { getCookie, setCookie } from "../utils";
 
+import { setHasPaymentDone } from "../store/slices/space";
+
 const SocketContext = createContext(null);
 
 const useSocket = () => {
@@ -79,6 +81,7 @@ const SocketProvider = ({ children }) => {
   const socket = useRef(null);
   const { user } = useSelector((state) => state.auth);
   const { activeMembers, messages } = useSelector((state) => state.chat);
+
   const { data, isSuccess, refetch } = useGetMyChatsQuery(undefined, {
     skip: !user,
   });
@@ -119,6 +122,14 @@ const SocketProvider = ({ children }) => {
     }
   }, [isSuccess, data]);
 
+  const handleNotificationUpdate = (cookieName, action) => {
+    const currentValue = getCookie(cookieName);
+    const newCount = currentValue ? parseInt(currentValue) + 1 : 1;
+
+    setCookie(cookieName, newCount);
+    dispatch(action(newCount));
+  };
+
   useEffect(() => {
     if (user && !socket.current) {
       socket.current = io("https://shwcase-stg.esparkconsultants.com/socket", {
@@ -143,16 +154,23 @@ const SocketProvider = ({ children }) => {
         refetch();
       });
 
+      socket.current.on("NEW_NOTIFICATION", () => {
+        // console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
+
+        if (pathname === "/space") {
+          dispatch(setHasPaymentDone(true));
+        }
+
+        handleNotificationUpdate("newNotification", getNotificationCount);
+        notificationRefetch();
+      });
+
       socket.current.on("NEW_REQUEST", (data) => {
         // console.log("NEW_REQUEST EVENT TRIGGERED.");
-        const getNewRequest = getCookie("newRequest");
 
-        if (getNewRequest) {
-          setCookie("newRequest", parseInt(getNewRequest) + 1);
-          dispatch(getNotificationCount(parseInt(getNewRequest) + 1));
-        } else {
-          setCookie("newRequest", 1);
-          dispatch(getNotificationCount(1));
+        handleNotificationUpdate("newNotification", getNotificationCount);
+        if (pathname !== "/message") {
+          handleNotificationUpdate("newInquiry", getNotificationCount);
         }
 
         const navigateData = {
@@ -167,9 +185,7 @@ const SocketProvider = ({ children }) => {
             dispatch(setFromNotification(true));
             
             if (pathname !== "/message") {
-              navigate("/message", {
-                state: navigateData,
-              });
+              navigate("/message");
             }
           },
         });
