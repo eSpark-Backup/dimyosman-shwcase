@@ -1,22 +1,28 @@
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import { Box } from "@mui/material";
 
-import { allMessages } from "../../constant";
-
-const hasReadTrue = (messages) => {
-  for (const item of messages) {
-    if (item.read) return true;
-    if (item.messageGroups && hasReadTrue(item.messageGroups)) return true;
-  }
-  return false;
-};
-
-const isMessageRead = (type) => {
-  return allMessages.some((item) => item.activity === type && item.read);
-};
+import {
+  emptyGoToMessage,
+  setFromNotification,
+} from "../../store/slices/notification";
 
 const IconBadge = ({ icon, bg, type, activeBG, onClick, activeTab }) => {
-  const isRead =
-    isMessageRead(type) || (hasReadTrue(allMessages) && type === "message");
+  const dispatch = useDispatch();
+  const { fromNotification } = useSelector((state) => state.notification);
+
+  useEffect(() => {
+    if (fromNotification) {
+      if (activeTab !== "space") {
+        callFn();
+      }
+    }
+  }, [fromNotification]);
+
+  const callFn = () => {
+    onClick("all");
+  };
 
   return (
     <Box
@@ -24,11 +30,12 @@ const IconBadge = ({ icon, bg, type, activeBG, onClick, activeTab }) => {
         bgcolor: activeTab === type ? activeBG : bg,
         height: "48px",
         width: "48px",
+        minHeight: "48px",
+        minWidth: "48px",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         borderRadius: "5px",
-        marginRight: 2,
         position: "relative",
         cursor: "pointer",
         transition: "background-color 0.3s ease-in-out",
@@ -42,6 +49,8 @@ const IconBadge = ({ icon, bg, type, activeBG, onClick, activeTab }) => {
         },
       }}
       onClick={() => {
+        dispatch(emptyGoToMessage());
+        dispatch(setFromNotification(false));
         onClick(type);
       }}
     >

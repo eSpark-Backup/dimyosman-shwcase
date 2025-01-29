@@ -60,9 +60,9 @@ const ActivityCard = ({
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: { xs: "flex-start", md: "center" },
+          alignItems: "center",
           padding: { xs: "0px 8px", md: "0px 20px" },
-          flexDirection: { xs: "column", sm: "row" },
+          flexDirection: "row",
           rowGap: "10px",
         }}
       >
@@ -72,8 +72,8 @@ const ActivityCard = ({
             width: { xs: "100%", md: "80%" },
             display: "flex",
             columnGap: "10px",
-            alignItems: { xs: "flex-start", sm: "center" },
-            flexDirection: { xs: "column", sm: "row" },
+            alignItems: "center",
+            flexDirection: "row",
             rowGap: "10px",
           }}
         >
@@ -85,6 +85,8 @@ const ActivityCard = ({
               cursor: "pointer",
               width: "64px",
               height: "64px",
+              minWidth: "64px",
+              minHeight: "64px",
               position: "relative",
             }}
           >
@@ -593,7 +595,7 @@ const ActivityCard = ({
           display: "flex",
           justifyContent: "space-between",
           padding: { xs: "0px 8px", md: "0px 20px" },
-          flexDirection: { xs: "column", md: "row" },
+          flexDirection: "row",
           rowGap: "15px",
           alignItems: "center",
         }}
@@ -601,7 +603,7 @@ const ActivityCard = ({
         <Box
           sx={{
             display: "flex",
-            columnGap: "25px",
+            columnGap: "10px",
           }}
         >
           <img src={like} alt="Like Icon" />
@@ -616,7 +618,7 @@ const ActivityCard = ({
           }
           sx={{
             backgroundColor: "transparent",
-            width: { xs: "150px", sm: "220px" },
+            width: { xs: "120px", sm: "220px" },
             height: "31px",
             fontSize: "16px",
             fontWeight: 600,
@@ -632,7 +634,7 @@ const ActivityCard = ({
         <Button
           sx={{
             backgroundColor: "rgb(209, 219, 215, 0.4)",
-            width: { xs: "150px", sm: "220px" },
+            width: { xs: "120px", sm: "220px" },
             height: "31px",
             fontSize: "16px",
             fontWeight: "700",

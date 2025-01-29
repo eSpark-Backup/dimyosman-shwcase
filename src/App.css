@@ -585,9 +585,9 @@ a:hover{
 }
 
 
-@media screen and (min-width:769px) and (max-width:950px) {
+@media screen and (max-width:950px) {
   .header .nav-links2 {
-    column-gap: 20px;
+    column-gap: 10px;
     margin-right: 20px;
   }
 }
@@ -665,3 +665,18 @@ a:hover{
 }
 
 /* Media Query Ends */
+
+@media screen and (max-width:600px) {
+  .fc .fc-toolbar.fc-header-toolbar {
+    flex-direction: column !important;
+  }
+
+  .fc-scrollgrid-section-body td {
+    height: 70px;
+  }
+
+  .fc-timeGridWeek-view .fc-col-header .fc-day div a div {
+    width: 100%;
+    overflow: hidden;
+  }
+}

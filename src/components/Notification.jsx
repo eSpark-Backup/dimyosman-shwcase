@@ -1,14 +1,22 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { Box, Stack, Typography } from "@mui/material";
 
 import ActivityType from "./Message/ActivityType";
 
 import { setRedirectTab } from "../store/slices/space";
+import {
+  emptyGoToMessage,
+  setFromNotification,
+  setGoToMessage,
+} from "../store/slices/notification";
 
 const Notification = ({ open, theme, setShowNotification }) => {
-  const {pathname} = useLocation()
+  const notifRef = useRef();
+
+  const { pathname } = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -20,28 +28,49 @@ const Notification = ({ open, theme, setShowNotification }) => {
       let redName = item.metadata.redirect;
 
       if (pathname === "/space") {
-        if ( item.metadata?.redirect === "Lease" && activeTabForNotif !== "Lease" ) {
+        if (
+          item.metadata?.redirect === "Lease" &&
+          activeTabForNotif !== "Lease"
+        ) {
           redName = "Lease";
-        } else if ( item.metadata?.redirect === "Tenant" && activeTabForNotif !== "Tenant" ) {
+        } else if (
+          item.metadata?.redirect === "Tenant" &&
+          activeTabForNotif !== "Tenant"
+        ) {
           redName = "Tenant";
         }
         dispatch(setRedirectTab(redName));
-        
       } else {
         dispatch(setRedirectTab(redName));
         navigate("/space");
       }
-
     } else {
-      const navigateToMessage = {
-        spaceName: item?.metadata?.receiverSpaceName,
-        chatId: item?.metadata?.ChatId,
-      };
-      navigate("/message", { state: navigateToMessage });
-    }
+      dispatch(emptyGoToMessage());
+      dispatch(setFromNotification(false));
 
-    setShowNotification(false);
+      const navigateData = {
+        spaceName: item.metadata.receiverSpaceName,
+        chatId: item.metadata.ChatId,
+      };
+      setShowNotification(false);
+
+      dispatch(setGoToMessage(navigateData));
+      dispatch(setFromNotification(true));
+
+      if (pathname !== "/message") {
+        navigate("/message");
+      }
+    }
   };
+
+  useEffect(() => {
+    if (open && notifRef.current) {
+      notifRef.current.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+  }, [open]);
 
   return (
     <Box
@@ -50,12 +79,12 @@ const Notification = ({ open, theme, setShowNotification }) => {
         display: open ? "block" : "none",
         position: "absolute",
         top: "58px",
-        right: "30px",
+        right: { xs: "0px", sm: "30px" },
         border: "1px solid #D1DBD7",
         background: "#fff",
         borderRadius: "0px 0px 5px 5px",
         padding: "16px",
-        width: "366px",
+        width: { xs: "300px", sm: "366px" },
         overflow: "hidden",
         zIndex: "99999",
       }}
@@ -71,7 +100,11 @@ const Notification = ({ open, theme, setShowNotification }) => {
         Notifications:
       </Typography>
 
-      <Stack gap={4} sx={{ overflowY: "auto", maxHeight: "220px" }}>
+      <Stack
+        gap={4}
+        sx={{ overflowY: "auto", maxHeight: "220px" }}
+        ref={notifRef}
+      >
         {notifications.length > 0 ? (
           notifications.map((item) => {
             return (

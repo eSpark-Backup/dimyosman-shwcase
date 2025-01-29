@@ -134,6 +134,8 @@ export const getSmallSidebar = (currentLink) => {
     `/space/${id}`,
     "/new-space",
     `/space/${id}/edit`,
+    `/settings`,
+    `/calendar`,
   ];
   return smallSidebarLink.includes(currentLink);
 };

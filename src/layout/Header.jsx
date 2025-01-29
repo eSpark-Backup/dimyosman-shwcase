@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Box, Button, Drawer, Stack, Typography, useTheme } from "@mui/material";
 import {
   brand,
@@ -17,7 +17,7 @@ import {
 } from "../assets";
 import { BadgeComp, SearchBar } from "../components";
 import { addIcon, chatIcon, bellIcon } from "../assets";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   getCookie,
   removeActiveNotifications,
@@ -29,7 +29,7 @@ import { logout as logoutFunc } from "../store/slices/auth";
 import { removeMychat } from "../store/slices/chat";
 import Notification from "../components/Notification";
 import Filters from "../components/Filters";
-import { emptyNotification } from "../store/slices/notification";
+import { emptyGoToMessage, emptyNotification, setFromNotification } from "../store/slices/notification";
 
 const Header = ({ isLogin }) => {
   const getInquiryCount = getCookie("newInquiry") || 0;
@@ -40,6 +40,7 @@ const Header = ({ isLogin }) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { pathname } = useLocation();
   const addRef = useRef();
   const profileRef = useRef();
   const notificationRef = useRef();
@@ -79,6 +80,28 @@ const Header = ({ isLogin }) => {
       setShowNotification(true);
     }
   };
+
+    useEffect(() => {
+      const sidebarItems = document.querySelectorAll(".sidebar-item");
+
+      sidebarItems.forEach((item) => {
+        item.addEventListener("click", handleClick);
+      });
+
+      return () => {
+        sidebarItems.forEach((item) => {
+          item.removeEventListener("click", handleClick);
+        });
+      };
+    }, [pathname]);
+
+    const handleClick = (event) => {
+      const clickedItemId = event.target.id;
+      if (clickedItemId !== "Messages") {
+        dispatch(emptyGoToMessage());
+        dispatch(setFromNotification(false));
+      }
+    };
 
   const addPopuptabs = [
     {
@@ -125,7 +148,7 @@ const Header = ({ isLogin }) => {
           display: open ? "block" : "none",
           position: "absolute",
           top: "58px",
-          right: title ? "210px" : 0,
+          right: title ? { xs: "120px", sm: "210px" } : 0,
           border: "1px solid #D1DBD7",
           background: "#fff",
           borderRadius: "0px 0px 5px 5px",

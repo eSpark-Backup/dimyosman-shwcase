@@ -63,6 +63,8 @@ import {
 import {
   getNotification,
   getNotificationCount,
+  setFromNotification,
+  setGoToMessage,
 } from "../store/slices/notification";
 
 import { getCookie, setCookie } from "../utils";
@@ -171,19 +173,25 @@ const SocketProvider = ({ children }) => {
           handleNotificationUpdate("newInquiry", getNotificationCount);
         }
 
+        const navigateData = {
+          spaceName: data.receiverSpaceName,
+          chatId: data.chatId,
+        };
+
         toast.info(data?.name, {
           position: "bottom-right",
-          onClick:
-            pathname === "/message"
-              ? null
-              : () =>
-                  navigate("/message", {
-                    state: {
-                      spaceName: data.receiverSpaceName,
-                      chatId: data.chatId,
-                    },
-                  }),
+          onClick: () => {
+            dispatch(setGoToMessage(navigateData));
+            dispatch(setFromNotification(true));
+            
+            if (pathname !== "/message") {
+              navigate("/message", {
+                state: navigateData,
+              });
+            }
+          },
         });
+
         notificationRefetch();
       });
 

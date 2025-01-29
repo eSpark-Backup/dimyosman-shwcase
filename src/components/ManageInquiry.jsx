@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import {
   Box,
   CircularProgress,
+  Divider,
   Stack,
   Typography,
   useTheme,
@@ -395,24 +396,26 @@ const ManageInquiry = ({
               }
             />
           ) : (
-            <Box
-              sx={{
-                padding: 2,
-                marginTop: "20px",
-              }}
-            >
-              <Typography
+            inquiryDetails.contractDetails.hostDetails.additionalInfo && (
+              <Box
                 sx={{
-                  fontWeight: 300,
-                  color: "#00141C",
+                  padding: 2,
+                  marginTop: "20px",
                 }}
               >
-                Addional notes:
-                <span style={{ paddingLeft: "5px", wordBreak: "break-all" }}>
-                  {inquiryDetails.contractDetails.hostDetails.additionalInfo}
-                </span>
-              </Typography>
-            </Box>
+                <Typography
+                  sx={{
+                    fontWeight: 300,
+                    color: "#00141C",
+                  }}
+                >
+                  <strong>Addional notes:</strong>
+                  <span style={{ paddingLeft: "5px", wordBreak: "break-all" }}>
+                    {inquiryDetails.contractDetails.hostDetails.additionalInfo}
+                  </span>
+                </Typography>
+              </Box>
+            )
           )}
         </Box>
 
@@ -452,24 +455,29 @@ const ManageInquiry = ({
               }
             />
           ) : (
-            <Box
-              sx={{
-                padding: 2,
-                marginTop: "20px",
-              }}
-            >
-              <Typography
+            inquiryDetails.contractDetails.tenantDetails.additionalInfo && (
+              <Box
                 sx={{
-                  fontWeight: 300,
-                  color: "#00141C",
+                  padding: 2,
+                  marginTop: "20px",
                 }}
               >
-                Addional notes:
-                <span style={{ paddingLeft: "5px", wordBreak: "break-all" }}>
-                  {inquiryDetails.contractDetails.tenantDetails.additionalInfo}
-                </span>
-              </Typography>
-            </Box>
+                <Typography
+                  sx={{
+                    fontWeight: 300,
+                    color: "#00141C",
+                  }}
+                >
+                  <strong>Addional notes:</strong>
+                  <span style={{ paddingLeft: "5px", wordBreak: "break-all" }}>
+                    {
+                      inquiryDetails.contractDetails.tenantDetails
+                        .additionalInfo
+                    }
+                  </span>
+                </Typography>
+              </Box>
+            )
           )}
           <Box
             sx={{
@@ -507,53 +515,61 @@ const ManageInquiry = ({
           </Box>
         </Box>
 
-        {/* CONTRACT DETAILS */}
-        <Box
+        <Divider
           sx={{
-            backgroundColor: !spc && "rgba(209, 219, 215, 0.2)",
-            border: !spc && "1px dashed rgba(0, 20, 28, 0.4)",
-            borderRadius: "3px",
-            mt: 5,
-            padding: 2,
+            borderColor: "rgba(209, 219, 215, 0.4)",
+            mb: "50px",
+            mt: "36px",
           }}
-        >
-          <Heading name="Contract No: 0123454566536562" />
-          {!spc ? (
-            <Input
-              multiline={true}
-              sx={{
-                height: "auto",
-                backgroundColor: "transparent",
-                border: "none",
-                padding: 0,
-                "& input": {
-                  fontWeight: 600,
-                },
-              }}
-              placeholder="Add contract description here"
-              value={inquiryDetails.contractDetails.description}
-              onInputChange={(event) =>
-                setInquiryDetails((prevState) => ({
-                  ...prevState,
-                  contractDetails: {
-                    ...prevState.contractDetails,
-                    description: event.target.value,
+        />
+        {/* CONTRACT DETAILS */}
+        {inquiryDetails.contractDetails.description && (
+          <Box
+            sx={{
+              backgroundColor: !spc && "rgba(209, 219, 215, 0.2)",
+              border: !spc && "1px dashed rgba(0, 20, 28, 0.4)",
+              borderRadius: "3px",
+              padding: 2,
+            }}
+          >
+            <Heading name="Contract No: 0123454566536562" />
+            {!spc ? (
+              <Input
+                multiline={true}
+                sx={{
+                  height: "auto",
+                  backgroundColor: "transparent",
+                  border: "none",
+                  padding: 0,
+                  "& input": {
+                    fontWeight: 600,
                   },
-                }))
-              }
-            />
-          ) : (
-            <Typography
-              sx={{
-                fontWeight: 300,
-                color: "#00141C",
-                wordBreak: "break-all",
-              }}
-            >
-              {inquiryDetails.contractDetails.description}
-            </Typography>
-          )}
-        </Box>
+                }}
+                placeholder="Add contract description here"
+                value={inquiryDetails.contractDetails.description}
+                onInputChange={(event) =>
+                  setInquiryDetails((prevState) => ({
+                    ...prevState,
+                    contractDetails: {
+                      ...prevState.contractDetails,
+                      description: event.target.value,
+                    },
+                  }))
+                }
+              />
+            ) : (
+              <Typography
+                sx={{
+                  fontWeight: 300,
+                  color: "#00141C",
+                  wordBreak: "break-all",
+                }}
+              >
+                {inquiryDetails.contractDetails.description}
+              </Typography>
+            )}
+          </Box>
+        )}
       </Box>
 
       {/* CHECKBOX SECTION */}

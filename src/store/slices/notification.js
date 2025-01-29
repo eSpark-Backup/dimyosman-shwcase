@@ -4,6 +4,8 @@ const initialState = {
   count: null,
   countInquiry: null,
   notifications: [],
+  gotToMessage: null,
+  fromNotification: false,
 };
 
 const slice = createSlice({
@@ -28,6 +30,20 @@ const slice = createSlice({
     emptyNotification: (state) => {
       state.notifications = [];
     },
+    setGoToMessage: (state, { payload }) => {
+      const { chatId, spaceName } = payload;
+
+      state.gotToMessage = {
+        spaceName,
+        chatId,
+      };
+    },
+    emptyGoToMessage: (state) => {
+      state.gotToMessage = null;
+    },
+    setFromNotification: (state, action) => {
+      state.fromNotification = action.payload;
+    }
   },
 });
 
@@ -38,6 +54,9 @@ export const {
   getInquiryCount,
   emptyInquiryCount,
   emptyNotification,
+  setGoToMessage,
+  emptyGoToMessage,
+  setFromNotification,
 } = slice.actions;
 
 export default slice.reducer;

@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
@@ -12,6 +12,7 @@ import {
 import ActivityType from "./ActivityType";
 
 import { isActiveMembers } from "../../store/slices/chat";
+import { emptyGoToMessage, setFromNotification } from "../../store/slices/notification";
 
 import { deleteCookie, getCookie, setCookie } from "../../utils";
 
@@ -27,11 +28,13 @@ const MessageItem = ({
   onlineUsers,
 }) => {
   const detailsRef = useRef(null);
+  const messageRefs = useRef({});
 
   const getUnreadChatIds =
     getCookie("unreadChatIds") && JSON.parse(getCookie("unreadChatIds"));
 
   const { user } = useSelector((state) => state.auth);
+  const { gotToMessage } = useSelector((state) => state.notification);
 
   const dispatch = useDispatch();
 
@@ -63,6 +66,16 @@ const MessageItem = ({
       deleteCookie("unreadChatIds");
     }
   };
+
+    useEffect(() => {
+      if (gotToMessage && messageRefs.current[gotToMessage?.chatId]) {
+
+        messageRefs.current[gotToMessage?.chatId].current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }, [gotToMessage, expanded]);
 
   return (
     <Accordion
@@ -177,9 +190,12 @@ const MessageItem = ({
       >
         {message?.chatGroups?.length
           ? message.chatGroups.map((el, i) => {
+            messageRefs.current[el.chatId] = messageRefs.current[el.chatId] || React.createRef();
+
               return (
                 <Box
                   key={i}
+                  ref={messageRefs.current[el.chatId]}
                   sx={{
                     display: "flex",
                     alignItems: el?.creator ? "center" : "unset",
@@ -192,7 +208,11 @@ const MessageItem = ({
                     position: "relative",
                     borderRadius: "3px",
                   }}
-                  onClick={() => handleGroup(el)}
+                  onClick={() => {
+                    dispatch(emptyGoToMessage());
+                    dispatch(setFromNotification(false));
+                    handleGroup(el);
+                  }}
                 >
                   <Box
                     sx={{

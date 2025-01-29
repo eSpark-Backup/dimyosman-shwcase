@@ -22,16 +22,16 @@ const Reviews = ({ reviews, showApproveBox, onApproveChange }) => {
       {myReviews.map((review, ind) => (
         <Box key={ind + 1}>
           <Stack
-            direction="row"
+            direction={{ xs: "column", md: "row" }}
             justifyContent="space-between"
-            alignItems="center"
+            alignItems={{ xs: "flex-start", md: "center" }}
             gap={1}
           >
             <Stack
               component="section"
-              direction="row"
-              justifyContent="center"
-              alignItems="center"
+              direction={{ xs: "column", md: "row" }}
+              justifyContent={{ xs: "flex-start", md: "center" }}
+              alignItems={{ xs: "flex-start", md: "center" }}
               gap={1}
             >
               <Box sx={{ width: 48, height: 48, position: "relative" }}>
@@ -58,7 +58,7 @@ const Reviews = ({ reviews, showApproveBox, onApproveChange }) => {
               <Typography fontWeight={400} fontSize={16}>
                 <span style={{ fontWeight: 600 }}>
                   {review?.reviewerName}
-                  </span>{" "}
+                </span>{" "}
                 rated{" "}
                 <span style={{ fontWeight: 600 }}>{review?.profileName}</span>
               </Typography>

@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 
 import { useSelector, useDispatch } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
 
 import AllMessages from "./messages";
 
@@ -38,6 +37,7 @@ import {
   getMessages,
   isActiveMembers,
 } from "../../../store/slices/chat.js";
+import { emptyGoToMessage, setFromNotification } from "../../../store/slices/notification.js";
 
 import { useSocket } from "../../../context/SocketContext.jsx";
 
@@ -57,25 +57,13 @@ const icons = [
 ];
 
 const style = {
-  paddingLeft: "105px",
-  maxWidth: {
-    xs: "calc(100% - 111px)",
-    md: "100%",
-  },
-
-  "@media only screen and (min-width: 1281px)": {
-    maxWidth: "1100px",
-  },
-
-  "@media only screen and (min-width: 1600px)": {
-    maxWidth: "1500px",
-  },
+  maxWidth: "1500px",
 };
 
 const Message = () => {
   const theme = useTheme();
 
-  const isLessThan900 = useMediaQuery("(max-width:900px)");
+  const isLessThan768 = useMediaQuery("(max-width:768px)");
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
 
@@ -91,10 +79,9 @@ const Message = () => {
     hasMessages,
   } = useSelector((state) => state.chat);
   const { user } = useSelector((state) => state.auth);
+  const { gotToMessage, fromNotification } = useSelector((state) => state.notification);
 
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { state, pathname } = useLocation();
 
   const [isNewIdsForChatDetails, setIsNewIdsForChatDetails] = useState([]);
   const [isNewIdsForAllMessages, setIsNewIdsForAllMessages] = useState([]);
@@ -112,8 +99,25 @@ const Message = () => {
     setIsNewIdsForAllMessages(filterNewIds(allChatIds, existingMessagesIds));
   }, [myChat, messages, allChatIds]);
 
-  const { data: messageData, isSuccess } = useGetChatsForContactsQuery({ chats: isNewIdsForAllMessages }, { skip: !myChat?.length } );
-  const { data: chatDetailsData, isSuccess: chatDetailsSuccess } = useGetAllChatDetailsQuery( { chats: isNewIdsForChatDetails }, { skip: !myChat?.length, } );
+  const {
+    data: messageData,
+    isSuccess,
+    isFetching: isFetchingMessage,
+  } = useGetChatsForContactsQuery(
+    { chats: isNewIdsForAllMessages },
+    { refetchOnMountOrArgChange: true, refetchOnFocus: true },
+    { skip: !myChat?.length }
+  );
+
+  const {
+    data: chatDetailsData,
+    isSuccess: chatDetailsSuccess,
+    isFetching,
+  } = useGetAllChatDetailsQuery(
+    { chats: isNewIdsForChatDetails },
+    { refetchOnMountOrArgChange: true, refetchOnFocus: true },
+    { skip: !myChat?.length }
+  );
 
   const [allMessages, setAllMessages] = useState([]);
   const [isTypingUser, setIsTypingUser] = useState(null);
@@ -247,20 +251,19 @@ const Message = () => {
       setExpanded(findParentIndex);
       const parentGroup = allGroups[findParentIndex];
       const selectedGroup = parentGroup?.chatGroups?.find(
-        (gr) => gr?.id === state.chatId
+        (gr) => gr?.id === gotToMessage?.chatId
       );
 
       selected.chatGroup = selectedGroup;
       selected.group = parentGroup;
-      initialId = selectedGroup.id;
+      initialId = selectedGroup?.id;
     }
-
-    setTimeout(() => {
-      navigate(pathname, { replace: true });
-    }, 1000);
   };
 
   const handleAccordionChange = (index) => (event, isExpanded) => {
+    dispatch(emptyGoToMessage());
+    dispatch(setFromNotification(false));
+
     setExpanded(index);
     setSelectedGroup(commonSelectedChatGroup(allGroups, index));
     setSelectedChatId(allGroups[index]?.chatGroups[0]?.chatId);
@@ -299,7 +302,7 @@ const Message = () => {
         };
         let initialId = null;
 
-        if (state) {
+        if (gotToMessage) {
           handleNewInquiry(selected, initialId);
         } else {
           selected.chatGroup = allGroups[0]?.chatGroups[0];
@@ -308,7 +311,7 @@ const Message = () => {
         }
 
         setInitialChatId(initialId);
-        setSelectedGroup(selected);
+        !isLessThan768 && setSelectedGroup(selected);
 
         const obj = {
           userId: user.userChatId,
@@ -330,7 +333,7 @@ const Message = () => {
           group: {},
         };
 
-        if (state) {
+        if (gotToMessage) {
           handleNewInquiry(selected, null);
         } else {
           selected.chatGroup = chatGroup;
@@ -350,7 +353,7 @@ const Message = () => {
         }
       }
     }
-  }, [allGroups, selectedChatId, expanded, messages]);
+  }, [allGroups, selectedChatId, expanded, messages, gotToMessage]);
 
   const filterChats = (type) => {
     const filterGroups =
@@ -380,8 +383,8 @@ const Message = () => {
   };
 
   if (
-    (chatDetails?.length === 0 || messages.length === 0) &&
-    hasChats != "empty"
+    ((chatDetails?.length === 0 || messages.length === 0) && hasChats != "empty") ||
+    (fromNotification && (isFetching || isFetchingMessage))
   ) {
     return (
       <Box sx={style}>
@@ -401,14 +404,29 @@ const Message = () => {
   return (
     <Box sx={style}>
       <Grid container spacing={2} justifyContent="center">
-        <Grid item xs={12} md={3.8}>
+        <Grid
+            sx={{
+              display: isLessThan768
+                ? selectedGroup
+                  ? "none"
+                  : "block"
+                : "block",
+            }}
+            item
+            xs={12}
+            md={3.8}
+            lg={3}
+          >
           <SearchMessage />
 
           <Box
             sx={{
               display: "flex",
-              marginBottom: 2,
-              justifyContent: "space-between",
+              margin: "0 auto 16px auto",
+              justifyContent: "flex-start",
+                overflowX: "auto",
+                maxWidth: "302px",
+                gap: 2,
             }}
           >
             {icons.map((icon, i) => (
@@ -459,10 +477,17 @@ const Message = () => {
         </Grid>
 
         <Grid
-          sx={{ display: isLessThan900 ? "none" : "block" }}
+          sx={{
+              display: isLessThan768
+                ? selectedGroup
+                  ? "block"
+                  : "none"
+                : "block",
+            }}
           item
           xs={12}
           md={8}
+            lg={9}
         >
           {hasMessages === "No Chats" ? (
             <Box
@@ -490,6 +515,7 @@ const Message = () => {
                 </Box>
               ) : (
                 <AllMessages
+                setSelectedGroup={setSelectedGroup}
                   selectedGroup={selectedGroup}
                   emitEvent={emitEvent}
                   isTypingUser={isTypingUser}
