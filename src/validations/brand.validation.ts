@@ -54,4 +54,7 @@ export class BrandValidation {
       .valid(...Object.values(BRAND_STATUS))
       .optional(),
   });
+  static sendMessage=Joi.object({
+    message:Joi.string().required()
+  })
 }

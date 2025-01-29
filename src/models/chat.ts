@@ -31,6 +31,11 @@ const schema = new Schema(
       type: String,
       required: false,
     },
+    directChat: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
 
     members: [
       {

@@ -40,6 +40,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
         receiverBrand,
         senderBrand,
         receiverSpace,
+        directChat
       }) => {
         const otherMember = getOtherMember(members, req.socketUserId);
         const brandRepository = AppDataSource.getRepository(Brand);
@@ -103,6 +104,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
             : [otherMember.avatar],
           chatName: name,
           creator: creator.toString(),
+          directChat: directChat,
           receiverBrand: populatedReceiverBrand,
           senderBrand: populatedSenderBrand,
           receiverSpace: populatedReceiverSpace,
@@ -120,6 +122,11 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
 
   const groupedByUser = transformedChats.reduce(
     (acc: any, chat: any) => {
+
+      if (chat.directChat) {
+        acc.directChats[chat._id] = chat;
+        return acc;
+      }
       // Determine if the logged-in user is the sender or receiver
       const isSender = chat.senderBrand?.user?.userChatId === req.socketUserId;
       const isReceiver =
@@ -172,10 +179,11 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
 
         acc.spaces[spaceKey].chats.push(chat);
       }
+    
 
       return acc;
     },
-    { brands: {}, spaces: {} }
+    { brands: {}, spaces: {},directChats:{} }
   );
 
   // Format the grouped data for response
@@ -186,6 +194,9 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
     spaces: Object.values(groupedByUser.spaces).map((group: any) => ({
       ...group,
     })),
+    directChats:Object.values(groupedByUser.directChats).map((group: any) => ({
+      ...group
+    }))
   };
 
   res.status(200).json({

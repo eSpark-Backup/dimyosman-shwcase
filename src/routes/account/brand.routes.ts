@@ -13,11 +13,18 @@ import {
 import { FILE_FIELDS, ROLES } from "../../constants";
 import { parseJsonFields } from "../../utils";
 import { IFileRequest } from "../../interfaces";
+import { Chat, Message, Notification } from "../../models";
 
 const router = Router();
 const brandRepository = AppDataSource.getRepository(Brand);
 const userRepository = AppDataSource.getRepository(User);
-const brandController = new BrandController(brandRepository, userRepository);
+const brandController = new BrandController(
+  brandRepository,
+  userRepository,
+  Chat,
+  Notification,
+  Message
+);
 
 /**
  * @swagger
@@ -357,6 +364,48 @@ router.get(
  */
 router.delete("/:id", checkJwt, validateRoles([ROLES.USER]), (req, res, next) =>
   brandController.deleteBrand(req, res, next)
+);
+
+
+/**
+ * @swagger
+ * /brand/{id}:
+ *   post:
+ *     summary: Send Direct Message to  a specific brand by ID
+ *     description: This endpoint allows users with the USER role to delete a brand by its ID.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - Brand
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the brand to delete
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Brand deleted successfully.
+ *       403:
+ *         description: Forbidden.
+ *       404:
+ *         description: Brand not found.
+ *       500:
+ *         description: Server error.
+ */
+router.post("/:id", checkJwt, validateRoles([ROLES.USER]),
+validate(BrandValidation.sendMessage, "body"),
+(req, res, next) =>
+  brandController.sendMessage(req, res, next)
 );
 
 export { router };
