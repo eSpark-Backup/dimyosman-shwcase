@@ -376,7 +376,7 @@ export class EventController {
           .where("event.id = :id", { id })
           .leftJoinAndSelect("event.brand", "brand")
           .leftJoinAndSelect("event.space", "space")
-          .leftJoinAndSelect("space.brand", "brand")
+          .leftJoinAndSelect("space.brand", "spaceBrand")
           .getOne();
 
         if (!event) {
