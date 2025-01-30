@@ -295,9 +295,6 @@ const SpaceInquireModal = ({
     }
   }, [IsMessageSuccess, messageData]);
 
-  if (IsBrandFetching || IsBrandLoading) {
-    return <>Loading...</>;
-  }
   return (
     <Modal
       sx={{
@@ -308,6 +305,9 @@ const SpaceInquireModal = ({
       open={open}
       onClose={resetALsStates}
     >
+      {IsBrandFetching || IsBrandLoading ?
+      <>Loading...</>
+      :
       <Box
         sx={{
           width: { xs: "95vw", sm: "478px" },
@@ -596,6 +596,7 @@ const SpaceInquireModal = ({
           )}
         </Box>
       </Box>
+      }
     </Modal>
   );
 };
