@@ -32,7 +32,7 @@ const slice = createSlice({
     setLocation: (state, { payload }) => {
       state.parameters.long = payload.long;
       state.parameters.lat = payload.lat;
-      state.parameters.locaion = payload.locaion;
+      // state.parameters.locaion = payload.locaion;
     },
     setRadius: (state, action) => {
       state.parameters.radius = action.payload;

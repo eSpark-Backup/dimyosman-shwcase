@@ -25,13 +25,22 @@ export const generalCategoriesApi = api.injectEndpoints({
 
         if (pageSize) queryParams.append("pageSize", pageSize);
         if (page) queryParams.append("page", page);
+
         if (parameters.entity) queryParams.append("entity", parameters.entity);
         if (parameters.name) queryParams.append("name", parameters.name);
-        if (parameters.long) queryParams.append("long", parameters.long);
-        if (parameters.lat) queryParams.append("lat", parameters.lat);
-        if (parameters.radius) queryParams.append("radius", parameters.radius);
+
+        if (parameters.radius && parameters.long)
+          queryParams.append("long", parameters.long);
+        
+        if (parameters.radius && parameters.lat)
+          queryParams.append("lat", parameters.lat);
+
+        if (parameters.radius)
+          queryParams.append("radius", parseInt(parameters.radius));
+
         if (parameters.additional)
           queryParams.append("additional", parameters.additional);
+
         if (parameters.categoryNames)
           queryParams.append("categoryNames", parameters.categoryNames);
 

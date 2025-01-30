@@ -98,17 +98,32 @@ const ActivityCard = ({
                 height: "62px",
               }}
             >
-              <figure
-                style={{ width: "100%", height: "100%" }}
-                role="img"
-                aria-labelledby="profile-figcaption"
-              >
-                <img
-                  src={userImage}
-                  alt="User Image"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              {userImage ? (
+                <figure
+                  style={{ width: "100%", height: "100%" }}
+                  role="img"
+                  aria-labelledby="profile-figcaption"
+                >
+                  <img
+                    src={userImage}
+                    alt="User Image"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                </figure>
+              ) : (
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    bgcolor: "rgba(0, 28, 20, 0.4)",
+                    borderRadius: "5px",
+                  }}
                 />
-              </figure>
+              )}
             </Box>
             <Box
               sx={{
@@ -643,9 +658,10 @@ const ActivityCard = ({
             variant="text"
             onClick={
               activityId
-                ? () => navigate(`/${activity}/${activityId}`, {
-                  state: search ? { other: true } : null,
-                })
+                ? () =>
+                    navigate(`/${activity}/${activityId}`, {
+                      state: search ? { other: true } : null,
+                    })
                 : () => {}
             }
             sx={{
