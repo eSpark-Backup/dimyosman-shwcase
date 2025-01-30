@@ -287,6 +287,7 @@ export const keysForBrandsSapcesEvents = (object, type) => {
 
   const coverObject = {
     profileId: 2,
+    id: object?.id,
     activity: type,
     userName: object?.brand?.brandName || "",
     activityMaker: object?.brand?.brandName || "",
@@ -296,7 +297,7 @@ export const keysForBrandsSapcesEvents = (object, type) => {
     userImage: object?.brand?.brandImage || "",
     userRole: "brand",
     slides: coverArray,
-    location: object?.location || [],
+    location: object?.brand?.location || [],
   };
 
   if (type === "space") {

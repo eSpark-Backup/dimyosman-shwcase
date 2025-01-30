@@ -167,7 +167,15 @@ const ActivityCard = ({
                 fontSize: { xs: "12px", md: "16px" },
               }}
             >
-              <span style={{ display: "inline-block", fontWeight: 600, marginRight: "5px" }}>{userName} </span>
+              <span
+                style={{
+                  display: "inline-block",
+                  fontWeight: 600,
+                  marginRight: "5px",
+                }}
+              >
+                {userName}{" "}
+              </span>
               published a new{" "}
               {activity === "event"
                 ? "Event!"
@@ -247,7 +255,7 @@ const ActivityCard = ({
             onClick={
               activityId
                 ? () => navigate(`/${activity}/${activityId}`)
-                : () => { }
+                : () => {}
             }
             slides={slides}
           />
@@ -567,16 +575,16 @@ const ActivityCard = ({
             >
               {activity === "event" ? "Starting" : "Lease"} from:
             </Typography>
-              <Typography
-                style={{
-                  fontSize: "32px",
-                  fontWeight: "600",
-                  textAlign: "left",
-                  lineHeight: "140%",
-                }}
-              >
-                {value}
-              </Typography>
+            <Typography
+              style={{
+                fontSize: "32px",
+                fontWeight: "600",
+                textAlign: "left",
+                lineHeight: "140%",
+              }}
+            >
+              {value}
+            </Typography>
             <Typography
               style={{
                 fontWeight: "300",
@@ -610,55 +618,62 @@ const ActivityCard = ({
           {activity !== "space" && <img src={comment} alt="Comment Icon" />}
           <img src={share} alt="Share Icon" />
         </Box>
-        <Stack direction="row" alignItems="center" justifyContent="center" gap={2}>
-        <Button
-          variant="text"
-          onClick={
-            activityId ? () => navigate(`/${activity}/${activityId}`) : () => {}
-          }
-          sx={{
-            backgroundColor: "transparent",
-            width: { xs: "120px", sm: "220px" },
-            height: "31px",
-            fontSize: "16px",
-            fontWeight: 600,
-            color: theme.palette.primary.main,
-            textTransform: "capitalize",
-            ":hover": {
-              backgroundColor: "rgb(209, 219, 215, 0.4)",
-            },
-          }}
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="center"
+          sx={{ gap: { xs: 1, sm: 2 } }}
         >
-          Learn more
-        </Button>
-        <Button
-          sx={{
-            backgroundColor: "rgb(209, 219, 215, 0.4)",
-            width: { xs: "120px", sm: "220px" },
-            height: "31px",
-            fontSize: "16px",
-            fontWeight: "700",
-            color: theme.palette.primary.main,
-            display: "flex",
-            columnGap: "5px",
-            textTransform: "none",
-            ":hover": {
+          <Button
+            variant="text"
+            onClick={
+              activityId
+                ? () => navigate(`/${activity}/${activityId}`)
+                : () => {}
+            }
+            sx={{
+              backgroundColor: "transparent",
+              width: { xs: "120px", sm: "220px" },
+              height: "31px",
+              fontSize: "16px",
+              fontWeight: 600,
+              color: theme.palette.primary.main,
+              textTransform: "capitalize",
+              ":hover": {
+                backgroundColor: "rgb(209, 219, 215, 0.4)",
+              },
+            }}
+          >
+            Learn more
+          </Button>
+          <Button
+            sx={{
               backgroundColor: "rgb(209, 219, 215, 0.4)",
-            },
-          }}
-          onClick={() => handleAction(fullItem)}
-        >
-          {activity === "event" ? (
-            "RSVP"
-          ) : activity === "brand" ? (
-            "Follow"
-          ) : (
-            <>
-              <img src={calender} alt="Calender Icon" />
-              Inquire
-            </>
-          )}
-        </Button>
+              width: { xs: "120px", sm: "220px" },
+              height: "31px",
+              fontSize: "16px",
+              fontWeight: "700",
+              color: theme.palette.primary.main,
+              display: "flex",
+              columnGap: "5px",
+              textTransform: "none",
+              ":hover": {
+                backgroundColor: "rgb(209, 219, 215, 0.4)",
+              },
+            }}
+            onClick={() => handleAction(fullItem)}
+          >
+            {activity === "event" ? (
+              "RSVP"
+            ) : activity === "brand" ? (
+              "Follow"
+            ) : (
+              <>
+                <img src={calender} alt="Calender Icon" />
+                Inquire
+              </>
+            )}
+          </Button>
         </Stack>
       </Box>
     </Box>
