@@ -18,7 +18,11 @@ import AfterSignature from "../../../components/AfterSignature";
 import ManageInquiry from "../../../components/ManageInquiry";
 import { convertToSameKeys, spacesAction } from "../../../utils";
 import { useDispatch, useSelector } from "react-redux";
-import { setHasPaymentDone, setRedirectTab, setTabForNotification } from "../../../store/slices/space";
+import {
+  setHasPaymentDone,
+  setRedirectTab,
+  setTabForNotification,
+} from "../../../store/slices/space";
 import PaymentConfirmation from "../../../components/PaymentConfirmation";
 
 const TopHeading = ({ name, size, my = 0 }) => {
@@ -35,6 +39,11 @@ const TopHeading = ({ name, size, my = 0 }) => {
     </Typography>
   );
 };
+
+const leasePaymentText =
+  "Please verify your payment for below contract details.";
+const tenantPaymentText =
+  "By clicking this you verify that Tenant has paid the lease amount for Space";
 
 const Space = () => {
   const dispatch = useDispatch();
@@ -86,6 +95,7 @@ const Space = () => {
     useGetAllSpaceQuery(
       { page, pageSize: 7, tab: tabsForApi[activeTab] },
       {
+        skip: tabsForApi[activeTab] === "Saved",
         refetchOnMountOrArgChange: true,
         refetchOnFocus: true,
       }
@@ -171,7 +181,7 @@ const Space = () => {
             ? "Leasing"
             : "Lease Ended",
         eventUrl: "-",
-        brandUrl: `/brand/${space?.space?.brand?.id}`,
+        brandUrl: `/brand/${space?.brand?.id}`,
         action:
           space?.status === "SubmitForSignature"
             ? "Message"
@@ -212,15 +222,21 @@ const Space = () => {
       setMySpaceData([]);
     }
 
-    if (isSuccess) {
-      if (data?.data?.spaces?.length) {
-        setMySpaceData(transformSpaceData(data?.data?.spaces || []));
-      } else if (data?.data?.leaseSpace?.length) {
-        setMySpaceData(transformLeaseSpaceData(data?.data?.leaseSpace || []));
-      } else {
-        setMySpaceData(transformTenantSpaceData(data?.data?.tenantSpace || []));
+    if (tabsForApi[activeTab] !== "Saved") {
+      if (isSuccess) {
+        if (data?.data?.spaces?.length) {
+          setMySpaceData(transformSpaceData(data?.data?.spaces || []));
+        } else if (data?.data?.leaseSpace?.length) {
+          setMySpaceData(transformLeaseSpaceData(data?.data?.leaseSpace || []));
+        } else {
+          setMySpaceData(
+            transformTenantSpaceData(data?.data?.tenantSpace || [])
+          );
+        }
+        setHasShownErrorToast(false);
       }
-      setHasShownErrorToast(false);
+    } else {
+      setMySpaceData([]);
     }
   }, [isError, isSuccess, error, hasShownErrorToast, page, data]);
 
@@ -278,9 +294,13 @@ const Space = () => {
     setVerifyDetail(null);
   };
 
-  const gotoBrand = (item) => {
+  const gotoBrand = (item, type = "") => {
     //go to detail page functionality
-    navigate(item?.brandUrl);
+    if (type === "other") {
+      navigate(item?.brandUrl, { state: { other: true } });
+    } else {
+      navigate(item?.brandUrl);
+    }
   };
 
   const handleAdd = () => {
@@ -360,37 +380,39 @@ const Space = () => {
                 "You don't currently own any spaces. Would you like to add a new one?"
               }
             </Typography>
-            <Button
-              onClick={handleAdd}
-              startIcon={
-                <img
-                  style={{
-                    filter:
-                      "brightness(0) saturate(100%) invert(5%) sepia(29%) saturate(6114%) hue-rotate(176deg) brightness(93%) contrast(102%)",
-                  }}
-                  width={16}
-                  height={16}
-                  src={addIcon}
-                  alt="add-icon"
-                />
-              }
-              sx={{
-                background: (theme) => theme.palette.button.secondary,
-                color: (theme) => theme.palette.primary.main,
-                fontSize: "16px",
-                fontWeight: 500,
-                width: { xs: "100%", sm: "142px" },
-                height: "31px",
-                textTransform: "capitalize",
-                borderRadius: "3px",
-                "&:hover": {
+            {activeTab !== 1 ? (
+              <Button
+                onClick={handleAdd}
+                startIcon={
+                  <img
+                    style={{
+                      filter:
+                        "brightness(0) saturate(100%) invert(5%) sepia(29%) saturate(6114%) hue-rotate(176deg) brightness(93%) contrast(102%)",
+                    }}
+                    width={16}
+                    height={16}
+                    src={addIcon}
+                    alt="add-icon"
+                  />
+                }
+                sx={{
                   background: (theme) => theme.palette.button.secondary,
                   color: (theme) => theme.palette.primary.main,
-                },
-              }}
-            >
-              Add New
-            </Button>
+                  fontSize: "16px",
+                  fontWeight: 500,
+                  width: { xs: "100%", sm: "142px" },
+                  height: "31px",
+                  textTransform: "capitalize",
+                  borderRadius: "3px",
+                  "&:hover": {
+                    background: (theme) => theme.palette.button.secondary,
+                    color: (theme) => theme.palette.primary.main,
+                  },
+                }}
+              >
+                Add New
+              </Button>
+            ) : null}
           </Stack>
         )}
       </Card>
@@ -451,7 +473,11 @@ const Space = () => {
           brandName={convertToSameKeys(null, verifyDetail)?.host}
           contractDetails={verifyDetail?.contractDetails}
           handleClose={handleModalClose}
-          upperPara="Please verify your payment for below contract details."
+          upperPara={
+            tabsForApi[activeTab] === "Lease"
+              ? leasePaymentText
+              : tenantPaymentText
+          }
           setRefetchTriggered={setRefetchTriggered}
           page={page}
           activeTab={tabsForApi[activeTab]}

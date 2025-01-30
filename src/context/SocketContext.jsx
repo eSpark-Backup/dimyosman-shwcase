@@ -69,7 +69,7 @@ import {
 
 import { getCookie, setCookie } from "../utils";
 
-import { setHasPaymentDone } from "../store/slices/space";
+import { setHasPaymentDone, setRedirectTab } from "../store/slices/space";
 
 const SocketContext = createContext(null);
 
@@ -81,6 +81,7 @@ const SocketProvider = ({ children }) => {
   const socket = useRef(null);
   const { user } = useSelector((state) => state.auth);
   const { activeMembers, messages } = useSelector((state) => state.chat);
+  const { activeTabForNotif } = useSelector((state) => state.space);
 
   const { data, isSuccess, refetch } = useGetMyChatsQuery(undefined, {
     skip: !user,
@@ -96,7 +97,10 @@ const SocketProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (notificationSuccess && notificationData) {
+    if (
+      notificationData?.data &&
+      notificationData?.data?.notifications?.length > 0
+    ) {
       dispatch(getNotification(notificationData?.data?.notifications));
     }
   }, [notificationSuccess, notificationData]);
@@ -162,6 +166,29 @@ const SocketProvider = ({ children }) => {
         }
 
         handleNotificationUpdate("newNotification", getNotificationCount);
+        let redName = data.redirect;
+
+        if (pathname === "/space") {
+          if (data.redirect === "Lease" && activeTabForNotif !== "Lease") {
+            redName = "Lease";
+          } else if (
+            data.redirect === "Tenant" &&
+            activeTabForNotif !== "Tenant"
+          ) {
+            redName = "Tenant";
+          }
+        }
+
+        toast.info(data?.name, {
+          position: "bottom-right",
+          onClick: () => {
+            dispatch(setRedirectTab(redName));
+            if (pathname !== "/space") {
+              navigate("/space");
+            }
+          },
+        });
+
         notificationRefetch();
       });
 

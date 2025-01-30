@@ -41,6 +41,7 @@ const ActivityCard = ({
   deadline,
   features,
   slides,
+  search = false,
   handleAction = () => {},
 }) => {
   const theme = useTheme();
@@ -148,7 +149,10 @@ const ActivityCard = ({
           <Box
             onClick={
               activityId
-                ? () => navigate(`/${activity}/${activityId}`)
+                ? () =>
+                    navigate(`/${activity}/${activityId}`, {
+                      state: search ? { other: true } : null,
+                    })
                 : () => {}
             }
             sx={{
@@ -187,7 +191,12 @@ const ActivityCard = ({
         </Box>
         <Box
           onClick={
-            activityId ? () => navigate(`/${activity}/${activityId}`) : () => {}
+            activityId
+              ? () =>
+                  navigate(`/${activity}/${activityId}`, {
+                    state: search ? { other: true } : null,
+                  })
+              : () => {}
           }
           sx={{
             cursor: "pointer",
@@ -254,7 +263,10 @@ const ActivityCard = ({
           <DynamicPaginationSwiper
             onClick={
               activityId
-                ? () => navigate(`/${activity}/${activityId}`)
+                ? () =>
+                    navigate(`/${activity}/${activityId}`, {
+                      state: search ? { other: true } : null,
+                    })
                 : () => {}
             }
             slides={slides}
@@ -283,7 +295,10 @@ const ActivityCard = ({
             component="section"
             onClick={
               activityId
-                ? () => navigate(`/${activity}/${activityId}`)
+                ? () =>
+                    navigate(`/${activity}/${activityId}`, {
+                      state: search ? { other: true } : null,
+                    })
                 : () => {}
             }
             sx={{
@@ -628,7 +643,9 @@ const ActivityCard = ({
             variant="text"
             onClick={
               activityId
-                ? () => navigate(`/${activity}/${activityId}`)
+                ? () => navigate(`/${activity}/${activityId}`, {
+                  state: search ? { other: true } : null,
+                })
                 : () => {}
             }
             sx={{

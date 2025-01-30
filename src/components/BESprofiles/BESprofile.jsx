@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Box, Button, LinearProgress, Modal, Stack, Tooltip, Typography } from "@mui/material";
 import DynamicPaginationSwiper from "../Slider";
 import OutlinedTabs from "../outlinedTabs";
@@ -15,6 +15,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
   const [openSliderModal, setOpenSliderModal] = useState(false);
   const handleCloseModal = () => setOpenSliderModal(false);
   const navigate = useNavigate();
+  const { state } = useLocation();
   const { id } = useParams();
 
   const editProfile = () => {
@@ -78,10 +79,16 @@ const BESProfile = ({ spaceInquire, type, data }) => {
           marginBottom: 2,
           ".swiper": {
             borderRadius: "5px 5px 0 0",
-            height: myProfile.type === "brand" ? "300px !important" : "500px !important",
+            height:
+              myProfile.type === "brand"
+                ? "300px !important"
+                : "500px !important",
           },
           ".slide-content": {
-            height: myProfile.type === "brand" ? "300px !important" : "500px !important",
+            height:
+              myProfile.type === "brand"
+                ? "300px !important"
+                : "500px !important",
           },
         }}
       >
@@ -95,23 +102,25 @@ const BESProfile = ({ spaceInquire, type, data }) => {
             }}
             className="buttons-box"
           >
-            <Button
-              onClick={editProfile}
-              sx={{
-                padding: "10px 24px",
-                fontSize: "16px",
-                fontWeight: 600,
-                width: "77px",
-                height: "31px",
-                position: "absolute",
-                top: "0px",
-                right: "0px",
-                zIndex: 9,
-                textTransform: "capitalize",
-              }}
-            >
-              Edit
-            </Button>
+            {state?.other && state?.other === true ? null : (
+              <Button
+                onClick={editProfile}
+                sx={{
+                  padding: "10px 24px",
+                  fontSize: "16px",
+                  fontWeight: 600,
+                  width: "77px",
+                  height: "31px",
+                  position: "absolute",
+                  top: "0px",
+                  right: "0px",
+                  zIndex: 9,
+                  textTransform: "capitalize",
+                }}
+              >
+                Edit
+              </Button>
+            )}
           </Box>
         )}
         <Box
@@ -147,7 +156,6 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                 position: "relative",
                 flexShrink: 0,
               }}
-              
             >
               <figure
                 style={{ width: "100%", height: "100%" }}
@@ -172,8 +180,8 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                     myProfile?.type === "brand"
                       ? brandBadge
                       : myProfile?.type === "event"
-                        ? eventBadge
-                        : spaceBadge
+                      ? eventBadge
+                      : spaceBadge
                   }
                   alt={`${type}-badge`}
                 />
@@ -185,7 +193,13 @@ const BESProfile = ({ spaceInquire, type, data }) => {
               justifyContent="center"
               alignItems="flex-start"
             >
-              <Tooltip title={myProfile?.profileName?.length > 30 ? myProfile?.profileName : ""}>
+              <Tooltip
+                title={
+                  myProfile?.profileName?.length > 30
+                    ? myProfile?.profileName
+                    : ""
+                }
+              >
                 <Typography
                   textAlign="left"
                   sx={{
@@ -213,7 +227,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                 {filteredProfile?.category
                   ?.map((item) => item?.name)
                   .filter(Boolean)
-                  .join(', ')}
+                  .join(", ")}
               </Typography>
 
               <Stack
@@ -225,37 +239,46 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                 rowGap={"5px"}
                 flexWrap={{ xs: "wrap", md: "nowrap" }}
               >
-                {Object.entries(myProfile?.details).map(([key, values], ind) => {
-                  return (
-                    <Typography
-                      onClick={
-                        myProfile?.by && key === "by"
-                          ? () => {
-                            navigate(
-                              `/${type === "brand" ? "profile" : "brand"}/${myProfile?.by
-                              }`
-                            );
-                          }
-                          : () => { }
-                      }
-                      key={ind}
-                      fontSize={12}
-                      sx={{
-                        cursor:
+                {Object.entries(myProfile?.details).map(
+                  ([key, values], ind) => {
+                    return (
+                      <Typography
+                        onClick={
                           myProfile?.by && key === "by"
-                            ? "pointer"
-                            : "default",
-                        fontWeight: 300,
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {key}:{" "}
-                      <span style={{ display: "inline-block", fontWeight: 600, textTransform: "none" }}>
-                        {values}
-                      </span>
-                    </Typography>
-                  );
-                })}
+                            ? () => {
+                                navigate(
+                                  `/${type === "brand" ? "profile" : "brand"}/${
+                                    myProfile?.by
+                                  }`
+                                );
+                              }
+                            : () => {}
+                        }
+                        key={ind}
+                        fontSize={12}
+                        sx={{
+                          cursor:
+                            myProfile?.by && key === "by"
+                              ? "pointer"
+                              : "default",
+                          fontWeight: 300,
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        {key}:{" "}
+                        <span
+                          style={{
+                            display: "inline-block",
+                            fontWeight: 600,
+                            textTransform: "none",
+                          }}
+                        >
+                          {values}
+                        </span>
+                      </Typography>
+                    );
+                  }
+                )}
               </Stack>
             </Stack>
           </Stack>
