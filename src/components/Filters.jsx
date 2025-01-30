@@ -19,14 +19,14 @@ import MapDisplay from "./MapDisplay";
 
 import {
   allIconLight,
-  brandIconlight,
-  eventIconLight,
+  brandIcon,
+  flag,
   locationIcon,
   mapMarker,
   mapMarkerBrand,
   mapMarkerSpace,
-  memberIconLight,
-  spaceIconLight,
+  profileIcon,
+  spaceIcon,
 } from "../assets";
 
 import { useDebounce } from "../helper/useDebounce";
@@ -46,13 +46,41 @@ import {
 
 const icons = [
   { icon: allIconLight, type: "ALL" },
-  { icon: brandIconlight, type: "BRAND" },
-  { icon: eventIconLight, type: "EVENT" },
-  { icon: spaceIconLight, type: "SPACE" },
-  { icon: memberIconLight, type: "PROFILE" },
+  {
+    icon: brandIcon,
+    bg: "rgba(196, 119, 127, 0.2)",
+    activeBG: "rgba(196, 119, 127, 0.8)",
+    type: "BRAND",
+  },
+  {
+    icon: flag,
+    bg: "rgba(148, 185, 134, 0.2)",
+    activeBG: "rgba(148, 185, 134, 0.8)",
+    type: "EVENT",
+  },
+  {
+    icon: spaceIcon,
+    bg: "rgba(120, 150, 195, 0.2)",
+    activeBG: "rgba(120, 150, 195, 0.8)",
+    type: "SPACE",
+  },
+  {
+    icon: profileIcon,
+    bg: "rgba(0, 20, 28, 0.1)",
+    activeBG: "rgba(0, 20, 28, 0.8)",
+    type: "PROFILE",
+  },
 ];
 
-const Filters = ({ allDataLocation = [], setOpenFilterDrawer = null, setPage = null, setHasMore = null, setLoadingStart = null, setData = null, loadingStart = false }) => {
+const Filters = ({
+  allDataLocation = [],
+  setOpenFilterDrawer = null,
+  setPage = null,
+  setHasMore = null,
+  setLoadingStart = null,
+  setData = null,
+  loadingStart = false,
+}) => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
@@ -63,12 +91,36 @@ const Filters = ({ allDataLocation = [], setOpenFilterDrawer = null, setPage = n
 
   const [radiusInput, setRadiusInput] = useState(parameters.radius);
   const [debouncedRadius, resetDebouncedRadius] = useDebounce(radiusInput, 500);
+  const [hasSet, setHasSet] = useState(false);
+  const [loc, setLoc] = useState({});
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+
+          setLoc({ lat: latitude, long: longitude });
+          setHasSet(true);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          setHasSet(false);
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+      setHasSet(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (pathname !== "/search") {
       resetDebouncedRadius();
       dispatch(emptyFilters());
       setRadiusInput("");
+      dispatch(setLocation({ lat: "", long: "" }));
     }
   }, [pathname]);
 
@@ -80,9 +132,14 @@ const Filters = ({ allDataLocation = [], setOpenFilterDrawer = null, setPage = n
       setPage?.(1);
       setHasMore?.(true);
       setLoadingStart?.(false);
+
+      if (hasSet) {
+        dispatch(setLocation(loc));
+      }
+
       dispatch(setRadius(debouncedRadius));
       dispatch(setSkip(false));
-      setData?.([])
+      setData?.([]);
     }
   }, [debouncedRadius, dispatch, parameters.radius]);
 
@@ -164,7 +221,7 @@ const Filters = ({ allDataLocation = [], setOpenFilterDrawer = null, setPage = n
     setPage?.(1);
     setHasMore?.(true);
     setLoadingStart?.(false);
-    setData?.([])
+    setData?.([]);
 
     dispatch(emptyCategoryNames());
     dispatch(setEntity(entity.type));
@@ -205,15 +262,12 @@ const Filters = ({ allDataLocation = [], setOpenFilterDrawer = null, setPage = n
       .map((cat) => cat.name)
       .join(",");
 
-    if (isSelectingNew) {
-      setPage?.(1);
-      setHasMore?.(true);
-      setLoadingStart?.(false);
-      setData?.([]);
+    setPage?.(1);
+    setHasMore?.(true);
+    setLoadingStart?.(false);
 
-      dispatch(setCategoryNames(selectedNames));
-      dispatch(setSkip(false));
-    }
+    dispatch(setCategoryNames(selectedNames));
+    dispatch(setSkip(false));
 
     if (pathname !== "/search") {
       actionAsDrawer();
@@ -272,19 +326,37 @@ const Filters = ({ allDataLocation = [], setOpenFilterDrawer = null, setPage = n
         }}
       >
         {icons.map((icon) => (
-          <img
-            key={icon.type}
-            src={icon.icon}
-            alt={icon.type}
-            style={{
+          <Box
+            sx={{
+              bgcolor:
+                parameters.entity === icon.type ? icon.activeBG : icon.bg,
+              height: "48px",
+              width: "48px",
+              minHeight: "48px",
+              minWidth: "48px",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: "5px",
+              position: "relative",
               cursor: icon.type !== "All" ? "pointer" : "default",
+              transition: "background-color 0.3s ease-in-out",
+              "&:hover": {
+                bgcolor: icon.activeBG,
+              },
+
+              "&:last-child": {
+                marginRight: 0,
+              },
             }}
             onClick={() => {
               if (icon.type !== "All") {
                 filterClick(icon);
               }
             }}
-          />
+          >
+            <img key={icon.type} src={icon.icon} alt={icon.type} />
+          </Box>
         ))}
       </Box>
 
@@ -342,7 +414,8 @@ const Filters = ({ allDataLocation = [], setOpenFilterDrawer = null, setPage = n
               }
             }}
             onInputChange={(e) => {
-              setRadiusInput(parseInt(e.target.value));
+              const value = e.target.value;
+              setRadiusInput(value);
             }}
             type="number"
             placeholder="100km"

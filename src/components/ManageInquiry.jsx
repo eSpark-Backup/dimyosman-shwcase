@@ -636,7 +636,6 @@ const ManageInquiry = ({
                     onChange={handleStartDateChange}
                     onOk={handleStartOK}
                     appearance="default"
-                    showOneCalendar
                     menuStyle={{ zIndex: 1300 }}
                     placeholder={`${inquiryDetails.contractDetails.leaseInfo?.startDate}`}
                     cleanable={false}
@@ -685,7 +684,6 @@ const ManageInquiry = ({
                     onChange={handleEndDateChange}
                     onOk={handleEndOK}
                     appearance="default"
-                    showOneCalendar
                     menuStyle={{ zIndex: 1300 }}
                     placeholder={`${inquiryDetails.contractDetails.leaseInfo?.endDate}`}
                     cleanable={false}
