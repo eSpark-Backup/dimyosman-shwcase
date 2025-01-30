@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { Box, Grid, Typography, LinearProgress } from "@mui/material";
-
+import { Box, Grid, Typography, LinearProgress, CircularProgress } from "@mui/material";
+import { useInView } from "react-intersection-observer";
 import { ActivityCard } from "../../../components";
 import SpaceInquireModal from "../../../components/SpaceInquireModal";
 
@@ -70,29 +70,12 @@ const Activity = () => {
     }
   }, [isSuccess, data, page]);
 
-  const scrollContainerRef = useRef(null);
+  const { ref, inView } = useInView({ threshold: 0.5 });
   useEffect(() => {
-    const handleScroll = () => {
-      if (!scrollContainerRef.current) return;
-      const { scrollTop, scrollHeight, clientHeight } =
-        scrollContainerRef.current;
-      if (
-        scrollTop + clientHeight >= scrollHeight - 5 &&
-        !isLoading &&
-        !isFetching &&
-        activityData.length <= total
-      ) {
-        setPage((prev) => prev + 1);
-      }
-    };
-
-    const scrollContainer = scrollContainerRef.current;
-    scrollContainer?.addEventListener("scroll", handleScroll);
-
-    return () => {
-      scrollContainer?.removeEventListener("scroll", handleScroll);
-    };
-  }, [isLoading, isFetching, activityData.length, total]);
+    if (inView && !isLoading && !isFetching && activityData.length < total) {
+      setPage((prev) => prev + 1);
+    }
+  }, [inView, isLoading, isFetching, activityData.length, total]);
 
   if ((isLoading && page === 1)) {
     return (
@@ -115,7 +98,6 @@ const Activity = () => {
 
       <Grid container sx={{ display: 'flex', justifyContent: "space-between" }}>
         <Grid
-          ref={scrollContainerRef}
           item
           xs={12}
           lg={8}
@@ -169,8 +151,11 @@ const Activity = () => {
               }}
             />
           ))}
-          {!isLoading && activityData.length >= total &&
-            <Typography textAlign="center">
+          <div ref={ref} style={{ minHeight: 10, textAlign: "center" }}>
+            {isFetching && <CircularProgress />}
+          </div>
+          {!isFetching && !isLoading && activityData.length >= total &&
+            <Typography fontWeight={700} fontSize={18} textAlign="center">
               You have seen all!
             </Typography>
           }
