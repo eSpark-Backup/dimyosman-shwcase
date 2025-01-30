@@ -724,7 +724,7 @@ export const brandTableData = (gotoDetail, handleAction, myBrandData) => [
     ),
   },
   {
-    data: likedBrandData,
+    data: myBrandData,
     column: likedBrandColumns(gotoDetail, (item) =>
       handleAction(item, "remove")
     ),
@@ -737,13 +737,13 @@ export const eventTableData = (gotoDetail, handleAction, myEventData, gotoBrand,
     column: myEventsColumns(gotoDetail, (item) => handleAction(item, "edit"), gotoBrand, gotoSpace),
   },
   {
-    data: rsvcEventData,
+    data: myEventData,
     column: rsvpEventColumns(gotoDetail, (item) =>
       handleAction(item, item?.action)
     ),
   },
   {
-    data: likedEventData,
+    data: myEventData,
     column: likedEventColumns(gotoDetail, (item) =>
       handleAction(item, "remove")
     ),
@@ -767,7 +767,7 @@ export const spaceTableData = (gotoDetail, handleAction, mySpaceData, gotoBrand)
     ),
   },
   {
-    data: likedSpaceData,
+    data: mySpaceData,
     column: likedSpaceColumns(gotoDetail, (item) =>
       handleAction(item, "remove")
     ),

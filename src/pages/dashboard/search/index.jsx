@@ -130,6 +130,7 @@ const Search = () => {
       el?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
 
     return {
+      isFavourite: el?.isFavourite,
       id: el?.id,
       brandId: el?.id,
       activity: "brand",
@@ -210,6 +211,7 @@ const Search = () => {
                   slides={item?.slides}
                   features={item?.features}
                   search={true}
+                  isFavourite={item?.isFavourite}
                 />
               );
             })

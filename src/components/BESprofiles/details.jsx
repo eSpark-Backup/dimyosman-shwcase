@@ -1,12 +1,15 @@
 import { Box, Button, Divider, Stack, Tooltip, Typography } from "@mui/material";
-import { calender, comment, like, miniMap, share } from "../../assets";
+import { calender, comment, like, liked, miniMap, share } from "../../assets";
 import { useState } from "react";
 import ReusableModal from "../Modal";
 import MapModal from "../MapModal";
 import { useSelector } from "react-redux";
 import { useLocation, useParams } from "react-router-dom";
+import { useAddInFavouritesMutation } from "../../services/favourite";
 
 const Details = ({ spaceInquire, details, myProfile }) => {
+  const [likeFunc] = useAddInFavouritesMutation();
+  const [likePost, setLikePost] = useState(myProfile?.isFavourite);
   const [openMapModal, setMapModal] = useState(false);
   const { events } = useSelector((state) => state?.event);
   const { brands } = useSelector((state) => state?.brand);
@@ -293,7 +296,11 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             style={{ cursor: "pointer", padding: "5px" }}
             width={32}
             height={32}
-            src={like}
+            onClick={() => {
+              likeFunc({ entityId: myProfile?.id, entityType: myProfile?.type?.toLocaleUpperCase() })
+              setLikePost(!likePost)
+            }}
+            src={likePost ? liked : like}
             alt="like"
           />
           {myProfile.type !== "space" && !myProfile?.owned && (
@@ -475,7 +482,11 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             style={{ cursor: "pointer", padding: "5px" }}
             width={32}
             height={32}
-            src={like}
+            onClick={() => {
+              likeFunc({ entityId: myProfile?.id, entityType: myProfile?.type?.toLocaleUpperCase() })
+              setLikePost(!likePost)
+            }}
+            src={likePost ? liked : like}
             alt="like"
           />
           {myProfile.type !== "space" && !myProfile?.owned && (

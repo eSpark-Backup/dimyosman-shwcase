@@ -1,11 +1,27 @@
 import { useEffect, useState } from "react";
-import { Box, Button, Card, LinearProgress, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  LinearProgress,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { brandTableData } from "../../../constant";
-import { addIcon, brandIconlight, brandMain, eventMain, eventUserImage, like } from "../../../assets";
+import {
+  addIcon,
+  brandIconlight,
+  brandMain,
+  eventMain,
+  eventUserImage,
+  like,
+} from "../../../assets";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useGetAllBrandsQuery } from "../../../services/brands";
 import { toast } from "react-toastify";
+import { useAddInFavouritesMutation, useGetFavouritesQuery } from "../../../services/favourite";
+import moment from "moment";
 
 const Brand = () => {
   const tabs = [
@@ -22,10 +38,10 @@ const Brand = () => {
       icon: like,
     },
   ];
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useState(1);
   const [activeTab, setActiveTab] = useState(0);
   const location = useLocation();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -34,58 +50,106 @@ const Brand = () => {
   const gotoDetail = (item) => {
     //go to detail page functionality
     if (location?.pathname === "/brand") {
-      navigate(`/brand/${item?.id}`)
+      navigate(`/brand/${item?.id}`);
     }
   };
 
-  const handleAction = (item, type) => {
+  const {
+    data: data2,
+    isError: isError2,
+    isLoading: isLoading2,
+    isSuccess: isSuccess2,
+    error: error2,
+    isFetching: isFetching2,
+    refetch,
+  } = useGetFavouritesQuery(
+    { page, pageSize: 7, entity: "BRAND" },
+    {
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      skip: activeTab !== 2,
+    }
+  );
+
+  const [likeFunc] = useAddInFavouritesMutation();
+  
+
+  const handleAction = async (item, type) => {
     if (type === "edit") {
       //edit functionality
       if (location?.pathname === "/brand") {
-        navigate(`/brand/${item?.id}/edit`)
+        navigate(`/brand/${item?.id}/edit`);
       }
     } else if (type === "unfollow") {
       //unfollow functionality
-    } else if (type === "remove")
-      [
-        //remove functionality
-      ];
+    } else if (type === "remove") {
+      await likeFunc({ entityId: item?.id, entityType: item?.type?.toUpperCase() }).unwrap();
+      refetch();
+    }
   };
 
   const handleAdd = () => {
     //add functionality
     if (location?.pathname === "/brand") {
-      navigate("/new-brand")
+      navigate("/new-brand");
     }
-
   };
   const [myBrandData, setMyBrandData] = useState([]);
-  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({ page, pageSize: 7 }, {
-    refetchOnMountOrArgChange: true,
-    refetchOnFocus: true
-  });
+  const { data, isError, isLoading, isSuccess, error, isFetching } =
+    useGetAllBrandsQuery(
+      { page, pageSize: 7 },
+      {
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true,
+        skip: activeTab !== 0,
+      }
+    );
 
-
-  const transformBrandData = (apiData) => {
-    return apiData.map((brand, index) => ({
-      id: brand?.id,
-      type: "brand",
-      brandName: brand.brandName || "N/A",
-      brandImg: brand.brandImage || "",
-      brandCategory: brand.brandCategory && brand.brandCategory.length > 0
-        ? brand.brandCategory.map(item => item.name).join(", ")
-        : "N/A",
-      events: brand.events || "-",
-      followers: brand.followers || "-",
-      status: brand.status || "N/A",
-      colHeader1: "Table cell",
-      colHeader2: "Table cell",
-      colHeader3: "Table cell",
-      colHeader4: "Table cell",
-      colHeader5: "Table cell",
-      colHeader6: "Table cell",
-      colHeader7: "Table cell",
-    }));
+  const transformBrandData = (apiData, type) => {
+    let newData;
+    type === "fav"
+      ? (newData = apiData.map(({ brand, updatedAt }, index) => ({
+          id: brand?.id,
+          type: "brand",
+          brandName: brand.brandName || "N/A",
+          brandImg: brand.brandImage || "",
+          brandCategory:
+            brand.brandCategory && brand.brandCategory.length > 0
+              ? brand.brandCategory.map((item) => item.name).join(", ")
+              : "N/A",
+          events: brand.events || "-",
+          followers: brand.followers || "-",
+          status: brand.status || "N/A",
+          savedDate: moment(new Date(updatedAt)).format("DD.MM.YYYY.") || "-",
+          colHeader1: "Table cell",
+          colHeader2: "Table cell",
+          colHeader3: "Table cell",
+          colHeader4: "Table cell",
+          colHeader5: "Table cell",
+          colHeader6: "Table cell",
+          colHeader7: "Table cell",
+        })))
+      : (newData = apiData.map((brand, index) => ({
+          id: brand?.id,
+          type: "brand",
+          brandName: brand.brandName || "N/A",
+          brandImg: brand.brandImage || "",
+          brandCategory:
+            brand.brandCategory && brand.brandCategory.length > 0
+              ? brand.brandCategory.map((item) => item.name).join(", ")
+              : "N/A",
+          events: brand.events || "-",
+          followers: brand.followers || "-",
+          status: brand.status || "N/A",
+          colHeader1: "Table cell",
+          colHeader2: "Table cell",
+          colHeader3: "Table cell",
+          colHeader4: "Table cell",
+          colHeader5: "Table cell",
+          colHeader6: "Table cell",
+          colHeader7: "Table cell",
+        })));
+    return newData;
   };
 
   const [hasShownErrorToast, setHasShownErrorToast] = useState(false);
@@ -97,22 +161,48 @@ const Brand = () => {
       setMyBrandData([]);
     }
 
+    if (isError2 && !hasShownErrorToast) {
+      toast.error(error2?.data?.message, { toastId: "error-toast" });
+      setHasShownErrorToast(true);
+      setMyBrandData([]);
+    }
+
     if (isSuccess) {
-      setMyBrandData(transformBrandData(data?.data?.groupedBrands?.publishedBrands || []));
+      setMyBrandData(
+        transformBrandData(data?.data?.groupedBrands?.publishedBrands || [])
+      );
       setHasShownErrorToast(false);
     }
-  }, [isError, isSuccess, error, hasShownErrorToast, page, data]);
+
+    if (isSuccess2) {
+      setMyBrandData(
+        transformBrandData(data2?.data?.savedEntities || [], "fav")
+      );
+      setHasShownErrorToast(false);
+    }
+  }, [
+    isError,
+    isError2,
+    isSuccess,
+    isSuccess2,
+    error,
+    error2,
+    hasShownErrorToast,
+    page,
+    data,
+    data2,
+  ]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
 
-  if (isLoading || isFetching) {
+  if (isLoading2 || isLoading || isFetching2 || isFetching) {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />
       </Box>
-    )
+    );
   }
 
   return (
@@ -127,11 +217,18 @@ const Brand = () => {
           handleChange={handleChange}
           handleAdd={handleAdd}
         />
-        {brandTableData(gotoDetail, handleAction, myBrandData)[activeTab].data.length > 0 ? (
+        {brandTableData(gotoDetail, handleAction, myBrandData)[activeTab].data
+          .length > 0 ? (
           <DynamicTable
             isLoading={isLoading || isFetching}
-            data={brandTableData(gotoDetail, handleAction, myBrandData)[activeTab].data}
-            columns={brandTableData(gotoDetail, handleAction, myBrandData)[activeTab].column}
+            data={
+              brandTableData(gotoDetail, handleAction, myBrandData)[activeTab]
+                .data
+            }
+            columns={
+              brandTableData(gotoDetail, handleAction, myBrandData)[activeTab]
+                .column
+            }
             total={data && data?.data?.pagination?.totalItems}
             handlePageChange={handlePageChange}
             page={page}

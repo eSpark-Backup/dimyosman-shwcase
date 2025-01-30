@@ -35,6 +35,7 @@ import eventMain2 from "./activity-main-2.svg";
 import eventMain3 from "./activity-main-3.svg";
 import miniMap from "./micro-map.svg";
 import like from "./like.svg";
+import liked from "./liked.svg";
 import comment from "./comment.svg";
 import share from "./share.svg";
 import brandIcon from "./brand.svg";
@@ -157,6 +158,7 @@ export {
   eventMain,
   miniMap,
   like,
+  liked,
   comment,
   share,
   brandIcon,

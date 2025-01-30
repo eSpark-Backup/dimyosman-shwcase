@@ -63,12 +63,13 @@ export const eventApi = api.injectEndpoints({
             },
         }),
         getAllEvents: builder.query({
-            query: ({ id, page, pageSize } = {}) => {
+            query: ({ id, page, pageSize, tab } = {}) => {
                 const baseUrl = id ? `/event/${id}` : '/event';
                 const queryParams = new URLSearchParams();
 
                 if (pageSize) queryParams.append('pageSize', pageSize);
                 if (page) queryParams.append('page', page);
+                if (tab) queryParams.append("tab", tab);
 
                 const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
                 return {

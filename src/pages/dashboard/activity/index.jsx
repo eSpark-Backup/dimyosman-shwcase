@@ -30,7 +30,7 @@ const Activity = () => {
         return;
       }
       if (data?.data) {
-        const updatedData = data.data.spaces?.map((item) => {
+        const updatedData = data.data.activity?.map((item) => {
           const filterPrice = item?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") || [];
           const spaceFeatures = item?.amenity?.map((amenityItem) => ({
             icon: amenityItem?.iconUrl || "",
@@ -54,7 +54,8 @@ const Activity = () => {
             activityImage: item?.spaceImage || "",
             features: spaceFeatures,
             userRole: "brand",
-            slides: coverArray
+            slides: coverArray,
+            isFavourite: item?.isFavourite
           };
         }) || [];
         const mergedData = [...activityData, ...updatedData];
@@ -115,6 +116,7 @@ const Activity = () => {
         >
           {activityData?.map((item, index) => (
             <ActivityCard
+              isFavourite={item?.isFavourite}
               key={index}
               fullItem={item}
               id={item?.profileId}
