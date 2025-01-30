@@ -7,6 +7,8 @@ import {
   LeaseSpace,
   Category,
   CategoryType,
+  SavedEntity,
+  ActionType,
 } from "../../entity";
 import { ApiError } from "../../errors";
 import { Brackets, Repository } from "typeorm";
@@ -54,7 +56,8 @@ export class GeneralController {
     private chatModel: typeof Chat,
     private userModel: typeof UserForChat,
     private notificationModel: typeof Notification,
-    private messageModel: typeof Message
+    private messageModel: typeof Message,
+    private savedEntity:Repository<SavedEntity>
   ) {}
 
   async generalSearch(
@@ -498,12 +501,32 @@ export class GeneralController {
         skipNumber + takeNumber
       );
 
+
       const totalItems = sortedActivity.length;
       const totalPages = Math.ceil(totalItems / takeNumber);
 
+      const savedEntities= await this.savedEntity.createQueryBuilder("savedEntity")
+      .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
+      .leftJoinAndSelect("savedEntity.space", "space")
+      .leftJoinAndSelect("savedEntity.brand", "brand")
+      .leftJoinAndSelect("savedEntity.event", "event")
+      .where("savedEntity.user = :userId", { userId: req.user?.id })
+    
+      .getMany();
+      const savedEntityIds = new Set(
+        savedEntities.map(entity => 
+          entity.space?.id || entity.event?.id || entity.brand?.id
+        ).filter(Boolean) 
+      );
+
+const updatedPaginatedActivity = paginatedActivity.map(activity => ({
+  ...activity,
+  isFavourite: savedEntityIds.has(activity.id),
+}));
+
       res.status(200).json(
         handleResponse("Activity Fetched Successfully", {
-          activity: paginatedActivity,
+          activity: updatedPaginatedActivity,
           pagination: {
             totalItems,
             currentPage: Number(page),

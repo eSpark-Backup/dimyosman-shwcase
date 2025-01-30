@@ -7,6 +7,7 @@ import {
   Spaces,
   User,
   Category,
+  SavedEntity,
 } from "../../entity";
 import { AppDataSource } from "../../typeorm.config";
 import { GeneralController, SpaceController } from "../../controllers/account";
@@ -29,6 +30,7 @@ const brandRepository = AppDataSource.getRepository(Brand);
 const eventRepository = AppDataSource.getRepository(Events);
 const leaseSpaceRepository = AppDataSource.getRepository(LeaseSpace);
 const categoryRepository = AppDataSource.getRepository(Category);
+const savedEntityRepository=AppDataSource.getRepository(SavedEntity)
 
 const generalController = new GeneralController(
   spaceRepository,
@@ -41,7 +43,9 @@ const generalController = new GeneralController(
   Chat,
   UserForChat,
   Notification,
-  Message
+  Message,
+  savedEntityRepository
+
 );
 
 /**
