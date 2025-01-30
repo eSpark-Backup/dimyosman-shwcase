@@ -30,6 +30,18 @@ export const formatDate = (date) => {
   return `${day}.${month}.${year}`;
 };
 
+export const generate8DigitNumber = () => {
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, "0"); // Add leading zero if day is single digit
+  const month = String(now.getMonth() + 1).padStart(2, "0"); // getMonth() is 0-indexed, so add 1
+  const year = now.getFullYear();
+
+  // Combine day, month, and year into an 8-digit number (DDMMYYYY)
+  const eightDigitNumber = `${day}${month}${year}`;
+
+  return eightDigitNumber;
+};
+
 export function useClickOutside(ref, onClickOutside) {
   useEffect(() => {
     function handleClickOutside(event) {
@@ -174,7 +186,7 @@ export const separateRawData = (rawData) => {
     return {
       startDate,
       endDate,
-      leaseTotal,
+      leaseTotal: leaseTotal?.split("$")[1],
     };
   }
 };

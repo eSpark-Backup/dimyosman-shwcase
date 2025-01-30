@@ -209,6 +209,7 @@ const Search = () => {
                   userRole={item?.userRole}
                   slides={item?.slides}
                   features={item?.features}
+                  search={true}
                 />
               );
             })

@@ -123,59 +123,69 @@ const PaymentConfirmation = ({
       </Box>
 
       <Box my={"20px"} textAlign="center">
-        <Typography>{upperPara}</Typography>
+        <Typography>
+          {activeTab === "Lease" ? (
+            upperPara
+          ) : (
+            <>
+              {upperPara} <strong>{contractDetails?.hostDetails?.space}</strong>
+            </>
+          )}
+        </Typography>
 
-        <Box
-          sx={{
-            width: "100%",
-            mt: 1,
-          }}
-        >
+        {activeTab === "Lease" ? (
           <Box
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "5px",
+              width: "100%",
+              mt: 1,
             }}
           >
-            <DetailHeading name="Starting:" weight={300} />
-            <DetailHeading
-              name={contractDetails?.leaseInfo?.startDate}
-              weight={600}
-            />
-          </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "5px",
+              }}
+            >
+              <DetailHeading name="Starting:" weight={300} />
+              <DetailHeading
+                name={contractDetails?.leaseInfo?.startDate}
+                weight={600}
+              />
+            </Box>
 
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "5px",
-            }}
-          >
-            <DetailHeading name="Ending:" weight={300} />
-            <DetailHeading
-              name={contractDetails?.leaseInfo?.endDate}
-              weight={600}
-            />
-          </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "5px",
+              }}
+            >
+              <DetailHeading name="Ending:" weight={300} />
+              <DetailHeading
+                name={contractDetails?.leaseInfo?.endDate}
+                weight={600}
+              />
+            </Box>
 
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "5px",
-            }}
-          >
-            <DetailHeading name="Lease amount:" weight={300} />
-            <DetailHeading
-              name={contractDetails?.leaseInfo?.leaseTotal}
-              weight={600}
-            />
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "5px",
+              }}
+            >
+              <DetailHeading name="Lease amount:" weight={300} />
+              <DetailHeading
+                name={contractDetails?.leaseInfo?.leaseTotal}
+                weight={600}
+              />
+            </Box>
           </Box>
-        </Box>
+        ) : null}
       </Box>
 
       <Box sx={{ display: "flex", justifyContent: "center" }}>

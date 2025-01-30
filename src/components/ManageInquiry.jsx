@@ -4,6 +4,10 @@ import { useDispatch } from "react-redux";
 
 import { toast } from "react-toastify";
 
+import { format, isBefore, parse } from "date-fns";
+
+import { DatePicker } from "rsuite";
+
 import {
   Box,
   CircularProgress,
@@ -13,6 +17,8 @@ import {
   useTheme,
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 import ActivityType from "./Message/ActivityType";
 import Input from "./input";
@@ -20,11 +26,14 @@ import CheckBox from "./CheckBox";
 
 import { close } from "../assets";
 
-import { separateRawData } from "../utils";
+import { generate8DigitNumber, separateRawData } from "../utils";
 
 import { setGoToMessage } from "../store/slices/notification";
 
-import { useLeaseSpaceInquireMutation, useTenantSignMutation } from "../services/space";
+import {
+  useLeaseSpaceInquireMutation,
+  useTenantSignMutation,
+} from "../services/space";
 
 const Heading = ({
   name,
@@ -41,7 +50,7 @@ const Heading = ({
         color: "#1E1E1E",
         mb,
         mt,
-        cursor
+        cursor,
       }}
       onClick={onClick}
     >
@@ -98,7 +107,7 @@ const EditableInput = ({ value, onInputChange }) => {
   );
 };
 
-const DetailHeading = ({ name, weight }) => {
+const DetailHeading = ({ name, weight, onClick }) => {
   return (
     <>
       <Typography
@@ -106,11 +115,16 @@ const DetailHeading = ({ name, weight }) => {
           fontWeight: weight,
           color: "#000000",
         }}
+        onClick={onClick}
       >
         {name}
       </Typography>
     </>
   );
+};
+
+const parseFormat = (date) => {
+  return parse(date, "dd.MM.yyyy", new Date());
 };
 
 const ManageInquiry = ({
@@ -138,10 +152,6 @@ const ManageInquiry = ({
   const [tenantSpace, { isLoading: isTenantLoading }] = useTenantSignMutation();
 
   const profileImageRef = useRef(null);
-
-  const [imageWithPreview, setImageWithPreview] = useState(null);
-  const [image, setImage] = useState(null);
-  const [checked, setChecked] = useState(false);
   const [inquiryDetails, setInquiryDetails] = useState({
     spaceId: "",
     chatId: "",
@@ -162,8 +172,20 @@ const ManageInquiry = ({
       },
       leaseInfo: {},
       description: "",
+      contractNumber: generate8DigitNumber(),
     },
   });
+
+  const [leaseClick, setLeaseClick] = useState(false);
+  const [startDateClick, setStartDateClick] = useState(false);
+  const [endDateClick, setEndDateClick] = useState(false);
+
+  const [selectedStartDate, setSelectedStartDate] = useState(null);
+  const [selectedEndDate, setSelectedEndDate] = useState(null);
+
+  const [imageWithPreview, setImageWithPreview] = useState(null);
+  const [image, setImage] = useState(null);
+  const [checked, setChecked] = useState(false);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -206,10 +228,85 @@ const ManageInquiry = ({
             ? details?.leaseInfo
             : separateRawData(details?.leaseInfo),
           description: details?.contractDescription || "",
+          contractNumber: generate8DigitNumber(),
         },
       }));
     }
   }, [details]);
+
+  const handleStartDateChange = (newValue) => {
+    setSelectedStartDate(newValue);
+  };
+
+  const handleEndDateChange = (newValue) => {
+    setSelectedEndDate(newValue);
+  };
+
+  const handleStartOK = (val) => {
+    const formattedDate = format(val, "dd.MM.yyyy");
+    const end = inquiryDetails?.contractDetails?.leaseInfo?.endDate;
+
+    if (parseFormat(formattedDate) > parseFormat(end)) {
+      toast.error("Start date should be less than end date");
+      setInquiryDetails((prev) => ({
+        ...prev,
+        contractDetails: {
+          ...prev.contractDetails,
+          leaseInfo: {
+            ...prev.contractDetails.leaseInfo,
+            startDate: "",
+          },
+        },
+      }));
+      return;
+    }
+
+    if (val !== null) {
+      setInquiryDetails((prev) => ({
+        ...prev,
+        contractDetails: {
+          ...prev.contractDetails,
+          leaseInfo: {
+            ...prev.contractDetails.leaseInfo,
+            startDate: formattedDate,
+          },
+        },
+      }));
+    }
+  };
+
+  const handleEndOK = (val) => {
+    const formattedDate = format(val, "dd.MM.yyyy");
+    const start = inquiryDetails?.contractDetails?.leaseInfo?.startDate;
+
+    if (parseFormat(formattedDate) < parseFormat(start)) {
+      toast.error("End date should be greater than start date");
+      setInquiryDetails((prev) => ({
+        ...prev,
+        contractDetails: {
+          ...prev.contractDetails,
+          leaseInfo: {
+            ...prev.contractDetails.leaseInfo,
+            endDate: "",
+          },
+        },
+      }));
+      return;
+    }
+
+    if (val !== null) {
+      setInquiryDetails((prev) => ({
+        ...prev,
+        contractDetails: {
+          ...prev.contractDetails,
+          leaseInfo: {
+            ...prev.contractDetails.leaseInfo,
+            endDate: formattedDate,
+          },
+        },
+      }));
+    }
+  };
 
   const handleChange = (event) => {
     setChecked(event.target.checked);
@@ -226,10 +323,22 @@ const ManageInquiry = ({
       return;
     }
 
-    const updateInquiryObject = {
+    const updateWithSign = {
       ...inquiryDetails,
+      contractDetails: {
+        ...inquiryDetails.contractDetails,
+        leaseInfo: {
+          ...inquiryDetails.contractDetails.leaseInfo,
+          leaseTotal: `$${inquiryDetails.contractDetails.leaseInfo.leaseTotal}`,
+        },
+      },
+    };
+
+    const updateInquiryObject = {
+      ...updateWithSign,
       image,
     };
+
     if (spc) {
       const passObj = { page, pageSize: 7, tab: tabsForApi[activeTab] };
 
@@ -499,28 +608,148 @@ const ManageInquiry = ({
               padding: 2,
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                "& .rs-picker-input-group": {
+                  backgroundColor: "rgba(209, 219, 215, 0.2)",
+                  border: "1px dashed #D1DBD7 !important",
+                  outline: "none !important",
+
+                  "& input": {
+                    backgroundColor: "rgba(209, 219, 215, 0.2)",
+                  },
+
+                  "& .rs-input-group-addon": {
+                    backgroundColor: "rgba(209, 219, 215, 0.2)",
+                  },
+                },
+              }}
+            >
               <DetailHeading name="Starting:" weight={300} />
-              <DetailHeading
-                name={inquiryDetails.contractDetails.leaseInfo?.startDate}
-                weight={600}
-              />
+              {startDateClick ? (
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    value={selectedStartDate}
+                    onChange={handleStartDateChange}
+                    onOk={handleStartOK}
+                    appearance="default"
+                    showOneCalendar
+                    menuStyle={{ zIndex: 1300 }}
+                    placeholder={`${inquiryDetails.contractDetails.leaseInfo?.startDate}`}
+                    cleanable={false}
+                    format="dd.MM.yyyy"
+                  />
+                </LocalizationProvider>
+              ) : (
+                <DetailHeading
+                  name={inquiryDetails.contractDetails.leaseInfo?.startDate}
+                  weight={600}
+                  onClick={() => {
+                    if(!spc){
+                      setStartDateClick(true);
+                    }
+                  }}
+                />
+              )}
             </Box>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                "& .rs-picker-input-group": {
+                  backgroundColor: "rgba(209, 219, 215, 0.2)",
+                  border: "1px dashed #D1DBD7 !important",
+                  outline: "none !important",
+
+                  "& input": {
+                    backgroundColor: "rgba(209, 219, 215, 0.2)",
+                  },
+
+                  "& .rs-input-group-addon": {
+                    backgroundColor: "rgba(209, 219, 215, 0.2)",
+                  },
+                },
+                my: 1,
+              }}
+            >
               <DetailHeading name="Ending:" weight={300} />
-              <DetailHeading
-                name={inquiryDetails.contractDetails.leaseInfo?.endDate}
-                weight={600}
-              />
+              {endDateClick ? (
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    value={selectedEndDate}
+                    onChange={handleEndDateChange}
+                    onOk={handleEndOK}
+                    appearance="default"
+                    showOneCalendar
+                    menuStyle={{ zIndex: 1300 }}
+                    placeholder={`${inquiryDetails.contractDetails.leaseInfo?.endDate}`}
+                    cleanable={false}
+                    format="dd.MM.yyyy"
+                  />
+                </LocalizationProvider>
+              ) : (
+                <DetailHeading
+                  name={inquiryDetails.contractDetails.leaseInfo?.endDate}
+                  weight={600}
+                  onClick={() => {
+                    if (!spc) {
+                      setEndDateClick(true);
+                    }
+                  }}
+                />
+              )}
             </Box>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+              }}
+            >
               <DetailHeading name="Lease amount:" weight={300} />
-              <DetailHeading
-                name={inquiryDetails.contractDetails.leaseInfo?.leaseTotal}
-                weight={600}
-              />
+              {leaseClick ? (
+                <Input
+                  sx={{
+                    height: "auto",
+                    fontWeight: "400",
+                    padding: 0,
+                    marginLeft: "6px",
+                    "& input": {
+                      padding: "5px 8px",
+                    },
+                  }}
+                  value={inquiryDetails.contractDetails.leaseInfo?.leaseTotal}
+                  onInputChange={(e) => {
+                    setInquiryDetails((prev) => ({
+                      ...prev,
+                      contractDetails: {
+                        ...prev.contractDetails,
+                        leaseInfo: {
+                          ...prev.contractDetails.leaseInfo,
+                          leaseTotal: e.target.value,
+                        },
+                      },
+                    }));
+                  }}
+                  type="number"
+                />
+              ) : (
+                <DetailHeading
+                  name={`$${inquiryDetails.contractDetails.leaseInfo?.leaseTotal}`}
+                  weight={600}
+                  onClick={() => {
+                    if (!spc) {
+                      setLeaseClick(true);
+                    }
+                  }}
+                />
+              )}
             </Box>
           </Box>
         </Box>
@@ -533,53 +762,55 @@ const ManageInquiry = ({
           }}
         />
         {/* CONTRACT DETAILS */}
-        {inquiryDetails.contractDetails.description && (
-          <Box
-            sx={{
-              backgroundColor: !spc && "rgba(209, 219, 215, 0.2)",
-              border: !spc && "1px dashed rgba(0, 20, 28, 0.4)",
-              borderRadius: "3px",
-              padding: 2,
-            }}
-          >
-            <Heading name="Contract No: 0123454566536562" />
-            {!spc ? (
-              <Input
-                multiline={true}
-                sx={{
-                  height: "auto",
-                  backgroundColor: "transparent",
-                  border: "none",
-                  padding: 0,
-                  "& input": {
-                    fontWeight: 600,
+        <Box
+          sx={{
+            backgroundColor: !spc && "rgba(209, 219, 215, 0.2)",
+            border: !spc && "1px dashed rgba(0, 20, 28, 0.4)",
+            borderRadius: "3px",
+            padding: 2,
+          }}
+        >
+          <Heading name={`Contract No: ${generate8DigitNumber()}`} />
+          {!spc ? (
+            <Input
+              multiline={true}
+              sx={{
+                height: "auto",
+                backgroundColor: "transparent",
+                border: "none",
+                padding: 0,
+                "& input": {
+                  fontWeight: 600,
+                },
+              }}
+              placeholder="Add contract description here"
+              value={inquiryDetails.contractDetails.description}
+              onInputChange={(event) =>
+                setInquiryDetails((prevState) => ({
+                  ...prevState,
+                  contractDetails: {
+                    ...prevState.contractDetails,
+                    description: event.target.value,
                   },
-                }}
-                placeholder="Add contract description here"
-                value={inquiryDetails.contractDetails.description}
-                onInputChange={(event) =>
-                  setInquiryDetails((prevState) => ({
-                    ...prevState,
-                    contractDetails: {
-                      ...prevState.contractDetails,
-                      description: event.target.value,
-                    },
-                  }))
-                }
-              />
-            ) : (
-              <Typography
-                sx={{
-                  fontWeight: 300,
-                  color: "#00141C",
-                  wordBreak: "break-all",
-                }}
-              >
-                {inquiryDetails.contractDetails.description}
-              </Typography>
-            )}
-          </Box>
-        )}
+                }))
+              }
+            />
+          ) : (
+            <>
+              {inquiryDetails.contractDetails.description ? (
+                <Typography
+                  sx={{
+                    fontWeight: 300,
+                    color: "#00141C",
+                    wordBreak: "break-all",
+                  }}
+                >
+                  {inquiryDetails.contractDetails.description}
+                </Typography>
+              ) : null}
+            </>
+          )}
+        </Box>
       </Box>
 
       {/* CHECKBOX SECTION */}
@@ -620,6 +851,11 @@ const ManageInquiry = ({
                 borderRadius: "3px",
                 textAlign: "center",
                 cursor: !spc && "pointer",
+                height:
+                  imageWithPreview || (spc && ownerSign) ? "140px" : "auto",
+                display: "flex",
+                alignItems: { xs: "center", lg: "unset" },
+                justifyContent: "center",
               }}
               onClick={!spc ? handleBoxClick : null}
             >
@@ -627,13 +863,21 @@ const ManageInquiry = ({
                 <img
                   src={ownerSign}
                   alt="Preview"
-                  style={{ width: "100%", height: "auto", objectFit: "cover" }}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                  }}
                 />
               ) : imageWithPreview ? (
                 <img
                   src={imageWithPreview}
                   alt="Preview"
-                  style={{ width: "100%", height: "auto", objectFit: "cover" }}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                  }}
                 />
               ) : (
                 "Sign here"
@@ -677,6 +921,10 @@ const ManageInquiry = ({
                     borderRadius: "3px",
                     textAlign: "center",
                     cursor: !tenantSign && "pointer",
+                    height:
+                      imageWithPreview || (spc && tenantSign)
+                        ? "140px"
+                        : "auto",
                   }}
                   onClick={handleBoxClick}
                 >
@@ -686,8 +934,8 @@ const ManageInquiry = ({
                       alt="Preview"
                       style={{
                         width: "100%",
-                        height: "auto",
-                        objectFit: "cover",
+                        height: "100%",
+                        objectFit: "contain",
                       }}
                     />
                   ) : imageWithPreview ? (
@@ -696,8 +944,8 @@ const ManageInquiry = ({
                       alt="Preview"
                       style={{
                         width: "100%",
-                        height: "auto",
-                        objectFit: "cover",
+                        height: "100%",
+                        objectFit: "contain",
                       }}
                     />
                   ) : (
@@ -725,7 +973,11 @@ const ManageInquiry = ({
                 height: "31px",
                 textTransform: "capitalize",
                 background:
-                  "linear-gradient(0deg, rgba(0, 20, 28, 0.7), rgba(0, 20, 28, 0.7)), #FFFFFF",
+                  inquiryDetails?.contractDetails?.leaseInfo?.startDate ===
+                    "" ||
+                  inquiryDetails?.contractDetails?.leaseInfo?.endDate === ""
+                    ? "light-dark(rgba(239, 239, 239, 0.3), rgba(19, 1, 1, 0.3))"
+                    : "linear-gradient(0deg, rgba(0, 20, 28, 0.7), rgba(0, 20, 28, 0.7)), #FFFFFF",
                 borderRadius: "5px",
                 fontWeight: 600,
                 fontSize: "16px",
@@ -736,6 +988,13 @@ const ManageInquiry = ({
               loading={isLoading || isTenantLoading}
               loadingIndicator={
                 <CircularProgress size={15} sx={{ color: "#ffffff" }} />
+              }
+              disabled={
+                spc
+                  ? false
+                  : inquiryDetails?.contractDetails?.leaseInfo?.startDate ===
+                      "" ||
+                    inquiryDetails?.contractDetails?.leaseInfo?.endDate === ""
               }
             >
               {spc ? "Submit" : "Submit for Signature"}

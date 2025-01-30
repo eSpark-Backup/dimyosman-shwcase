@@ -206,15 +206,15 @@ const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
       component: (item) => {
         return (
           <Typography
-          sx={{
-            fontSize: "14px",
-            fontWeight: item?.brandUrl ? 600 : 400,
-            cursor: "pointer",
-          }}
-          onClick={() => gotoBrand(item)}
-        >
-          {item?.brand}
-        </Typography>
+            sx={{
+              fontSize: "14px",
+              fontWeight: item?.brandUrl ? 600 : 400,
+              cursor: "pointer",
+            }}
+            onClick={() => gotoBrand(item)}
+          >
+            {item?.brand}
+          </Typography>
         );
       },
     },
@@ -437,7 +437,7 @@ const tenantSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
               fontWeight: item?.brandUrl ? 600 : 400,
               cursor: "pointer",
             }}
-            onClick={() => gotoBrand(item)}
+            onClick={() => gotoBrand(item, "other")}
           >
             {item?.brand}
           </Typography>

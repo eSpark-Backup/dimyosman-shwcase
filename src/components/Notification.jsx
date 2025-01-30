@@ -52,7 +52,6 @@ const Notification = ({ open, theme, setShowNotification }) => {
         spaceName: item.metadata.receiverSpaceName,
         chatId: item.metadata.ChatId,
       };
-      setShowNotification(false);
 
       dispatch(setGoToMessage(navigateData));
       dispatch(setFromNotification(true));
@@ -61,6 +60,7 @@ const Notification = ({ open, theme, setShowNotification }) => {
         navigate("/message");
       }
     }
+    setShowNotification(false);
   };
 
   useEffect(() => {
