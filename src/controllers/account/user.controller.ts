@@ -431,12 +431,14 @@ export class UserController {
       if (entity == "EVENT") {
         query
           .leftJoinAndSelect("savedEntity.event", "event")
+          .leftJoinAndSelect("event.brand", "brand")
           .andWhere("savedEntity.type = :type", {
             type: SavedEntityType.EVENT,
           });
       } else if (entity == "SPACE") {
         query
           .leftJoinAndSelect("savedEntity.space", "space")
+          .leftJoinAndSelect("space.brand", "brand")
           .andWhere("savedEntity.type = :type", {
             type: SavedEntityType.SPACE,
           });

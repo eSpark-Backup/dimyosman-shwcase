@@ -29,3 +29,6 @@
 [31m{"level":"error","message":"AuthController :: loginUser :: Invalid email or password.","timestamp":"2025-01-08 17:03:18"}[39m
 [31m{"level":"error","message":"AuthController :: forgotPassword :: \"This email is registered as a social login. Please use social login.\"","timestamp":"2025-01-08 17:11:40"}[39m
 [31m{"level":"error","message":"AuthController :: forgotPassword :: \"This email is registered as a social login. Please use social login.\"","timestamp":"2025-01-08 17:12:11"}[39m
+[31m{"level":"error","message":"UserController :: addToFavourites :: ER_DATA_TOO_LONG: Data too long for column 'spaceId' at row 1","timestamp":"2025-01-31 01:01:48"}[39m
+[31m{"level":"error","message":"UserController :: addToFavourites :: ER_DATA_TOO_LONG: Data too long for column 'spaceId' at row 1","timestamp":"2025-01-31 01:02:00"}[39m
+[31m{"level":"error","message":"UserController :: getFavourites :: Relation with property path brandId in entity was not found.","timestamp":"2025-01-31 01:09:41"}[39m
