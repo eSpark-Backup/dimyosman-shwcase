@@ -57,13 +57,12 @@ const Activity = () => {
             slides: coverArray
           };
         }) || [];
-        const filteredData1 = activityData.filter((item, index, self) => 
-          index === self.findIndex((t) => t.spaceId === item.spaceId)
+        const mergedData = [...activityData, ...updatedData];
+  
+        const uniqueData = Array.from(
+          new Map(mergedData.map((item) => [item.spaceId, item])).values()
         );
-        const filteredData2 = updatedData.filter((item, index, self) => 
-          index === self.findIndex((t) => t.spaceId === item.spaceId)
-        );
-        setActivityData([...filteredData1, ...filteredData2]);
+        setActivityData(uniqueData);
         setTotal(data?.data?.pagination?.totalItems);
       }
       setHasFetchedData(true); 
@@ -81,7 +80,7 @@ const Activity = () => {
         scrollTop + clientHeight >= scrollHeight - 5 &&
         !isLoading &&
         !isFetching &&
-        activityData.length < total
+        activityData.length <= total
       ) {
         setPage((prev) => prev + 1);
       }
