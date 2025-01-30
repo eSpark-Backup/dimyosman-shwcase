@@ -7,6 +7,7 @@ import {
   AccordionSummary,
   Box,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 
 import ActivityType from "./ActivityType";
@@ -27,11 +28,13 @@ const MessageItem = ({
   emitEvent,
   onlineUsers,
 }) => {
-  const detailsRef = useRef(null);
-  const messageRefs = useRef({});
+    const isLessThan768 = useMediaQuery("(max-width:768px)");
 
-  const getUnreadChatIds =
-    getCookie("unreadChatIds") && JSON.parse(getCookie("unreadChatIds"));
+    const detailsRef = useRef(null);
+    const messageRefs = useRef({});
+
+    const getUnreadChatIds =
+      getCookie("unreadChatIds") && JSON.parse(getCookie("unreadChatIds"));
 
   const { user } = useSelector((state) => state.auth);
   const { gotToMessage } = useSelector((state) => state.notification);
@@ -200,13 +203,18 @@ const MessageItem = ({
                     display: "flex",
                     alignItems: el?.creator ? "center" : "unset",
                     padding: 1,
-                    bgcolor:
-                      selectedGroup?.chatGroup?.chatId === el?.chatId
-                        ? "rgba(209, 219, 215, 0.6)"
-                        : "#ffffff",
+                    bgcolor: isLessThan768
+                      ? "transparent"
+                      : selectedGroup?.chatGroup?.chatId === el?.chatId
+                      ? "rgba(209, 219, 215, 0.6)"
+                      : "#ffffff",
                     cursor: "pointer",
                     position: "relative",
                     borderRadius: "3px",
+                    borderBottom:
+                      isLessThan768 && i !== message.chatGroups.length - 1
+                        ? "1px solid rgba(209, 219, 215, 0.6)"
+                        : "none",
                   }}
                   onClick={() => {
                     dispatch(emptyGoToMessage());

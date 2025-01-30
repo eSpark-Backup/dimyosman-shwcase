@@ -647,7 +647,7 @@ const ManageInquiry = ({
                   name={inquiryDetails.contractDetails.leaseInfo?.startDate}
                   weight={600}
                   onClick={() => {
-                    if(!spc){
+                    if (!spc) {
                       setStartDateClick(true);
                     }
                   }}
@@ -739,7 +739,11 @@ const ManageInquiry = ({
                 />
               ) : (
                 <DetailHeading
-                  name={`$${inquiryDetails.contractDetails.leaseInfo?.leaseTotal}`}
+                  name={
+                    !spc
+                      ? `$${inquiryDetails.contractDetails.leaseInfo?.leaseTotal}`
+                      : inquiryDetails.contractDetails.leaseInfo?.leaseTotal
+                  }
                   weight={600}
                   onClick={() => {
                     if (!spc) {
@@ -765,7 +769,7 @@ const ManageInquiry = ({
             backgroundColor: !spc && "rgba(209, 219, 215, 0.2)",
             border: !spc && "1px dashed rgba(0, 20, 28, 0.4)",
             borderRadius: "3px",
-            padding: 2,
+            padding: spc ? "0px 16px" : 2,
           }}
         >
           <Heading name={`Contract No: ${generate8DigitNumber()}`} />
@@ -842,10 +846,16 @@ const ManageInquiry = ({
             <Heading name="Host Signature" mb="10px" />
             <Box
               sx={{
-                backgroundColor: !spc && "rgba(209, 219, 215, 0.2)",
+                backgroundColor:
+                  !spc && !imageWithPreview
+                    ? "rgba(209, 219, 215, 0.2)"
+                    : "transparent",
                 width: { xs: "100%", lg: "200px", xl: "278px" },
                 padding: !spc ? (imageWithPreview ? 0 : "32px 0px") : 0,
-                border: !spc && "1px dashed rgba(0, 20, 28, 0.4)",
+                border:
+                  !spc && !imageWithPreview
+                    ? "1px dashed rgba(0, 20, 28, 0.4)"
+                    : "none",
                 borderRadius: "3px",
                 textAlign: "center",
                 cursor: !spc && "pointer",
@@ -864,7 +874,7 @@ const ManageInquiry = ({
                   style={{
                     width: "100%",
                     height: "100%",
-                    objectFit: "contain",
+                    objectFit: "cover",
                   }}
                 />
               ) : imageWithPreview ? (
@@ -874,7 +884,7 @@ const ManageInquiry = ({
                   style={{
                     width: "100%",
                     height: "100%",
-                    objectFit: "contain",
+                    objectFit: "cover",
                   }}
                 />
               ) : (
@@ -908,14 +918,20 @@ const ManageInquiry = ({
               <>
                 <Box
                   sx={{
-                    backgroundColor: "rgba(209, 219, 215, 0.2)",
+                    backgroundColor:
+                      !imageWithPreview && !tenantSign
+                        ? "rgba(209, 219, 215, 0.2)"
+                        : "transparent",
                     width: { xs: "100%", lg: "200px", xl: "278px" },
                     padding: !tenantSign
                       ? imageWithPreview
                         ? 0
                         : "32px 0px"
                       : 0,
-                    border: !tenantSign && "1px dashed rgba(0, 20, 28, 0.4)",
+                    border:
+                      !imageWithPreview && !tenantSign
+                        ? "1px dashed rgba(0, 20, 28, 0.4)"
+                        : "none",
                     borderRadius: "3px",
                     textAlign: "center",
                     cursor: !tenantSign && "pointer",
@@ -924,7 +940,11 @@ const ManageInquiry = ({
                         ? "140px"
                         : "auto",
                   }}
-                  onClick={handleBoxClick}
+                  onClick={() => {
+                    if (!tenantSign) {
+                      handleBoxClick();
+                    }
+                  }}
                 >
                   {spc && tenantSign ? (
                     <img
@@ -933,7 +953,7 @@ const ManageInquiry = ({
                       style={{
                         width: "100%",
                         height: "100%",
-                        objectFit: "contain",
+                        objectFit: "cover",
                       }}
                     />
                   ) : imageWithPreview ? (
@@ -943,7 +963,7 @@ const ManageInquiry = ({
                       style={{
                         width: "100%",
                         height: "100%",
-                        objectFit: "contain",
+                        objectFit: "cover",
                       }}
                     />
                   ) : (

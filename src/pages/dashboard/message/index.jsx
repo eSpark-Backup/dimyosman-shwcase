@@ -31,7 +31,7 @@ import {
 
 import {
   changeMessageType,
-  filterAllMyGroups,
+  // filterAllMyGroups,
   getAllMyGroups,
   getChatDetails,
   getMessages,
@@ -198,7 +198,7 @@ const Message = () => {
       removeListener("NEW_MESSAGE");
       removeListener("NEW_MESSAGE_ALERT");
     };
-  }, [addListener, removeListener, messages, emitEvent, allGroups]);
+  }, [addListener, removeListener, messages, emitEvent, allGroups, activeTab]);
 
   useEffect(() => {
     const handleTypingStatus = (event, isTyping) => {
@@ -230,21 +230,20 @@ const Message = () => {
           (msg) => msg?.parentActivity === activeTab
         );
 
+        setAllMessages(filterGroups);
         setSelectedGroup({
           chatGroup: filterGroups[0]?.chatGroups?.find(
             (gr) => gr.chatId === selectedChatId
           ),
           group: filterGroups[0],
         });
-
-        setAllMessages(filterGroups);
       }
 
       return () => {
         dispatch(changeMessageType(""));
       };
     }
-  }, [myChat, messageData, chatDetailsData, messages, chatDetails]);
+  }, [myChat, messageData, chatDetailsData, messages, chatDetails, activeTab]);
 
   useEffect(() => {
     addListener("ONLINE_USERS", (data) => {
@@ -291,12 +290,15 @@ const Message = () => {
   };
 
   const handleAccordionChange = (index) => (event, isExpanded) => {
-    dispatch(emptyGoToMessage());
-    dispatch(setFromNotification(false));
+    if (!isLessThan768) {
+      dispatch(emptyGoToMessage());
+      dispatch(setFromNotification(false));
+
+      setSelectedGroup(commonSelectedChatGroup(allGroups, index));
+      setSelectedChatId(allGroups[index]?.chatGroups[0]?.chatId);
+    }
 
     setExpanded(index);
-    setSelectedGroup(commonSelectedChatGroup(allGroups, index));
-    setSelectedChatId(allGroups[index]?.chatGroups[0]?.chatId);
 
     const obj = {
       userId: user.userChatId,
@@ -334,14 +336,15 @@ const Message = () => {
 
         if (gotToMessage) {
           handleNewInquiry(selected, initialId);
+          setInitialChatId(selected?.chatGroup?.id);
         } else {
           selected.chatGroup = allGroups[0]?.chatGroups[0];
           selected.group = allGroups[0];
           initialId = allGroups[0]?.chatGroups[0]?._id;
-        }
 
-        setInitialChatId(initialId);
-        !isLessThan768 && setSelectedGroup(selected);
+          setInitialChatId(initialId);
+        }
+        setSelectedGroup(selected);
 
         const obj = {
           userId: user.userChatId,
@@ -350,6 +353,18 @@ const Message = () => {
 
         dispatch(isActiveMembers(obj.members));
         emitEvent("CHAT_JOINED", obj);
+
+        const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds")) || [];
+
+        const ifChatIdExists = getUnreadChatIds?.filter(
+          (id) => id !== selected?.chatGroup?.id
+        );
+
+        if (ifChatIdExists?.length > 0) {
+          setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
+        } else {
+          deleteCookie("unreadChatIds");
+        }
       }
 
       if (selectedChatId !== null && expanded !== null) {
@@ -365,8 +380,8 @@ const Message = () => {
 
         if (gotToMessage) {
           handleNewInquiry(selected, null);
-
           setSelectedGroup(selected);
+          setSelectedChatId(selected?.chatGroup?.id);
         } else {
           selected.chatGroup = chatGroup;
           selected.group = group;
@@ -386,7 +401,7 @@ const Message = () => {
         }, 10);
       }
     }
-  }, [allGroups, expanded, messages, gotToMessage]);
+  }, [allGroups, expanded, messages, gotToMessage, activeTab, allMessages]);
 
   const filterChats = (type) => {
     const filterGroups =
@@ -409,14 +424,16 @@ const Message = () => {
       } else {
         msgTxt = "No Chats";
       }
+      if (!isLessThan768) {
+        setSelectedGroup(commonSelectedChatGroup(filterGroups, 0));
+        setSelectedChatId(filterGroups[0]?.chatGroups[0]?.chatId);
+      }
 
       dispatch(changeMessageType(msgTxt));
       setActiveTab(type);
       // dispatch(filterAllMyGroups(obj));
       setAllMessages(filterGroups);
       setExpanded(0);
-      setSelectedGroup(commonSelectedChatGroup(filterGroups, 0));
-      setSelectedChatId(filterGroups[0]?.chatGroups[0]?.chatId);
     }
   };
 
@@ -428,7 +445,8 @@ const Message = () => {
   };
 
   if (
-    ((chatDetails?.length === 0 || messages.length === 0) && hasChats != "empty") ||
+    ((chatDetails?.length === 0 || messages.length === 0) &&
+      hasChats != "empty") ||
     (fromNotification && (isFetching || isFetchingMessage))
   ) {
     return (
@@ -450,18 +468,21 @@ const Message = () => {
     <Box sx={style}>
       <Grid container spacing={2} justifyContent="center">
         <Grid
-            sx={{
-              display: isLessThan768
-                ? selectedGroup
-                  ? "none"
-                  : "block"
-                : "block",
-            }}
-            item
-            xs={12}
-            md={3.8}
-            lg={3}
-          >
+          sx={{
+            display: isLessThan768
+              ? !gotToMessage && selectedChatId
+                ? "none"
+                : gotToMessage &&
+                  selectedGroup?.chatGroup?.id === gotToMessage?.chatId
+                ? "none"
+                : "block"
+              : "block",
+          }}
+          item
+          xs={12}
+          md={3.8}
+          lg={3}
+        >
           <SearchMessage />
 
           <Box
@@ -469,9 +490,9 @@ const Message = () => {
               display: "flex",
               margin: "0 auto 16px auto",
               justifyContent: "flex-start",
-                overflowX: "auto",
-                maxWidth: "302px",
-                gap: 2,
+              overflowX: "auto",
+              maxWidth: "302px",
+              gap: 2,
             }}
           >
             {icons.map((icon, i) => (
@@ -503,36 +524,41 @@ const Message = () => {
                   : "50px",
               }}
             >
-              {allMessages?.map((message, index) => (
-                <MessageItem
-                  key={index}
-                  message={message}
-                  theme={theme}
-                  expanded={expanded === index}
-                  onChange={handleAccordionChange(index)}
-                  setSelectedGroup={setSelectedGroup}
-                  selectedGroup={selectedGroup}
-                  setSelectedChatId={setSelectedChatId}
-                  emitEvent={emitEvent}
-                  onlineUsers={onlineUsers}
-                />
-              ))}
+              {allMessages?.length
+                ? allMessages?.map((message, index) => (
+                    <MessageItem
+                      key={index}
+                      message={message}
+                      theme={theme}
+                      expanded={expanded === index}
+                      onChange={handleAccordionChange(index)}
+                      setSelectedGroup={setSelectedGroup}
+                      selectedGroup={selectedGroup}
+                      setSelectedChatId={setSelectedChatId}
+                      emitEvent={emitEvent}
+                      onlineUsers={onlineUsers}
+                    />
+                  ))
+                : null}
             </Box>
           )}
         </Grid>
 
         <Grid
           sx={{
-              display: isLessThan768
-                ? selectedGroup
-                  ? "block"
-                  : "none"
-                : "block",
-            }}
+            display: isLessThan768
+              ? !gotToMessage && selectedChatId
+                ? "block"
+                : gotToMessage &&
+                  selectedGroup?.chatGroup?.id === gotToMessage?.chatId
+                ? "block"
+                : "none"
+              : "block",
+          }}
           item
           xs={12}
           md={8}
-            lg={9}
+          lg={9}
         >
           {hasMessages === "No Chats" ? (
             <Box
@@ -559,14 +585,19 @@ const Message = () => {
                   <h1>No chat selected</h1>
                 </Box>
               ) : (
-                <AllMessages
-                  setSelectedGroup={setSelectedGroup}
-                  selectedGroup={selectedGroup}
-                  emitEvent={emitEvent}
-                  isTypingUser={isTypingUser}
-                  onlineUsers={onlineUsers}
-                  setToShare={setToShare}
-                />
+                <>
+                  {allMessages?.length ? (
+                    <AllMessages
+                      setSelectedChatId={setSelectedChatId}
+                      setInitialChatId={setInitialChatId}
+                      selectedGroup={selectedGroup}
+                      emitEvent={emitEvent}
+                      isTypingUser={isTypingUser}
+                      onlineUsers={onlineUsers}
+                      setToShare={setToShare}
+                    />
+                  ) : null}
+                </>
               )}
             </>
           )}
