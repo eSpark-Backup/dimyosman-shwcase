@@ -19,7 +19,7 @@ const Sidebar = () => {
       gap={1}
       sx={{
         display: { xs: "none", sm: "block" },
-        zIndex: 9,
+        zIndex: 11,
         position: "fixed",
         left: "16px",
         top: "80px",

@@ -3,14 +3,39 @@ import { Box, IconButton, InputAdornment, TextField, Typography, useTheme } from
 import { eye } from "../assets";
 import RemoveRedEyeSharpIcon from '@mui/icons-material/RemoveRedEyeSharp';
 
-const Input = ({ login, onInputChange, name, label, type, placeholder, value, onBlur, error, helperText, sx, multiline, endAdornment, flex = 'none', ...rest }) => {
+const Input = ({
+  login,
+  onInputChange,
+  id,
+  name,
+  label,
+  type,
+  placeholder,
+  value,
+  onBlur,
+  error,
+  helperText,
+  sx,
+  multiline,
+  endAdornment,
+  flex = "none",
+  readOnly = false,
+  width = "auto",
+  ...rest
+}) => {
   const [showPassword, setShowPassword] = useState(false);
-  const theme = useTheme()
+  const theme = useTheme();
 
   const handleClickShowPassword = () => setShowPassword((prev) => !prev);
   return (
     <Box
-      sx={{ display: "flex", flexDirection: "column", rowGap: "8px", flex }}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        rowGap: "8px",
+        flex,
+        width,
+      }}
     >
       {label && (
         <Typography
@@ -27,6 +52,7 @@ const Input = ({ login, onInputChange, name, label, type, placeholder, value, on
         </Typography>
       )}
       <TextField
+        id={id}
         type={showPassword ? "text" : type}
         name={name}
         placeholder={placeholder}
@@ -43,6 +69,7 @@ const Input = ({ login, onInputChange, name, label, type, placeholder, value, on
           },
         }}
         InputProps={{
+          readOnly,
           endAdornment:
             endAdornment ||
             (type === "password" ? (

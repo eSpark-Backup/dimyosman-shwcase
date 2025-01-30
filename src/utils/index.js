@@ -171,6 +171,7 @@ export const keysForBrandsSapcesEvents = (object, type) => {
 
   const coverObject = {
     profileId: 2,
+    id: object?.id,
     activity: type,
     userName: object?.brand?.brandName || "",
     activityMaker: object?.brand?.brandName || "",

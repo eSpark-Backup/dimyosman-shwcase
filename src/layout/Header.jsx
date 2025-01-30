@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Box, Button, Drawer, Stack, Typography, useTheme } from "@mui/material";
+import FilterListIcon from '@mui/icons-material/FilterList';
 import {
   brand,
   brandHover,
@@ -229,6 +230,25 @@ const Header = ({ isLogin }) => {
           )}
           {isLogin ? (
             <ul style={{ position: "relative" }} className="nav-links2">
+              <li className="add_filter">
+                <Button
+                  sx={{
+                    backgroundColor: "rgb(0, 20, 28, 0.4)",
+                    width: "32px",
+                    height: "32px",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                    display: "flex",
+                    position: "relative",
+                    minWidth: "auto",
+                  }}
+                >
+                  <FilterListIcon onClick={() => handleFilterDrawer()} />
+                </Button>
+              </li>
+
               <li ref={addRef}>
                 <BadgeComp
                   onClick={() => setAddPopup(true)}
@@ -237,6 +257,7 @@ const Header = ({ isLogin }) => {
                 />
                 <Popup open={addPopup} title="Add New:" data={addPopuptabs} />
               </li>
+
               <li>
                 <BadgeComp
                   onClick={() => iconClick("chat")}

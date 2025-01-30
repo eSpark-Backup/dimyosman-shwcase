@@ -12,14 +12,15 @@ const initialState = {
     additional: "",
     categoryNames: "",
   },
-  allFilterCategories:[]
+  allFilterCategories: [],
+  allCategoriesNotSearch: [],
 };
 
 const slice = createSlice({
   name: "search",
   initialState,
   reducers: {
-    setAllFilterCategories:(state,action) => {
+    setAllFilterCategories: (state, action) => {
       state.allFilterCategories = action.payload;
     },
     setEntity: (state, action) => {
@@ -57,6 +58,12 @@ const slice = createSlice({
         categoryNames: "",
       };
     },
+    setAllCategoriesNotSearch: (state, action) => {
+      state.allCategoriesNotSearch = action.payload;
+    },
+    emptyCategoryNames: (state) => {
+      state.parameters.categoryNames = "";
+    },
   },
 });
 
@@ -69,7 +76,9 @@ export const {
   setCategoryNames,
   setSkip,
   setRadius,
-  emptyFilters
+  emptyFilters,
+  setAllCategoriesNotSearch,
+  emptyCategoryNames,
 } = slice.actions;
 
 export default slice.reducer;
