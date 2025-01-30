@@ -88,18 +88,25 @@ const generalController = new GeneralController(
  *          type: string
  *          example: Eco Lux
  *       - in: query
+ *         name: radius
+ *         required: false
+ *         description: Radius to filter the All.
+ *         schema:
+ *          type: integer
+ *          example: 10
+ *       - in: query
  *         name: long
  *         required: false
  *         description: Longitude
  *         schema:
- *          type: string
+ *          type: float
  *          example: 23.222
  *       - in: query
  *         name: lat
  *         required: false
  *         description: Latitude
  *         schema:
- *          type: string
+ *          type: float
  *          example: 60.222
  *       - in: query
  *         name: additional

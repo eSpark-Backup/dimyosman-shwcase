@@ -2,14 +2,16 @@ import { NextFunction, Request, RequestHandler, Response } from "express";
 import { Brand, BrandStatus, User } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { handleResponse, logger } from "../../utils";
+import { emitEvent, handleResponse, logger } from "../../utils";
 import { commonHelper } from "../../helpers";
 
 import {
   BRAND_STATUS,
   CLOUD_FOLDERS,
   HTTP_STATUS,
+  NEW_NOTIFICATION,
   PAGINATION,
+  REFETCH_CHATS,
 } from "../../constants";
 import { uploadService } from "../../services";
 import {
@@ -20,11 +22,79 @@ import {
 } from "../../interfaces";
 import fs from "fs";
 import path from "path";
+import { Chat, Message, Notification } from "@/models";
 export class BrandController {
   constructor(
     private brandRepo: Repository<Brand>,
-    private userRepo: Repository<User>
+    private userRepo: Repository<User>,
+    private chatModel: typeof Chat,
+    private notificationModel: typeof Notification,
+    private messageModel: typeof Message
   ) {}
+
+  async sendMessage(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { message } = req.body;
+
+      const brand = await this.brandRepo
+        .createQueryBuilder("brand")
+        .where("brand.id = :id", { id })
+        .leftJoinAndSelect("brand.user", "user")
+        .getOne();
+
+      if (!brand) {
+        res.status(200).json(handleResponse("Brand not found"));
+        return next();
+      }
+      const sender = await this.userRepo
+        .createQueryBuilder("user")
+        .where("user.id = :id", { id: req.user?.id })
+        .getOne();
+
+      const members = [req.user?._id, brand.user.userChatId];
+
+      const chat = await this.chatModel.create({
+        members,
+        name: `${brand.brandName}`,
+        directChat: true,
+        receiverBrand: brand.id,
+        creator: req.user?._id,
+      });
+      await this.notificationModel.create({
+        user: brand.user.userChatId,
+        title: `New message received for ${brand.brandName}`,
+        message,
+        type: "info",
+      });
+      const ChatId = chat.id.toString();
+
+      const messageForDB = {
+        content: message,
+        sender: req.user?._id,
+        chat: ChatId,
+      };
+      await this.messageModel.create(messageForDB);
+
+      emitEvent(req, REFETCH_CHATS, members);
+
+      emitEvent(req, NEW_NOTIFICATION, [brand.user.userChatId], {
+        name: `${sender.name} sent you a message on Brand ${brand.brandName}`,
+        senderImage: sender.profileImage,
+        senderName: sender.name,
+        chatId: ChatId,
+      });
+
+      res.status(200).json(handleResponse("Message Sent Successfully"));
+      return next();
+    } catch (error) {
+      next(error);
+    }
+  }
 
   async createBrand(
     req: ICustomRequest,

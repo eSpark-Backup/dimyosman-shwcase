@@ -101,6 +101,7 @@ export class GeneralController {
         .createQueryBuilder("brand")
         .andWhere("brand.status = :STATUS", { STATUS: BRAND_STATUS.PUBLISH })
         .andWhere("brand.user != :userId", { userId })
+        .leftJoinAndSelect("brand.user", "user")
         .skip(skipNumber)
         .take(takeNumber);
 
