@@ -253,12 +253,52 @@ export class GeneralController {
       }
 
       const totalResults = spaceCount + eventCount + brandCount;
-
-      // Combine results
+      let saveQuery;
+      let savedEntitiesQuery = this.savedEntity.createQueryBuilder("savedEntity")
+        .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
+        .andWhere("savedEntity.user = :userId", { userId: req.user?.id });
+      
+      // Conditionally join only the required entity
+      if (entity === "SPACE") {
+        savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect("savedEntity.space", "space");
+      } else if (entity === "EVENT") {
+        savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect("savedEntity.event", "event");
+      } else if (entity === "BRAND") {
+        savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect("savedEntity.brand", "brand");
+      } else {
+        throw new ApiError("Invalid entity type",HTTP_STATUS.BAD_REQUEST);
+      }
+      
+      // Execute the optimized query
+      const savedEntities = await savedEntitiesQuery.getMany();
+      
+      const savedEntityIds = new Set(
+        savedEntities.map(entity => 
+          entity.space?.id || entity.event?.id || entity.brand?.id
+        ).filter(Boolean)
+      );
+      
+      // Update each entity list with isFavourite flag
+      const updatedSpaces = spaces.map(space => ({
+        ...space,
+        isFavourite: savedEntityIds.has(space.id),
+      }));
+      
+      const updatedEvents = events.map(event => ({
+        ...event,
+        isFavourite: savedEntityIds.has(event.id),
+      }));
+      
+      const updatedBrands = brands.map(brand => ({
+        ...brand,
+        isFavourite: savedEntityIds.has(brand.id),
+      }));
+      
+      // Pagination details
       const response = {
-        spaces,
-        events,
-        brands,
+        spaces: updatedSpaces,
+        events: updatedEvents,
+        brands: updatedBrands,
         totalResults,
         pagination: {
           currentPage: parseInt(page as string, 10),
