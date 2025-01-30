@@ -70,8 +70,8 @@ const slice = createSlice({
         state.hasMessages = "No Chats";
       }
     },
-    changeMessageType: (state) => {
-      state.hasMessages = "";
+    changeMessageType: (state, action) => {
+      state.hasMessages = action.payload;
     },
   },
 });
