@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { BrandValidation, validate } from "../../validations";
-import { Brand, User } from "../../entity";
+import { Brand, SavedEntity, User } from "../../entity";
 import { AppDataSource } from "../../typeorm.config";
 import { BrandController } from "../../controllers/account";
 import {
@@ -18,12 +18,16 @@ import { Chat, Message, Notification } from "../../models";
 const router = Router();
 const brandRepository = AppDataSource.getRepository(Brand);
 const userRepository = AppDataSource.getRepository(User);
+const savedEntityRepository=AppDataSource.getRepository(SavedEntity)
+
 const brandController = new BrandController(
   brandRepository,
   userRepository,
   Chat,
   Notification,
-  Message
+  Message,
+  savedEntityRepository
+
 );
 
 /**

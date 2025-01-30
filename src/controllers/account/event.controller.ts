@@ -1,5 +1,5 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { Brand, Events, RSVP, Spaces, User } from "../../entity";
+import { ActionType, Brand, Events, RSVP, SavedEntity, SavedEntityType, Spaces, User } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
 import { handleResponse, logger, parseCoverImages } from "../../utils";
@@ -20,7 +20,8 @@ export class EventController {
     private userRepo: Repository<User>,
     private brandRepo: Repository<Brand>,
     private eventRepo: Repository<Events>,
-    private rsvpEventRepo: Repository<RSVP>
+    private rsvpEventRepo: Repository<RSVP>,
+    private savedEntity: Repository<SavedEntity>
   ) {}
 
   async createEvent(
@@ -371,7 +372,7 @@ export class EventController {
       const skipNumber = Number(skip);
       const takeNumber = Number(take);
       if (id && id !== "{id}") {
-        const event = await this.eventRepo
+        const singleEvent = await this.eventRepo
           .createQueryBuilder("event")
           .where("event.id = :id", { id })
           .leftJoinAndSelect("event.brand", "brand")
@@ -379,15 +380,36 @@ export class EventController {
           .leftJoinAndSelect("space.brand", "spaceBrand")
           .getOne();
 
-        if (!event) {
+        if (!singleEvent) {
           res.status(200).json(handleResponse("Event not found"));
           return next();
         }
 
-        if (typeof event.coverImages === "string") {
-          event.coverImages = JSON.parse(event.coverImages);
+        if (typeof singleEvent.coverImages === "string") {
+          singleEvent.coverImages = JSON.parse(singleEvent.coverImages);
         }
 
+         const savedEntities= await this.savedEntity.createQueryBuilder("savedEntity")
+              .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
+              .andWhere("savedEntity.type = :type", { type: SavedEntityType.EVENT })
+              .leftJoinAndSelect("savedEntity.event", "event")
+              .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+              .getMany();
+
+              const savedEventIds = new Set(
+                savedEntities
+                  .map(entity => entity.event?.id)
+                  .filter(Boolean) // Remove undefined/null values
+              );
+              
+              const isFavourite = savedEventIds.has(singleEvent.id);
+              const event = {
+                ...singleEvent,
+                isFavourite,
+              };
+            
+              
+              
         res.status(200).json(handleResponse("Event Found Successfully", event));
         return next();
       }

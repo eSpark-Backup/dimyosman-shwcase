@@ -1,5 +1,5 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { Brand, BrandStatus, User } from "../../entity";
+import { ActionType, Brand, BrandStatus, SavedEntity, SavedEntityType, User } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
 import { emitEvent, handleResponse, logger } from "../../utils";
@@ -29,7 +29,8 @@ export class BrandController {
     private userRepo: Repository<User>,
     private chatModel: typeof Chat,
     private notificationModel: typeof Notification,
-    private messageModel: typeof Message
+    private messageModel: typeof Message,
+    private savedEntity: Repository<SavedEntity>
   ) {}
 
   async sendMessage(
@@ -381,18 +382,39 @@ export class BrandController {
       const skipNumber = Number(skip);
       const takeNumber = Number(take);
       if (id && id !== "{id}") {
-        const brand = await this.brandRepo.findOne({
+        const singleBrand = await this.brandRepo.findOne({
           where: { id },
         });
 
-        if (!brand) {
+        if (!singleBrand) {
           res.status(200).json(handleResponse("Brand not found"));
           return next();
         }
 
-        if (typeof brand.coverImages === "string") {
-          brand.coverImages = JSON.parse(brand.coverImages);
+        if (typeof singleBrand.coverImages === "string") {
+          singleBrand.coverImages = JSON.parse(singleBrand.coverImages);
         }
+
+          const savedEntities= await this.savedEntity.createQueryBuilder("savedEntity")
+                      .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
+                      .andWhere("savedEntity.type = :type", { type: SavedEntityType.BRAND })
+                      .leftJoinAndSelect("savedEntity.brand", "brand")
+                      .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+                      .getMany();
+        
+                      const savedEventIds = new Set(
+                        savedEntities
+                          .map(entity => entity.brand?.id)
+                          .filter(Boolean) // Remove undefined/null values
+                      );
+                      
+                      const isFavourite = savedEventIds.has(singleBrand.id);
+                      const brand = {
+                        ...singleBrand,
+                        isFavourite,
+                      };
+                    
+
 
         res.status(200).json(handleResponse("Brand Found Successfully", brand));
         return next();

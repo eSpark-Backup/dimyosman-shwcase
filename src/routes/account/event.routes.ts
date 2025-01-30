@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { EventValidation, SpaceValidation, validate } from "../../validations";
-import { Brand, Events, RSVP, Spaces, User } from "../../entity";
+import { Brand, Events, RSVP, SavedEntity, Spaces, User } from "../../entity";
 import { AppDataSource } from "../../typeorm.config";
 import { EventController } from "../../controllers/account";
 import {
@@ -20,12 +20,15 @@ const userRepository = AppDataSource.getRepository(User);
 const brandRepository = AppDataSource.getRepository(Brand);
 const eventRepository = AppDataSource.getRepository(Events);
 const rsvpEventRepository = AppDataSource.getRepository(RSVP);
+const savedEntityRepository = AppDataSource.getRepository(SavedEntity);
+
 const eventController = new EventController(
   spaceRepository,
   userRepository,
   brandRepository,
   eventRepository,
-  rsvpEventRepository
+  rsvpEventRepository,
+  savedEntityRepository
 );
 
 /**

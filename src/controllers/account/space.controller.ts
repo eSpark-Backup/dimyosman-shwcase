@@ -6,6 +6,9 @@ import {
   User,
   LeaseSpace,
   LeaseStatus,
+  SavedEntity,
+  SavedEntityType,
+  ActionType,
 } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
@@ -48,7 +51,8 @@ export class SpaceController {
     private chatModel: typeof Chat,
     private userModel: typeof UserForChat,
     private notificationModel: typeof Notification,
-    private messageModel: typeof Message
+    private messageModel: typeof Message,
+    private savedEntity: Repository<SavedEntity>
   ) {}
 
   async getSpaceForEvent(
@@ -962,24 +966,24 @@ export class SpaceController {
       const skipNumber = Number(skip);
       const takeNumber = Number(take);
       if (id && id !== "{id}") {
-        const space = await this.spaceRepo
+        const singleSpace = await this.spaceRepo
           .createQueryBuilder("space")
           .leftJoinAndSelect("space.brand", "brand")
           .where("space.id = :id", { id })
           .leftJoinAndSelect("space.user", "user")
           .getOne();
 
-        if (!space) {
+        if (!singleSpace) {
           res.status(200).json(handleResponse("Space not found"));
           return next();
         }
 
-        if (typeof space.coverImages === "string") {
-          space.coverImages = JSON.parse(space.coverImages);
+        if (typeof singleSpace.coverImages === "string") {
+          singleSpace.coverImages = JSON.parse(singleSpace.coverImages);
         }
         const events = await this.eventsRepo
           .createQueryBuilder("event")
-          .where("event.space = :spaceId", { spaceId: space.id })
+          .where("event.space = :spaceId", { spaceId: singleSpace.id })
           .getMany();
 
         const calendarEvents = events.flatMap((event) => {
@@ -994,11 +998,30 @@ export class SpaceController {
             end: new Date(dateRange.endDate),
           }));
         });
-        (space as any).calendarEvents = calendarEvents;
+        (singleSpace as any).calendarEvents = calendarEvents;
         const totalPricing = calculatePricing(
-          space.pricing as PricingTerm[],
+          singleSpace.pricing as PricingTerm[],
           1
         );
+
+          const savedEntities= await this.savedEntity.createQueryBuilder("savedEntity")
+                      .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
+                      .andWhere("savedEntity.type = :type", { type: SavedEntityType.SPACE })
+                      .leftJoinAndSelect("savedEntity.space", "space")
+                      .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+                      .getMany();
+                      const savedEventIds = new Set(
+                        savedEntities
+                          .map(entity => entity.space?.id)
+                          .filter(Boolean) // Remove undefined/null values
+                      );      
+                          
+              const isFavourite = savedEventIds.has(singleSpace.id);
+              const space = {
+                ...singleSpace,
+                isFavourite,
+              };
+
         res.status(200).json(handleResponse("Space Found Successfully", space));
         return next();
       }

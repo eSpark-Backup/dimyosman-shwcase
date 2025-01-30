@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { SpaceValidation, validate } from "../../validations";
-import { Brand, Events, LeaseSpace, Spaces, User } from "../../entity";
+import { Brand, Events, LeaseSpace, SavedEntity, Spaces, User } from "../../entity";
 import { AppDataSource } from "../../typeorm.config";
 import { SpaceController } from "../../controllers/account";
 import {
@@ -21,6 +21,7 @@ const userRepository = AppDataSource.getRepository(User);
 const brandRepository = AppDataSource.getRepository(Brand);
 const eventRepository = AppDataSource.getRepository(Events);
 const leaseSpaceRepository = AppDataSource.getRepository(LeaseSpace);
+const savedEntityRepository=AppDataSource.getRepository(SavedEntity)
 
 const spaceController = new SpaceController(
   spaceRepository,
@@ -32,7 +33,9 @@ const spaceController = new SpaceController(
   Chat,
   UserForChat,
   Notification,
-  Message
+  Message,
+  savedEntityRepository
+
 );
 
 /**
