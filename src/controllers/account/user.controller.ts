@@ -39,7 +39,8 @@ export class UserController {
     private eventsRepo: Repository<Events>,
     private notificationModel: typeof Notification,
     private SavedEntityRepo: Repository<SavedEntity>,
-    private rsvpEventRepo: Repository<RSVP>
+    private rsvpEventRepo: Repository<RSVP>,
+
   ) {}
 
   async verifyTokenAPI(
@@ -454,6 +455,52 @@ export class UserController {
         .skip(skipNumber)
         .take(takeNumber)
         .getManyAndCount();
+        
+
+        if (entity == "BRAND") {
+          const brandIds = savedEntities.map((entity) => entity.brand?.id).filter(Boolean);
+        
+          if (brandIds.length > 0) {
+
+            const followers = await this.SavedEntityRepo.createQueryBuilder("savedEntity")
+            .where("savedEntity.brand IN (:...brandIds)", { brandIds })
+            .andWhere("savedEntity.actionType = :actionType", {
+              actionType: ActionType.FOLLOW,
+            })
+            .groupBy("savedEntity.brand")
+            .select("savedEntity.brand")
+            .addSelect("COUNT(savedEntity.id)", "followerCount")
+            .getRawMany();
+
+            const brandFollowerCountMap = new Map();
+            followers.forEach((follower) => {
+              brandFollowerCountMap.set(follower.brandId, parseInt(follower.followerCount, 10));
+            });
+
+            const brandEventsCount = await this.eventsRepo
+              .createQueryBuilder("event")
+              .select("event.brand")
+              .addSelect("COUNT(event.id)", "eventCount")
+              .where("event.brand IN (:...brandIds)", { brandIds })
+              .groupBy("event.brand")
+              .getRawMany();
+        
+            const brandEventCountMap = new Map();
+            brandEventsCount.forEach((eventCount) => {
+              brandEventCountMap.set(eventCount.brand, parseInt(eventCount.eventCount, 10));
+            });
+        
+            savedEntities.forEach((entity) => {
+              if (entity.brand && brandEventCountMap.has(entity.brand.id)) {
+                (entity as any).eventsCount = brandEventCountMap.get(entity.brand.id);
+              }
+
+              if (brandFollowerCountMap.has(entity.brand.id)) {
+                (entity as any).followerCount = brandFollowerCountMap.get(entity.brand.id);
+              }
+            });
+          }
+        }
 
       res.status(HTTP_STATUS.OK).json(
         handleResponse("Favourites retrieved successfully", {
