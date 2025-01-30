@@ -140,9 +140,9 @@ const Space = () => {
         price: space?.contractDetails?.leaseInfo?.leaseTotal,
         term: "Daily",
         event: space?.contractDetails?.tenantDetails?.event,
-        brand: space?.space?.brand?.brandName,
+        brand: space?.brand?.brandName,
         eventUrl: "-",
-        brandUrl: `/brand/${space?.space?.brand?.id}`,
+        brandUrl: `/brand/${space?.brand?.id}`,
         action:
           space?.status === "SubmitForSignature"
             ? "Sign"
@@ -296,6 +296,7 @@ const Space = () => {
 
   const gotoBrand = (item, type = "") => {
     //go to detail page functionality
+
     if (type === "other") {
       navigate(item?.brandUrl, { state: { other: true } });
     } else {

@@ -211,7 +211,7 @@ const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
               fontWeight: item?.brandUrl ? 600 : 400,
               cursor: "pointer",
             }}
-            onClick={() => gotoBrand(item, "other")}
+            onClick={() => gotoBrand(item)}
           >
             {item?.brand}
           </Typography>
