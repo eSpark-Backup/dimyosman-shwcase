@@ -40,7 +40,8 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
         receiverBrand,
         senderBrand,
         receiverSpace,
-        directChat
+        directChat,
+        inquiryDetails,
       }) => {
         const otherMember = getOtherMember(members, req.socketUserId);
         const brandRepository = AppDataSource.getRepository(Brand);
@@ -105,6 +106,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
           chatName: name,
           creator: creator.toString(),
           directChat: directChat,
+          inquiryDetails: inquiryDetails,
           receiverBrand: populatedReceiverBrand,
           senderBrand: populatedSenderBrand,
           receiverSpace: populatedReceiverSpace,

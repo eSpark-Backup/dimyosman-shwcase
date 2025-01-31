@@ -19,6 +19,10 @@ const schema = new Schema(
       type: String,
       required: false,
     },
+    inquiryDetails:{
+      type: Object,
+      required: false,
+    },
     senderBrand: {
       type: String,
       required: false,

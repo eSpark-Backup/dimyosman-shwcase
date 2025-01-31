@@ -479,6 +479,7 @@ export class SpaceController {
           members,
           name: `Inquiring Brand ${receiverBrand.brandName} For Space ${receiverSpace.spaceName}`,
           receiverBrand: receiverBrand.id,
+          inquiryDetails: { message},
           senderBrand: senderBrandId,
           creator: req.user?._id,
           receiverSpace: receiverSpace.id,
