@@ -627,7 +627,7 @@ const EditEvent = () => {
                 }
             </Box>
             <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-                <MapModal disabled={true} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[eventData?.location?.lat, eventData?.location?.long]} setBrandData={setEventData} instructionValue={eventData?.mapInstructions}
+                <MapModal activity={"event"} disabled={true} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[eventData?.location?.lat, eventData?.location?.long]} setBrandData={setEventData} instructionValue={eventData?.mapInstructions}
                     setInstructionValue={(e) => setEventData((prev) => ({
                         ...prev,
                         mapInstructions: e.target.value
