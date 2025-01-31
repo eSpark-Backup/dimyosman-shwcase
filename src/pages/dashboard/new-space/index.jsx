@@ -540,7 +540,7 @@ const NewSpace = () => {
                 />
             </ReusableModal>
             <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-                <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[spaceData?.location?.lat, spaceData?.location?.long]} instructionValue={spaceData?.mapInstructions}
+                <MapModal activity={"space"} value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[spaceData?.location?.lat, spaceData?.location?.long]} instructionValue={spaceData?.mapInstructions}
                     setInstructionValue={(e) => setSpaceData((prev) => ({
                         ...prev,
                         mapInstructions: e.target.value

@@ -25,6 +25,7 @@ const EventDetails = () => {
           );
         }
         const updatedEvents = {
+          isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
           by: 1,
           type: "event",

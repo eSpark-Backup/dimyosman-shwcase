@@ -712,7 +712,7 @@ export const likedSpaceData = [
   },
 ];
 
-export const brandTableData = (gotoDetail, handleAction, myBrandData) => [
+export const brandTableData = (gotoDetail, handleAction, myBrandData, myBrandData2, likeLoading) => [
   {
     data: myBrandData,
     column: myBrandColumns(gotoDetail, (item) => handleAction(item, "edit")),
@@ -724,32 +724,32 @@ export const brandTableData = (gotoDetail, handleAction, myBrandData) => [
     ),
   },
   {
-    data: likedBrandData,
-    column: likedBrandColumns(gotoDetail, (item) =>
+    data: myBrandData2,
+    column: likedBrandColumns(likeLoading, gotoDetail, (item) =>
       handleAction(item, "remove")
     ),
   },
 ];
 
-export const eventTableData = (gotoDetail, handleAction, myEventData, gotoBrand, gotoSpace) => [
+export const eventTableData = (gotoDetail, handleAction, myEventData, myEventData2, gotoBrand, gotoSpace, likeLoading) => [
   {
     data: myEventData,
     column: myEventsColumns(gotoDetail, (item) => handleAction(item, "edit"), gotoBrand, gotoSpace),
   },
   {
-    data: rsvcEventData,
+    data: myEventData,
     column: rsvpEventColumns(gotoDetail, (item) =>
       handleAction(item, item?.action)
     ),
   },
   {
-    data: likedEventData,
-    column: likedEventColumns(gotoDetail, (item) =>
+    data: myEventData2,
+    column: likedEventColumns(likeLoading, gotoDetail, (item) =>
       handleAction(item, "remove")
     ),
   },
 ];
-export const spaceTableData = (gotoDetail, handleAction, mySpaceData, gotoBrand) => [
+export const spaceTableData = (gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand, likeLoading) => [
   {
     data: mySpaceData,
     column: mySpaceColumns(
@@ -767,8 +767,8 @@ export const spaceTableData = (gotoDetail, handleAction, mySpaceData, gotoBrand)
     ),
   },
   {
-    data: likedSpaceData,
-    column: likedSpaceColumns(gotoDetail, (item) =>
+    data: mySpaceData2,
+    column: likedSpaceColumns(likeLoading, gotoDetail, (item) =>
       handleAction(item, "remove")
     ),
   },

@@ -63,7 +63,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
   if (!filteredProfile) {
     return (
       <Box sx={{ width: "100%" }}>
-        <h1>No Data Found</h1>
+        <LinearProgress />
       </Box>
     )
   }

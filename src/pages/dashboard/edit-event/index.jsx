@@ -10,7 +10,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import dayjs from 'dayjs'
 import { useEditEventMutation, useGetAllEventsQuery } from '../../../services/events'
 import { useGetCategoriesQuery } from '../../../services/categories'
-import { useGetAllSpaceQuery } from '../../../services/space'
+import { useGetAllSpaceQuery, useSpacesForEventQuery } from '../../../services/space'
 import { toast } from 'react-toastify'
 import ReusableModal from '../../../components/Modal'
 import { LoadingButton } from '@mui/lab'
@@ -58,7 +58,7 @@ const EditEvent = () => {
         streetAddress: ""
     });
 
-    const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useGetAllSpaceQuery({ tab: "Space" }, {
+    const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useSpacesForEventQuery({}, {
         refetchOnMountOrArgChange: true,
     });
 
@@ -122,30 +122,108 @@ const EditEvent = () => {
 
     const [openMapModal, setMapModal] = useState(false);
 
-    const spaceOptions = Array.isArray(spaceData?.data?.spaces)
-        ? spaceData.data.spaces.map((brand) => ({
-            label: brand.spaceName,
-            value: brand.id,
-            item: brand,
-        }))
-        : [];
+    const spaceOptions = [
+        ...(spaceData?.data?.availableSpaces?.map((space) => {
+            const item = {
+                location: {
+                    lat: space?.brand?.location?.lat,
+                    long: space?.brand?.location?.long,
+                    additional: space?.brand?.location?.additional
+                }
+            }
+            return {
+                label: space.spaceName,
+                value: space.id,
+                item: item,
+            }
+        }) || []),
+
+        ...(spaceData?.data?.tenantSpaces?.map((tenant) => {
+            const item = {
+                location: {
+                    lat: tenant?.space?.brand?.location?.lat,
+                    long: tenant?.space?.brand?.location?.long,
+                    additional: tenant?.space?.brand?.location?.additional
+                }
+            }
+            if (tenant.space) {
+                return {
+                    label: tenant.space.spaceName,
+                    value: tenant.space.id,
+                    item: item,
+                };
+            }
+            return null;
+        }) || []),
+    ];
 
     const [activeTab, setActiveTab] = useState("Details");
 
     useEffect(() => {
         if (spaceData) {
+            
             if (eventData?.space !== "") {
-                const selectedSpace = spaceData?.data?.spaces?.filter((item) => item?.id === eventData?.space)?.[0];
+                let bookedDates = [];
 
-                if (selectedSpace?.calendarEvents?.length > 0) {
-                    const bookedDates = selectedSpace.calendarEvents
+
+                let selectedSpace = spaceData?.data?.availableSpaces?.find(
+                    (item) => item?.id === eventData?.space
+                );
+                console.log(selectedSpace)
+
+                if (selectedSpace) {
+
+                    if (selectedSpace?.calendarEvents?.length > 0) {
+                        bookedDates = selectedSpace.calendarEvents
                         .filter((item) => item?.eventId !== data?.data?.id)
                         .map((item) => ({
                             start: new Date(item?.start),
                             end: new Date(item?.end),
                         }));
+                    }
                     setBookedRanges(bookedDates);
+                    return;
                 }
+
+
+                let tenantSpace = spaceData?.data?.tenantSpaces?.find(
+                    (tenant) => tenant?.space?.id === eventData?.space
+                );
+
+                if (tenantSpace) {
+                    const { leaseInfo } = tenantSpace.contractDetails || {};
+                    if (leaseInfo?.startDate && leaseInfo?.endDate) {
+                        // Convert the dates from "dd.mm.yyyy" format to "yyyy-mm-dd" format
+                        const startDate = new Date(leaseInfo.startDate.split('.').reverse().join('-'));
+                        const endDate = new Date(leaseInfo.endDate.split('.').reverse().join('-'));
+
+                        // Set the time for startDate to the beginning of the day (00:00:00.000)
+                        startDate.setHours(0, 0, 0, 0);
+
+                        // Set the time for endDate to the end of the day (23:59:59.999)
+                        endDate.setHours(23, 59, 59, 999);
+
+                        // Get today's date and set the time to the beginning of the day
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+
+                        // Calculate the maximum future date (5 years from today)
+                        const maxFutureDate = new Date();
+                        maxFutureDate.setFullYear(today.getFullYear() + 5);
+                        maxFutureDate.setHours(23, 59, 59, 999);
+
+                        // Block all dates before the start date and after the end date
+                        const bookedDates = [
+                            { start: new Date(0), end: new Date(startDate.getTime() - 1) }, // Block all dates before startDate
+                            { start: new Date(endDate.getTime() + 1), end: maxFutureDate }, // Block all dates after endDate
+                        ];
+
+                        // Set the booked date ranges
+                        setBookedRanges(bookedDates);
+                    }
+                }
+
+
             }
         }
     }, [spaceData, eventData, eventData?.space])
@@ -627,7 +705,7 @@ const EditEvent = () => {
                 }
             </Box>
             <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-                <MapModal disabled={true} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[eventData?.location?.lat, eventData?.location?.long]} setBrandData={setEventData} instructionValue={eventData?.mapInstructions}
+                <MapModal activity={"event"} disabled={true} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[eventData?.location?.lat, eventData?.location?.long]} setBrandData={setEventData} instructionValue={eventData?.mapInstructions}
                     setInstructionValue={(e) => setEventData((prev) => ({
                         ...prev,
                         mapInstructions: e.target.value

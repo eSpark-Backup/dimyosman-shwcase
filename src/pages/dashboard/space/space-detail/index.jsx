@@ -34,6 +34,7 @@ const SpaceDetails = () => {
           );
         }
         const updatedSpace = {
+          isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
           type: "space",
           owned: user?.id === data?.data?.user?.id ? true : false,

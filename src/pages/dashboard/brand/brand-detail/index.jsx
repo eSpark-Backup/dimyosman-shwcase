@@ -26,6 +26,7 @@ const BrandDetails = () => {
         }
 
         const brandData = {
+          isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
           type: "brand",
           owned: true,

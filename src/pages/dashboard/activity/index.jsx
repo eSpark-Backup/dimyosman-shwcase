@@ -6,6 +6,7 @@ import { ActivityCard } from "../../../components";
 import SpaceInquireModal from "../../../components/SpaceInquireModal";
 
 import { useGetActivityDataQuery } from "../../../services/activity";
+import moment from "moment/moment";
 
 const Activity = () => {
   const [page, setPage] = useState(1);
@@ -31,31 +32,35 @@ const Activity = () => {
         return;
       }
       if (data?.data) {
-        const updatedData = data.data.spaces?.map((item) => {
+        const updatedData = data.data.activity?.map((item) => {
           const filterPrice = item?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") || [];
           const spaceFeatures = item?.amenity?.map((amenityItem) => ({
             icon: amenityItem?.iconUrl || "",
             description: amenityItem?.name || ""
           })) || [];
           const coverArray = item?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
+          const category = item?.type === "brand" ? item?.brandCategory : item?.type === "event" ? item?.eventCategory : item?.spaceCategory
         
           return {
             profileId: 2,
-            activity: "space",
-            spaceId: item?.id || "",
-            userName: item?.brand?.brandName || "",
-            activityName: item?.spaceName || "",
-            activityMaker: item?.brand?.brandName || "",
+            activity: item?.type,
+            id: item?.id || "",
+            userName: item?.type === "event" ? item?.brand?.brandName : item?.type === "brand" ? item?.user?.name : item?.brand?.brandName || "",
+            activityName: item?.type === "event" ? item?.eventName : item?.type === "brand" ? item?.brandName : item?.spaceName || "",
+            activityMaker: category[0]?.name || "",
             content: [item?.details?.description || ""],
-            activityLocation: item?.brand?.brandName || "",
+            activityLocation: item?.type === "event" ? item?.space?.spaceName : item?.brand?.brandName || "",
+            activityLocationId: item?.type === "event" ? item?.space?.id : "",
+            activityLocation2: item?.type === "event" ? item?.brand?.brandName : "",
             activityAddress: "123 Williamsburg Ave, Brooklyn, NY 11211",
-            value: filterPrice[0]?.price ? `$${filterPrice[0]?.price}/day` : "N/A",
-            deadline: filterPrice[0]?.minimum ? `minimum lease: ${filterPrice[0]?.minimum} days` : "N/A",
-            userImage: item?.brand?.brandImage || "",
-            activityImage: item?.spaceImage || "",
+            value: item?.type === "event" ? moment.utc(new Date(item?.eventDate[0]?.startDate)).format("DD.MM.YYYY.") : filterPrice[0]?.price ? `$${filterPrice[0]?.price}/day` : "N/A",
+            deadline: item?.type === "event" ? moment.utc(new Date(item?.eventDate[0]?.endDate)).format("DD.MM.YYYY.") : filterPrice[0]?.minimum ? `minimum lease: ${filterPrice[0]?.minimum} days` : "N/A",
+            userImage: item?.type === "event" ? item?.brand?.brandImag : item?.type === "brand" ? item?.user?.profileImage : item?.brand?.brandImage || "",
+            activityImage: item?.type === "event" ? item?.eventImage : item?.type === "brand" ? item?.brandImage : item?.spaceImage || "",
             features: spaceFeatures,
-            userRole: "brand",
-            slides: coverArray
+            userRole: item?.type === "brand" ? "user" : item?.type === "space" ? "brand" : "brand",
+            slides: coverArray,
+            isFavourite: item?.isFavourite
           };
         }) || [];
         const mergedData = [...activityData, ...updatedData];
@@ -66,7 +71,7 @@ const Activity = () => {
         );
   
         const uniqueData = Array.from(
-          new Map(mergedData.map((item) => [item.spaceId, item])).values()
+          new Map(mergedData.map((item) => [item.id, item])).values()
         );
         setActivityData(uniqueData);
         setSaveAllSapces(mergedSapcesData)
@@ -122,16 +127,11 @@ const Activity = () => {
         >
           {activityData?.map((item, index) => (
             <ActivityCard
+              isFavourite={item?.isFavourite}
               key={index}
               fullItem={item}
               id={item?.profileId}
-              activityId={
-                item?.activity === "event"
-                  ? item?.eventId
-                  : item?.activity === "space"
-                    ? item?.spaceId
-                    : item?.brandId
-              }
+              activityId={item?.id}
               activity={item?.activity}
               userName={item?.userName}
               userImage={item?.userImage}

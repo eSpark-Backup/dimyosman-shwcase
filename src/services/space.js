@@ -34,12 +34,12 @@ export const spaceApi = api.injectEndpoints({
         };
         formData.append("details", JSON.stringify(details));
 
-        const location = {
-          lat: spaceData?.location?.lat,
-          long: spaceData?.location?.long,
-          additional: spaceData?.mapInstructions,
-        };
-        formData.append("location", JSON.stringify(location));
+        // const location = {
+        //   lat: spaceData?.location?.lat,
+        //   long: spaceData?.location?.long,
+        //   additional: spaceData?.mapInstructions,
+        // };
+        // formData.append("location", JSON.stringify(location));
 
         if (spaceData?.cover) {
           const coverOrder = [];
@@ -113,12 +113,12 @@ export const spaceApi = api.injectEndpoints({
         };
         formData.append("details", JSON.stringify(details));
 
-        const location = {
-          lat: spaceData?.location?.lat,
-          long: spaceData?.location?.long,
-          additional: spaceData?.mapInstructions,
-        };
-        formData.append("location", JSON.stringify(location));
+        // const location = {
+        //   lat: spaceData?.location?.lat,
+        //   long: spaceData?.location?.long,
+        //   additional: spaceData?.mapInstructions,
+        // };
+        // formData.append("location", JSON.stringify(location));
 
         if (spaceData?.cover) {
           const coverKeys = [];
@@ -215,6 +215,14 @@ export const spaceApi = api.injectEndpoints({
         };
       },
     }),
+    spacesForEvent: builder.query({
+      query: ({ } = {}) => {
+        return {
+          url: `/space/SpaceForEvent`,
+          method: "POST",
+        };
+      },
+    }),
   }),
 });
 
@@ -227,4 +235,5 @@ export const {
   useLeaseSpaceInquireMutation,
   useTenantSignMutation,
   usePaymentVerificationMutation,
+  useSpacesForEventQuery
 } = spaceApi;

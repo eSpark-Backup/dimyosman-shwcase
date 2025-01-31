@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Button, Divider, Stack, Typography, useTheme } from "@mui/material";
 import {
   accountIcon,
@@ -11,6 +11,7 @@ import {
   eventMain3,
   flag,
   like,
+  liked,
   miniMap,
   miniMap2,
   share,
@@ -19,6 +20,8 @@ import {
 } from "../assets/index.js";
 import DynamicPaginationSwiper from "./Slider.jsx";
 import { useNavigate } from "react-router-dom";
+import { useAddInFavouritesMutation } from "../services/favourite.js";
+import { toast } from "react-toastify";
 
 const ActivityCard = ({
   fullItem = {},
@@ -42,10 +45,16 @@ const ActivityCard = ({
   features,
   slides,
   search = false,
+  isFavourite,
   handleAction = () => {},
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const [likePost, setLikePost] = useState(isFavourite);
+  useEffect(() => {
+    setLikePost(isFavourite);
+  },[isFavourite])
+  const [likeFunc, { isLoading }] = useAddInFavouritesMutation();
   return (
     <Box
       sx={{
@@ -645,7 +654,32 @@ const ActivityCard = ({
             columnGap: "10px",
           }}
         >
-          <img src={like} alt="Like Icon" />
+          <img
+            onClick={() => {
+              if (!isLoading) {
+                likeFunc({
+                  entityId: activityId,
+                  entityType: activity?.toLocaleUpperCase(),
+                }).then((res) => {
+                  res?.data?.status &&
+                    toast.success(
+                      res?.data?.message
+                        .replace("Entity", "Post")
+                        .replace(" successfully", "")
+                    );
+                  setLikePost(!likePost);
+                });
+              }
+            }}
+            style={{
+              cursor: isLoading ? "not-allowed" : "pointer",
+              animation: isLoading ? "pulse 1s infinite" : "none",
+              opacity: isLoading ? 0.5 : 1,
+            }}
+            src={likePost ? liked : like}
+            className={`like-icon ${isLoading ? "loading" : ""}`}
+            alt="Like Icon"
+          />
           {activity !== "space" && <img src={comment} alt="Comment Icon" />}
           <img src={share} alt="Share Icon" />
         </Box>

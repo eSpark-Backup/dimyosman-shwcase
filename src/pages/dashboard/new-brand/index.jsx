@@ -438,7 +438,7 @@ const NewBrand = () => {
 
             </Box>
             <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-                <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={brandData?.streetAddress} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[brandData?.location?.lat, brandData?.location?.long]} setBrandData={setBrandData} instructionValue={brandData?.mapInstructions}
+                <MapModal activity={"brand"} value={address} setValue={setAddress} addressLine={"Selected Address:"} address={brandData?.streetAddress} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[brandData?.location?.lat, brandData?.location?.long]} setBrandData={setBrandData} instructionValue={brandData?.mapInstructions}
                     setInstructionValue={(e) => setBrandData((prev) => ({
                         ...prev,
                         mapInstructions: e.target.value

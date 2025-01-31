@@ -30,6 +30,10 @@ import {
   getNotificationCount,
 } from "../../../store/slices/notification";
 import { useGetNotificationDataQuery } from "../../../services/notifications";
+import {
+  useAddInFavouritesMutation,
+  useGetFavouritesQuery,
+} from "../../../services/favourite";
 
 const TopHeading = ({ name, size, my = 0 }) => {
   return (
@@ -91,6 +95,7 @@ const Space = () => {
   const [verifyDetail, setVerifyDetail] = useState(null);
 
   const [mySpaceData, setMySpaceData] = useState([]);
+  const [mySpaceData2, setMySpaceData2] = useState([]);
 
   useEffect(() => {
     if (navigationActiveTab !== "") {
@@ -177,6 +182,25 @@ const Space = () => {
       removeListener("NEW_NOTIFICATION");
     };
   }, [addListener, removeListener, emitEvent, activeTab, data?.data]);
+  const {
+    data: data2,
+    isError: isError2,
+    isLoading: isLoading2,
+    isSuccess: isSuccess2,
+    error: error2,
+    isFetching: isFetching2,
+    refetch: refetch2,
+  } = useGetFavouritesQuery(
+    { page, pageSize: 7, entity: "SPACE" },
+    {
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      skip:
+        tabsForApi[activeTab] === "Space" ||
+        tabsForApi[activeTab] === "Lease" ||
+        tabsForApi[activeTab] === "Tenant",
+    }
+  );
 
   const navigate = useNavigate();
 
@@ -193,6 +217,44 @@ const Space = () => {
         brand: space?.brand?.brandName,
         brandUrl: `/brand/${space?.brand?.id}`,
         action: "Edit",
+      };
+    });
+  };
+
+  const transformSavedSpaceData = (apiData) => {
+    return apiData.map(({ space }, index) => {
+      return {
+        id: space?.id,
+        spaceId: space?.id,
+        type: "space",
+        eventName: space?.spaceName,
+        eventImg: space?.spaceImage,
+        currently:
+          space?.status === "SubmitForSignature"
+            ? "Pending Sign"
+            : space?.status === "VerifyAndPay" ||
+              space?.status === "PendingforApproval"
+            ? "Pending Pay"
+            : space?.status === "Active"
+            ? "Leasing"
+            : "Lease Ended",
+        price: space?.pricing[0]?.price,
+        term: "Daily",
+        status: space?.status,
+        event: space?.contractDetails?.tenantDetails?.event,
+        brand: space?.brand?.brandName,
+        eventUrl: "-",
+        brandUrl: `/brand/${space?.brand?.id}`,
+        action:
+          space?.status === "SubmitForSignature"
+            ? "Sign"
+            : space?.status === "VerifyAndPay"
+            ? "Verify Pay 0/2"
+            : space?.status === "PendingforApproval"
+            ? "Verify Pay 1/2"
+            : space?.status === "Active"
+            ? "Details"
+            : "Review",
       };
     });
   };
@@ -300,6 +362,12 @@ const Space = () => {
       setMySpaceData([]);
     }
 
+    if (isError2 && !hasShownErrorToast) {
+      toast.error(error2?.data?.message, { toastId: "error-toast" });
+      setHasShownErrorToast(true);
+      setMySpaceData2([]);
+    }
+
     if (tabsForApi[activeTab] !== "Saved") {
       if (isSuccess) {
         if (data?.data?.spaces?.length) {
@@ -316,7 +384,25 @@ const Space = () => {
     } else {
       setMySpaceData([]);
     }
-  }, [isError, isSuccess, error, hasShownErrorToast, page, data]);
+
+    if (isSuccess2) {
+      setMySpaceData2(
+        transformSavedSpaceData(data2?.data?.savedEntities || [], "fav")
+      );
+      setHasShownErrorToast(false);
+    }
+  }, [
+    isError,
+    isError2,
+    isSuccess,
+    isSuccess2,
+    error,
+    error2,
+    hasShownErrorToast,
+    page,
+    data,
+    data2,
+  ]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
@@ -339,7 +425,17 @@ const Space = () => {
     navigate(`/space/${id}`);
   };
 
-  const handleAction = (item, type) => {
+  const [likeFunc, { isLoading: likeLoading }] = useAddInFavouritesMutation();
+
+  const handleAction = async (item, type) => {
+    if (type === "remove") {
+      await likeFunc({
+        entityId: item?.spaceId,
+        entityType: item?.type?.toUpperCase(),
+      }).unwrap();
+      refetch2();
+      return;
+    }
     const findLeaseDetails = (type, itemId) => {
       if (type === "Verify Pay 0/2") {
         return data?.data?.leaseSpace?.find((lease) => lease.id === itemId);
@@ -387,7 +483,10 @@ const Space = () => {
     navigate("/new-space");
   };
 
-  if ((isLoading || isFetching) && !refetchTriggered) {
+  if (
+    (isLoading2 || isLoading || isFetching2 || isFetching) &&
+    !refetchTriggered
+  ) {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />
@@ -427,18 +526,18 @@ const Space = () => {
           handleChange={handleChange}
           handleAdd={handleAdd}
         />
-        {spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand)[
+        {spaceTableData(gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand)[
           activeTab
         ].data.length > 0 ? (
           <DynamicTable
             isLoading={false}
             data={
-              spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand)[
+              spaceTableData(gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand)[
                 activeTab
               ].data
             }
             columns={
-              spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand)[
+              spaceTableData(gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand, likeLoading)[
                 activeTab
               ].column
             }

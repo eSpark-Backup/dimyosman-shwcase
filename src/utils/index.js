@@ -307,6 +307,7 @@ export const keysForBrandsSapcesEvents = (object, type) => {
 
   const coverObject = {
     profileId: 2,
+    isFavourite: object?.isFavourite,
     id: object?.id,
     activity: type,
     userName: object?.brand?.brandName || "",

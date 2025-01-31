@@ -45,7 +45,6 @@ const InputWithMap = ({
   const datePickerRef = useRef(null);
   const containerRef = useRef(null);
   const [openDatePicker, setOpenDatePicker] = useState(false);
-
   const isDateInRanges = (date, ranges) => {
     return ranges.some(
       (range) => date >= range.start && date <= range.end

@@ -1,5 +1,6 @@
 import { Box, Button, Stack, Tooltip, Typography } from "@mui/material";
 import { brandBadge } from "../assets";
+import { LoadingButton } from "@mui/lab";
 
 const myBrandColumns = (gotoDetail, handleAction) => {
   return [
@@ -208,7 +209,7 @@ const followingBrandColumns = (gotoDetail, handleAction) => {
   ];
 };
 
-const likedBrandColumns = (gotoDetail, handleAction) => {
+const likedBrandColumns = (likeLoading, gotoDetail, handleAction) => {
   return [
     {
       name: "Brand Name",
@@ -277,7 +278,8 @@ const likedBrandColumns = (gotoDetail, handleAction) => {
       key: "action",
       component: (item) => {
         return (
-          <Button
+          <LoadingButton
+            loading={likeLoading}
             onClick={() => handleAction(item)}
             sx={{
               minWidth: "83px",
@@ -287,7 +289,7 @@ const likedBrandColumns = (gotoDetail, handleAction) => {
             }}
           >
             Remove
-          </Button>
+          </LoadingButton>
         );
       },
     },

@@ -105,12 +105,13 @@ const EditSpace = () => {
                 }));
 
                 let address = "";
-                if (data?.data?.location?.lat && data?.data?.location?.long) {
+                if (data?.data?.brand?.location?.lat && data?.data?.brand?.location?.long) {
                     address = await fetchAddressFromCoordinates(
-                        data?.data?.location?.lat,
-                        data?.data?.location?.long
+                        data?.data?.brand?.location?.lat,
+                        data?.data?.brand?.location?.long
                     );
                 }
+                console.log(address)
 
                 setSpaceData({
                     cover: data?.data?.coverImages || [],
@@ -120,13 +121,13 @@ const EditSpace = () => {
                     spaceOverview: data?.data?.details?.description || "",
                     spaceTitle: data?.data?.details?.htmlContent || null,
                     location: {
-                        lat: data?.data?.location?.lat || null,
-                        long: data?.data?.location?.long || null,
+                        lat: data?.data?.brand?.location?.lat || null,
+                        long: data?.data?.brand?.location?.long || null
                     },
                     selectedBrand: data?.data?.brand?.id || "",
                     price: data?.data?.pricing || [],
                     amenities: mergedAmenities || [],
-                    mapInstructions: data?.data?.location?.additional || "",
+                    mapInstructions: data?.data?.brand?.location?.additional || "",
                     streetAddress: address
                 });
             }
@@ -593,7 +594,7 @@ const EditSpace = () => {
                 />
             </ReusableModal>
             <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-                <MapModal disabled={true} value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[spaceData?.location?.lat, spaceData?.location?.long]} instructionValue={spaceData?.mapInstructions}
+                <MapModal activity={"space"} disabled={true} value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[spaceData?.location?.lat, spaceData?.location?.long]} instructionValue={spaceData?.mapInstructions}
                     setInstructionValue={(e) => setSpaceData((prev) => ({
                         ...prev,
                         mapInstructions: e.target.value
