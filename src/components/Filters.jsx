@@ -11,6 +11,7 @@ import {
   InputAdornment,
   LinearProgress,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 
 import Input from "./input";
@@ -20,6 +21,7 @@ import MapDisplay from "./MapDisplay";
 import {
   allIconLight,
   brandIcon,
+  close,
   flag,
   locationIcon,
   mapMarker,
@@ -34,18 +36,20 @@ import { useDebounce } from "../helper/useDebounce";
 import { useGetGeneralCategoriesQuery } from "../services/general";
 
 import {
+  emptyAllLocations,
   emptyCategoryNames,
   emptyFilters,
   setAllFilterCategories,
   setCategoryNames,
   setEntity,
   setLocation,
+  setPageNumber,
   setRadius,
   setSkip,
 } from "../store/slices/search";
 
 const icons = [
-  { icon: allIconLight, type: "ALL" },
+  { icon: allIconLight, type: "not" },
   {
     icon: brandIcon,
     bg: "rgba(196, 119, 127, 0.2)",
@@ -68,26 +72,29 @@ const icons = [
     icon: profileIcon,
     bg: "rgba(0, 20, 28, 0.1)",
     activeBG: "rgba(0, 20, 28, 0.8)",
-    type: "PROFILE",
+    type: "not",
   },
 ];
 
 const Filters = ({
-  allDataLocation = [],
   setOpenFilterDrawer = null,
-  setPage = null,
   setHasMore = null,
   setLoadingStart = null,
   setData = null,
   loadingStart = false,
 }) => {
+  const isLessThan1281 = useMediaQuery("(max-width:1281px)");
+
   const { pathname } = useLocation();
   const navigate = useNavigate();
-
   const dispatch = useDispatch();
 
-  const { parameters, allFilterCategories, allCategoriesNotSearch } =
-    useSelector((state) => state.search);
+  const {
+    parameters,
+    allFilterCategories,
+    allCategoriesNotSearch,
+    allLocations,
+  } = useSelector((state) => state.search);
 
   const [radiusInput, setRadiusInput] = useState(parameters.radius);
   const [debouncedRadius, resetDebouncedRadius] = useDebounce(radiusInput, 500);
@@ -105,12 +112,10 @@ const Filters = ({
           setHasSet(true);
         },
         (error) => {
-          console.error("Error getting location:", error);
           setHasSet(false);
         }
       );
     } else {
-      console.error("Geolocation is not supported by this browser.");
       setHasSet(false);
     }
   }, []);
@@ -121,15 +126,21 @@ const Filters = ({
       dispatch(emptyFilters());
       setRadiusInput("");
       dispatch(setLocation({ lat: "", long: "" }));
+      dispatch(emptyAllLocations());
+      dispatch(setPageNumber(1));
     }
-  }, [pathname]);
+
+    if (pathname === "/search" && !isLessThan1281) {
+      setOpenFilterDrawer?.(false);
+    }
+  }, [pathname, isLessThan1281]);
 
   const [searchCategory, setSearchCategory] = useState("");
   const [address, setAddress] = useState("");
 
   useEffect(() => {
     if (pathname === "/search" && debouncedRadius !== parameters.radius) {
-      setPage?.(1);
+      dispatch(setPageNumber(1));
       setHasMore?.(true);
       setLoadingStart?.(false);
 
@@ -140,6 +151,7 @@ const Filters = ({
       dispatch(setRadius(debouncedRadius));
       dispatch(setSkip(false));
       setData?.([]);
+      setOpenFilterDrawer?.(false);
     }
   }, [debouncedRadius, dispatch, parameters.radius]);
 
@@ -218,7 +230,7 @@ const Filters = ({
 
     dispatch(setAllFilterCategories(updatedCategories));
 
-    setPage?.(1);
+    dispatch(setPageNumber(1));
     setHasMore?.(true);
     setLoadingStart?.(false);
     setData?.([]);
@@ -230,6 +242,7 @@ const Filters = ({
     if (pathname !== "/search") {
       actionAsDrawer();
     }
+    setOpenFilterDrawer?.(false);
   };
 
   const handleSearch = (e) => {
@@ -262,7 +275,7 @@ const Filters = ({
       .map((cat) => cat.name)
       .join(",");
 
-    setPage?.(1);
+    dispatch(setPageNumber(1));
     setHasMore?.(true);
     setLoadingStart?.(false);
 
@@ -272,6 +285,7 @@ const Filters = ({
     if (pathname !== "/search") {
       actionAsDrawer();
     }
+    setOpenFilterDrawer?.(false);
   };
 
   const inputStyles = {
@@ -303,6 +317,16 @@ const Filters = ({
         p: 2,
       }}
     >
+      <Box
+        sx={{
+          display: { xs: "block", sm: "none" },
+          textAlign: "end",
+        }}
+        onClick={() => setOpenFilterDrawer?.(false)}
+      >
+        <img src={close} alt="Close Icon" />
+      </Box>
+
       <Typography sx={{ fontWeight: 300 }}>
         Filter by:
         <strong
@@ -350,12 +374,13 @@ const Filters = ({
               },
             }}
             onClick={() => {
-              if (icon.type !== "All") {
+              if (icon.type !== "not") {
                 filterClick(icon);
               }
             }}
+            key={icon.type}
           >
-            <img key={icon.type} src={icon.icon} alt={icon.type} />
+            <img src={icon.icon} alt={icon.type} />
           </Box>
         ))}
       </Box>
@@ -406,10 +431,17 @@ const Filters = ({
           <Input
             sx={inputStyles}
             value={radiusInput}
-            readOnly={parameters?.entity?.length === 0 ? true : false}
+            readOnly={
+              parameters?.entity?.length === 0 ? true : !hasSet ? true : false
+            }
             onClick={() => {
               if (parameters?.entity?.length === 0) {
                 toast.error("Filter is not selected");
+                return;
+              }
+              
+              if (parameters?.lat === "") {
+                toast.error("You need to allow location");
                 return;
               }
             }}
@@ -430,7 +462,7 @@ const Filters = ({
           </Box>
         ) : (
           <MapDisplay
-            locations={allDataLocation}
+            locations={allLocations}
             marker={
               parameters?.entity === "SPACE"
                 ? mapMarkerSpace

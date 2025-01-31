@@ -21,10 +21,10 @@ import ActivityType from "../../../../components/Message/ActivityType";
 import InputBox from "../../../../components/Message/InputBox";
 import EditorSenderSection from "../../../../components/Message/EditorSenderSection";
 import ReusableModal from "../../../../components/Modal";
-
-import { addEmoji, convertToSameKeys } from "../../../../utils";
 import AfterSignature from "../../../../components/AfterSignature";
 import ManageInquiry from "../../../../components/ManageInquiry";
+
+import { addEmoji, convertToSameKeys } from "../../../../utils";
 
 const TopHeading = ({ name, size, my = 0 }) => {
   return (

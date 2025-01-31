@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { Box, Grid, LinearProgress } from "@mui/material";
 
@@ -10,10 +10,15 @@ import { keysForBrandsSapcesEvents } from "../../../utils";
 
 import { useGetGeneralSearchQuery } from "../../../services/general";
 
-const Search = () => {
-  const { parameters, skip } = useSelector((state) => state.search);
+import { setAllLocations, setPageNumber } from "../../../store/slices/search";
 
-  const [page, setPage] = useState(1);
+const Search = () => {
+const dispatch = useDispatch();
+
+  const { parameters, skip, page } = useSelector(
+    (state) => state.search
+  );
+
   const pageSize = 7;
   const [hasMore, setHasMore] = useState(true);
   const observerRef = useRef(null);
@@ -71,11 +76,17 @@ const Search = () => {
 
         if (page === 1) {
           setData(updatedData);
+
+          const locations = updatedData?.map((loc) => loc.location)?.flat();
+          dispatch(setAllLocations(locations));
         } else {
           const mergedData = [...data, ...updatedData].filter(
             (item, index, self) =>
               index === self.findIndex((t) => t?.id === item?.id)
           );
+
+          const locations = mergedData?.map((loc) => loc.location)?.flat();
+          dispatch(setAllLocations(locations));
 
           setData(mergedData);
         }
@@ -93,9 +104,15 @@ const Search = () => {
   }, [searchedData?.data, isSuccess, isLoading, isFetching, skip, parameters]);
 
   useEffect(() => {
-    setLoadingStart(true);
+    if (
+      !hasMore ||
+      skip ||
+      isFetching ||
+      page === searchedData?.data?.pagination?.totalPages
+    )
+      return;
 
-    if (!hasMore || skip || isFetching || page === searchedData?.data?.pagination?.totalPages) return;
+    setLoadingStart(true);
 
     let timeoutId = null;
 
@@ -104,8 +121,8 @@ const Search = () => {
         if (entries[0].isIntersecting) {
           if (!isFetching) {
             timeoutId = setTimeout(() => {
-              setLoadingStart(true);
-              setPage((prevPage) => prevPage + 1);
+              // setPage((prevPage) => prevPage + 1);
+              dispatch(setPageNumber(page + 1));
             }, 300);
           }
         }
@@ -249,10 +266,10 @@ const Search = () => {
         >
           <Filters
             allDataLocation={data?.map((loc) => loc.location)?.flat()}
-            setPage={setPage}
             setHasMore={setHasMore}
             setLoadingStart={setLoadingStart}
             setData={setData}
+            data={data}
             loadingStart={isFetching || isLoading}
           />
         </Grid>

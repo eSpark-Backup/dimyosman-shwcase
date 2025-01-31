@@ -8,6 +8,7 @@ import {
   InputAdornment,
   TextField,
   Typography,
+  useMediaQuery,
   useTheme,
 } from "@mui/material";
 
@@ -29,6 +30,7 @@ const SearchBar = ({
   handleFilterDrawer,
 }) => {
   const theme = useTheme();
+  const isLessThan1281 = useMediaQuery("(max-width:1281px)");
 
   const { pathname } = useLocation();
   const dispatch = useDispatch();
@@ -69,7 +71,7 @@ const SearchBar = ({
         cursor: pathname !== "/search" ? "pointer" : "default",
       }}
       onClick={() => {
-        if (pathname !== "/search") {
+        if (pathname !== "/search" || isLessThan1281) {
           handleFilterDrawer();
         }
       }}

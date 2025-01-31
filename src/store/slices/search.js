@@ -14,6 +14,8 @@ const initialState = {
   },
   allFilterCategories: [],
   allCategoriesNotSearch: [],
+  allLocations: [],
+  page: 1,
 };
 
 const slice = createSlice({
@@ -64,6 +66,15 @@ const slice = createSlice({
     emptyCategoryNames: (state) => {
       state.parameters.categoryNames = "";
     },
+    setAllLocations: (state, action) => {
+      state.allLocations = action.payload;
+    },
+    emptyAllLocations: (state) => {
+      state.allLocations = [];
+    },
+    setPageNumber: (state, action) => {
+      state.page = action.payload;
+    },
   },
 });
 
@@ -79,6 +90,9 @@ export const {
   emptyFilters,
   setAllCategoriesNotSearch,
   emptyCategoryNames,
+  setAllLocations,
+  emptyAllLocations,
+  setPageNumber,
 } = slice.actions;
 
 export default slice.reducer;

@@ -381,6 +381,7 @@ const ActivityCard = ({
                   color: theme.palette.primary.main,
                   fontWeight: "600",
                   fontSize: { xs: "20px", md: "24px" },
+                  textAlign: "start"
                 }}
                 variant="h2"
               >
