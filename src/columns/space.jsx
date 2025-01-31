@@ -285,7 +285,11 @@ const likedSpaceColumns = (likeLoading, gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="event-icon">
                   <img
-                    style={{ width: "100%" }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
                     src={item?.eventImg}
                     alt="event-img"
                   />
