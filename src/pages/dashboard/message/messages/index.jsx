@@ -61,7 +61,8 @@ const GroupDetail = ({ withColon, text }) => (
 );
 
 const AllMesaages = ({
-  setSelectedGroup,
+  setSelectedChatId,
+  setInitialChatId,
   selectedGroup,
   emitEvent,
   isTypingUser,
@@ -220,12 +221,13 @@ const AllMesaages = ({
     <Box position={"relative"}>
       {selectedGroup && (
         <MessageHeader
-          setSelectedGroup={setSelectedGroup}
           selectedGroup={selectedGroup}
           theme={theme}
           ActivityType={ActivityType}
           GroupDetail={GroupDetail}
           onlineUsers={onlineUsers}
+          setSelectedChatId={setSelectedChatId}
+          setInitialChatId={setInitialChatId}
         />
       )}
 

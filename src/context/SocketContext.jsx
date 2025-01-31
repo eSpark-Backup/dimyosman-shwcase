@@ -158,7 +158,7 @@ const SocketProvider = ({ children }) => {
         refetch();
       });
 
-      socket.current.on("NEW_NOTIFICATION", () => {
+      socket.current.on("NEW_NOTIFICATION", (data) => {
         // console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
 
         if (pathname === "/space") {

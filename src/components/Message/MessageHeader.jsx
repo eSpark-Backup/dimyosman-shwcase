@@ -1,15 +1,22 @@
+import { useDispatch } from "react-redux";
+
 import { Box, Stack, Typography, useMediaQuery } from "@mui/material";
 
 import { star } from "../../assets";
 
+import { emptyGoToMessage } from "../../store/slices/notification";
+
 const MessageHeader = ({
-  setSelectedGroup,
   selectedGroup,
   theme,
   ActivityType,
   GroupDetail,
   onlineUsers,
+  setSelectedChatId,
+  setInitialChatId,
 }) => {
+  const dispatch = useDispatch();
+
   const { chatGroup, group } = selectedGroup;
 
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
@@ -125,7 +132,11 @@ const MessageHeader = ({
               </Typography>
               {isLessThan768 && (
                 <Typography
-                  onClick={() => setSelectedGroup(null)}
+                  onClick={() => {
+                    dispatch(emptyGoToMessage());
+                    setSelectedChatId(null);
+                    setInitialChatId(null);
+                  }}
                   sx={{
                     cursor: "pointer",
                     fontWeight: 500,
