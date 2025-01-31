@@ -79,6 +79,9 @@ export class SpaceController {
           "space.id",
           "space.spaceName",
           "space.spaceCategory",
+          "brand.brandName",
+          "brand.id",
+          "brand.location",
           "space.createdAt",
         ])
         .orderBy("space.createdAt", "DESC")
