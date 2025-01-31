@@ -1,6 +1,7 @@
 import { Box, Button, Stack, Tooltip, Typography } from "@mui/material";
 import { eventBadge } from "../assets";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { LoadingButton } from "@mui/lab";
 
 const myEventsColumns = (gotoDetail, handleAction, gotoBrand, gotoSpace) => {
   return [
@@ -261,7 +262,7 @@ const rsvpEventColumns = (gotoDetail, handleAction) => {
   ];
 };
 
-const likedEventColumns = (gotoDetail, handleAction) => {
+const likedEventColumns = (likeLoading, gotoDetail, handleAction) => {
   return [
     {
       name: "Event Name",
@@ -330,9 +331,12 @@ const likedEventColumns = (gotoDetail, handleAction) => {
               fontSize: "14px",
               fontWeight: item?.brandUrl ? 600 : 400,
               cursor: "pointer",
+              a: {
+                color: "#00141C !important"
+              }
             }}
           >
-            {item?.brand}
+            {item?.brandUrl ? <Link to={item?.brandUrl}>{item?.brand}</Link> :  item?.brand}
           </Typography>
         );
       },
@@ -365,7 +369,8 @@ const likedEventColumns = (gotoDetail, handleAction) => {
       key: "action",
       component: (item) => {
         return (
-          <Button
+          <LoadingButton
+            loading={likeLoading}
             onClick={() => handleAction(item)}
             sx={{
               minWidth: "83px",
@@ -376,7 +381,7 @@ const likedEventColumns = (gotoDetail, handleAction) => {
             }}
           >
             Remove
-          </Button>
+          </LoadingButton>
         );
       },
     },

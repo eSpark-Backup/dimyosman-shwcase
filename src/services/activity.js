@@ -5,7 +5,7 @@ export const activityApi = api.injectEndpoints({
         getActivityData: builder.query({
             query: ({ id, page, pageSize } = {}) => {
                 // Use the provided `id` or the literal string `{id}`
-                const baseUrl = id ? `/space/publishedSpace/${id}` : `/space/publishedSpace/{id}`;
+                const baseUrl = id ? `/space/publishedSpace/${id}` : `/general/activity`;
                 const queryParams = new URLSearchParams();
         
                 if (pageSize) queryParams.append('pageSize', pageSize);

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Button, Divider, Stack, Typography, useTheme } from "@mui/material";
 import {
   accountIcon,
@@ -11,6 +11,7 @@ import {
   eventMain3,
   flag,
   like,
+  liked,
   miniMap,
   miniMap2,
   share,
@@ -19,6 +20,7 @@ import {
 } from "../assets/index.js";
 import DynamicPaginationSwiper from "./Slider.jsx";
 import { useNavigate } from "react-router-dom";
+import { useAddInFavouritesMutation } from "../services/favourite.js";
 
 const ActivityCard = ({
   fullItem = {},
@@ -42,10 +44,16 @@ const ActivityCard = ({
   features,
   slides,
   search = false,
+  isFavourite,
   handleAction = () => {},
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const [likePost, setLikePost] = useState(isFavourite);
+  useEffect(() => {
+    setLikePost(isFavourite);
+  },[isFavourite])
+  const [likeFunc] = useAddInFavouritesMutation();
   return (
     <Box
       sx={{
@@ -644,7 +652,15 @@ const ActivityCard = ({
             columnGap: "10px",
           }}
         >
-          <img src={like} alt="Like Icon" />
+          <img
+            onClick={() => {
+              likeFunc({ entityId: activityId, entityType: activity?.toLocaleUpperCase() })
+              setLikePost(!likePost)
+            }}
+            style={{ cursor: "pointer" }}
+            src={likePost ? liked : like}
+            alt="Like Icon"
+          />
           {activity !== "space" && <img src={comment} alt="Comment Icon" />}
           <img src={share} alt="Share Icon" />
         </Box>
