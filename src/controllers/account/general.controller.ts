@@ -251,6 +251,27 @@ export class GeneralController {
           }
         });
       }
+      for (const space of spaces) {
+        const events = await this.eventsRepo
+          .createQueryBuilder("event")
+          .where("event.space = :spaceId", { spaceId: space.id })
+          .getMany();
+
+        const calendarEvents = events.flatMap((event) => {
+          const eventDates: EventDate[] = Array.isArray(event.eventDate)
+            ? event.eventDate
+            : JSON.parse(event.eventDate as unknown as string);
+
+          return eventDates.map((dateRange) => ({
+            eventId: event.id,
+            title: event.eventName,
+            start: new Date(dateRange.startDate),
+            end: new Date(dateRange.endDate),
+          }));
+        });
+
+        (space as any).calendarEvents = calendarEvents;
+      }
       if (brands.length > 0) {
         brands.forEach((brand) => {
           parseCoverImages(brand);
