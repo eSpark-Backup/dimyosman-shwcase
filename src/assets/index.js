@@ -240,6 +240,7 @@ export {
   profilePicture,
   allIconLight,
   memberIconLight,
+  // mediumMap
   mediumMap,
   mapMarkerBrand,
   mapMarkerSpace
