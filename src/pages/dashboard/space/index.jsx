@@ -85,6 +85,7 @@ const Space = () => {
   const [verifyDetail, setVerifyDetail] = useState(null);
 
   const [mySpaceData, setMySpaceData] = useState([]);
+  const [mySpaceData2, setMySpaceData2] = useState([]);
 
   useEffect(() => {
     if (navigationActiveTab !== "") {
@@ -289,7 +290,7 @@ const Space = () => {
     if (isError2 && !hasShownErrorToast) {
       toast.error(error2?.data?.message, { toastId: "error-toast" });
       setHasShownErrorToast(true);
-      setMySpaceData([]);
+      setMySpaceData2([]);
     }
 
     if (tabsForApi[activeTab] !== "Saved") {
@@ -310,7 +311,7 @@ const Space = () => {
     }
 
     if (isSuccess2) {
-      setMySpaceData(
+      setMySpaceData2(
         transformSavedSpaceData(data2?.data?.savedEntities || [], "fav")
       );
       setHasShownErrorToast(false);
@@ -450,18 +451,18 @@ const Space = () => {
           handleChange={handleChange}
           handleAdd={handleAdd}
         />
-        {spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand)[
+        {spaceTableData(gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand)[
           activeTab
         ].data.length > 0 ? (
           <DynamicTable
             isLoading={false}
             data={
-              spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand)[
+              spaceTableData(gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand)[
                 activeTab
               ].data
             }
             columns={
-              spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand, likeLoading)[
+              spaceTableData(gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand, likeLoading)[
                 activeTab
               ].column
             }
