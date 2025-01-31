@@ -20,7 +20,7 @@ const Activity = () => {
   const [hasFetchedData, setHasFetchedData] = useState(false);
   const [openInquiryModal, setOpenInquiryModal] = useState(false);
   const [inquiredDetail, setInquiredDetail] = useState({});
-  const [saveAllActivity,setSaveAllSapces] = useState([])
+  const [saveAllActivity,setSaveAllActivity] = useState([])
 
   useEffect(() => {
     setIsLoading(true);
@@ -74,7 +74,7 @@ const Activity = () => {
           new Map(mergedData.map((item) => [item.id, item])).values()
         );
         setActivityData(uniqueData);
-        setSaveAllSapces(mergedSapcesData)
+        setSaveAllActivity(mergedSapcesData)
         setTotal(data?.data?.pagination?.totalItems);
       }
       setHasFetchedData(true); 
@@ -150,11 +150,13 @@ const Activity = () => {
               slides={item?.slides}
               features={item?.features}
               handleAction={(fullItem) => {
-                const detail = saveAllActivity?.find(
-                  (spc) => spc.id === fullItem.id
-                );
-                setInquiredDetail(detail);
-                setOpenInquiryModal(true);
+                if (fullItem.activity === "space") {
+                  const detail = saveAllActivity?.find(
+                    (spc) => spc.id === fullItem.id
+                  );
+                  setInquiredDetail(detail);
+                  setOpenInquiryModal(true);
+                }
               }}
             />
           ))}

@@ -5,6 +5,7 @@ import { Box, CircularProgress, Grid, LinearProgress } from "@mui/material";
 
 import { ActivityCard } from "../../../components";
 import Filters from "../../../components/Filters";
+import SpaceInquireModal from "../../../components/SpaceInquireModal";
 
 import { keysForBrandsSapcesEvents } from "../../../utils";
 
@@ -21,6 +22,9 @@ const Search = () => {
   const [hasMore, setHasMore] = useState(true);
   const observerRef = useRef(null);
   const [loadingStart, setLoadingStart] = useState(false);
+  const [openInquiryModal, setOpenInquiryModal] = useState(false);
+  const [inquiredDetail, setInquiredDetail] = useState({});
+  const [saveAllSpaces, setSaveAllSpaces] = useState([]);
 
   const {
     data: searchedData,
@@ -64,6 +68,12 @@ const Search = () => {
               keysForBrandsSapcesEvents(space, "space")
             ),
           ];
+
+          const mergedSapcesData = [...saveAllSpaces, ...getObject?.spaces].filter(
+            (item, index, self) =>
+              index === self.findIndex((t) => t?.id === item?.id)
+          );
+          setSaveAllSpaces(mergedSapcesData);
         }
 
         updatedData?.sort((a, b) => {
@@ -200,6 +210,7 @@ const Search = () => {
               return (
                 <ActivityCard
                   key={index}
+                  fullItem={item}
                   id={item?.profileId}
                   activityId={
                     item?.activity === "event"
@@ -227,6 +238,16 @@ const Search = () => {
                   features={item?.features}
                   search={true}
                   isFavourite={item?.isFavourite}
+                  handleAction={(fullItem) => {
+                    if(fullItem?.activity === "space"){
+                      const detail = saveAllSpaces?.find(
+                        (spc) => spc.id === fullItem.id
+                      );
+
+                      setInquiredDetail(detail);
+                      setOpenInquiryModal(true);
+                    }
+                  }}
                 />
               );
             })
@@ -266,6 +287,18 @@ const Search = () => {
           />
         </Grid>
       </Grid>
+
+      <SpaceInquireModal
+        open={openInquiryModal}
+        handleClose={() => setOpenInquiryModal(false)}
+        spaceName={inquiredDetail?.spaceName}
+        brandName={inquiredDetail?.brand?.brandName}
+        spaceImage={inquiredDetail?.spaceImage}
+        bookedDates={inquiredDetail?.calendarEvents}
+        pricing={inquiredDetail?.pricing}
+        spaceId={inquiredDetail?.id}
+        brandId={inquiredDetail?.brand?.id}
+      />
     </>
   );
 };

@@ -432,15 +432,15 @@ const Filters = ({
             sx={inputStyles}
             value={radiusInput}
             readOnly={
-              parameters?.entity?.length === 0 ? true : !hasSet ? true : false
+              parameters?.entity?.length === 0 ? true : !loc?.lat ? true : false
             }
             onClick={() => {
               if (parameters?.entity?.length === 0) {
                 toast.error("Filter is not selected");
                 return;
               }
-              
-              if (parameters?.lat === "") {
+
+              if (!loc?.lat) {
                 toast.error("You need to allow location");
                 return;
               }
