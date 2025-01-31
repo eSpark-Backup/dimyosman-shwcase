@@ -88,21 +88,21 @@ export class SpaceController {
       const [tenantSpaces, totalTenantSpaces] = await this.leaseSpaceRepo
         .createQueryBuilder("leaseSpace")
         .leftJoinAndSelect("leaseSpace.space", "space")
-        .leftJoinAndSelect("leaseSpace.owner", "owner")
+        .leftJoinAndSelect("leaseSpace.tenant", "tenant")
         .leftJoinAndSelect("space.brand", "brand")
         .leftJoinAndSelect("space.user", "user")
         .select([
           "leaseSpace.id",
           "leaseSpace.contractDetails",
           "leaseSpace.status",
-          "owner.id",
+          "tenant.id",
           "space.id",
           "space.spaceName",
           "space.createdAt",
           "brand.brandName",
           "brand.location",
         ])
-        .where("owner.id = :userId", { userId })
+        .where("tenant.id = :userId", { userId })
         .andWhere("leaseSpace.status = :status", {
           status: LeaseStatus.ACTIVE,
         })
