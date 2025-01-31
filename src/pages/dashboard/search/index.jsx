@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { Box, Grid, LinearProgress } from "@mui/material";
+import { Box, CircularProgress, Grid, LinearProgress } from "@mui/material";
 
 import { ActivityCard } from "../../../components";
 import Filters from "../../../components/Filters";
@@ -13,11 +13,9 @@ import { useGetGeneralSearchQuery } from "../../../services/general";
 import { setAllLocations, setPageNumber } from "../../../store/slices/search";
 
 const Search = () => {
-const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
-  const { parameters, skip, page } = useSelector(
-    (state) => state.search
-  );
+  const { parameters, skip, page } = useSelector((state) => state.search);
 
   const pageSize = 7;
   const [hasMore, setHasMore] = useState(true);
@@ -239,21 +237,13 @@ const dispatch = useDispatch();
           ) : null}
 
           {data?.length > 0 && hasMore && (
-            <div ref={observerRef} style={{ height: "20px" }} />
-          )}
-
-          {data?.length && loadingStart && hasMore ? (
-            <Box
-              sx={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "center",
-                mt: 1,
-              }}
+            <div
+              ref={observerRef}
+              style={{ minHeight: 10, textAlign: "center" }}
             >
-              <span className="dot-loader">...</span>
-            </Box>
-          ) : null}
+              {loadingStart && <CircularProgress />}
+            </div>
+          )}
         </Grid>
 
         <Grid

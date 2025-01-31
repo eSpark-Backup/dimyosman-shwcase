@@ -20,7 +20,7 @@ const Activity = () => {
   const [hasFetchedData, setHasFetchedData] = useState(false);
   const [openInquiryModal, setOpenInquiryModal] = useState(false);
   const [inquiredDetail, setInquiredDetail] = useState({});
-  const [saveAllSpaces,setSaveAllSapces] = useState([])
+  const [saveAllActivity,setSaveAllSapces] = useState([])
 
   useEffect(() => {
     setIsLoading(true);
@@ -55,7 +55,7 @@ const Activity = () => {
             activityAddress: "123 Williamsburg Ave, Brooklyn, NY 11211",
             value: item?.type === "event" ? moment.utc(new Date(item?.eventDate[0]?.startDate)).format("DD.MM.YYYY.") : filterPrice[0]?.price ? `$${filterPrice[0]?.price}/day` : "N/A",
             deadline: item?.type === "event" ? moment.utc(new Date(item?.eventDate[0]?.endDate)).format("DD.MM.YYYY.") : filterPrice[0]?.minimum ? `minimum lease: ${filterPrice[0]?.minimum} days` : "N/A",
-            userImage: item?.type === "event" ? item?.brand?.brandImag : item?.type === "brand" ? item?.user?.profileImage : item?.brand?.brandImage || "",
+            userImage: item?.type === "event" ? item?.brand?.brandImage : item?.type === "brand" ? item?.user?.profileImage : item?.brand?.brandImage || "",
             activityImage: item?.type === "event" ? item?.eventImage : item?.type === "brand" ? item?.brandImage : item?.spaceImage || "",
             features: spaceFeatures,
             userRole: item?.type === "brand" ? "user" : item?.type === "space" ? "brand" : "brand",
@@ -65,7 +65,7 @@ const Activity = () => {
         }) || [];
         const mergedData = [...activityData, ...updatedData];
 
-        const mergedSapcesData = [...saveAllSpaces, ...data.data.spaces].filter(
+        const mergedSapcesData = [...saveAllActivity, ...data.data.activity].filter(
           (item, index, self) =>
             index === self.findIndex((t) => t?.id === item?.id)
         );
@@ -150,8 +150,8 @@ const Activity = () => {
               slides={item?.slides}
               features={item?.features}
               handleAction={(fullItem) => {
-                const detail = saveAllSpaces?.find(
-                  (spc) => spc.id === fullItem.spaceId
+                const detail = saveAllActivity?.find(
+                  (spc) => spc.id === fullItem.id
                 );
                 setInquiredDetail(detail);
                 setOpenInquiryModal(true);

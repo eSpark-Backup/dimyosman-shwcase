@@ -143,7 +143,7 @@ const Space = () => {
 
   useEffect(() => {
     addListener("NEW_NOTIFICATION", (data) => {
-      console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
+      // console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
 
       if (pathname === "/space") {
         dispatch(setHasPaymentDone(true));

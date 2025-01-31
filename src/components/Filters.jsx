@@ -349,7 +349,7 @@ const Filters = ({
           flexWrap: "wrap",
         }}
       >
-        {icons.map((icon) => (
+        {icons.map((icon, i) => (
           <Box
             sx={{
               bgcolor:
@@ -378,7 +378,7 @@ const Filters = ({
                 filterClick(icon);
               }
             }}
-            key={icon.type}
+            key={i}
           >
             <img src={icon.icon} alt={icon.type} />
           </Box>
