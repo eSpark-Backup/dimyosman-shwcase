@@ -167,9 +167,9 @@ const Space = () => {
         term: "Daily",
         status: space?.status,
         event: space?.contractDetails?.tenantDetails?.event,
-        brand: space?.space?.brand?.brandName,
+        brand: space?.brand?.brandName,
         eventUrl: "-",
-        brandUrl: `/brand/${space?.space?.brand?.id}`,
+        brandUrl: `/brand/${space?.brand?.id}`,
         action:
           space?.status === "SubmitForSignature"
             ? "Sign"
@@ -349,7 +349,7 @@ const Space = () => {
     navigate(`/space/${id}`);
   };
 
-  const [likeFunc] = useAddInFavouritesMutation();
+  const [likeFunc, { isLoading: likeLoading }] = useAddInFavouritesMutation();
 
   const handleAction = async (item, type) => {
     if (type === "remove") {
@@ -461,7 +461,7 @@ const Space = () => {
               ].data
             }
             columns={
-              spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand)[
+              spaceTableData(gotoDetail, handleAction, mySpaceData, gotoBrand, likeLoading)[
                 activeTab
               ].column
             }

@@ -161,7 +161,7 @@ const Event = () => {
     navigate(item?.spaceUrl);
   };
 
-    const [likeFunc] = useAddInFavouritesMutation();
+    const [likeFunc, { isLoading: likeLoading }] = useAddInFavouritesMutation();
   
 
   const handleAction = async (item, type) => {
@@ -229,7 +229,8 @@ const Event = () => {
                 handleAction,
                 myEventData,
                 gotoBrand,
-                gotoSpace
+                gotoSpace,
+                likeLoading,
               )[activeTab].column
             }
             total={data && data?.data?.pagination?.totalItems}

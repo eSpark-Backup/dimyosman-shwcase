@@ -71,7 +71,7 @@ const Brand = () => {
     }
   );
 
-  const [likeFunc] = useAddInFavouritesMutation();
+  const [likeFunc, { isLoading: likeLoading }] = useAddInFavouritesMutation();
   
 
   const handleAction = async (item, type) => {
@@ -108,7 +108,7 @@ const Brand = () => {
   const transformBrandData = (apiData, type) => {
     let newData;
     type === "fav"
-      ? (newData = apiData.map(({ brand, updatedAt }, index) => ({
+      ? (newData = apiData.map(({ brand, createdAt, eventsCount, followerCount }, index) => ({
           id: brand?.id,
           type: "brand",
           brandName: brand.brandName || "N/A",
@@ -117,10 +117,10 @@ const Brand = () => {
             brand.brandCategory && brand.brandCategory.length > 0
               ? brand.brandCategory.map((item) => item.name).join(", ")
               : "N/A",
-          events: brand.events || "-",
-          followers: brand.followers || "-",
+          events: eventsCount || "-",
+          followers: followerCount || "-",
           status: brand.status || "N/A",
-          savedDate: moment(new Date(updatedAt)).format("DD.MM.YYYY.") || "-",
+          savedDate: moment(new Date(createdAt)).format("DD.MM.YYYY.") || "-",
           colHeader1: "Table cell",
           colHeader2: "Table cell",
           colHeader3: "Table cell",
@@ -226,7 +226,7 @@ const Brand = () => {
                 .data
             }
             columns={
-              brandTableData(gotoDetail, handleAction, myBrandData)[activeTab]
+              brandTableData(gotoDetail, handleAction, myBrandData, likeLoading)[activeTab]
                 .column
             }
             total={data && data?.data?.pagination?.totalItems}

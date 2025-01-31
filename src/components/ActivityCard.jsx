@@ -657,6 +657,7 @@ const ActivityCard = ({
               likeFunc({ entityId: activityId, entityType: activity?.toLocaleUpperCase() })
               setLikePost(!likePost)
             }}
+            style={{ cursor: "pointer" }}
             src={likePost ? liked : like}
             alt="Like Icon"
           />
