@@ -510,15 +510,15 @@ export class GeneralController {
         };
       });
 
-      // const eventsWithType = events.map((event: any) => ({
-      //   ...event,
-      //   type: "event",
-      // }));
+      const eventsWithType = events.map((event: any) => ({
+        ...event,
+        type: "event",
+      }));
 
-      // const brandsWithType = brands.map((brand: any) => ({
-      //   ...brand,
-      //   type: "brand",
-      // }));
+      const brandsWithType = brands.map((brand: any) => ({
+        ...brand,
+        type: "brand",
+      }));
 
       const spacesWithType = spaces.map((space: any) => ({
         ...space,
@@ -526,8 +526,8 @@ export class GeneralController {
       }));
 
       const activity = [
-        // ...eventsWithType,
-        // ...brandsWithType,
+        ...eventsWithType,
+        ...brandsWithType,
         ...spacesWithType,
       ];
 
