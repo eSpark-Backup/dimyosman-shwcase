@@ -95,6 +95,7 @@ const Brand = () => {
     }
   };
   const [myBrandData, setMyBrandData] = useState([]);
+  const [myBrandData2, setMyBrandData2] = useState([]);
   const { data, isError, isLoading, isSuccess, error, isFetching } =
     useGetAllBrandsQuery(
       { page, pageSize: 7 },
@@ -164,7 +165,7 @@ const Brand = () => {
     if (isError2 && !hasShownErrorToast) {
       toast.error(error2?.data?.message, { toastId: "error-toast" });
       setHasShownErrorToast(true);
-      setMyBrandData([]);
+      setMyBrandData2([]);
     }
 
     if (isSuccess) {
@@ -175,7 +176,7 @@ const Brand = () => {
     }
 
     if (isSuccess2) {
-      setMyBrandData(
+      setMyBrandData2(
         transformBrandData(data2?.data?.savedEntities || [], "fav")
       );
       setHasShownErrorToast(false);
@@ -217,16 +218,16 @@ const Brand = () => {
           handleChange={handleChange}
           handleAdd={handleAdd}
         />
-        {brandTableData(gotoDetail, handleAction, myBrandData)[activeTab].data
+        {brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2)[activeTab].data
           .length > 0 ? (
           <DynamicTable
             isLoading={isLoading || isFetching}
             data={
-              brandTableData(gotoDetail, handleAction, myBrandData)[activeTab]
+              brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2)[activeTab]
                 .data
             }
             columns={
-              brandTableData(gotoDetail, handleAction, myBrandData, likeLoading)[activeTab]
+              brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2, likeLoading)[activeTab]
                 .column
             }
             total={data && data?.data?.pagination?.totalItems}

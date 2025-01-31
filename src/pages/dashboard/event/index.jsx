@@ -38,6 +38,7 @@ const Event = () => {
   const [activeTab, setActiveTab] = useState(0);
 
   const [myEventData, setMyEventData] = useState([]);
+  const [myEventData2, setMyEventData2] = useState([]);
   const { data, isError, isLoading, isSuccess, error, isFetching } =
     useGetAllEventsQuery(
       { page, pageSize: 7, tab: tabsForApi[activeTab] },
@@ -112,7 +113,7 @@ const Event = () => {
     if (isError2 && !hasShownErrorToast) {
       toast.error(error2?.data?.message, { toastId: "error-toast" });
       setHasShownErrorToast(true);
-      setMyEventData([]);
+      setMyEventData2([]);
     }
 
     if (isSuccess) {
@@ -121,7 +122,7 @@ const Event = () => {
     }
 
     if (isSuccess2) {
-      setMyEventData(
+      setMyEventData2(
         transformEventData(data2?.data?.savedEntities || [], "fav")
       );
       setHasShownErrorToast(false);
@@ -209,6 +210,7 @@ const Event = () => {
           gotoDetail,
           handleAction,
           myEventData,
+          myEventData2,
           gotoBrand,
           gotoSpace
         )[activeTab].data.length > 0 ? (
@@ -219,6 +221,7 @@ const Event = () => {
                 gotoDetail,
                 handleAction,
                 myEventData,
+                myEventData2,
                 gotoBrand,
                 gotoSpace
               )[activeTab].data
@@ -228,6 +231,7 @@ const Event = () => {
                 gotoDetail,
                 handleAction,
                 myEventData,
+                myEventData2,
                 gotoBrand,
                 gotoSpace,
                 likeLoading,
