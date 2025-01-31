@@ -215,6 +215,14 @@ export const spaceApi = api.injectEndpoints({
         };
       },
     }),
+    spacesForEvent: builder.query({
+      query: ({ } = {}) => {
+        return {
+          url: `/space/SpaceForEvent`,
+          method: "POST",
+        };
+      },
+    }),
   }),
 });
 
@@ -227,4 +235,5 @@ export const {
   useLeaseSpaceInquireMutation,
   useTenantSignMutation,
   usePaymentVerificationMutation,
+  useSpacesForEventQuery
 } = spaceApi;
