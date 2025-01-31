@@ -63,9 +63,13 @@ import {
 import {
   getNotification,
   getNotificationCount,
+  setFromNotification,
+  setGoToMessage,
 } from "../store/slices/notification";
 
 import { getCookie, setCookie } from "../utils";
+
+import { setHasPaymentDone, setRedirectTab } from "../store/slices/space";
 
 const SocketContext = createContext(null);
 
@@ -77,6 +81,8 @@ const SocketProvider = ({ children }) => {
   const socket = useRef(null);
   const { user } = useSelector((state) => state.auth);
   const { activeMembers, messages } = useSelector((state) => state.chat);
+  const { activeTabForNotif } = useSelector((state) => state.space);
+
   const { data, isSuccess, refetch } = useGetMyChatsQuery(undefined, {
     skip: !user,
   });
@@ -91,7 +97,10 @@ const SocketProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (notificationSuccess && notificationData) {
+    if (
+      notificationData?.data &&
+      notificationData?.data?.notifications?.length > 0
+    ) {
       dispatch(getNotification(notificationData?.data?.notifications));
     }
   }, [notificationSuccess, notificationData]);
@@ -117,6 +126,14 @@ const SocketProvider = ({ children }) => {
     }
   }, [isSuccess, data]);
 
+  const handleNotificationUpdate = (cookieName, action) => {
+    const currentValue = getCookie(cookieName);
+    const newCount = currentValue ? parseInt(currentValue) + 1 : 1;
+
+    setCookie(cookieName, newCount);
+    dispatch(action(newCount));
+  };
+
   useEffect(() => {
     if (user && !socket.current) {
       socket.current = io("https://shwcase-stg.esparkconsultants.com/socket", {
@@ -141,30 +158,65 @@ const SocketProvider = ({ children }) => {
         refetch();
       });
 
-      socket.current.on("NEW_REQUEST", (data) => {
-        // console.log("NEW_REQUEST EVENT TRIGGERED.");
-        const getNewRequest = getCookie("newRequest");
+      socket.current.on("NEW_NOTIFICATION", (data) => {
+        // console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
 
-        if (getNewRequest) {
-          setCookie("newRequest", parseInt(getNewRequest) + 1);
-          dispatch(getNotificationCount(parseInt(getNewRequest) + 1));
-        } else {
-          setCookie("newRequest", 1);
-          dispatch(getNotificationCount(1));
+        if (pathname === "/space") {
+          dispatch(setHasPaymentDone(true));
         }
+
+        handleNotificationUpdate("newNotification", getNotificationCount);
+        let redName = data.redirect;
+
+        if (pathname === "/space") {
+          if (data.redirect === "Lease" && activeTabForNotif !== "Lease") {
+            redName = "Lease";
+          } else if (
+            data.redirect === "Tenant" &&
+            activeTabForNotif !== "Tenant"
+          ) {
+            redName = "Tenant";
+          }
+        }
+
         toast.info(data?.name, {
           position: "bottom-right",
-          onClick:
-            pathname === "/message"
-              ? null
-              : () =>
-                  navigate("/message", {
-                    state: {
-                      spaceName: data.receiverSpaceName,
-                      chatId: data.chatId,
-                    },
-                  }),
+          onClick: () => {
+            dispatch(setRedirectTab(redName));
+            if (pathname !== "/space") {
+              navigate("/space");
+            }
+          },
         });
+
+        notificationRefetch();
+      });
+
+      socket.current.on("NEW_REQUEST", (data) => {
+        // console.log("NEW_REQUEST EVENT TRIGGERED.");
+
+        handleNotificationUpdate("newNotification", getNotificationCount);
+        if (pathname !== "/message") {
+          handleNotificationUpdate("newInquiry", getNotificationCount);
+        }
+
+        const navigateData = {
+          spaceName: data.receiverSpaceName,
+          chatId: data.chatId,
+        };
+
+        toast.info(data?.name, {
+          position: "bottom-right",
+          onClick: () => {
+            dispatch(setGoToMessage(navigateData));
+            dispatch(setFromNotification(true));
+            
+            if (pathname !== "/message") {
+              navigate("/message");
+            }
+          },
+        });
+
         notificationRefetch();
       });
 

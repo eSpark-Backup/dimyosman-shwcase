@@ -1,8 +1,21 @@
-import { useLocation } from 'react-router-dom';
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { useLocation } from "react-router-dom";
 
-import { Box, IconButton, InputAdornment, TextField, Typography, useTheme } from '@mui/material'
+import {
+  Box,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
+  useTheme,
+} from "@mui/material";
 
-import { search } from '../assets'
+import { search } from "../assets";
+
+import { setAllCategoriesNotSearch, setRadius } from "../store/slices/search";
+
+import { useGetGeneralCategoriesQuery } from "../services/general";
 
 const SearchBar = ({
   label,
@@ -17,7 +30,35 @@ const SearchBar = ({
 }) => {
   const theme = useTheme();
 
-  const {pathname} = useLocation()
+  const { pathname } = useLocation();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (pathname !== "/search") {
+      dispatch(setRadius(""));
+    }
+  }, [pathname]);
+
+  const { data } = useGetGeneralCategoriesQuery(undefined, {
+    skip: pathname === "/search",
+  });
+
+  useEffect(() => {
+    if (data?.data?.length) {
+      const updatedCategories = data?.data
+        .map((category, index) => ({
+          id: index,
+          name: category,
+          selected: false,
+        }))
+        .filter(
+          (value, index, self) =>
+            index === self.findIndex((t) => t.name === value.name)
+        );
+
+      dispatch(setAllCategoriesNotSearch(updatedCategories));
+    }
+  }, [data]);
 
   return (
     <Box
@@ -52,6 +93,7 @@ const SearchBar = ({
         onBlur={onBlur}
         variant="outlined"
         InputProps={{
+          readOnly: true,
           endAdornment: (
             <InputAdornment position="end">
               <IconButton sx={{ pointerEvents: "none" }}>
@@ -79,7 +121,7 @@ const SearchBar = ({
   );
 };
 
-export default SearchBar
+export default SearchBar;
 
 // "&.searchBar": {
 //     border: "1px solid #D1DBD7",

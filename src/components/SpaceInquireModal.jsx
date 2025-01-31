@@ -1,73 +1,112 @@
 import { useEffect, useRef, useState } from "react";
-import dayjs from "dayjs";
-import { LocalizationProvider, StaticDatePicker } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Box, Button, CircularProgress, IconButton, Modal, Stack, Typography, useMediaQuery } from "@mui/material";
-import { Dropdown, Input } from "../../../../components";
-import {
-  arrowDown,
-  bold,
-  close,
-  italic,
-  lineThrough,
-  link,
-  paperClip,
-  smile,
-  spaceActivityImage,
-  spaceBadge,
-} from "../../../../assets";
-import { DateRangePicker } from "rsuite";
-import { toast } from "react-toastify";
-import { useSpaceInquireMutation, useSpacePriceMutation } from "../../../../services/space";
-import { useGetAllBrandsQuery } from "../../../../services/brands";
-import MessageInput from "../../../../components/Message/MessageInput";
-import data from "@emoji-mart/data";
-import Picker from "@emoji-mart/react";
-import { LoadingButton } from "@mui/lab";
-import { useGetMyChatsQuery } from "../../../../services/chats";
 import { useSelector } from "react-redux";
 
+import { toast } from "react-toastify";
 
-const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDates, brandName, spaceImage, pricing, spaceId, brandId }) => {
+import dayjs from "dayjs";
+
+import { DateRangePicker } from "rsuite";
+
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
+
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import {
+  Box,
+  CircularProgress,
+  IconButton,
+  Modal,
+  Stack,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
+import { LoadingButton } from "@mui/lab";
+
+import MessageInput from "./Message/MessageInput";
+import Dropdown from "./Dropdown";
+
+import { close, smile, spaceBadge } from "../assets";
+
+import { addEmoji, inquireInputStyles } from "../utils";
+
+import { useGetMyChatsQuery } from "../services/chats";
+import {
+  useSpaceInquireMutation,
+  useSpacePriceMutation,
+} from "../services/space";
+import { useGetAllBrandsQuery } from "../services/brands";
+
+const SpaceInquireModal = ({
+  open,
+  handleClose,
+  handleSave,
+  spaceName,
+  bookedDates,
+  brandName,
+  spaceImage,
+  pricing,
+  spaceId,
+  brandId,
+}) => {
+  const quillInstance = useRef(null);
+
   const [selectedDate, setSelectedDate] = useState([]);
   const selectedDateRef = useRef([]);
   const [bookedRanges, setBookedRanges] = useState([]);
   const [bookingDetails, setBookingDetails] = useState({
     pricing: [],
-    days: 0
-  })
-  const [totalPrice, setTotalPrice] = useState(null)
-  const [price, { data: spaceData, isLoading, isError, error, isSuccess }] = useSpacePriceMutation()
-  const [spaceMessage, { data: messageData, isLoading: messageLoading, isError: IsMessageError, error: messageError, isSuccess: IsMessageSuccess }] = useSpaceInquireMutation()
-  const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError, isFetching: IsBrandFetching } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
-  const [brandOptions, setBrandOptions] = useState([])
+    days: 0,
+  });
+  const [totalPrice, setTotalPrice] = useState(null);
+  const [brandOptions, setBrandOptions] = useState([]);
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
-  const quillInstance = useRef(null);
+
+  const [price, { data: spaceData, isLoading, isError, error, isSuccess }] =
+    useSpacePriceMutation();
+  const [
+    spaceMessage,
+    {
+      data: messageData,
+      isLoading: messageLoading,
+      isError: IsMessageError,
+      error: messageError,
+      isSuccess: IsMessageSuccess,
+    },
+  ] = useSpaceInquireMutation();
+  const {
+    data: brandData,
+    isError: IsBrandError,
+    isLoading: IsBrandLoading,
+    isSuccess: IsBrandSuccess,
+    error: BrandError,
+    isFetching: IsBrandFetching,
+  } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
+
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
+
   const [finalMessage, setFinalMessage] = useState({
     receiverSpaceId: spaceId ? spaceId : "",
     receiverBrandId: brandId ? brandId : "",
     senderBrandId: "",
-    message: ""
-  })
+    message: "",
+  });
   const { user } = useSelector((state) => state.auth);
 
-   const { refetch } = useGetMyChatsQuery(undefined, { skip: !user });
+  const { refetch } = useGetMyChatsQuery(undefined, { skip: !user });
 
   useEffect(() => {
     const bookedEventsDate = bookedDates?.map((item) => ({
       start: new Date(item?.start),
       end: new Date(item?.end),
-    }))
+    }));
 
-    setBookedRanges(bookedEventsDate)
-  }, [bookedDates])
+    setBookedRanges(bookedEventsDate);
+  }, [bookedDates]);
 
   const isDateInRanges = (date, ranges) => {
-    return ranges.some(
-      (range) => date >= range.start && date <= range.end
-    );
+    return ranges.some((range) => date >= range.start && date <= range.end);
   };
 
   const isRangeValid = (range, ranges) => {
@@ -92,7 +131,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
       const start = dayjs(selectedDateRef.current[0]);
       const end = dayjs(selectedDateRef.current[1]);
       const totalDays = end.diff(start, "day") + 1;
-      const findDay = pricing?.find(price => price?.term === 'Day')
+      const findDay = pricing?.find((price) => price?.term === "Day");
 
       if (totalDays < Number(findDay?.minimum)) {
         toast.error(
@@ -111,12 +150,11 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
     }
   };
 
-
   const handleDateChange = (newValue) => {
     if (newValue === null) {
       setSelectedDate([]);
       selectedDateRef.current = [];
-      setTotalPrice("0")
+      setTotalPrice("0");
       return;
     }
 
@@ -124,73 +162,54 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
       setSelectedDate(newValue);
       selectedDateRef.current = newValue;
     } else {
-      toast.error("Selected range includes disabled dates. Please choose a valid range.");
+      toast.error(
+        "Selected range includes disabled dates. Please choose a valid range."
+      );
       setSelectedDate([]);
       selectedDateRef.current = [];
-      setTotalPrice("0")
+      setTotalPrice("0");
       return;
     }
   };
 
   useEffect(() => {
     if (isSuccess) {
-      setTotalPrice(spaceData?.totalPrice)
+      setTotalPrice(spaceData?.totalPrice);
     }
-  }, [spaceData, isSuccess])
+  }, [spaceData, isSuccess]);
 
   useEffect(() => {
     if (IsBrandSuccess && brandData) {
-      const options = Array.isArray(brandData?.data?.groupedBrands?.publishedBrands) ?
-        brandData?.data?.groupedBrands?.publishedBrands?.map((brand) => ({
-          label: brand.brandName,
-          value: brand.id,
-          item: brand,
-        })) : [];
-      setBrandOptions(options)
+      const options = Array.isArray(
+        brandData?.data?.groupedBrands?.publishedBrands
+      )
+        ? brandData?.data?.groupedBrands?.publishedBrands?.map((brand) => ({
+            label: brand.brandName,
+            value: brand.id,
+            item: brand,
+          }))
+        : [];
+      setBrandOptions(options);
     }
-  }, [brandData, IsBrandSuccess])
+  }, [brandData, IsBrandSuccess]);
 
   const handleSelectChange = (e) => {
     setFinalMessage((prevData) => ({
       ...prevData,
-      senderBrandId: e.target.value
-    }))
-  }
-
-  const isCursorActive = () => {
-    const selection = quillInstance.current.getSelection(); 
-    return selection !== null && selection.length > 0;
+      senderBrandId: e.target.value,
+    }));
   };
 
-  const addEmoji = (emoji) => {
-    const isActive = isCursorActive();
-    if (!isActive) {
-      quillInstance.current.focus(); 
-    }
-
-    const range = quillInstance.current.getSelection();
-    const cursorPosition = range
-      ? range.index
-      : quillInstance.current.getLength();
-
-    quillInstance.current.insertText(cursorPosition, emoji.native, "user");
-
-    quillInstance.current.formatText(
-      cursorPosition,
-      emoji.native.length,
-      "emoji",
-      true
-    );
-    quillInstance.current.setSelection(cursorPosition + emoji.native.length, 0);
-
-    setEmojiPickerVisible(false);
+  const isCursorActive = () => {
+    const selection = quillInstance.current.getSelection();
+    return selection !== null && selection.length > 0;
   };
 
   const handleInputChange = ({ content, text }) => {
     setFinalMessage((prevData) => ({
       ...prevData,
       message: content,
-    }))
+    }));
   };
 
   const HandleMessageSend = () => {
@@ -202,7 +221,7 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
     const start = dayjs(selectedDate[0]);
     const end = dayjs(selectedDate[1]);
     const totalDays = end.diff(start, "day") + 1;
-    const findDay = pricing?.find(price => price?.term === 'Day')
+    const findDay = pricing?.find((price) => price?.term === "Day");
 
     if (totalDays < Number(findDay?.minimum)) {
       toast.error(
@@ -247,17 +266,17 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
 
     spaceMessage({ message: updateMessage });
   };
-  
+
   const resetALsStates = () => {
-    handleClose()
+    handleClose();
     setSelectedDate([]);
     selectedDateRef.current = [];
     quillInstance.current = null;
-    setTotalPrice("0")
+    setTotalPrice("0");
     setFinalMessage((prevData) => ({
       ...prevData,
       message: "",
-      senderBrandId: ""
+      senderBrandId: "",
     }));
   };
 
@@ -268,19 +287,14 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
         setFinalMessage((prevData) => ({
           ...prevData,
           message: "",
-          senderBrandId: ""
+          senderBrandId: "",
         }));
-        refetch()
-        resetALsStates()
+        refetch();
+        resetALsStates();
       }, 0);
     }
   }, [IsMessageSuccess, messageData]);
 
-  if (IsBrandFetching || IsBrandLoading) {
-    return (
-      <>Loading...</>
-    )
-  }
   return (
     <Modal
       sx={{
@@ -291,6 +305,9 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
       open={open}
       onClose={resetALsStates}
     >
+      {IsBrandFetching || IsBrandLoading ?
+      <>Loading...</>
+      :
       <Box
         sx={{
           width: { xs: "95vw", sm: "478px" },
@@ -360,7 +377,6 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
                   fontSize={12}
                 >
                   {brandName}
-
                 </Typography>
               </Box>
             </Stack>
@@ -382,8 +398,8 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <Box
                 sx={{
-                  width: '100%',
-                  minHeight: '300px',
+                  width: "100%",
+                  minHeight: "300px",
                 }}
               >
                 <DateRangePicker
@@ -393,7 +409,9 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
                   appearance="default"
                   showOneCalendar
                   menuStyle={{ zIndex: 1300 }}
-                  shouldDisableDate={(date) => isDateInRanges(date, bookedRanges)}
+                  shouldDisableDate={(date) =>
+                    isDateInRanges(date, bookedRanges)
+                  }
                 />
               </Box>
             </LocalizationProvider>
@@ -406,7 +424,9 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
             >
               <Box>
                 <Typography textAlign="left" fontWeight={600} fontSize={12}>
-                  {selectedDate?.length === 0 ? "Please select date" : "Selected Date Range:"}
+                  {selectedDate?.length === 0
+                    ? "Please select date"
+                    : "Selected Date Range:"}
                 </Typography>
                 <time
                   style={{
@@ -417,7 +437,9 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
                     lineHeight: "140%",
                   }}
                 >
-                  {selectedDate?.length >= 1 ? dayjs(selectedDate[0]).format("DD.MM.YYYY") : "Start Date"}
+                  {selectedDate?.length >= 1
+                    ? dayjs(selectedDate[0]).format("DD.MM.YYYY")
+                    : "Start Date"}
                 </time>
                 <time
                   style={{
@@ -429,21 +451,31 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
                     display: "inline-block",
                   }}
                 >
-                  {selectedDate?.length >= 1 ? dayjs(selectedDate[1]).format("DD.MM.YYYY") : "End Date"}
+                  {selectedDate?.length >= 1
+                    ? dayjs(selectedDate[1]).format("DD.MM.YYYY")
+                    : "End Date"}
                 </time>
               </Box>
               <Box>
                 <Typography textAlign="left" fontWeight={600} fontSize={12}>
                   Selected lease total:
                 </Typography>
-                {isLoading ? <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: "5px" }}>
-                  <CircularProgress size={15} disableShrink />
-                </Box>
-                  :
+                {isLoading ? (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      mt: "5px",
+                    }}
+                  >
+                    <CircularProgress size={15} disableShrink />
+                  </Box>
+                ) : (
                   <Typography textAlign="left" fontSize={32} fontWeight={600}>
                     ${totalPrice === null ? 0 : totalPrice}
                   </Typography>
-                }
+                )}
               </Box>
             </Stack>
           </Stack>
@@ -470,71 +502,14 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
               placeholder={"Brand name"}
             />
           </Stack>
-
         </Box>
         <Box
           sx={{
-            position: "relative",
-            display: "flex",
-            flexDirection: "column",
+            ...inquireInputStyles(isLessThan1400, isLessThan1280),
             marginTop: "10px",
-            "& .ql-toolbar.ql-snow+.ql-container.ql-snow": {
-              border: "1px solid rgba(209, 219, 215, 0.5) !important",
-              borderTop: "1px solid rgba(209, 219, 215, 0.5) !important",
-              borderRadius: "5px",
-              marginBottom: isLessThan1400 ? 1.25 : 1.5,
-            },
+
             "& .ql-toolbar.ql-snow": {
-              border: "1px solid white !important"
-            },
-            "& .ql-editor": {
-              padding: "10px 16px",
-              fontSize: "16px",
-              fontFamily: `"Segoe UI", "sans-serif"`,
-              fontStyle: "unset",
-              fontWeight: 400,
-              lineHeight: "21px",
-            },
-
-            "& .ql-blank::before": {
-              fontStyle: "unset",
-              color: "rgba(0, 20, 28, 0.5)",
-            },
-
-            "& .ql-tooltip": {
-              left: "0px !important",
-            },
-
-            "& .ql-toolbar": {
-              border: "none",
-              order: 2,
-              alignItems: "center",
-              width: isLessThan1280
-                ? "calc(100% - 135px)"
-                : "calc(100% - 145px)",
-              padding: "4px 8px !important",
-
-              "& .ql-formats": {
-                columnGap: isLessThan1280 ? "15px" : "25px",
-              },
-
-              "& .ql-formats:has(.ql-link)": {
-                flex: 1,
-                justifyContent: "end",
-                columnGap: "10px",
-              },
-
-              "& button": {
-                padding: 0,
-                width: "25px",
-              },
-
-              "& .ql-active": {
-                "& img": {
-                  filter:
-                    "invert(21%) sepia(80%) saturate(4500%) hue-rotate(190deg) brightness(100%) contrast(90%)",
-                },
-              },
+              border: "1px solid white !important",
             },
           }}
         >
@@ -577,7 +552,9 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
               }}
               onClick={HandleMessageSend}
               loading={messageLoading}
-              loadingIndicator={<CircularProgress size={15} sx={{ color: "#00000" }} />}
+              loadingIndicator={
+                <CircularProgress size={15} sx={{ color: "#00000" }} />
+              }
             >
               SEND
             </LoadingButton>
@@ -604,11 +581,22 @@ const SpaceInquireModal = ({ open, handleClose, handleSave, spaceName, bookedDat
                 border: "1px solid #ccc",
               }}
             >
-              <Picker data={data} onEmojiSelect={addEmoji} />
+              <Picker
+                data={data}
+                onEmojiSelect={(emoji) =>
+                  addEmoji(
+                    emoji,
+                    isCursorActive,
+                    quillInstance,
+                    setEmojiPickerVisible
+                  )
+                }
+              />
             </div>
           )}
         </Box>
       </Box>
+      }
     </Modal>
   );
 };

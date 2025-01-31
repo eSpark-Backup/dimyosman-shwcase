@@ -61,6 +61,8 @@ const GroupDetail = ({ withColon, text }) => (
 );
 
 const AllMesaages = ({
+  setSelectedChatId,
+  setInitialChatId,
   selectedGroup,
   emitEvent,
   isTypingUser,
@@ -224,6 +226,8 @@ const AllMesaages = ({
           ActivityType={ActivityType}
           GroupDetail={GroupDetail}
           onlineUsers={onlineUsers}
+          setSelectedChatId={setSelectedChatId}
+          setInitialChatId={setInitialChatId}
         />
       )}
 

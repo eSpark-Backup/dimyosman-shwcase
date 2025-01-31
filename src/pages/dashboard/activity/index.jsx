@@ -1,19 +1,34 @@
-import { Box, Grid, LinearProgress } from "@mui/material";
-import { ActivityCard } from "../../../components";
-import { activityItems } from "../../../constant";
-import { useGetActivityDataQuery } from "../../../services/activity";
 import { useEffect, useState } from "react";
 
+import { Box, Grid, Typography, LinearProgress, CircularProgress } from "@mui/material";
+import { useInView } from "react-intersection-observer";
+import { ActivityCard } from "../../../components";
+import SpaceInquireModal from "../../../components/SpaceInquireModal";
+
+import { useGetActivityDataQuery } from "../../../services/activity";
+
 const Activity = () => {
-  const { data, isSuccess, isError, error, isLoading, isFetching } = useGetActivityDataQuery({
-    page: 1, pageSize: 10
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const { data, isSuccess, isError, error, isFetching } = useGetActivityDataQuery({
+    page, pageSize: 10
   }, { refetchOnMountOrArgChange: true })
 
   const [activityData, setActivityData] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
+  const [openInquiryModal, setOpenInquiryModal] = useState(false);
+  const [inquiredDetail, setInquiredDetail] = useState({});
 
   useEffect(() => {
+    setIsLoading(true);
     if (isSuccess) {
+      if (!data?.data && page === 1) {
+        setActivityData([]);
+        setHasFetchedData(true); 
+        setIsLoading(false);
+        return;
+      }
       if (data?.data) {
         const updatedData = data.data.spaces?.map((item) => {
           const filterPrice = item?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") || [];
@@ -42,16 +57,27 @@ const Activity = () => {
             slides: coverArray
           };
         }) || [];
-        setActivityData(updatedData);
-      } else {
-        setActivityData([]);
+        const mergedData = [...activityData, ...updatedData];
+  
+        const uniqueData = Array.from(
+          new Map(mergedData.map((item) => [item.spaceId, item])).values()
+        );
+        setActivityData(uniqueData);
+        setTotal(data?.data?.pagination?.totalItems);
       }
       setHasFetchedData(true); 
+      setIsLoading(false);
     }
-  }, [isSuccess, data]);
-  
+  }, [isSuccess, data, page]);
 
-  if (isLoading || isFetching) {
+  const { ref, inView } = useInView({ threshold: 0.5 });
+  useEffect(() => {
+    if (inView && !isLoading && !isFetching && activityData.length < total) {
+      setPage((prev) => prev + 1);
+    }
+  }, [inView, isLoading, isFetching, activityData.length, total]);
+
+  if ((isLoading && page === 1)) {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />
@@ -59,13 +85,14 @@ const Activity = () => {
     )
   }
 
-  if (hasFetchedData && activityData?.length === 0) {
+  if (hasFetchedData && !isLoading && activityData?.length === 0) {
     return (
       <Box sx={{ width: "100%" }}>
         <h1>No Data Found</h1>
       </Box>
     )
   }
+
   return (
     <>
 
@@ -86,10 +113,10 @@ const Activity = () => {
             // border:"1px solid red"
           }}
         >
-
           {activityData?.map((item, index) => (
             <ActivityCard
               key={index}
+              fullItem={item}
               id={item?.profileId}
               activityId={
                 item?.activity === "event"
@@ -115,8 +142,23 @@ const Activity = () => {
               userRole={item?.userRole}
               slides={item?.slides}
               features={item?.features}
+              handleAction={(fullItem) => {
+                const detail = data?.data?.spaces?.find(
+                  (spc) => spc.id === fullItem.spaceId
+                );
+                setInquiredDetail(detail);
+                setOpenInquiryModal(true);
+              }}
             />
           ))}
+          <div ref={ref} style={{ minHeight: 10, textAlign: "center" }}>
+            {isFetching && <CircularProgress />}
+          </div>
+          {!isFetching && !isLoading && activityData.length >= total &&
+            <Typography fontWeight={700} fontSize={18} textAlign="center">
+              You have seen all!
+            </Typography>
+          }
         </Grid>
         <Grid
           item
@@ -148,7 +190,17 @@ const Activity = () => {
         </Grid>
       </Grid>
 
-
+      <SpaceInquireModal
+        open={openInquiryModal}
+        handleClose={() => setOpenInquiryModal(false)}
+        spaceName={inquiredDetail?.spaceName}
+        brandName={inquiredDetail?.brand?.brandName}
+        spaceImage={inquiredDetail?.spaceImage}
+        bookedDates={inquiredDetail?.calendarEvents}
+        pricing={inquiredDetail?.pricing}
+        spaceId={inquiredDetail?.id}
+        brandId={inquiredDetail?.brand?.id}
+      />
     </>
   );
 };

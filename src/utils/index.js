@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { format } from "date-fns";
-import { emptyNotificationCount } from "../store/slices/notification";
+import { emptyInquiryCount, emptyNotificationCount, setGoToMessage } from "../store/slices/notification";
 
 export function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -28,6 +28,18 @@ export const formatDate = (date) => {
   const year = date.getFullYear();
 
   return `${day}.${month}.${year}`;
+};
+
+export const generate8DigitNumber = () => {
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, "0"); // Add leading zero if day is single digit
+  const month = String(now.getMonth() + 1).padStart(2, "0"); // getMonth() is 0-indexed, so add 1
+  const year = now.getFullYear();
+
+  // Combine day, month, and year into an 8-digit number (DDMMYYYY)
+  const eightDigitNumber = `${day}${month}${year}`;
+
+  return eightDigitNumber;
 };
 
 export function useClickOutside(ref, onClickOutside) {
@@ -62,7 +74,7 @@ export function getCookie(name) {
 export function deleteCookie(name) {
   document.cookie = `${name}=; Max-Age=-1; path=/`;
 }
-
+// FOR PICKER
 export const addEmoji = (
   emoji,
   isCursorActive,
@@ -93,6 +105,69 @@ export const addEmoji = (
   setEmojiPickerVisible(false);
 };
 
+export const inquireInputStyles = (isLessThan1400, isLessThan1280) => {
+  return {
+    position: "relative",
+    display: "flex",
+    flexDirection: "column",
+
+    "& .ql-toolbar.ql-snow+.ql-container.ql-snow": {
+      border: "1px solid rgba(209, 219, 215, 0.5) !important",
+      borderTop: "1px solid rgba(209, 219, 215, 0.5) !important",
+      borderRadius: "5px",
+      marginBottom: isLessThan1400 ? 1.25 : 1.5,
+    },
+
+    "& .ql-editor": {
+      padding: "10px 16px",
+      fontSize: "16px",
+      fontFamily: `"Segoe UI", "sans-serif"`,
+      fontStyle: "unset",
+      fontWeight: 400,
+      lineHeight: "21px",
+    },
+
+    "& .ql-blank::before": {
+      fontStyle: "unset",
+      color: "rgba(0, 20, 28, 0.5)",
+    },
+
+    "& .ql-tooltip": {
+      left: "0px !important",
+    },
+
+    "& .ql-toolbar": {
+      border: "none",
+      order: 2,
+      alignItems: "center",
+      width: isLessThan1280 ? "calc(100% - 135px)" : "calc(100% - 145px)",
+      padding: "4px 8px !important",
+
+      "& .ql-formats": {
+        columnGap: isLessThan1280 ? "15px" : "25px",
+      },
+
+      "& .ql-formats:has(.ql-link)": {
+        flex: 1,
+        justifyContent: "end",
+        columnGap: "10px",
+      },
+
+      "& button": {
+        padding: 0,
+        width: "25px",
+      },
+
+      "& .ql-active": {
+        "& img": {
+          filter:
+            "invert(21%) sepia(80%) saturate(4500%) hue-rotate(190deg) brightness(100%) contrast(90%)",
+        },
+      },
+    },
+  };
+};
+
 export const separateRawData = (rawData) => {
   // const spaceRegex = /Inquiry for: <strong>(.*?)<\/strong>/;
   const dateRangeRegex =
@@ -111,7 +186,7 @@ export const separateRawData = (rawData) => {
     return {
       startDate,
       endDate,
-      leaseTotal,
+      leaseTotal: leaseTotal?.split("$")[1],
     };
   }
 };
@@ -123,9 +198,10 @@ export const convertToSameKeys = (
   return {
     spaceId: selectedGroup?.group?.parentId || tenancyDetails?.space?.id,
     chatId: selectedGroup?.chatGroup?.chatId || tenancyDetails?.chatId,
+    brandId:
+      selectedGroup?.chatGroup?.senderBrand?.id || tenancyDetails?.brand?.id,
     tenantId:
-      selectedGroup?.chatGroup?.receiverBrand?.user?.id ||
-      tenancyDetails?.space?.user?.id,
+      selectedGroup?.chatGroup?.senderBrand?.user?.id || tenancyDetails?.id,
     host:
       selectedGroup?.chatGroup?.receiverbrandName ||
       tenancyDetails?.contractDetails?.hostDetails?.host,
@@ -155,6 +231,58 @@ export const convertToSameKeys = (
   };
 };
 
+export const spacesAction = (
+  item,
+  type,
+  navigate,
+  setTenantDetails,
+  setShowIinquiryModal,
+  setVerifyPayModal,
+  setVerifyDetail,
+  leaseSpace,
+  tenantSpace,
+  findLeaseDetails,
+  dispatch
+) => {
+  switch (type) {
+    case "edit":
+      if (location?.pathname === "/space") {
+        navigate(`/space/${item?.id}/edit`);
+      }
+      break;
+
+    case "Sign":
+    case "Details":
+      const findClickedLeaseDetails = leaseSpace?.find(
+        (lease) => lease.id === item.id
+      );
+      setTenantDetails(findClickedLeaseDetails);
+      setShowIinquiryModal(true);
+      break;
+
+    case "Message":
+      const navDetails = tenantSpace?.find((tenant) => tenant.id === item.id);
+      const navigateData = {
+        spaceName: navDetails?.space?.spaceName,
+        chatId: navDetails.chatId,
+      };
+      dispatch(setGoToMessage(navigateData));
+      
+      navigate("/message");
+      break;
+
+    case "Verify Pay 0/2":
+    case "Verify 1/2":
+      const details = findLeaseDetails(type, item.id);
+      setVerifyPayModal(true);
+      setVerifyDetail(details);
+      break;
+
+    default:
+      break;
+  }
+};
+
 export const keysForBrandsSapcesEvents = (object, type) => {
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -171,6 +299,7 @@ export const keysForBrandsSapcesEvents = (object, type) => {
 
   const coverObject = {
     profileId: 2,
+    id: object?.id,
     activity: type,
     userName: object?.brand?.brandName || "",
     activityMaker: object?.brand?.brandName || "",
@@ -180,7 +309,7 @@ export const keysForBrandsSapcesEvents = (object, type) => {
     userImage: object?.brand?.brandImage || "",
     userRole: "brand",
     slides: coverArray,
-    location: object?.location || [],
+    location: object?.brand?.location || [],
   };
 
   if (type === "space") {
@@ -224,7 +353,12 @@ export const keysForBrandsSapcesEvents = (object, type) => {
 
 export const removeActiveNotifications = (dispatch) => {
   dispatch(emptyNotificationCount());
-  deleteCookie("newRequest");
+  deleteCookie("newNotification");
+};
+
+export const removeNewInquiry = (dispatch) => {
+  dispatch(emptyInquiryCount());
+  deleteCookie("newInquiry");
 };
 
 export const messageBox = (parentObj, chatDetails, allMessages) => {

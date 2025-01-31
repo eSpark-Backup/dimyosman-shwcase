@@ -21,6 +21,7 @@ import DynamicPaginationSwiper from "./Slider.jsx";
 import { useNavigate } from "react-router-dom";
 
 const ActivityCard = ({
+  fullItem = {},
   id,
   activityId,
   userName,
@@ -40,6 +41,8 @@ const ActivityCard = ({
   deadline,
   features,
   slides,
+  search = false,
+  handleAction = () => {},
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -58,9 +61,9 @@ const ActivityCard = ({
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: { xs: "flex-start", md: "center" },
+          alignItems: "center",
           padding: { xs: "0px 8px", md: "0px 20px" },
-          flexDirection: { xs: "column", sm: "row" },
+          flexDirection: "row",
           rowGap: "10px",
         }}
       >
@@ -70,8 +73,8 @@ const ActivityCard = ({
             width: { xs: "100%", md: "80%" },
             display: "flex",
             columnGap: "10px",
-            alignItems: { xs: "flex-start", sm: "center" },
-            flexDirection: { xs: "column", sm: "row" },
+            alignItems: "center",
+            flexDirection: "row",
             rowGap: "10px",
           }}
         >
@@ -83,6 +86,8 @@ const ActivityCard = ({
               cursor: "pointer",
               width: "64px",
               height: "64px",
+              minWidth: "64px",
+              minHeight: "64px",
               position: "relative",
             }}
           >
@@ -93,17 +98,32 @@ const ActivityCard = ({
                 height: "62px",
               }}
             >
-              <figure
-                style={{ width: "100%", height: "100%" }}
-                role="img"
-                aria-labelledby="profile-figcaption"
-              >
-                <img
-                  src={userImage}
-                  alt="User Image"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              {userImage ? (
+                <figure
+                  style={{ width: "100%", height: "100%" }}
+                  role="img"
+                  aria-labelledby="profile-figcaption"
+                >
+                  <img
+                    src={userImage}
+                    alt="User Image"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                </figure>
+              ) : (
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    bgcolor: "rgba(0, 28, 20, 0.4)",
+                    borderRadius: "5px",
+                  }}
                 />
-              </figure>
+              )}
             </Box>
             <Box
               sx={{
@@ -144,7 +164,10 @@ const ActivityCard = ({
           <Box
             onClick={
               activityId
-                ? () => navigate(`/${activity}/${activityId}`)
+                ? () =>
+                    navigate(`/${activity}/${activityId}`, {
+                      state: search ? { other: true } : null,
+                    })
                 : () => {}
             }
             sx={{
@@ -163,7 +186,15 @@ const ActivityCard = ({
                 fontSize: { xs: "12px", md: "16px" },
               }}
             >
-              <span style={{ display: "inline-block", fontWeight: 600, marginRight: "5px" }}>{userName} </span>
+              <span
+                style={{
+                  display: "inline-block",
+                  fontWeight: 600,
+                  marginRight: "5px",
+                }}
+              >
+                {userName}{" "}
+              </span>
               published a new{" "}
               {activity === "event"
                 ? "Event!"
@@ -175,7 +206,12 @@ const ActivityCard = ({
         </Box>
         <Box
           onClick={
-            activityId ? () => navigate(`/${activity}/${activityId}`) : () => {}
+            activityId
+              ? () =>
+                  navigate(`/${activity}/${activityId}`, {
+                    state: search ? { other: true } : null,
+                  })
+              : () => {}
           }
           sx={{
             cursor: "pointer",
@@ -242,8 +278,11 @@ const ActivityCard = ({
           <DynamicPaginationSwiper
             onClick={
               activityId
-                ? () => navigate(`/${activity}/${activityId}`)
-                : () => { }
+                ? () =>
+                    navigate(`/${activity}/${activityId}`, {
+                      state: search ? { other: true } : null,
+                    })
+                : () => {}
             }
             slides={slides}
           />
@@ -271,7 +310,10 @@ const ActivityCard = ({
             component="section"
             onClick={
               activityId
-                ? () => navigate(`/${activity}/${activityId}`)
+                ? () =>
+                    navigate(`/${activity}/${activityId}`, {
+                      state: search ? { other: true } : null,
+                    })
                 : () => {}
             }
             sx={{
@@ -563,16 +605,16 @@ const ActivityCard = ({
             >
               {activity === "event" ? "Starting" : "Lease"} from:
             </Typography>
-              <Typography
-                style={{
-                  fontSize: "32px",
-                  fontWeight: "600",
-                  textAlign: "left",
-                  lineHeight: "140%",
-                }}
-              >
-                {value}
-              </Typography>
+            <Typography
+              style={{
+                fontSize: "32px",
+                fontWeight: "600",
+                textAlign: "left",
+                lineHeight: "140%",
+              }}
+            >
+              {value}
+            </Typography>
             <Typography
               style={{
                 fontWeight: "300",
@@ -591,7 +633,7 @@ const ActivityCard = ({
           display: "flex",
           justifyContent: "space-between",
           padding: { xs: "0px 8px", md: "0px 20px" },
-          flexDirection: { xs: "column", md: "row" },
+          flexDirection: "row",
           rowGap: "15px",
           alignItems: "center",
         }}
@@ -599,61 +641,72 @@ const ActivityCard = ({
         <Box
           sx={{
             display: "flex",
-            columnGap: "25px",
+            columnGap: "10px",
           }}
         >
           <img src={like} alt="Like Icon" />
           {activity !== "space" && <img src={comment} alt="Comment Icon" />}
           <img src={share} alt="Share Icon" />
         </Box>
-        <Stack direction="row" alignItems="center" justifyContent="center" gap={2}>
-        <Button
-          variant="text"
-          onClick={
-            activityId ? () => navigate(`/${activity}/${activityId}`) : () => {}
-          }
-          sx={{
-            backgroundColor: "transparent",
-            width: { xs: "150px", sm: "220px" },
-            height: "31px",
-            fontSize: "16px",
-            fontWeight: 600,
-            color: theme.palette.primary.main,
-            textTransform: "capitalize",
-            ":hover": {
-              backgroundColor: "rgb(209, 219, 215, 0.4)",
-            },
-          }}
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="center"
+          sx={{ gap: { xs: 1, sm: 2 } }}
         >
-          Learn more
-        </Button>
-        <Button
-          sx={{
-            backgroundColor: "rgb(209, 219, 215, 0.4)",
-            width: { xs: "150px", sm: "220px" },
-            height: "31px",
-            fontSize: "16px",
-            fontWeight: "700",
-            color: theme.palette.primary.main,
-            display: "flex",
-            columnGap: "5px",
-            textTransform: "none",
-            ":hover": {
+          <Button
+            variant="text"
+            onClick={
+              activityId
+                ? () =>
+                    navigate(`/${activity}/${activityId}`, {
+                      state: search ? { other: true } : null,
+                    })
+                : () => {}
+            }
+            sx={{
+              backgroundColor: "transparent",
+              width: { xs: "120px", sm: "220px" },
+              height: "31px",
+              fontSize: "16px",
+              fontWeight: 600,
+              color: theme.palette.primary.main,
+              textTransform: "capitalize",
+              ":hover": {
+                backgroundColor: "rgb(209, 219, 215, 0.4)",
+              },
+            }}
+          >
+            Learn more
+          </Button>
+          <Button
+            sx={{
               backgroundColor: "rgb(209, 219, 215, 0.4)",
-            },
-          }}
-        >
-          {activity === "event" ? (
-            "RSVP"
-          ) : activity === "brand" ? (
-            "Follow"
-          ) : (
-            <>
-              <img src={calender} alt="Calender Icon" />
-              Inquire
-            </>
-          )}
-        </Button>
+              width: { xs: "120px", sm: "220px" },
+              height: "31px",
+              fontSize: "16px",
+              fontWeight: "700",
+              color: theme.palette.primary.main,
+              display: "flex",
+              columnGap: "5px",
+              textTransform: "none",
+              ":hover": {
+                backgroundColor: "rgb(209, 219, 215, 0.4)",
+              },
+            }}
+            onClick={() => handleAction(fullItem)}
+          >
+            {activity === "event" ? (
+              "RSVP"
+            ) : activity === "brand" ? (
+              "Follow"
+            ) : (
+              <>
+                <img src={calender} alt="Calender Icon" />
+                Inquire
+              </>
+            )}
+          </Button>
         </Stack>
       </Box>
     </Box>

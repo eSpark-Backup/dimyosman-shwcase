@@ -41,7 +41,7 @@ const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
                     position: "absolute",
                     bottom: 0,
                     right: 0,
-                    zIndex: 99,
+                    zIndex: 8,
                   }}
                   width={16}
                   height={16}
@@ -118,7 +118,7 @@ const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
 const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
   return [
     {
-      name: "Event Name",
+      name: "Leasing Name",
       key: "eventName",
       component: (item) => {
         return (
@@ -206,15 +206,15 @@ const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
       component: (item) => {
         return (
           <Typography
-          sx={{
-            fontSize: "14px",
-            fontWeight: item?.brandUrl ? 600 : 400,
-            cursor: "pointer",
-          }}
-          onClick={() => gotoBrand(item)}
-        >
-          {item?.brand}
-        </Typography>
+            sx={{
+              fontSize: "14px",
+              fontWeight: item?.brandUrl ? 600 : 400,
+              cursor: "pointer",
+            }}
+            onClick={() => gotoBrand(item)}
+          >
+            {item?.brand}
+          </Typography>
         );
       },
     },
@@ -227,7 +227,7 @@ const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
             sx={{
               width: "100%",
               display: "flex",
-              justifyContent: "flex-end"
+              justifyContent: "flex-end",
             }}
           >
             <Button
@@ -241,7 +241,10 @@ const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
+                color: "#fff !important",
+                opacity: item?.action === "Verify Pay 1/2" ? "0.7" : 1,
               }}
+              disabled={item?.action === "Verify Pay 1/2"}
             >
               {item?.action}
             </Button>
@@ -356,4 +359,172 @@ const likedSpaceColumns = (gotoDetail, handleAction) => {
   ];
 };
 
-export { mySpaceColumns, leasingSpaceColumns, likedSpaceColumns };
+const tenantSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
+  return [
+    {
+      name: "Tenant Name",
+      key: "eventName",
+      component: (item) => {
+        return (
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="flex-start"
+            gap={2}
+            sx={{ cursor: "pointer" }}
+            onClick={() => gotoDetail(item, "tenant")}
+          >
+            <Box
+              sx={{
+                background: "#ccd0d2",
+                borderRadius: "5px",
+                width: "32px",
+                height: "32px",
+                position: "relative",
+              }}
+            >
+              {item?.eventImg && (
+                <figure
+                  style={{ width: "100%", height: "100%" }}
+                  role="event-icon"
+                >
+                  <img
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                    src={item?.eventImg}
+                    alt="event-img"
+                  />
+                </figure>
+              )}
+              <figure
+                style={{ width: "100%", height: "100%" }}
+                role="event-icon"
+              >
+                <img
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    zIndex: 99,
+                  }}
+                  width={16}
+                  height={16}
+                  src={spaceBadge}
+                  alt="event-icon"
+                />
+              </figure>
+            </Box>
+            <Typography
+              sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
+            >
+              {item?.eventName}
+            </Typography>
+          </Stack>
+        );
+      },
+    },
+    {
+      name: "Brand",
+      key: "brand",
+      component: (item) => {
+        return (
+          <Typography
+            sx={{
+              fontSize: "14px",
+              fontWeight: item?.brandUrl ? 600 : 400,
+              cursor: "pointer",
+            }}
+            onClick={() => gotoBrand(item, "other")}
+          >
+            {item?.brand}
+          </Typography>
+        );
+      },
+    },
+    {
+      name: "Owner",
+      key: "owner",
+      component: (item) => {
+        return (
+          <Typography
+            sx={{
+              fontSize: "14px",
+              fontWeight: item?.eventUrl ? 600 : 400,
+              cursor: "pointer",
+            }}
+          >
+            {item?.owner}
+          </Typography>
+        );
+      },
+    },
+    {
+      name: "Event",
+      key: "event",
+      component: (item) => {
+        return (
+          <Typography
+            sx={{
+              fontSize: "14px",
+              fontWeight: item?.eventUrl ? 600 : 400,
+              cursor: "pointer",
+            }}
+          >
+            {item?.event}
+          </Typography>
+        );
+      },
+    },
+    {
+      name: "Starting",
+      key: "starting",
+    },
+    {
+      name: "Ending",
+      key: "ending",
+    },
+    { name: "Lease Amount", key: "lease" },
+    { name: "Status", key: "status" },
+    {
+      name: "Action",
+      key: "action",
+      component: (item) => {
+        return (
+          <Box
+            sx={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
+            <Button
+              onClick={() => {
+                handleAction(item);
+              }}
+              sx={{
+                minWidth: "56px",
+                maxHeight: "26px",
+                fontSize: "14px",
+                fontWeight: "600",
+                textTransform: "none",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                color: "#fff !important",
+                opacity: item?.action === "Verify 0/2" ? "0.7" : 1,
+              }}
+              disabled={item?.action === "Verify 0/2"}
+            >
+              {item?.action}
+            </Button>
+          </Box>
+        );
+      },
+    },
+  ];
+};
+
+export { mySpaceColumns, leasingSpaceColumns, likedSpaceColumns, tenantSpaceColumns };

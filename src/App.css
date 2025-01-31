@@ -539,6 +539,22 @@ a:hover{
 
 /* Typing indicator styles */
 
+.dot-loader {
+  font-size: 40px;
+  letter-spacing: 4px;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0% { opacity: 0.2; }
+  50% { opacity: 1; }
+  100% { opacity: 0.2; }
+}
+
+.add_filter {
+  display: none !important;
+}
+
 
 /* Media Query Starts */
 @media screen and (max-width:550px) {
@@ -585,9 +601,9 @@ a:hover{
 }
 
 
-@media screen and (min-width:769px) and (max-width:950px) {
+@media screen and (max-width:950px) {
   .header .nav-links2 {
-    column-gap: 20px;
+    column-gap: 10px;
     margin-right: 20px;
   }
 }
@@ -597,6 +613,10 @@ a:hover{
   .search-bar,
   .text-icon {
     display: none;
+  }
+
+  .add_filter {
+    display: block !important;
   }
 }
 
@@ -665,3 +685,18 @@ a:hover{
 }
 
 /* Media Query Ends */
+
+@media screen and (max-width:600px) {
+  .fc .fc-toolbar.fc-header-toolbar {
+    flex-direction: column !important;
+  }
+
+  .fc-scrollgrid-section-body td {
+    height: 70px;
+  }
+
+  .fc-timeGridWeek-view .fc-col-header .fc-day div a div {
+    width: 100%;
+    overflow: hidden;
+  }
+}

@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Box } from '@mui/material';
-import { mapMarker } from '../assets';
 
-const MapDisplay = React.memo(({ locations }) => {
+const MapDisplay = React.memo(({ locations, marker }) => {
   const mapRef = useRef(null);
   const [map, setMap] = useState(null);
   const markersRef = useRef([]); 
@@ -18,13 +17,13 @@ const MapDisplay = React.memo(({ locations }) => {
   }, []);
 
   useEffect(() => {
-    if (map) {
+    if (map && locations && locations.length > 0) {
       // Clear previous markers to prevent duplication
       markersRef.current.forEach((marker) => marker.setMap(null));
       markersRef.current = [];
 
       const customIcon = {
-        url: mapMarker,
+        url: marker,
         scaledSize: new window.google.maps.Size(32, 32),
         anchor: new window.google.maps.Point(16, 32),
       };
@@ -41,17 +40,19 @@ const MapDisplay = React.memo(({ locations }) => {
       });
 
       // Optionally fit map to show all markers
-      if (locations.length > 0) {
-        const bounds = new window.google.maps.LatLngBounds();
-        locations.forEach((loc) => bounds.extend({ lat: loc.lat, lng: loc.long }));
-        map.fitBounds(bounds);
-      }
+      const bounds = new window.google.maps.LatLngBounds();
+      locations.forEach((loc) => bounds.extend({ lat: loc.lat, lng: loc.long }));
+      map.fitBounds(bounds);
     }
-  }, [locations]);
+  }, [map, locations]);
 
   return (
-    <Box sx={{ height: '100%', width: '100%' }} ref={mapRef} />
+    <Box sx={{ height: '400px', width: '100%' }} ref={mapRef} />
   );
 });
 
-export default MapDisplay;
+const MapWithKey = ({ locations, marker }) => (
+  <MapDisplay key={JSON.stringify(locations)} locations={locations} marker={marker} />
+);
+
+export default MapWithKey;

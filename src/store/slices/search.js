@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   skip: true,
   parameters: {
-    entity: "Select Filter",
+    entity: "",
     name: "",
     locaion: "",
     long: "",
@@ -12,14 +12,15 @@ const initialState = {
     additional: "",
     categoryNames: "",
   },
-  allFilterCategories:[]
+  allFilterCategories: [],
+  allCategoriesNotSearch: [],
 };
 
 const slice = createSlice({
   name: "search",
   initialState,
   reducers: {
-    setAllFilterCategories:(state,action) => {
+    setAllFilterCategories: (state, action) => {
       state.allFilterCategories = action.payload;
     },
     setEntity: (state, action) => {
@@ -31,7 +32,7 @@ const slice = createSlice({
     setLocation: (state, { payload }) => {
       state.parameters.long = payload.long;
       state.parameters.lat = payload.lat;
-      state.parameters.locaion = payload.locaion;
+      // state.parameters.locaion = payload.locaion;
     },
     setRadius: (state, action) => {
       state.parameters.radius = action.payload;
@@ -47,7 +48,7 @@ const slice = createSlice({
     },
     emptyFilters: (state) => {
       state.parameters = {
-        entity: "Select Filter",
+        entity: "",
         name: "",
         locaion: "",
         long: "",
@@ -56,6 +57,12 @@ const slice = createSlice({
         additional: "",
         categoryNames: "",
       };
+    },
+    setAllCategoriesNotSearch: (state, action) => {
+      state.allCategoriesNotSearch = action.payload;
+    },
+    emptyCategoryNames: (state) => {
+      state.parameters.categoryNames = "";
     },
   },
 });
@@ -69,7 +76,9 @@ export const {
   setCategoryNames,
   setSkip,
   setRadius,
-  emptyFilters
+  emptyFilters,
+  setAllCategoriesNotSearch,
+  emptyCategoryNames,
 } = slice.actions;
 
 export default slice.reducer;

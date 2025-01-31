@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Box, Button, Drawer, Stack, Typography, useTheme } from "@mui/material";
+import FilterListIcon from '@mui/icons-material/FilterList';
 import {
   brand,
   brandHover,
@@ -17,23 +18,30 @@ import {
 } from "../assets";
 import { BadgeComp, SearchBar } from "../components";
 import { addIcon, chatIcon, bellIcon } from "../assets";
-import { useNavigate } from "react-router-dom";
-import { getCookie, removeActiveNotifications, useClickOutside } from "../utils";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  getCookie,
+  removeActiveNotifications,
+  removeNewInquiry,
+  useClickOutside,
+} from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { logout as logoutFunc } from "../store/slices/auth";
 import { removeMychat } from "../store/slices/chat";
 import Notification from "../components/Notification";
 import Filters from "../components/Filters";
-import { emptyNotification } from "../store/slices/notification";
+import { emptyGoToMessage, emptyNotification, setFromNotification } from "../store/slices/notification";
 
 const Header = ({ isLogin }) => {
-  const getRequestCount = getCookie("newRequest") || 0;
+  const getInquiryCount = getCookie("newInquiry") || 0;
+  const getNotificationCount = getCookie("newNotification") || 0;
 
-  const { count } = useSelector((state) => state.notification);
+  const { count, countInquiry } = useSelector((state) => state.notification);
   const userData = useSelector((state) => state.auth);
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { pathname } = useLocation();
   const addRef = useRef();
   const profileRef = useRef();
   const notificationRef = useRef();
@@ -65,14 +73,36 @@ const Header = ({ isLogin }) => {
   };
 
   const iconClick = (type) => {
-    removeActiveNotifications(dispatch)
-
     if (type === "chat") {
       navigate("/message");
+      removeNewInquiry(dispatch);
     } else {
+      removeActiveNotifications(dispatch);
       setShowNotification(true);
     }
   };
+
+    useEffect(() => {
+      const sidebarItems = document.querySelectorAll(".sidebar-item");
+
+      sidebarItems.forEach((item) => {
+        item.addEventListener("click", handleClick);
+      });
+
+      return () => {
+        sidebarItems.forEach((item) => {
+          item.removeEventListener("click", handleClick);
+        });
+      };
+    }, [pathname]);
+
+    const handleClick = (event) => {
+      const clickedItemId = event.target.id;
+      if (clickedItemId !== "Messages") {
+        dispatch(emptyGoToMessage());
+        dispatch(setFromNotification(false));
+      }
+    };
 
   const addPopuptabs = [
     {
@@ -119,7 +149,7 @@ const Header = ({ isLogin }) => {
           display: open ? "block" : "none",
           position: "absolute",
           top: "58px",
-          right: title ? "210px" : 0,
+          right: title ? { xs: "120px", sm: "210px" } : 0,
           border: "1px solid #D1DBD7",
           background: "#fff",
           borderRadius: "0px 0px 5px 5px",
@@ -206,6 +236,25 @@ const Header = ({ isLogin }) => {
           )}
           {isLogin ? (
             <ul style={{ position: "relative" }} className="nav-links2">
+              <li className="add_filter">
+                <Button
+                  sx={{
+                    backgroundColor: "rgb(0, 20, 28, 0.4)",
+                    width: "32px",
+                    height: "32px",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                    display: "flex",
+                    position: "relative",
+                    minWidth: "auto",
+                  }}
+                >
+                  <FilterListIcon onClick={() => handleFilterDrawer()} />
+                </Button>
+              </li>
+
               <li ref={addRef}>
                 <BadgeComp
                   onClick={() => setAddPopup(true)}
@@ -214,12 +263,13 @@ const Header = ({ isLogin }) => {
                 />
                 <Popup open={addPopup} title="Add New:" data={addPopuptabs} />
               </li>
+
               <li>
                 <BadgeComp
                   onClick={() => iconClick("chat")}
                   imageSrc={chatIcon}
                   bg={theme.palette.error.danger}
-                  count={count || getRequestCount}
+                  count={countInquiry || getInquiryCount}
                 />
               </li>
               <li ref={notificationRef}>
@@ -227,7 +277,7 @@ const Header = ({ isLogin }) => {
                   onClick={() => iconClick("bell")}
                   imageSrc={bellIcon}
                   bg={theme.palette.error.danger}
-                  count={count || getRequestCount}
+                  count={count || getNotificationCount}
                 />
                 <Notification
                   open={showNotification}
