@@ -21,6 +21,7 @@ import {
 import DynamicPaginationSwiper from "./Slider.jsx";
 import { useNavigate } from "react-router-dom";
 import { useAddInFavouritesMutation } from "../services/favourite.js";
+import { toast } from "react-toastify";
 
 const ActivityCard = ({
   fullItem = {},
@@ -53,7 +54,7 @@ const ActivityCard = ({
   useEffect(() => {
     setLikePost(isFavourite);
   },[isFavourite])
-  const [likeFunc] = useAddInFavouritesMutation();
+  const [likeFunc, { isLoading }] = useAddInFavouritesMutation();
   return (
     <Box
       sx={{
@@ -654,11 +655,28 @@ const ActivityCard = ({
         >
           <img
             onClick={() => {
-              likeFunc({ entityId: activityId, entityType: activity?.toLocaleUpperCase() })
-              setLikePost(!likePost)
+              if (!isLoading) {
+                likeFunc({
+                  entityId: activityId,
+                  entityType: activity?.toLocaleUpperCase(),
+                }).then((res) => {
+                  res?.data?.status &&
+                    toast.success(
+                      res?.data?.message
+                        .replace("Entity", "Post")
+                        .replace(" successfully", "")
+                    );
+                  setLikePost(!likePost);
+                });
+              }
             }}
-            style={{ cursor: "pointer" }}
+            style={{
+              cursor: isLoading ? "not-allowed" : "pointer",
+              animation: isLoading ? "pulse 1s infinite" : "none",
+              opacity: isLoading ? 0.5 : 1,
+            }}
             src={likePost ? liked : like}
+            className={`like-icon ${isLoading ? "loading" : ""}`}
             alt="Like Icon"
           />
           {activity !== "space" && <img src={comment} alt="Comment Icon" />}

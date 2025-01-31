@@ -6,9 +6,10 @@ import MapModal from "../MapModal";
 import { useSelector } from "react-redux";
 import { useLocation, useParams } from "react-router-dom";
 import { useAddInFavouritesMutation } from "../../services/favourite";
+import { toast } from "react-toastify";
 
 const Details = ({ spaceInquire, details, myProfile }) => {
-  const [likeFunc] = useAddInFavouritesMutation();
+  const [likeFunc, { isLoading }] = useAddInFavouritesMutation();
   const [likePost, setLikePost] = useState(myProfile?.isFavourite);
   const [openMapModal, setMapModal] = useState(false);
   const { events } = useSelector((state) => state?.event);
@@ -293,14 +294,32 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           gap={1}
         >
           <img
-            style={{ cursor: "pointer", padding: "5px" }}
+            style={{
+              padding: "5px",
+              cursor: isLoading ? "not-allowed" : "pointer",
+              animation: isLoading ? "pulse 1s infinite" : "none",
+              opacity: isLoading ? 0.5 : 1,
+            }}
             width={32}
             height={32}
             onClick={() => {
-              likeFunc({ entityId: myProfile?.id, entityType: myProfile?.type?.toLocaleUpperCase() })
-              setLikePost(!likePost)
+              if (!isLoading) {
+                likeFunc({
+                  entityId: myProfile?.id,
+                  entityType: myProfile?.type?.toLocaleUpperCase(),
+                }).then((res) => {
+                  res?.data?.status &&
+                    toast.success(
+                      res?.data?.message
+                        .replace("Entity", "Post")
+                        .replace(" successfully", "")
+                    );
+                  setLikePost(!likePost);
+                });
+              }
             }}
             src={likePost ? liked : like}
+            className={`like-icon ${isLoading ? "loading" : ""}`}
             alt="like"
           />
           {myProfile.type !== "space" && !myProfile?.owned && (
@@ -479,14 +498,32 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           gap={1}
         >
           <img
-            style={{ cursor: "pointer", padding: "5px" }}
+            style={{
+              padding: "5px",
+              cursor: isLoading ? "not-allowed" : "pointer",
+              animation: isLoading ? "pulse 1s infinite" : "none",
+              opacity: isLoading ? 0.5 : 1,
+            }}
             width={32}
             height={32}
             onClick={() => {
-              likeFunc({ entityId: myProfile?.id, entityType: myProfile?.type?.toLocaleUpperCase() })
-              setLikePost(!likePost)
+              if (!isLoading) {
+                likeFunc({
+                  entityId: myProfile?.id,
+                  entityType: myProfile?.type?.toLocaleUpperCase(),
+                }).then((res) => {
+                  res?.data?.status &&
+                    toast.success(
+                      res?.data?.message
+                        .replace("Entity", "Post")
+                        .replace(" successfully", "")
+                    );
+                  setLikePost(!likePost);
+                });
+              }
             }}
             src={likePost ? liked : like}
+            className={`like-icon ${isLoading ? "loading" : ""}`}
             alt="like"
           />
           {myProfile.type !== "space" && !myProfile?.owned && (
