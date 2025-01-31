@@ -874,7 +874,7 @@ const ManageInquiry = ({
                   style={{
                     width: "100%",
                     height: "100%",
-                    objectFit: "cover",
+                    objectFit: "contain",
                   }}
                 />
               ) : imageWithPreview ? (
@@ -884,7 +884,7 @@ const ManageInquiry = ({
                   style={{
                     width: "100%",
                     height: "100%",
-                    objectFit: "cover",
+                    objectFit: "contain",
                   }}
                 />
               ) : (
@@ -953,7 +953,7 @@ const ManageInquiry = ({
                       style={{
                         width: "100%",
                         height: "100%",
-                        objectFit: "cover",
+                        objectFit: "contain",
                       }}
                     />
                   ) : imageWithPreview ? (
@@ -963,7 +963,7 @@ const ManageInquiry = ({
                       style={{
                         width: "100%",
                         height: "100%",
-                        objectFit: "cover",
+                        objectFit: "contain",
                       }}
                     />
                   ) : (

@@ -35,9 +35,13 @@ import {
   getAllMyGroups,
   getChatDetails,
   getMessages,
+  getTotalPages,
   isActiveMembers,
 } from "../../../store/slices/chat.js";
-import { emptyGoToMessage, setFromNotification } from "../../../store/slices/notification.js";
+import {
+  emptyGoToMessage,
+  setFromNotification,
+} from "../../../store/slices/notification.js";
 
 import { useSocket } from "../../../context/SocketContext.jsx";
 
@@ -77,14 +81,21 @@ const Message = () => {
     allChatIds,
     allGroups,
     hasMessages,
+    totalPagesOfMessage,
   } = useSelector((state) => state.chat);
   const { user } = useSelector((state) => state.auth);
-  const { gotToMessage, fromNotification } = useSelector((state) => state.notification);
+  const { gotToMessage, fromNotification } = useSelector(
+    (state) => state.notification
+  );
 
   const dispatch = useDispatch();
 
   const [isNewIdsForChatDetails, setIsNewIdsForChatDetails] = useState([]);
   const [isNewIdsForAllMessages, setIsNewIdsForAllMessages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [inViewLoader, setInViewLoader] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const pageSize = 10;
 
   const filterNewIds = (allIds, existingIds) =>
     allIds?.filter((id) => !existingIds.includes(id));
@@ -103,6 +114,7 @@ const Message = () => {
     data: messageData,
     isSuccess,
     isFetching: isFetchingMessage,
+    refetch: refetchMessages,
   } = useGetChatsForContactsQuery(
     { chats: isNewIdsForAllMessages },
     { refetchOnMountOrArgChange: true, refetchOnFocus: true },
@@ -135,17 +147,33 @@ const Message = () => {
       const filteredMessages = messageData
         .map((message) => message?.messages)
         .flat();
+
+      const filteredMessagesTotalPage = messageData.map((message) => {
+        return {
+          totalPages: message?.totalPages,
+          chat: message?.messages[0]?.chat,
+        };
+      });
+
       // Get existing message IDs from the current state
       const existingMessageIds = messages.map((message) => message.chat);
+      const existingPageIds = totalPagesOfMessage.map(
+        (message) => message.chat
+      );
       // Filter new messages that are not already in the current state
       const newMessages = filteredMessages.filter(
         (message) => !existingMessageIds.includes(message.chat)
       );
+      const newTotalPage = filteredMessagesTotalPage.filter(
+        (message) => !existingPageIds.includes(message.chat)
+      );
       // Dispatch only new messages to add them to the state
       if (newMessages.length > 0) {
         dispatch(getMessages([...messages, ...newMessages]));
+        dispatch(getTotalPages([...totalPagesOfMessage, ...newTotalPage]));
       } else {
         dispatch(getMessages(filteredMessages));
+        dispatch(getTotalPages(filteredMessagesTotalPage));
       }
     }
   }, [messageData, isSuccess]);
@@ -595,6 +623,13 @@ const Message = () => {
                       isTypingUser={isTypingUser}
                       onlineUsers={onlineUsers}
                       setToShare={setToShare}
+                      page={page}
+                      setPage={setPage}
+                      refetchMessages={refetchMessages}
+                      inViewLoader={inViewLoader}
+                      setInViewLoader={setInViewLoader}
+                      hasMore={hasMore}
+                      setHasMore={setHasMore}
                     />
                   ) : null}
                 </>

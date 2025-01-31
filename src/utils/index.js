@@ -204,21 +204,21 @@ export const convertToSameKeys = (
       selectedGroup?.chatGroup?.senderBrand?.user?.id || tenancyDetails?.id,
     host:
       selectedGroup?.chatGroup?.receiverbrandName ||
-      tenancyDetails?.contractDetails?.hostDetails?.host,
-    space:
-      selectedGroup?.group?.parentName ||
-      tenancyDetails?.contractDetails?.hostDetails?.space,
+      tenancyDetails?.space?.brand?.brandName,
+    space: selectedGroup?.group?.parentName || tenancyDetails?.space?.spaceName,
     spaceOwner:
       selectedGroup?.group?.ownerDetails?.name ||
-      tenancyDetails?.contractDetails?.hostDetails?.spaceOwner,
+      tenancyDetails?.space?.user?.name,
     tenant:
       selectedGroup?.chatGroup?.senderBrand?.brandName ||
-      tenancyDetails?.contractDetails?.tenantDetails?.tenant,
+      tenancyDetails?.brand?.brandName,
     tenantOwner:
       selectedGroup?.chatGroup?.senderBrand?.user?.name ||
       tenancyDetails?.contractDetails?.tenantDetails?.tenantOwner,
     leaseInfo:
-      selectedGroup?.chatGroup?.messages[0]?.content ||
+      (selectedGroup?.chatGroup?.inquiryDetails
+        ? selectedGroup?.chatGroup?.inquiryDetails?.message
+        : selectedGroup?.chatGroup?.messages[0]?.content) ||
       tenancyDetails?.contractDetails?.leaseInfo,
     spaceImage:
       selectedGroup?.group?.parentImage || tenancyDetails?.space?.spaceImage,
@@ -253,11 +253,19 @@ export const spacesAction = (
 
     case "Sign":
     case "Details":
-      const findClickedLeaseDetails = leaseSpace?.find(
-        (lease) => lease.id === item.id
-      );
-      setTenantDetails(findClickedLeaseDetails);
-      setShowIinquiryModal(true);
+      if (item?.tenant) {
+        const findClickedTenantDetails = tenantSpace?.find(
+          (tenant) => tenant.id === item.id
+        );
+        setTenantDetails(findClickedTenantDetails);
+        setShowIinquiryModal(true);
+      } else {
+        const findClickedLeaseDetails = leaseSpace?.find(
+          (lease) => lease.id === item.id
+        );
+        setTenantDetails(findClickedLeaseDetails);
+        setShowIinquiryModal(true);
+      }
       break;
 
     case "Message":
@@ -267,7 +275,7 @@ export const spacesAction = (
         chatId: navDetails.chatId,
       };
       dispatch(setGoToMessage(navigateData));
-      
+
       navigate("/message");
       break;
 
@@ -427,6 +435,7 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
           id: item?._id,
           chatId: matchingItem?._id,
           members: matchingItem?.members,
+          inquiryDetails: item?.inquiryDetails ? item?.inquiryDetails : null,
           childName,
           childImage,
           receiverbrandName,

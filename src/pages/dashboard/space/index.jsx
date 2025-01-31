@@ -10,13 +10,13 @@ import { useEffect, useState } from "react";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { spaceTableData } from "../../../constant";
 import { addIcon, like, spaceIconLight } from "../../../assets";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useGetAllSpaceQuery } from "../../../services/space";
 import { toast } from "react-toastify";
 import ReusableModal from "../../../components/Modal";
 import AfterSignature from "../../../components/AfterSignature";
 import ManageInquiry from "../../../components/ManageInquiry";
-import { convertToSameKeys, spacesAction } from "../../../utils";
+import { convertToSameKeys, getCookie, setCookie, spacesAction } from "../../../utils";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setHasPaymentDone,
@@ -24,6 +24,12 @@ import {
   setTabForNotification,
 } from "../../../store/slices/space";
 import PaymentConfirmation from "../../../components/PaymentConfirmation";
+import { useSocket } from "../../../context/SocketContext";
+import {
+  getNotification,
+  getNotificationCount,
+} from "../../../store/slices/notification";
+import { useGetNotificationDataQuery } from "../../../services/notifications";
 import {
   useAddInFavouritesMutation,
   useGetFavouritesQuery,
@@ -50,11 +56,15 @@ const tenantPaymentText =
   "By clicking this you verify that Tenant has paid the lease amount for Space";
 
 const Space = () => {
+  const { emitEvent, addListener, removeListener } = useSocket();
+
   const dispatch = useDispatch();
+  const { pathname } = useLocation();
 
   const { hasPaymentDone, navigationActiveTab } = useSelector(
     (state) => state.space
   );
+  const { activeTabForNotif } = useSelector((state) => state.space);
 
   const tabs = [
     {
@@ -98,6 +108,21 @@ const Space = () => {
     }
   }, [navigationActiveTab]);
 
+  const {
+    data: notificationData,
+    isSuccess: notificationSuccess,
+    refetch: notificationRefetch,
+  } = useGetNotificationDataQuery(undefined, { skip: pathname !== "/space" });
+
+  useEffect(() => {
+    if (
+      notificationData?.data &&
+      notificationData?.data?.notifications?.length > 0
+    ) {
+      dispatch(getNotification(notificationData?.data?.notifications));
+    }
+  }, [notificationSuccess, notificationData]);
+
   const { data, isError, isLoading, isSuccess, error, isFetching, refetch } =
     useGetAllSpaceQuery(
       { page, pageSize: 7, tab: tabsForApi[activeTab] },
@@ -108,6 +133,55 @@ const Space = () => {
       }
     );
 
+  const handleNotificationUpdate = (cookieName, action) => {
+    const currentValue = getCookie(cookieName);
+    const newCount = currentValue ? parseInt(currentValue) + 1 : 1;
+
+    setCookie(cookieName, newCount);
+    dispatch(action(newCount));
+  };
+
+  useEffect(() => {
+    addListener("NEW_NOTIFICATION", (data) => {
+      // console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
+
+      if (pathname === "/space") {
+        dispatch(setHasPaymentDone(true));
+      }
+
+      handleNotificationUpdate("newNotification", getNotificationCount);
+      let redName = data.redirect;
+
+      if (pathname === "/space") {
+        if (data.redirect === "Lease" && activeTabForNotif !== "Lease") {
+          redName = "Lease";
+        } else if (
+          data.redirect === "Tenant" &&
+          activeTabForNotif !== "Tenant"
+        ) {
+          redName = "Tenant";
+        }
+      }
+
+
+
+      toast.info(data?.name, {
+        position: "bottom-right",
+        onClick: () => {
+          dispatch(setRedirectTab(redName));
+          if (pathname !== "/space") {
+            navigate("/space");
+          }
+        },
+      });
+
+      notificationRefetch();
+    });
+
+    return () => {
+      removeListener("NEW_NOTIFICATION");
+    };
+  }, [addListener, removeListener, emitEvent, activeTab, data?.data]);
   const {
     data: data2,
     isError: isError2,
@@ -255,9 +329,10 @@ const Space = () => {
             : space?.status === "PendingforApproval"
             ? "Verify 1/2"
             : space?.status === "Active"
-            ? "Message"
+            ? "Details"
             : "Review",
         spaceStatus: space?.status,
+        tenant: true,
       };
     });
   };

@@ -94,6 +94,16 @@ const SpaceInquireModal = ({
   });
   const { user } = useSelector((state) => state.auth);
 
+  useEffect(() => {
+    if (spaceId && brandId) {
+      setFinalMessage((prev) => ({
+        ...prev,
+        receiverSpaceId: spaceId ? spaceId : "",
+        receiverBrandId: brandId ? brandId : "",
+      }));
+    }
+  }, [spaceId, brandId]);
+
   const { refetch } = useGetMyChatsQuery(undefined, { skip: !user });
 
   useEffect(() => {

@@ -9,6 +9,7 @@ const initialState = {
   allChatIds: [],
   allGroups: [],
   hasMessages: "",
+  totalPagesOfMessage: [],
 };
 
 const slice = createSlice({
@@ -39,10 +40,14 @@ const slice = createSlice({
     getMessages(state, action) {
       state.messages = action.payload;
     },
+    getTotalPages(state, action) {
+      state.totalPagesOfMessage = action.payload;
+    },
     removeMychat(state) {
       state.myChat = [];
       state.chatDetails = [];
       state.messages = [];
+      state.totalPagesOfMessage = [];
       state.allChatIds = [];
     },
     isUserHasChat(state, action) {
@@ -87,6 +92,7 @@ export const {
   getAllMyGroups,
   filterAllMyGroups,
   changeMessageType,
+  getTotalPages
 } = slice.actions;
 
 export default slice.reducer;

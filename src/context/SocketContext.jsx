@@ -69,7 +69,7 @@ import {
 
 import { getCookie, setCookie } from "../utils";
 
-import { setHasPaymentDone, setRedirectTab } from "../store/slices/space";
+// import { setHasPaymentDone, setRedirectTab } from "../store/slices/space";
 
 const SocketContext = createContext(null);
 
@@ -158,39 +158,39 @@ const SocketProvider = ({ children }) => {
         refetch();
       });
 
-      socket.current.on("NEW_NOTIFICATION", (data) => {
-        // console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
+      // socket.current.on("NEW_NOTIFICATION", (data) => {
+      //   // console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
 
-        if (pathname === "/space") {
-          dispatch(setHasPaymentDone(true));
-        }
+      //   if (pathname === "/space") {
+      //     dispatch(setHasPaymentDone(true));
+      //   }
 
-        handleNotificationUpdate("newNotification", getNotificationCount);
-        let redName = data.redirect;
+      //   handleNotificationUpdate("newNotification", getNotificationCount);
+      //   let redName = data.redirect;
 
-        if (pathname === "/space") {
-          if (data.redirect === "Lease" && activeTabForNotif !== "Lease") {
-            redName = "Lease";
-          } else if (
-            data.redirect === "Tenant" &&
-            activeTabForNotif !== "Tenant"
-          ) {
-            redName = "Tenant";
-          }
-        }
+      //   if (pathname === "/space") {
+      //     if (data.redirect === "Lease" && activeTabForNotif !== "Lease") {
+      //       redName = "Lease";
+      //     } else if (
+      //       data.redirect === "Tenant" &&
+      //       activeTabForNotif !== "Tenant"
+      //     ) {
+      //       redName = "Tenant";
+      //     }
+      //   }
 
-        toast.info(data?.name, {
-          position: "bottom-right",
-          onClick: () => {
-            dispatch(setRedirectTab(redName));
-            if (pathname !== "/space") {
-              navigate("/space");
-            }
-          },
-        });
+      //   toast.info(data?.name, {
+      //     position: "bottom-right",
+      //     onClick: () => {
+      //       dispatch(setRedirectTab(redName));
+      //       if (pathname !== "/space") {
+      //         navigate("/space");
+      //       }
+      //     },
+      //   });
 
-        notificationRefetch();
-      });
+      //   notificationRefetch();
+      // });
 
       socket.current.on("NEW_REQUEST", (data) => {
         // console.log("NEW_REQUEST EVENT TRIGGERED.");
@@ -205,12 +205,24 @@ const SocketProvider = ({ children }) => {
           chatId: data.chatId,
         };
 
+        const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
+
+        if (!getUnreadChatIds) {
+          setCookie("unreadChatIds", JSON.stringify([data.chatId]));
+          return;
+        }
+
+        if (!getUnreadChatIds.includes(data.chatId)) {
+          getUnreadChatIds.push(data.chatId);
+          setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
+        }
+
         toast.info(data?.name, {
           position: "bottom-right",
           onClick: () => {
             dispatch(setGoToMessage(navigateData));
             dispatch(setFromNotification(true));
-            
+
             if (pathname !== "/message") {
               navigate("/message");
             }

@@ -37,22 +37,9 @@ export const chatApi = api.injectEndpoints({
       },
     }),
     getAllChatDetails: builder.query({
-      async queryFn(
-        { chats, page, pageSize },
-        _queryApi,
-        _extraOptions,
-        fetchWithBQ
-      ) {
+      async queryFn({ chats }, _queryApi, _extraOptions, fetchWithBQ) {
         const promises = chats.map((id) => {
-          const queryParams = new URLSearchParams();
-          if (pageSize) queryParams.append("pageSize", pageSize);
-          if (page) queryParams.append("page", page);
-
-          const queryString = queryParams.toString()
-            ? `?${queryParams.toString()}`
-            : "";
-
-          return fetchWithBQ(`/chat/${id}${queryString}`);
+          return fetchWithBQ(`/chat/${id}`);
         });
 
         try {
