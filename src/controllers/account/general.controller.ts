@@ -157,21 +157,26 @@ export class GeneralController {
       }
 
       if (lat && long) {
+        const newlat = parseFloat(lat as string);
+        const newlong = parseFloat(long as string);
+        const searchRadius = parseFloat(radius as string); // Ensure radius is float
+    
         brandQuery.andWhere(
-          new Brackets((qb) => {
-            qb.where(
-              `(${earthRadius} * acos(
-          cos(radians(:lat)) *
-          cos(radians(CAST(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.lat')) AS DECIMAL(10, 6)))) *
-          cos(radians(CAST(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.long')) AS DECIMAL(10, 6))) - radians(:long)) +
-          sin(radians(:lat)) *
-          sin(radians(CAST(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.lat')) AS DECIMAL(10, 6))))
-        )) <= :radius`,
-              { lat, long, radius }
-            );
-          })
+            new Brackets((qb) => {
+                qb.where(
+                    `(${earthRadius} * acos(
+                        cos(radians(:lat)) *
+                        cos(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.lat')) * 1)) *
+                        cos(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.long')) * 1) - radians(:long)) +
+                        sin(radians(:lat)) *
+                        sin(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.lat')) * 1))
+                    )) <= :radius`,
+                    { lat: newlat, long: newlong, radius: searchRadius }
+                );
+            })
         );
-      }
+    }
+    
 
       if (additional) {
         brandQuery.andWhere(
