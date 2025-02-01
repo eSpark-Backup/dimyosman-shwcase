@@ -169,7 +169,6 @@ const EditEvent = () => {
                 let selectedSpace = spaceData?.data?.availableSpaces?.find(
                     (item) => item?.id === eventData?.space
                 );
-                console.log(selectedSpace)
 
                 if (selectedSpace) {
 

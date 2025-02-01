@@ -196,7 +196,7 @@ const ImgInputWithCategories = ({
                             >
                                 {categories?.length > 0 ? (
                                     categories?.map((cat, index) => (
-                                        <Box key={cat.name} display="flex" alignItems="center" marginRight={2} columnGap={1} sx={{ width: { xs: "100%", sm: "45%", lg: "23%" } }}>
+                                        <Box key={index} display="flex" alignItems="center" marginRight={2} columnGap={1} sx={{ width: { xs: "100%", sm: "45%", lg: "23%" } }}>
                                             <CheckBox checked={cat?.selected} readOnly={activity === "brand" ? true : false} onChange={() => HandleCategoryChange(cat?.id)} />
                                             <Typography sx={{ fontSize: "20px", fontWeight: "300", color: theme.palette.primary.main }}>{cat?.name}</Typography>
                                         </Box>
