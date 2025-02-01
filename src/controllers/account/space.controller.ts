@@ -109,6 +109,7 @@ export class SpaceController {
         .andWhere("leaseSpace.status = :status", {
           status: LeaseStatus.ACTIVE,
         })
+        .andWhere("leaseSpace.isUsed", { isUsed: false })
         .skip(Number(skipNumber) || 0)
         .take(Number(takeNumber) || 10)
         .getManyAndCount();

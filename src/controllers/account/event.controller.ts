@@ -1,5 +1,5 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { ActionType, Brand, Events, RSVP, SavedEntity, SavedEntityType, Spaces, User } from "../../entity";
+import { ActionType, Brand, Events, LeaseSpace, RSVP, SavedEntity, SavedEntityType, Spaces, User } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
 import { handleResponse, logger, parseCoverImages } from "../../utils";
@@ -21,7 +21,8 @@ export class EventController {
     private brandRepo: Repository<Brand>,
     private eventRepo: Repository<Events>,
     private rsvpEventRepo: Repository<RSVP>,
-    private savedEntity: Repository<SavedEntity>
+    private savedEntity: Repository<SavedEntity>,
+    private leaseSpaceRepo:Repository<LeaseSpace>
   ) {}
 
   async createEvent(
@@ -55,14 +56,25 @@ export class EventController {
         spaceId,
         eventDate,
         coverOrder,
+        leaseId
       } = req.body;
       const checkName = await this.eventRepo.findOne({ where: { eventName } });
+
       if (checkName) {
         throw new ApiError(
           "Event with this name already exists",
           HTTP_STATUS.BAD_REQUEST
         );
       }
+      if(leaseId){
+        const leaseSpace = await this.leaseSpaceRepo.findOne({ where: { id: leaseId } });
+        if (!leaseSpace) {
+          throw new ApiError("Lease Space not found", HTTP_STATUS.NOT_FOUND);
+        }
+        leaseSpace.isUsed = true;
+        await this.leaseSpaceRepo.save(leaseSpace);
+      }
+
       coverOrder = coverOrder || [];
       coverFiles = commonHelper.reorderCoverFiles(coverFiles, coverOrder);
       const coverFileObjects: IFileObject[] = coverFiles.map((file) =>

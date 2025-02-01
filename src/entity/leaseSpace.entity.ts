@@ -37,6 +37,9 @@ export class LeaseSpace extends BaseEntity {
   @JoinColumn({ name: "tenantId" })
   tenant: User;
 
+  @Column({ type: "boolean", nullable: true, default: false })
+  isUsed: boolean;
+
   @ManyToOne(() => User, (user) => user.id, { nullable: false })
   @JoinColumn({ name: "ownerId" })
   owner: User;

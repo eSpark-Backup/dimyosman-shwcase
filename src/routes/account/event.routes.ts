@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { EventValidation, SpaceValidation, validate } from "../../validations";
-import { Brand, Events, RSVP, SavedEntity, Spaces, User } from "../../entity";
+import { Brand, Events, LeaseSpace, RSVP, SavedEntity, Spaces, User } from "../../entity";
 import { AppDataSource } from "../../typeorm.config";
 import { EventController } from "../../controllers/account";
 import {
@@ -21,6 +21,7 @@ const brandRepository = AppDataSource.getRepository(Brand);
 const eventRepository = AppDataSource.getRepository(Events);
 const rsvpEventRepository = AppDataSource.getRepository(RSVP);
 const savedEntityRepository = AppDataSource.getRepository(SavedEntity);
+const leaseSpaceRepository = AppDataSource.getRepository(LeaseSpace);
 
 const eventController = new EventController(
   spaceRepository,
@@ -28,7 +29,8 @@ const eventController = new EventController(
   brandRepository,
   eventRepository,
   rsvpEventRepository,
-  savedEntityRepository
+  savedEntityRepository,
+  leaseSpaceRepository
 );
 
 /**
@@ -57,6 +59,10 @@ const eventController = new EventController(
  *               eventName:
  *                 type: string
  *                 description: Name of the event.
+ *               leaseId:
+ *                 type: string
+ *                 description: ID of Lease Space.
+ *                 required: false
  *               eventCategory:
  *                 type: array
  *                 items:

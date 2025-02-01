@@ -11,6 +11,7 @@ export class EventValidation {
         })
       )
       .required(),
+      leaseId: Joi.string().optional(),
     brandId: Joi.string().required(),
     spaceId: Joi.string().required(),
     eventDate: Joi.array()
