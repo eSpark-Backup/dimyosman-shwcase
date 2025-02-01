@@ -168,6 +168,10 @@ router.post(
  *               spaceId:
  *                 type: string
  *                 description: Id of the Space.
+ *               leaseId:
+ *                 type: string
+ *                 description: ID of Lease Space.
+ *                 required: false
  *               eventDate:
  *                 type: array
  *                 items:

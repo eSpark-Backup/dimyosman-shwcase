@@ -44,6 +44,7 @@ export class EventValidation {
         })
       )
       .optional(),
+    leaseId: Joi.string().optional(),
     coverOrder: Joi.array().items(Joi.string()).optional(),
     eventDate: Joi.array()
       .items(

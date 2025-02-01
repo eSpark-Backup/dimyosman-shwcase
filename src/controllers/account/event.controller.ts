@@ -170,12 +170,16 @@ export class EventController {
         spaceId,
         eventDate,
         coverKeys,
+        leaseId
       } = req.body;
+
+
 
       const space = await this.spaceRepo.findOne({ where: { id: spaceId } });
       if (!space) {
         throw new ApiError("Space not found", HTTP_STATUS.NOT_FOUND);
       }
+
 
       const coverFilesPath = path.join(process.cwd(), "uploads");
       const imageFilesPath = path.join(process.cwd(), "uploads");
@@ -205,6 +209,16 @@ export class EventController {
       const existingEvent = await this.eventRepo.findOne({ where: { id } });
       if (!existingEvent) {
         return next(res.status(404).json({ message: "Event not found" }));
+      }
+
+      
+      if(leaseId){
+        const leaseSpace = await this.leaseSpaceRepo.findOne({ where: { id: leaseId } });
+        if (!leaseSpace) {
+          throw new ApiError("Lease Space not found", HTTP_STATUS.NOT_FOUND);
+        }
+        leaseSpace.isUsed = true;
+        await this.leaseSpaceRepo.save(leaseSpace);
       }
       if (eventName) {
         const checkName = await this.eventRepo.findOne({
