@@ -62,9 +62,11 @@ export class SpaceController {
   ): Promise<void> {
     try {
       const userId = req.user.id;
-      const { page, pageSize,check } = req.query;
+      let { page, pageSize,check } = req.query;
       const skipNumber = Number(page);
       const takeNumber = Number(pageSize);
+
+   
 
       // Fetching spaces where the user is the space owner
       const [spaces, totalSpaces] = await this.spaceRepo
@@ -88,32 +90,35 @@ export class SpaceController {
         .getManyAndCount();
 
       // Fetching spaces leased by the user (tenant)
-      const [tenantSpaces, totalTenantSpaces] = await this.leaseSpaceRepo
-        .createQueryBuilder("leaseSpace")
-        .leftJoinAndSelect("leaseSpace.space", "space")
-        .leftJoinAndSelect("leaseSpace.tenant", "tenant")
-        .leftJoinAndSelect("space.brand", "brand")
-        .leftJoinAndSelect("space.user", "user")
-        .select([
-          "leaseSpace.id",
-          "leaseSpace.contractDetails",
-          "leaseSpace.isUsed",
-          "leaseSpace.status",
-          "tenant.id",
-          "space.id",
-          "space.spaceName",
-          "space.createdAt",
-          "brand.brandName",
-          "brand.location",
-        ])
-        .where("leaseSpace.isUsed = :isUsed", { isUsed: check })
-        .andWhere("tenant.id = :userId", { userId })
-        .andWhere("leaseSpace.status = :status", {
-          status: LeaseStatus.ACTIVE,
-        })
-        .skip(Number(skipNumber) || 0)
-        .take(Number(takeNumber) || 10)
-        .getManyAndCount();
+      const queryBuilder = this.leaseSpaceRepo
+      .createQueryBuilder("leaseSpace")
+      .leftJoinAndSelect("leaseSpace.space", "space")
+      .leftJoinAndSelect("leaseSpace.tenant", "tenant")
+      .leftJoinAndSelect("space.brand", "brand")
+      .leftJoinAndSelect("space.user", "user")
+      .select([
+        "leaseSpace.id",
+        "leaseSpace.contractDetails",
+        "leaseSpace.isUsed",
+        "leaseSpace.status",
+        "tenant.id",
+        "space.id",
+        "space.spaceName",
+        "space.createdAt",
+        "brand.brandName",
+        "brand.location",
+      ])
+      .andWhere("tenant.id = :userId", { userId })
+      .andWhere("leaseSpace.status = :status", { status: LeaseStatus.ACTIVE });
+    
+    if (check) {
+      queryBuilder.andWhere("leaseSpace.isUsed = :isUsed", { isUsed: false });
+    }
+    
+    const [tenantSpaces, totalTenantSpaces] = await queryBuilder
+      .skip(Number(skipNumber) || 0)
+      .take(Number(takeNumber) || 10)
+      .getManyAndCount();
 
       if (totalSpaces === 0 && totalTenantSpaces === 0) {
         throw new ApiError("No spaces found", HTTP_STATUS.BAD_REQUEST);
