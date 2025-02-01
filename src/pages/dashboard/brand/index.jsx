@@ -28,14 +28,17 @@ const Brand = () => {
     {
       label: "My Brands",
       icon: null,
+      error: "You don't currently own any brand. Would you like to add a new one?"
     },
     {
       label: "Following Brands",
       icon: null,
+      error: "You don't currently have following brand."
     },
     {
       label: "Saved Brands",
       icon: like,
+      error: "You don't currently have saved brand."
     },
   ];
   const [page, setPage] = useState(1);
@@ -244,10 +247,10 @@ const Brand = () => {
           >
             <Typography sx={{ fontWeight: 400 }} color="primary" variant="h5">
               {
-                "You don't currently own any brand. Would you like to add a new one?"
+                tabs[activeTab].error
               }
             </Typography>
-            <Button
+            {activeTab === 0 && <Button
               onClick={handleAdd}
               startIcon={
                 <img
@@ -277,7 +280,7 @@ const Brand = () => {
               }}
             >
               Add New
-            </Button>
+            </Button>}
           </Stack>
         )}
       </Card>

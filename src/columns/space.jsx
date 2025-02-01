@@ -353,7 +353,7 @@ const likedSpaceColumns = (likeLoading, gotoDetail, handleAction) => {
       component: (item) => {
         return (
           <LoadingButton
-            loading={likeLoading}
+            // loading={likeLoading}
             onClick={() => handleAction(item)}
             sx={{
               minWidth: "83px",

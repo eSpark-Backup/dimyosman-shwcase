@@ -12,6 +12,7 @@ const BrandDetails = () => {
   const params = useParams()
   const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({ page: 1, pageSize: 7, id: params?.id }, { refetchOnMountOrArgChange: true });
   const dispatch = useDispatch()
+  const { user } = useSelector((state) => state.auth)
 
   useEffect(() => {
     const fetchAddress = async () => {
@@ -29,7 +30,7 @@ const BrandDetails = () => {
           isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
           type: "brand",
-          owned: true,
+          owned: user?.id === data?.data?.user?.id,
           slides: data?.data?.coverImages,
           profilePic: data?.data?.brandImage,
           profileName: data?.data?.brandName,

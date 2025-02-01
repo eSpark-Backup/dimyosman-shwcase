@@ -151,7 +151,7 @@ const followingBrandColumns = (gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="brand-icon">
                   <img
-                    style={{ width: "100%" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover"  }}
                     src={item?.brandImg}
                     alt="brand-img"
                   />
@@ -237,7 +237,7 @@ const likedBrandColumns = (likeLoading, gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="brand-image">
                   <img
-                    style={{ width: "100%" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover"  }}
                     src={item?.brandImg}
                     alt="brand-img"
                   />
@@ -279,7 +279,7 @@ const likedBrandColumns = (likeLoading, gotoDetail, handleAction) => {
       component: (item) => {
         return (
           <LoadingButton
-            loading={likeLoading}
+            // loading={likeLoading}
             onClick={() => handleAction(item)}
             sx={{
               minWidth: "83px",

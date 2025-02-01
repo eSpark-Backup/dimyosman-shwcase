@@ -339,7 +339,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             alt="share"
           />
         </Stack>
-        {(myProfile.type === "space" && !myProfile?.owned) && (
+        {(!myProfile?.owned) && (
           <Button
             onClick={spaceInquire ? () => spaceInquire(myProfile?.id) : () => { }}
             sx={{
@@ -543,7 +543,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             alt="share"
           />
         </Stack>
-        {(myProfile.type === "space" && !myProfile?.owned) && (
+        {(!myProfile?.owned) && (
           <Button
             onClick={spaceInquire ? () => spaceInquire(myProfile?.id) : () => { }}
             sx={{
