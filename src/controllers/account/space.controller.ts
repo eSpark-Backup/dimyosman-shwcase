@@ -62,7 +62,7 @@ export class SpaceController {
   ): Promise<void> {
     try {
       const userId = req.user.id;
-      const { page, pageSize,edit } = req.query;
+      const { page, pageSize,check } = req.query;
       const skipNumber = Number(page);
       const takeNumber = Number(pageSize);
 
@@ -106,7 +106,7 @@ export class SpaceController {
           "brand.brandName",
           "brand.location",
         ])
-        .where("leaseSpace.isUsed = :isUsed", { isUsed: edit })
+        .where("leaseSpace.isUsed = :isUsed", { isUsed: check })
         .andWhere("tenant.id = :userId", { userId })
         .andWhere("leaseSpace.status = :status", {
           status: LeaseStatus.ACTIVE,
