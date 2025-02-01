@@ -158,78 +158,61 @@ const SocketProvider = ({ children }) => {
         refetch();
       });
 
-      // socket.current.on("NEW_NOTIFICATION", (data) => {
-      //   // console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
+      socket.current.on("NEW_NOTIFICATION", (data) => {
+        // console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
 
-      //   if (pathname === "/space") {
-      //     dispatch(setHasPaymentDone(true));
-      //   }
+        if (pathname !== "/space") {
+          notificationRefetch().then(() => {
+            handleNotificationUpdate("newNotification", getNotificationCount);
+            let redName = data.redirect;
 
-      //   handleNotificationUpdate("newNotification", getNotificationCount);
-      //   let redName = data.redirect;
-
-      //   if (pathname === "/space") {
-      //     if (data.redirect === "Lease" && activeTabForNotif !== "Lease") {
-      //       redName = "Lease";
-      //     } else if (
-      //       data.redirect === "Tenant" &&
-      //       activeTabForNotif !== "Tenant"
-      //     ) {
-      //       redName = "Tenant";
-      //     }
-      //   }
-
-      //   toast.info(data?.name, {
-      //     position: "bottom-right",
-      //     onClick: () => {
-      //       dispatch(setRedirectTab(redName));
-      //       if (pathname !== "/space") {
-      //         navigate("/space");
-      //       }
-      //     },
-      //   });
-
-      //   notificationRefetch();
-      // });
+            toast.info(data?.name, {
+              position: "bottom-right",
+              onClick: () => {
+                dispatch(setRedirectTab(redName));
+              },
+            });
+          });
+        }
+      });
 
       socket.current.on("NEW_REQUEST", (data) => {
         // console.log("NEW_REQUEST EVENT TRIGGERED.");
 
-        handleNotificationUpdate("newNotification", getNotificationCount);
-        if (pathname !== "/message") {
-          handleNotificationUpdate("newInquiry", getNotificationCount);
-        }
+        notificationRefetch().then(() => {
+          handleNotificationUpdate("newNotification", getNotificationCount);
+          if (pathname !== "/message") {
+            handleNotificationUpdate("newInquiry", getNotificationCount);
+          }
 
-        const navigateData = {
-          spaceName: data.receiverSpaceName,
-          chatId: data.chatId,
-        };
+          const navigateData = {
+            spaceName: data.receiverSpaceName,
+            chatId: data.chatId,
+          };
 
-        const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
+          toast.info(data?.name, {
+            position: "bottom-right",
+            onClick: () => {
+              dispatch(setGoToMessage(navigateData));
+              dispatch(setFromNotification(true));
 
-        if (!getUnreadChatIds) {
-          setCookie("unreadChatIds", JSON.stringify([data.chatId]));
-          return;
-        }
+              if (pathname !== "/message") {
+                navigate("/message");
+              }
+            },
+          });
 
-        if (!getUnreadChatIds.includes(data.chatId)) {
-          getUnreadChatIds.push(data.chatId);
-          setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
-        }
+          const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
 
-        toast.info(data?.name, {
-          position: "bottom-right",
-          onClick: () => {
-            dispatch(setGoToMessage(navigateData));
-            dispatch(setFromNotification(true));
-
-            if (pathname !== "/message") {
-              navigate("/message");
+          if (!getUnreadChatIds) {
+            setCookie("unreadChatIds", JSON.stringify([data.chatId]));
+          } else {
+            if (!getUnreadChatIds.includes(data.chatId)) {
+              getUnreadChatIds.push(data.chatId);
+              setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
             }
-          },
+          }
         });
-
-        notificationRefetch();
       });
 
       return () => {
