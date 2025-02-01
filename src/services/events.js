@@ -135,12 +135,20 @@ export const eventApi = api.injectEndpoints({
                 };
             },
         }),
-
+        addRsvpDate: builder.mutation({
+            query: ({ id, credentials }) => ({
+              url: `/event/rsvp/${id}`,
+              method: "POST",
+              body: credentials,
+              credentials: "include",
+            }),
+        }),
     }),
 });
 
 export const {
     useNewEventMutation,
     useGetAllEventsQuery,
-    useEditEventMutation
+    useEditEventMutation,
+    useAddRsvpDateMutation,
 } = eventApi;

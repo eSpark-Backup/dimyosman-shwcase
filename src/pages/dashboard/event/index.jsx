@@ -24,14 +24,17 @@ const Event = () => {
     {
       label: "My Events",
       icon: null,
+      error: "You don't currently own any events. Would you like to add a new one?"
     },
     {
       label: "RSVP Events",
       icon: null,
+      error: "You don't currently have RSVP events."
     },
     {
       label: "Saved Events",
       icon: like,
+      error: "You don't currently have saved events."
     },
   ];
   const tabsForApi = ["Event", "RSVP", "Saved"];
@@ -251,10 +254,10 @@ const Event = () => {
           >
             <Typography sx={{ fontWeight: 400 }} color="primary" variant="h5">
               {
-                "You don't currently own any events. Would you like to add a new one?"
+                tabs[activeTab].error
               }
             </Typography>
-            <Button
+            {activeTab === 0 && <Button
               onClick={handleAdd}
               startIcon={
                 <img
@@ -284,7 +287,7 @@ const Event = () => {
               }}
             >
               Add New
-            </Button>
+            </Button>}
           </Stack>
         )}
       </Card>

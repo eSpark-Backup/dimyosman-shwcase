@@ -34,8 +34,8 @@ const Dropdown = ({ label, options, value, onChange, disable, placeholder }) => 
                             {placeholder}
                         </MenuItem>
                     )}
-                    {options?.map((option) => (
-                        <MenuItem key={option?.value} value={option?.value}>
+                    {options?.map((option,index) => (
+                        <MenuItem key={index} value={option?.value}>
                             {option?.label}
                         </MenuItem>
                     ))}

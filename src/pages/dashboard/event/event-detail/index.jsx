@@ -13,6 +13,7 @@ const EventDetails = () => {
   const { id } = useParams();
   const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllEventsQuery({ page: 1, pageSize: 7, id }, { refetchOnMountOrArgChange: true });
   const dispatch = useDispatch()
+  const { user } = useSelector((state) => state.auth)
 
   useEffect(() => {
     const fetchAddress = async () => {
@@ -29,7 +30,7 @@ const EventDetails = () => {
           id: data?.data?.id,
           by: 1,
           type: "event",
-          owned: true,
+          owned: user?.id === data?.data?.user?.id,
           slides: data?.data?.coverImages,
           profilePic: data?.data?.eventImage,
           profileName: data?.data?.eventName,

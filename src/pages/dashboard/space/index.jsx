@@ -70,18 +70,22 @@ const Space = () => {
     {
       label: "My Spaces",
       icon: null,
+      error: "You don't currently own any spaces. Would you like to add a new one?"
     },
     {
       label: "Leasing Spaces",
       icon: null,
+      error: "You don't currently have leasing spaces."
     },
     {
       label: "Saved Spaces",
       icon: like,
+      error: "You don't currently have saved spaces."
     },
     {
       label: "Tenancy",
       icon: null,
+      error: "You don't currently have tenancy spaces."
     },
   ];
   const tabsForApi = ["Space", "Lease", "Saved", "Tenant"];
@@ -555,10 +559,10 @@ const Space = () => {
           >
             <Typography sx={{ fontWeight: 400 }} color="primary" variant="h5">
               {
-                "You don't currently own any spaces. Would you like to add a new one?"
+                tabs[activeTab].error
               }
             </Typography>
-            {activeTab !== 1 ? (
+            {activeTab === 0 ? (
               <Button
                 onClick={handleAdd}
                 startIcon={
