@@ -6,7 +6,7 @@ import {
   JoinColumn,
   Index,
 } from "typeorm";
-import { BaseEntity, User, Brand, Spaces } from "./index";
+import { BaseEntity, User, Brand, Spaces, LeaseSpace } from "./index";
 
 export enum EventStatus {
   ARCHIVE = "ARCHIVE",
@@ -26,6 +26,10 @@ export class Events extends BaseEntity {
   @ManyToOne(() => Brand, (brand) => brand.id, { nullable: true })
   @JoinColumn({ name: "brand" })
   brand: Brand;
+
+  @ManyToOne(() => LeaseSpace, (leaseSpace) => leaseSpace.id, { nullable: true })
+  @JoinColumn({ name: "leaseSpaceId" })
+  leaseSpace: LeaseSpace;
 
   @ManyToOne(() => Spaces, (space) => space.id, { nullable: true })
   @JoinColumn({ name: "space" })

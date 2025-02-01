@@ -66,8 +66,9 @@ export class EventController {
           HTTP_STATUS.BAD_REQUEST
         );
       }
+      let leaseSpace:LeaseSpace;
       if(leaseId){
-        const leaseSpace = await this.leaseSpaceRepo.findOne({ where: { id: leaseId } });
+         leaseSpace = await this.leaseSpaceRepo.findOne({ where: { id: leaseId } });
         if (!leaseSpace) {
           throw new ApiError("Lease Space not found", HTTP_STATUS.NOT_FOUND);
         }
@@ -115,6 +116,7 @@ export class EventController {
       newEvent.user = user as User;
       newEvent.brand = brand as Brand;
       newEvent.space = space as Spaces;
+      newEvent.leaseSpace = leaseSpace as LeaseSpace || null;
       newEvent.eventDate = eventDate;
       newEvent.coverImages = JSON.stringify(coverUrls) as Object;
       newEvent.eventImage = imageUrls[0].url as string;
@@ -131,6 +133,10 @@ export class EventController {
         fs.unlinkSync(filePath);
         console.log(`Deleted file: ${filePath}`);
       });
+      if(leaseSpace){
+        leaseSpace.event = event;
+        await this.leaseSpaceRepo.save(leaseSpace);
+      }
 
       res
         .status(HTTP_STATUS.OK)
@@ -213,12 +219,19 @@ export class EventController {
 
       
       if(leaseId){
+        const findExistingLease= await this.leaseSpaceRepo.findOne({ where: { id: existingEvent.leaseSpace.id } });
+        findExistingLease.isUsed = false;
+        findExistingLease.event = null;
+        await this.leaseSpaceRepo.save(findExistingLease);
+
         const leaseSpace = await this.leaseSpaceRepo.findOne({ where: { id: leaseId } });
         if (!leaseSpace) {
           throw new ApiError("Lease Space not found", HTTP_STATUS.NOT_FOUND);
         }
         leaseSpace.isUsed = true;
+        leaseSpace.event = existingEvent;
         await this.leaseSpaceRepo.save(leaseSpace);
+        existingEvent.leaseSpace=leaseSpace;
       }
       if (eventName) {
         const checkName = await this.eventRepo.findOne({
