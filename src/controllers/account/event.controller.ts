@@ -349,6 +349,18 @@ export class EventController {
     try {
       const { id } = req.params;
       const { attendanceDates } = req.body;
+      const findRSVP= await this.rsvpEventRepo.createQueryBuilder("rsvp")
+      .where("rsvp.user = :userId", { userId: req.user?.id })
+      .andWhere("rsvp.event = :eventId", { eventId: id })
+      .getOne();
+
+      if(findRSVP){
+        findRSVP.attendanceDates=attendanceDates;
+        await this.rsvpEventRepo.save(findRSVP);
+        res.status(200).json(handleResponse("RSVP Updated Successful"));
+        return next();
+      }
+      
       const event = await this.eventRepo.findOne({ where: { id } });
       if (!event) {
         throw new ApiError("Event not found", HTTP_STATUS.NOT_FOUND);
