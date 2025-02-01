@@ -62,7 +62,7 @@ export class SpaceController {
   ): Promise<void> {
     try {
       const userId = req.user.id;
-      let { page, pageSize,check } = req.query;
+      let { page, pageSize,check,eventId } = req.query;
       const skipNumber = Number(page);
       const takeNumber = Number(pageSize);
 
@@ -94,12 +94,14 @@ export class SpaceController {
       .createQueryBuilder("leaseSpace")
       .leftJoinAndSelect("leaseSpace.space", "space")
       .leftJoinAndSelect("leaseSpace.tenant", "tenant")
+      .leftJoinAndSelect("leaseSpace.event", "event")
       .leftJoinAndSelect("space.brand", "brand")
       .leftJoinAndSelect("space.user", "user")
       .select([
         "leaseSpace.id",
         "leaseSpace.contractDetails",
         "leaseSpace.isUsed",
+        "event.id",
         "leaseSpace.status",
         "tenant.id",
         "space.id",
@@ -113,6 +115,10 @@ export class SpaceController {
     
     if (check) {
       queryBuilder.andWhere("leaseSpace.isUsed = :isUsed", { isUsed: false });
+
+    }else{
+      queryBuilder.andWhere("(leaseSpace.event IS NULL OR leaseSpace.event = :eventId)", { eventId });
+
     }
     
     const [tenantSpaces, totalTenantSpaces] = await queryBuilder
