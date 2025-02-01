@@ -271,7 +271,7 @@ const InputWithMap = ({
                 categories
                   ?.filter(cat => cat.selected)
                   .map((cat, index) => (
-                    <Box key={cat.name} display="flex" alignItems="center" marginRight={2} columnGap={1.5} sx={{ width: { xs: "100%", sm: "45%", lg: "30%" } }}>
+                    <Box key={index} display="flex" alignItems="center" marginRight={2} columnGap={1.5} sx={{ width: { xs: "100%", sm: "45%", lg: "30%" } }}>
                       <CheckBox checked={cat.selected} onChange={() => HandleCategoryChange(cat?.id)} />
                       <Box sx={{ display: "flex", columnGap: "8px" }}>
                         <img src={cat.icon} alt="Amenity Icon" style={{ width: "16px", height: "16px" }} />
