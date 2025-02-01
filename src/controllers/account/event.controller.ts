@@ -137,6 +137,7 @@ export class EventController {
         leaseSpace.event = event;
         await this.leaseSpaceRepo.save(leaseSpace);
       }
+      delete event.leaseSpace;
 
       res
         .status(HTTP_STATUS.OK)
@@ -212,7 +213,10 @@ export class EventController {
       if (typeof coverKeys === "string" && !Array.isArray(coverKeys)) {
         coverKeys = coverKeys.split(",").map((item) => item.trim());
       }
-      const existingEvent = await this.eventRepo.findOne({ where: { id } });
+      const existingEvent = await this.eventRepo.createQueryBuilder("event")
+        .where("event.id = :id", { id })
+        .leftJoinAndSelect("event.leaseSpace", "leaseSpace")
+        .getOne();
       if (!existingEvent) {
         return next(res.status(404).json({ message: "Event not found" }));
       }
@@ -429,6 +433,7 @@ export class EventController {
           .leftJoinAndSelect("event.user", "user")
           .leftJoinAndSelect("event.brand", "brand")
           .leftJoinAndSelect("event.space", "space")
+          .leftJoinAndSelect("event.leaseSpace", "leaseSpace")
           .leftJoinAndSelect("space.brand", "spaceBrand")
           .leftJoin(
             (qb) => {
