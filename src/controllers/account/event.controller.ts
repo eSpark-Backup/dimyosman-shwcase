@@ -510,7 +510,7 @@ export class EventController {
             
               
               
-        res.status(200).json(handleResponse("Event Found Successfully", event));
+        res.status(200).json(handleResponse("Event Found Successfully", event[0]));
         return next();
       }
 
