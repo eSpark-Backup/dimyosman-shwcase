@@ -6,7 +6,7 @@ export const eventApi = api.injectEndpoints({
             query: (eventData) => {
                 const formData = new FormData();
                 formData.append("brandId", eventData?.brand?.id)
-                formData.append("spaceId", eventData?.space)
+                formData.append("spaceId", eventData?.toSendSpace)
                 formData.append("eventName", eventData?.eventName)
                 // formData.append("minLeaseDays", "Hello")
 
@@ -51,6 +51,9 @@ export const eventApi = api.injectEndpoints({
                 }
                 if (eventData?.profileImage) {
                     formData.append('image', eventData.profileImage);
+                }
+                if(eventData?.leaseId !== ""){
+                    formData.append('leaseId', eventData.leaseId);
                 }
                 formData.append("status", eventData?.status)
 
