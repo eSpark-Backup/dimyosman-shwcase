@@ -97,6 +97,7 @@ export class SpaceController {
         .select([
           "leaseSpace.id",
           "leaseSpace.contractDetails",
+          "leaseSpace.isUsed",
           "leaseSpace.status",
           "tenant.id",
           "space.id",
@@ -105,11 +106,11 @@ export class SpaceController {
           "brand.brandName",
           "brand.location",
         ])
-        .where("tenant.id = :userId", { userId })
+        .where("leaseSpace.isUsed = :isUsed", { isUsed: false })
+        .andWhere("tenant.id = :userId", { userId })
         .andWhere("leaseSpace.status = :status", {
           status: LeaseStatus.ACTIVE,
         })
-        .andWhere("leaseSpace.isUsed", { isUsed: false })
         .skip(Number(skipNumber) || 0)
         .take(Number(takeNumber) || 10)
         .getManyAndCount();
