@@ -52,7 +52,7 @@ export const eventApi = api.injectEndpoints({
                 if (eventData?.profileImage) {
                     formData.append('image', eventData.profileImage);
                 }
-                if(eventData?.leaseId !== ""){
+                if (eventData?.leaseId !== "") {
                     formData.append('leaseId', eventData.leaseId);
                 }
                 formData.append("status", eventData?.status)
@@ -85,8 +85,7 @@ export const eventApi = api.injectEndpoints({
             query: ({ eventData, id }) => {
                 const formData = new FormData();
                 formData.append('eventName', eventData?.eventName);
-                formData.append("spaceId", eventData?.space)
-
+                formData.append("spaceId", eventData?.toSendSpace)
                 const selectedCategories = eventData?.eventCategories
                     ?.filter(item => item.selected)
                     ?.map(item => ({ name: item.name }));
@@ -123,6 +122,10 @@ export const eventApi = api.injectEndpoints({
                     }
                 }
 
+                if (eventData?.leaseId !== "") {
+                    formData.append('leaseId', eventData.leaseId);
+                }
+
 
                 if (eventData?.profileImage) {
                     if (eventData.profileImage instanceof File) {
@@ -140,10 +143,10 @@ export const eventApi = api.injectEndpoints({
         }),
         addRsvpDate: builder.mutation({
             query: ({ id, credentials }) => ({
-              url: `/event/rsvp/${id}`,
-              method: "POST",
-              body: credentials,
-              credentials: "include",
+                url: `/event/rsvp/${id}`,
+                method: "POST",
+                body: credentials,
+                credentials: "include",
             }),
         }),
     }),

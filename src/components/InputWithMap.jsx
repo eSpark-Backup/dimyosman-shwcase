@@ -173,8 +173,6 @@ const InputWithMap = ({
     }
     if (activity === "event") {
       if (eventData.space !== selectedValue) {
-        console.log(selectedSpaceData[0]?.item)
-        console.log(selectedValue)
         updateEventData("space", selectedValue);
         updateEventData("location", updatedLocation);
         updateEventData("mapInstructions", selectedSpaceData[0]?.item?.location?.additional);

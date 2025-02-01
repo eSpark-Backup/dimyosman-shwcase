@@ -39,7 +39,7 @@ const NewEvent = () => {
         refetchOnMountOrArgChange: true,
     });
 
-    const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useSpacesForEventQuery({}, {
+    const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useSpacesForEventQuery({ check: true }, {
         refetchOnMountOrArgChange: true,
     });
 
