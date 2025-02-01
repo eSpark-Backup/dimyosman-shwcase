@@ -874,7 +874,7 @@ const ManageInquiry = ({
                   style={{
                     width: "100%",
                     height: "100%",
-                    objectFit: "contain",
+                    objectFit: "cover",
                   }}
                 />
               ) : imageWithPreview ? (
@@ -884,7 +884,7 @@ const ManageInquiry = ({
                   style={{
                     width: "100%",
                     height: "100%",
-                    objectFit: "contain",
+                    objectFit: "cover",
                   }}
                 />
               ) : (
@@ -953,7 +953,7 @@ const ManageInquiry = ({
                       style={{
                         width: "100%",
                         height: "100%",
-                        objectFit: "contain",
+                        objectFit: "cover",
                       }}
                     />
                   ) : imageWithPreview ? (
@@ -963,7 +963,7 @@ const ManageInquiry = ({
                       style={{
                         width: "100%",
                         height: "100%",
-                        objectFit: "contain",
+                        objectFit: "cover",
                       }}
                     />
                   ) : (
@@ -1030,12 +1030,22 @@ const ManageInquiry = ({
               setImageWithPreview(null);
               setImage(null);
             } else {
-              const navigateData = {
-                brandName: details.tenant,
-                chatId: details.chatId,
-              };
+              if (tabsForApi[activeTab] === "Lease") {
+                const navigateData = {
+                  brandName: details.tenant,
+                  chatId: details.chatId,
+                };
 
-              dispatch(setGoToMessage(navigateData));
+                dispatch(setGoToMessage(navigateData));
+              } else {
+                const navigateData = {
+                  spaceName: details.space,
+                  chatId: details.chatId,
+                };
+
+                dispatch(setGoToMessage(navigateData));
+              }
+
               navigate("/message");
             }
           }}

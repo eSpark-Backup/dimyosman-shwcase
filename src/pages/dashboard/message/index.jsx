@@ -49,6 +49,7 @@ import {
   deleteCookie,
   getCookie,
   messageBox,
+  removeNewInquiry,
   setCookie,
 } from "../../../utils/index.js";
 
@@ -141,6 +142,10 @@ const Message = () => {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [toShare, setToShare] = useState();
   const [activeTab, setActiveTab] = useState("all");
+
+  useEffect(() => {
+    removeNewInquiry(dispatch);
+  },[])
 
   useEffect(() => {
     if (isSuccess && messageData && messageData?.length) {
