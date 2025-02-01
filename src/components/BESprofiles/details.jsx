@@ -1,12 +1,16 @@
 import { Box, Button, Divider, Stack, Tooltip, Typography } from "@mui/material";
 import { calender, comment, like, liked, miniMap, share } from "../../assets";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import ReusableModal from "../Modal";
 import MapModal from "../MapModal";
 import { useSelector } from "react-redux";
 import { useLocation, useParams } from "react-router-dom";
 import { useAddInFavouritesMutation } from "../../services/favourite";
 import { toast } from "react-toastify";
+import RSVPCalendar from "../rsvp-calendar";
+import dayjs from "dayjs";
+import { useClickOutside } from "../../utils";
+import { useAddRsvpDateMutation } from "../../services/events";
 
 const Details = ({ spaceInquire, details, myProfile }) => {
   const [likeFunc, { isLoading }] = useAddInFavouritesMutation();
@@ -29,6 +33,48 @@ const Details = ({ spaceInquire, details, myProfile }) => {
   } else {
     details = null; // Default case if `activity` doesn't match any
   }
+
+  ///these dates will come from backend to render in calendar
+  const apiDates = ["2025-02-25", "2025-02-28"];
+
+  const [addRsvp, { isLoading: rsvpLoading }] = useAddRsvpDateMutation();
+
+  const [selectedDates, setSelectedDates] = useState(
+    apiDates && apiDates.length > 0 ? apiDates.map((date) => dayjs(date)) : []
+  );
+
+  const [openCalendar, setOpenCalendar] = useState(false);
+  const [tempSelectedDate, setTempSelectedDate] = useState(null);
+
+  const handleOk = () => {
+    if (
+      tempSelectedDate &&
+      !selectedDates.some((d) => d.isSame(tempSelectedDate, "day"))
+    ) {
+      setSelectedDates([...selectedDates, tempSelectedDate]);
+      const dateToSend = tempSelectedDate.format("YYYY-MM-DD");
+      const objToSend = {
+        id: myProfile?.id,
+        credentials: {
+          attendanceDates: {
+            dateTime: dateToSend,
+          },
+        },
+      };
+      addRsvp(objToSend).then(
+        (res) => res?.data?.status && toast.success(res?.data?.message)
+      );
+    }
+    setOpenCalendar(false);
+  };
+
+  const handleCancel = () => {
+    setOpenCalendar(false);
+  };
+
+  const modalRef = useRef();
+  useClickOutside(modalRef, () => setOpenCalendar(false));
+
   return (
     <Box>
       <Stack
@@ -286,6 +332,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         alignItems="flex-end"
         paddingY={2}
         gap={1}
+        sx={{ position: "relative" }}
       >
         <Stack
           direction="row"
@@ -339,9 +386,26 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             alt="share"
           />
         </Stack>
+        {openCalendar === 2 && myProfile?.type === "event" && (
+          <RSVPCalendar
+            loading={rsvpLoading}
+            modalRef={modalRef}
+            tempSelectedDate={tempSelectedDate}
+            setTempSelectedDate={setTempSelectedDate}
+            selectedDates={selectedDates}
+            handleCancel={handleCancel}
+            handleOk={handleOk}
+          />
+        )}
         {(!myProfile?.owned) && (
           <Button
-            onClick={spaceInquire ? () => spaceInquire(myProfile?.id) : () => { }}
+            onClick={() => {
+              if (myProfile?.type === "event") {
+                setOpenCalendar(2);
+              } else {
+                spaceInquire ? () => spaceInquire(myProfile?.id) : () => {};
+              }
+            }}
             sx={{
               background: (theme) => theme.palette.button.secondary,
               color: (theme) => theme.palette.primary.main,
@@ -490,6 +554,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         alignItems="flex-end"
         paddingTop={2}
         gap={1}
+        sx={{ position: "relative" }}
       >
         <Stack
           direction="row"
@@ -543,9 +608,26 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             alt="share"
           />
         </Stack>
+        {openCalendar === 1 && myProfile?.type === "event" && (
+          <RSVPCalendar
+            loading={rsvpLoading}
+            modalRef={modalRef}
+            tempSelectedDate={tempSelectedDate}
+            setTempSelectedDate={setTempSelectedDate}
+            selectedDates={selectedDates}
+            handleCancel={handleCancel}
+            handleOk={handleOk}
+          />
+        )}
         {(!myProfile?.owned) && (
           <Button
-            onClick={spaceInquire ? () => spaceInquire(myProfile?.id) : () => { }}
+            onClick={() => {
+              if (myProfile?.type === "event") {
+                setOpenCalendar(1);
+              } else {
+                spaceInquire ? () => spaceInquire(myProfile?.id) : () => {};
+              }
+            }}
             sx={{
               background: (theme) => theme.palette.button.secondary,
               color: (theme) => theme.palette.primary.main,

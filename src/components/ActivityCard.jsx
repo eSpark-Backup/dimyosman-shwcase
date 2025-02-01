@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Box, Button, Divider, Stack, Typography, useTheme } from "@mui/material";
 import {
   accountIcon,
@@ -22,6 +22,10 @@ import DynamicPaginationSwiper from "./Slider.jsx";
 import { useNavigate } from "react-router-dom";
 import { useAddInFavouritesMutation } from "../services/favourite.js";
 import { toast } from "react-toastify";
+import dayjs from "dayjs";
+import RSVPCalendar from "./rsvp-calendar.jsx";
+import { useClickOutside } from "../utils/index.js";
+import { useAddRsvpDateMutation } from "../services/events.js";
 
 const ActivityCard = ({
   fullItem = {},
@@ -55,6 +59,46 @@ const ActivityCard = ({
     setLikePost(isFavourite);
   },[isFavourite])
   const [likeFunc, { isLoading }] = useAddInFavouritesMutation();
+  const [addRsvp, { isLoading: rsvpLoading }] = useAddRsvpDateMutation();
+
+  ///these dates will come from backend to render in calendar
+  const apiDates = ["2025-02-25", "2025-02-28"];
+
+  const [selectedDates, setSelectedDates] = useState(
+    apiDates && apiDates.length > 0 ? apiDates.map((date) => dayjs(date)) : []
+  );
+
+  const [openCalendar, setOpenCalendar] = useState(false);
+  const [tempSelectedDate, setTempSelectedDate] = useState(null);
+
+  const handleOk = () => {
+    if (
+      tempSelectedDate &&
+      !selectedDates.some((d) => d.isSame(tempSelectedDate, "day"))
+    ) {
+      setSelectedDates([...selectedDates, tempSelectedDate]);
+
+      const dateToSend = tempSelectedDate.format("YYYY-MM-DD");
+      const objToSend = {
+        id: activityId,
+        credentials: {
+          attendanceDates: {
+            dateTime: dateToSend,
+          },
+        },
+      };
+      addRsvp(objToSend).then(res => res?.data?.status && toast.success(res?.data?.message))
+      setOpenCalendar(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setOpenCalendar(false);
+  };
+
+  const modalRef = useRef();
+  useClickOutside(modalRef, () => setOpenCalendar(false));
+
   return (
     <Box
       sx={{
@@ -687,7 +731,7 @@ const ActivityCard = ({
           direction="row"
           alignItems="center"
           justifyContent="center"
-          sx={{ gap: { xs: 1, sm: 2 } }}
+          sx={{ position: "relative", gap: { xs: 1, sm: 2 } }}
         >
           <Button
             variant="text"
@@ -714,6 +758,17 @@ const ActivityCard = ({
           >
             Learn more
           </Button>
+          {openCalendar && activity === "event" && (
+            <RSVPCalendar
+              loading={rsvpLoading}
+              modalRef={modalRef}
+              tempSelectedDate={tempSelectedDate}
+              setTempSelectedDate={setTempSelectedDate}
+              selectedDates={selectedDates}
+              handleCancel={handleCancel}
+              handleOk={handleOk}
+            />
+          )}
           <Button
             sx={{
               backgroundColor: "rgb(209, 219, 215, 0.4)",
@@ -729,7 +784,13 @@ const ActivityCard = ({
                 backgroundColor: "rgb(209, 219, 215, 0.4)",
               },
             }}
-            onClick={() => handleAction(fullItem)}
+            onClick={() => {
+              if (activity === "event") {
+                setOpenCalendar(true);
+              } else {
+                handleAction(fullItem);
+              }
+            }}
           >
             {activity === "event" ? (
               "RSVP"
