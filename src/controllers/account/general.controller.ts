@@ -57,7 +57,7 @@ export class GeneralController {
     private userModel: typeof UserForChat,
     private notificationModel: typeof Notification,
     private messageModel: typeof Message,
-    private savedEntity:Repository<SavedEntity>
+    private savedEntity: Repository<SavedEntity>
   ) {}
 
   async generalSearch(
@@ -97,6 +97,24 @@ export class GeneralController {
         .leftJoinAndSelect("event.brand", "brand")
         .andWhere("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
         .andWhere("event.user != :userId", { userId })
+        .addSelect((subQuery) => {
+          return subQuery
+            .select(
+              `COALESCE(
+                  JSON_OBJECT(
+                      'id', rsvp.id,
+                      'attendanceDates', rsvp.attendanceDates,
+                      'verifyAttendance', rsvp.verifyAttendance,
+                      'review', rsvp.review,
+                      'rating', rsvp.rating
+                  ), '{}')`, // Ensure null values don't break the JSON
+              "event_rsvp"
+            )
+            .from("RSVP", "rsvp")
+            .where("rsvp.event = event.id")
+            .andWhere("rsvp.user = :userId", { userId })
+            .limit(1);
+        }, "event_rsvp")
         .skip(skipNumber)
         .take(takeNumber);
 
@@ -160,23 +178,22 @@ export class GeneralController {
         const newlat = parseFloat(lat as string);
         const newlong = parseFloat(long as string);
         const searchRadius = parseFloat(radius as string); // Ensure radius is float
-    
+
         brandQuery.andWhere(
-            new Brackets((qb) => {
-                qb.where(
-                    `(${earthRadius} * acos(
+          new Brackets((qb) => {
+            qb.where(
+              `(${earthRadius} * acos(
                         cos(radians(:lat)) *
                         cos(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.lat')) * 1)) *
                         cos(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.long')) * 1) - radians(:long)) +
                         sin(radians(:lat)) *
                         sin(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.lat')) * 1))
                     )) <= :radius`,
-                    { lat: newlat, long: newlong, radius: searchRadius }
-                );
-            })
+              { lat: newlat, long: newlong, radius: searchRadius }
+            );
+          })
         );
-    }
-    
+      }
 
       if (additional) {
         brandQuery.andWhere(
@@ -200,13 +217,11 @@ export class GeneralController {
         }
       }
 
-      // Execute queries based on available filters
       const queries = [];
       if (spaceQuery) queries.push(spaceQuery.getManyAndCount());
-      if (eventQuery) queries.push(eventQuery.getManyAndCount());
+      if (eventQuery) queries.push(eventQuery.getRawAndEntities());
       if (brandQuery) queries.push(brandQuery.getManyAndCount());
 
-      // Execute the queries in parallel
       const results = await Promise.all(queries);
 
       const entityMap: {
@@ -219,18 +234,38 @@ export class GeneralController {
         Brand: null,
       };
 
-      // Assign results to corresponding entities
       results.forEach((result, index) => {
         if (entity === "SPACE") {
           entityMap.Space = result as [Spaces[], number];
         } else if (entity === "EVENT") {
-          entityMap.Event = result as [Events[], number];
+          if (result && "entities" in result && "raw" in result) {
+            const { entities: rsvpEvents, raw } = result;
+
+            const events = rsvpEvents.map((eventRaw, index) => {
+              const rawData = raw[index];
+              const event = eventRaw as any;
+
+              // Parse the RSVP data if needed
+              if (rawData.event_rsvp) {
+                event.event_rsvp = JSON.parse(rawData.event_rsvp);
+              }
+
+              if (event.brand) {
+                event.brand = {
+                  ...event.brand,
+                };
+              }
+
+              return event;
+            });
+
+            entityMap.Event = [events, raw] as unknown as [Events[], number];
+          }
         } else if (entity === "BRAND") {
           entityMap.Brand = result as [Brand[], number];
         }
       });
 
-      // Extract results for spaces, events, and brands
       const [spaces, spaceCount] = entityMap.Space || [[], 0];
       const [events, eventCount] = entityMap.Event || [[], 0];
       const [brands, brandCount] = entityMap.Brand || [[], 0];
@@ -280,47 +315,57 @@ export class GeneralController {
 
       const totalResults = spaceCount + eventCount + brandCount;
       let saveQuery;
-      let savedEntitiesQuery = this.savedEntity.createQueryBuilder("savedEntity")
-        .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
+      let savedEntitiesQuery = this.savedEntity
+        .createQueryBuilder("savedEntity")
+        .where("savedEntity.ActionType = :actionType", {
+          actionType: ActionType.FAVORITE,
+        })
         .andWhere("savedEntity.user = :userId", { userId: req.user?.id });
-      
-      // Conditionally join only the required entity
+
       if (entity === "SPACE") {
-        savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect("savedEntity.space", "space");
+        savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect(
+          "savedEntity.space",
+          "space"
+        );
       } else if (entity === "EVENT") {
-        savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect("savedEntity.event", "event");
+        savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect(
+          "savedEntity.event",
+          "event"
+        );
       } else if (entity === "BRAND") {
-        savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect("savedEntity.brand", "brand");
+        savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect(
+          "savedEntity.brand",
+          "brand"
+        );
       } else {
-        throw new ApiError("Invalid entity type",HTTP_STATUS.BAD_REQUEST);
+        throw new ApiError("Invalid entity type", HTTP_STATUS.BAD_REQUEST);
       }
-      
-      // Execute the optimized query
+
       const savedEntities = await savedEntitiesQuery.getMany();
-      
+
       const savedEntityIds = new Set(
-        savedEntities.map(entity => 
-          entity.space?.id || entity.event?.id || entity.brand?.id
-        ).filter(Boolean)
+        savedEntities
+          .map(
+            (entity) => entity.space?.id || entity.event?.id || entity.brand?.id
+          )
+          .filter(Boolean)
       );
-      
-      // Update each entity list with isFavourite flag
-      const updatedSpaces = spaces.map(space => ({
+
+      const updatedSpaces = spaces.map((space) => ({
         ...space,
         isFavourite: savedEntityIds.has(space.id),
       }));
-      
-      const updatedEvents = events.map(event => ({
+
+      const updatedEvents = events.map((event) => ({
         ...event,
         isFavourite: savedEntityIds.has(event.id),
       }));
-      
-      const updatedBrands = brands.map(brand => ({
+
+      const updatedBrands = brands.map((brand) => ({
         ...brand,
         isFavourite: savedEntityIds.has(brand.id),
       }));
-      
-      // Pagination details
+
       const response = {
         spaces: updatedSpaces,
         events: updatedEvents,
@@ -467,16 +512,49 @@ export class GeneralController {
       const { page, take, skip } = req?.query;
       const skipNumber = Number(skip);
       const takeNumber = Number(take);
-      const [events] = await this.eventsRepo
+      const eventsWithRSVP = await this.eventsRepo
         .createQueryBuilder("event")
         .leftJoinAndSelect("event.brand", "brand")
         .leftJoinAndSelect("event.space", "space")
         .leftJoinAndSelect("space.brand", "spaceBrand")
         .where("event.user != :userId", { userId: req.user?.id })
         .leftJoinAndSelect("event.user", "user")
+        .leftJoin(
+          (qb) => {
+            return qb
+              .select("rsvp_sub.event", "eventId")
+              .addSelect("COUNT(rsvp_sub.id)", "rsvpCount")
+              .from("rsvp", "rsvp_sub")
+              .groupBy("rsvp_sub.event");
+          },
+          "rsvpCountSubquery",
+          "rsvpCountSubquery.eventId = event.id"
+        )
+        .addSelect(
+          "COALESCE(rsvpCountSubquery.rsvpCount, 0)",
+          "event_rsvpCount"
+        )
+        .addSelect((subQuery) => {
+          return subQuery
+            .select(
+              `COALESCE(
+                  JSON_OBJECT(
+                      'id', rsvp.id,
+                      'attendanceDates', rsvp.attendanceDates,
+                      'verifyAttendance', rsvp.verifyAttendance,
+                      'review', rsvp.review,
+                      'rating', rsvp.rating
+                  ), '{}')`, // Ensure null values don't break the JSON
+              "event_rsvp"
+            )
+            .from("RSVP", "rsvp")
+            .where("rsvp.event = event.id")
+            .andWhere("rsvp.user = :userId", { userId: req.user?.id })
+            .limit(1);
+        }, "event_rsvp")
 
         .orderBy("event.createdAt", "DESC")
-        .getManyAndCount();
+        .getRawAndEntities();
 
       const [brands] = await this.brandRepo
         .createQueryBuilder("brand")
@@ -498,10 +576,47 @@ export class GeneralController {
       brands.forEach((brand) => {
         parseCoverImages(brand);
       });
-      events.forEach((event) => {
-        parseCoverImages(event);
-        parseCoverImages(event.brand);
-        parseCoverImages(event.space);
+      const { entities: rsvpEvents, raw } = eventsWithRSVP;
+
+      const formattedRsvpEvents = rsvpEvents.map((rsvp, index) => {
+        const rawData = raw[index];
+        parseCoverImages(rsvp);
+        parseCoverImages(rsvp.brand);
+        parseCoverImages(rsvp.space);
+        let event_rsvp;
+        if (rawData.event_rsvp) {
+          event_rsvp = JSON.parse(rawData.event_rsvp);
+        }
+        const eventDate =
+          rsvp.eventDate &&
+          (rsvp.eventDate as [{ startDate: string; endDate: string }]);
+
+        if (eventDate) {
+          const currentDate = new Date();
+
+          let eventStatus = "Ended";
+          if (currentDate < new Date(eventDate[0].startDate)) {
+            eventStatus = "Upcoming";
+          } else if (
+            currentDate >= new Date(eventDate[0].startDate) &&
+            currentDate <= new Date(eventDate[0].endDate)
+          ) {
+            eventStatus = "Ongoing";
+          }
+
+          return {
+            ...rsvp,
+            rsvpCount: Number(rawData.event_rsvpCount) || 0,
+            event_rsvp,
+            eventStatus,
+          };
+        }
+
+        return {
+          ...rsvp,
+          event_rsvp,
+          rsvpCount: Number(rawData.event_rsvpCount) || 0,
+        };
       });
       for (const space of spaces) {
         const events = await this.eventsRepo
@@ -536,7 +651,7 @@ export class GeneralController {
         };
       });
 
-      const eventsWithType = events.map((event: any) => ({
+      const eventsWithType = formattedRsvpEvents.map((event: any) => ({
         ...event,
         type: "event",
       }));
@@ -567,28 +682,32 @@ export class GeneralController {
         skipNumber + takeNumber
       );
 
-
       const totalItems = sortedActivity.length;
       const totalPages = Math.ceil(totalItems / takeNumber);
 
-      const savedEntities= await this.savedEntity.createQueryBuilder("savedEntity")
-      .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
-      .leftJoinAndSelect("savedEntity.space", "space")
-      .leftJoinAndSelect("savedEntity.brand", "brand")
-      .leftJoinAndSelect("savedEntity.event", "event")
-      .where("savedEntity.user = :userId", { userId: req.user?.id })
-    
-      .getMany();
+      const savedEntities = await this.savedEntity
+        .createQueryBuilder("savedEntity")
+        .where("savedEntity.ActionType = :actionType", {
+          actionType: ActionType.FAVORITE,
+        })
+        .leftJoinAndSelect("savedEntity.space", "space")
+        .leftJoinAndSelect("savedEntity.brand", "brand")
+        .leftJoinAndSelect("savedEntity.event", "event")
+        .where("savedEntity.user = :userId", { userId: req.user?.id })
+
+        .getMany();
       const savedEntityIds = new Set(
-        savedEntities.map(entity => 
-          entity.space?.id || entity.event?.id || entity.brand?.id
-        ).filter(Boolean) 
+        savedEntities
+          .map(
+            (entity) => entity.space?.id || entity.event?.id || entity.brand?.id
+          )
+          .filter(Boolean)
       );
 
-const updatedPaginatedActivity = paginatedActivity.map(activity => ({
-  ...activity,
-  isFavourite: savedEntityIds.has(activity.id),
-}));
+      const updatedPaginatedActivity = paginatedActivity.map((activity) => ({
+        ...activity,
+        isFavourite: savedEntityIds.has(activity.id),
+      }));
 
       res.status(200).json(
         handleResponse("Activity Fetched Successfully", {

@@ -19,6 +19,14 @@ export class CategoryController {
   ): Promise<void> {
     try {
       const { categoryName, categoryType } = req.body;
+      const checkName = await this.categoryRepo.createQueryBuilder("category")
+        .where("name = :name", { name: categoryName })
+        .andWhere("categoryType = :categoryType", { categoryType })
+        .getOne();
+      if (checkName) {
+        throw new ApiError("Category with this name already exists", 400
+        );
+      }
       const newCategory = new Category();
       newCategory.name = categoryName;
       newCategory.categoryType = categoryType;

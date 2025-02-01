@@ -382,9 +382,11 @@ export class BrandController {
       const skipNumber = Number(skip);
       const takeNumber = Number(take);
       if (id && id !== "{id}") {
-        const singleBrand = await this.brandRepo.findOne({
-          where: { id },
-        });
+        const singleBrand = await this.brandRepo.createQueryBuilder
+        ("brand")
+        .where("brand.id = :id", { id })
+        .leftJoinAndSelect("brand.user", "user")
+        .getOne();
 
         if (!singleBrand) {
           res.status(200).json(handleResponse("Brand not found"));
@@ -420,14 +422,15 @@ export class BrandController {
         return next();
       }
 
-      const [brands, totalItems] = await this.brandRepo.findAndCount({
-        where: { user: { id: req.user?.id } },
-        skip: skipNumber,
-        take: takeNumber,
-        order: {
-          createdAt: "DESC",
-        },
-      });
+      const [brands, totalItems] = await this.brandRepo.createQueryBuilder
+      ("brand")
+      .where("brand.user = :userId", { userId: req.user?.id })
+      .leftJoinAndSelect("brand.user", "user")
+
+      .orderBy("brand.createdAt", "DESC")
+      .skip(skipNumber)
+      .take(takeNumber)
+      .getManyAndCount();
 
       if (brands.length === 0) {
         res.status(200).json(handleResponse("No Brands Found"));

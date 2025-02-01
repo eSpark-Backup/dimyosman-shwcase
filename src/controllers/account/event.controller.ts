@@ -375,19 +375,94 @@ export class EventController {
         const singleEvent = await this.eventRepo
           .createQueryBuilder("event")
           .where("event.id = :id", { id })
+          .leftJoinAndSelect("event.user", "user")
           .leftJoinAndSelect("event.brand", "brand")
           .leftJoinAndSelect("event.space", "space")
           .leftJoinAndSelect("space.brand", "spaceBrand")
-          .getOne();
+          .leftJoin(
+            (qb) => {
+              return qb
+                .select("rsvp_sub.event", "eventId")
+                .addSelect("COUNT(rsvp_sub.id)", "rsvpCount")
+                .from("rsvp", "rsvp_sub")
+                .groupBy("rsvp_sub.event");
+            },
+            "rsvpCountSubquery",
+            "rsvpCountSubquery.eventId = event.id"
+          )
+          .addSelect(
+            "COALESCE(rsvpCountSubquery.rsvpCount, 0)",
+            "event_rsvpCount"
+          )
+          .addSelect((subQuery) => {
+            return subQuery
+              .select(
+                `COALESCE(
+                    JSON_OBJECT(
+                        'id', rsvp.id,
+                        'attendanceDates', rsvp.attendanceDates,
+                        'verifyAttendance', rsvp.verifyAttendance,
+                        'review', rsvp.review,
+                        'rating', rsvp.rating
+                    ), '{}')`, // Ensure null values don't break the JSON
+                "event_rsvp"
+              )
+              .from("RSVP", "rsvp")
+              .where("rsvp.event = event.id")
+              .andWhere("rsvp.user = :userId", { userId: req.user?.id })
+              .limit(1);
+          }, "event_rsvp")
+  
+          .getRawAndEntities();
 
         if (!singleEvent) {
           res.status(200).json(handleResponse("Event not found"));
           return next();
         }
+      const { entities: rsvpEvents, raw } = singleEvent;
 
-        if (typeof singleEvent.coverImages === "string") {
-          singleEvent.coverImages = JSON.parse(singleEvent.coverImages);
-        }
+        const formattedRsvpEvents = rsvpEvents.map((rsvp, index) => {
+          const rawData = raw[index];
+          parseCoverImages(rsvp);
+          parseCoverImages(rsvp.brand);
+          parseCoverImages(rsvp.space);
+          let event_rsvp;
+          if (rawData.event_rsvp) {
+            event_rsvp = JSON.parse(rawData.event_rsvp);
+          }
+          const eventDate =
+            rsvp.eventDate &&
+            (rsvp.eventDate as [{ startDate: string; endDate: string }]);
+  
+          if (eventDate) {
+            const currentDate = new Date();
+  
+            let eventStatus = "Ended";
+            if (currentDate < new Date(eventDate[0].startDate)) {
+              eventStatus = "Upcoming";
+            } else if (
+              currentDate >= new Date(eventDate[0].startDate) &&
+              currentDate <= new Date(eventDate[0].endDate)
+            ) {
+              eventStatus = "Ongoing";
+            }
+  
+            return {
+              ...rsvp,
+              rsvpCount: Number(rawData.event_rsvpCount) || 0,
+              event_rsvp,
+              eventStatus,
+            };
+          }
+  
+          return {
+            ...rsvp,
+            event_rsvp,
+            rsvpCount: Number(rawData.event_rsvpCount) || 0,
+          };
+        });
+
+      
 
          const savedEntities= await this.savedEntity.createQueryBuilder("savedEntity")
               .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
@@ -401,12 +476,13 @@ export class EventController {
                   .map(entity => entity.event?.id)
                   .filter(Boolean) // Remove undefined/null values
               );
+
+              const event = formattedRsvpEvents.map((activity) => ({
+                ...activity,
+                isFavourite: savedEventIds.has(activity.id),
+              }));
               
-              const isFavourite = savedEventIds.has(singleEvent.id);
-              const event = {
-                ...singleEvent,
-                isFavourite,
-              };
+          
             
               
               
@@ -422,6 +498,8 @@ export class EventController {
           .leftJoinAndSelect("space.brand", "spaceBrand")
 
           .where("event.user = :userId", { userId: req.user?.id })
+          .leftJoinAndSelect("event.user", "user")
+
           .skip(skipNumber)
           .take(takeNumber)
           .orderBy("event.createdAt", "DESC")
