@@ -148,8 +148,8 @@ export class EventController {
       if (leaseSpace) {
         leaseSpace.event = event;
         await this.leaseSpaceRepo.save(leaseSpace);
+        delete event.leaseSpace;
       }
-      delete event.leaseSpace;
 
       res
         .status(HTTP_STATUS.OK)
@@ -231,6 +231,16 @@ export class EventController {
         return next(res.status(404).json({ message: "Event not found" }));
       }
 
+      if (!leaseId && existingEvent.leaseSpace && existingEvent.leaseSpace != null) {
+        const findExistingLease = await this.leaseSpaceRepo.findOne({
+          where: { id: existingEvent.leaseSpace.id },
+        });
+        findExistingLease.isUsed = false;
+        findExistingLease.event = null;
+        await this.leaseSpaceRepo.save(findExistingLease);
+        existingEvent.leaseSpace = null;
+      }
+
       if (leaseId) {
         const findExistingLease = await this.leaseSpaceRepo.findOne({
           where: { id: existingEvent.leaseSpace.id },
@@ -249,14 +259,6 @@ export class EventController {
         leaseSpace.event = existingEvent;
         await this.leaseSpaceRepo.save(leaseSpace);
         existingEvent.leaseSpace = leaseSpace;
-      } else if (existingEvent.leaseSpace && existingEvent.leaseSpace != null) {
-        const findExistingLease = await this.leaseSpaceRepo.findOne({
-          where: { id: existingEvent.leaseSpace.id },
-        });
-        findExistingLease.isUsed = false;
-        findExistingLease.event = null;
-        await this.leaseSpaceRepo.save(findExistingLease);
-        existingEvent.leaseSpace = null;
       }
       if (eventName) {
         const checkName = await this.eventRepo.findOne({
