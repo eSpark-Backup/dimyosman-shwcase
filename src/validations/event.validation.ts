@@ -11,7 +11,7 @@ export class EventValidation {
         })
       )
       .required(),
-      leaseId: Joi.string().optional(),
+    leaseId: Joi.string().optional(),
     brandId: Joi.string().required(),
     spaceId: Joi.string().required(),
     eventDate: Joi.array()
@@ -68,8 +68,6 @@ export class EventValidation {
   });
 
   static RsvpEvent = Joi.object({
-    attendanceDates: Joi.object({
-      dateTime: Joi.string().required(),
-    }).optional(),
+    attendanceDates: Joi.object().optional(),
   });
 }
