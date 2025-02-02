@@ -231,7 +231,11 @@ export class EventController {
         return next(res.status(404).json({ message: "Event not found" }));
       }
 
-      if (!leaseId && existingEvent.leaseSpace && existingEvent.leaseSpace != null) {
+      if (
+        (!leaseId || leaseId == undefined) &&
+        existingEvent.leaseSpace &&
+        existingEvent.leaseSpace != null
+      ) {
         const findExistingLease = await this.leaseSpaceRepo.findOne({
           where: { id: existingEvent.leaseSpace.id },
         });
@@ -242,13 +246,14 @@ export class EventController {
       }
 
       if (leaseId) {
+        if(existingEvent.leaseSpace && existingEvent.leaseSpace.id ) {
         const findExistingLease = await this.leaseSpaceRepo.findOne({
           where: { id: existingEvent.leaseSpace.id },
         });
         findExistingLease.isUsed = false;
         findExistingLease.event = null;
         await this.leaseSpaceRepo.save(findExistingLease);
-
+      }
         const leaseSpace = await this.leaseSpaceRepo.findOne({
           where: { id: leaseId },
         });
