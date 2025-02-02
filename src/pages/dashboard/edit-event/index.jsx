@@ -85,10 +85,10 @@ const EditEvent = () => {
                 }));
 
                 let address = "";
-                if (data?.data?.space?.location?.lat && data?.data?.space?.location?.long) {
+                if (data?.data?.space?.brand?.location?.lat && data?.data?.space?.brand?.location?.long) {
                     address = await fetchAddressFromCoordinates(
-                        data?.data?.space?.location?.lat,
-                        data?.data?.space?.location?.long
+                        data?.data?.space?.brand?.location?.lat,
+                        data?.data?.space?.brand?.location?.long
                     );
                 }
 
@@ -112,12 +112,12 @@ const EditEvent = () => {
                         ]
                         : [],
                     eventTitle: data?.data?.details?.htmlContent,
-                    // space: data?.data?.space?.id,
                     space: data?.data?.leaseSpace?.id ? data?.data?.leaseSpace?.id : data?.data?.space?.id,
-                    location: { lat: data?.data?.space?.location?.lat, long: data?.data?.space?.location?.long },
+                    location: { lat: data?.data?.space?.brand?.location?.lat, long: data?.data?.space?.brand?.location?.long },
                     streetAddress: address,
                     // lease: selectedSpace[0]?.id,
-                    toSendSpace: data?.data?.leaseSpace?.id ? selectedSpace[0]?.space?.id : data?.data?.space?.id
+                    toSendSpace: data?.data?.leaseSpace?.id ? selectedSpace[0]?.space?.id : data?.data?.space?.id,
+                    mapInstructions: data?.data?.space?.brand?.location?.additional
                 }));
             }
         }
@@ -372,20 +372,28 @@ const EditEvent = () => {
     };
 
     const handleDateChange = (selectedDate) => {
-        if (selectedDate?.length > 0) {
-            const formattedStartDate = selectedDate[0]
-                ? dayjs(selectedDate[0]).format("DD.MM.YYYY")
-                : "dd.mm.yyyy";
-            const formattedEndDate = selectedDate[1]
-                ? dayjs(selectedDate[1]).format("DD.MM.YYYY")
-                : "dd.mm.yyyy";
+        if (!selectedDate || selectedDate.length === 0) return;
 
-            setEventData((prev) => ({
+        const formattedStartDate = selectedDate[0]
+            ? dayjs(selectedDate[0]).format("DD.MM.YYYY")
+            : "dd.mm.yyyy";
+        const formattedEndDate = selectedDate[1]
+            ? dayjs(selectedDate[1]).format("DD.MM.YYYY")
+            : "dd.mm.yyyy";
+
+
+        setEventData((prev) => {
+            if (
+                JSON.stringify(prev.selectedDate) === JSON.stringify(selectedDate)
+            ) {
+                return prev;
+            }
+            return {
                 ...prev,
                 selectedDate,
                 eventDate: `${formattedStartDate} - ${formattedEndDate}`,
-            }));
-        }
+            };
+        });
     };
 
     const [event, { isSuccess: eventPostSuccess, isError: IsEventPostError, error: eventPostError, data: eventPostData }] = useEditEventMutation()
@@ -470,20 +478,20 @@ const EditEvent = () => {
     const HandleDraftSubmit = () => handleSubmit("DRAFT");
     const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
 
-    useEffect(() => {
-        if (spaceData && data) {
-            if (eventData.space !== data?.data?.space?.id) {
-                const selectedSpaceData = spaceOptions?.filter((item) => item.value === data?.data?.space?.id)
-                const updatedLocation = { lat: selectedSpaceData[0]?.item?.location?.lat, long: selectedSpaceData[0]?.item?.location?.long }
-                setEventData((prevState) => ({
-                    ...prevState,
-                    space: data?.data?.space?.id,
-                    location: updatedLocation,
-                    mapInstructions: selectedSpaceData[0]?.item?.location?.additional
-                }));
-            }
-        }
-    }, [isSuccess, isSpaceSuccess]);
+    // useEffect(() => {
+    //     if (spaceData && data) {
+    //         if (eventData.space !== data?.data?.space?.id) {
+    //             const selectedSpaceData = spaceOptions?.filter((item) => item.value === data?.data?.space?.id)
+    //             const updatedLocation = { lat: selectedSpaceData[0]?.item?.location?.lat, long: selectedSpaceData[0]?.item?.location?.long }
+    //             setEventData((prevState) => ({
+    //                 ...prevState,
+    //                 space: data?.data?.space?.id,
+    //                 location: updatedLocation,
+    //                 mapInstructions: selectedSpaceData[0]?.item?.location?.additional
+    //             }));
+    //         }
+    //     }
+    // }, [isSuccess, isSpaceSuccess]);
 
     const updateEventData = (key, value) => {
         setEventData((prev) => {
