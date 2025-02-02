@@ -60,7 +60,10 @@ const Activity = () => {
             features: spaceFeatures,
             userRole: item?.type === "brand" ? "user" : item?.type === "space" ? "brand" : "brand",
             slides: coverArray,
-            isFavourite: item?.isFavourite
+            isFavourite: item?.isFavourite,
+            rsvpDates: item.event_rsvp?.attendanceDates?.rsvpDates ? item.event_rsvp?.attendanceDates?.rsvpDates?.map(item => item.dateTime) : [],
+            startDate: item?.type === "event" && item?.eventDate[0]?.startDate || "",
+            endDate: item?.type === "event" && item?.eventDate[0]?.endDate || "",
           };
         }) || [];
         const mergedData = [...activityData, ...updatedData];
@@ -149,6 +152,9 @@ const Activity = () => {
               userRole={item?.userRole}
               slides={item?.slides}
               features={item?.features}
+              rsvpDates={item?.rsvpDates}
+              startDate={item?.startDate}
+              endDate={item?.endDate}
               handleAction={(fullItem) => {
                 if (fullItem.activity === "space") {
                   const detail = saveAllActivity?.find(

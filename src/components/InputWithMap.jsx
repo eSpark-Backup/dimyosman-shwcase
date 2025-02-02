@@ -86,20 +86,31 @@ const InputWithMap = ({
   useEffect(() => {
     if (!defaultDate || !Array.isArray(defaultDate)) {
       setSelectedDate([null, null]);
+      onDateChange([null, null]); // Ensure onDateChange is called
       return;
     }
 
     const isValidDefault = isRangeValid(
-      defaultDate?.map((date) => (date ? new Date(date) : null)),
+      defaultDate.map((date) => (date ? new Date(date) : null)),
       bookedRanges
     );
 
-    setSelectedDate(
+    setSelectedDate((prev) => {
+      const newDate = isValidDefault
+        ? defaultDate.map((date) => (date ? new Date(date) : null))
+        : [null, null];
+
+      return JSON.stringify(prev) !== JSON.stringify(newDate) ? newDate : prev;
+    });
+
+    onDateChange(
       isValidDefault
-        ? defaultDate?.map((date) => (date ? new Date(date) : null))
+        ? defaultDate.map((date) => (date ? new Date(date) : null))
         : [null, null]
     );
   }, [defaultDate, bookedRanges]);
+
+
 
   const formatStartDate = (dateRange) =>
     dateRange && dateRange[0] ? dayjs(dateRange[0]).format("DD.MM.YYYY") : "dd.mm.yyyy";
@@ -415,7 +426,6 @@ const InputWithMap = ({
                     shouldDisableDate={(date) => isDateInRanges(date, bookedRanges)}
                     appearance="default"
                     showOneCalendar
-                    defaultCalendarMonth={selectedDate?.[0] || new Date()}
                   />
                 </LocalizationProvider>
               </Box>

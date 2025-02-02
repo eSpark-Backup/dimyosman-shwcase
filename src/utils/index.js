@@ -348,6 +348,9 @@ export const keysForBrandsSapcesEvents = (object, type) => {
 
     return {
       ...coverObject,
+      rsvpDates: object.event_rsvp?.attendanceDates?.rsvpDates ? object.event_rsvp?.attendanceDates?.rsvpDates?.map(item => item.dateTime) : [],
+      startDate: object?.eventDate[0]?.startDate || "",
+      endDate: object?.eventDate[0]?.endDate || "",
       eventId: object?.id || "",
       activityName: object?.eventName || "",
       activityImage: object?.eventImage || "",
