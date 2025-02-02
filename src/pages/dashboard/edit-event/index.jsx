@@ -55,16 +55,18 @@ const EditEvent = () => {
         selectedDate: [],
         brand: "",
         space: "",
-        streetAddress: ""
+        streetAddress: "",
+        leaseId: "",
+        toSendSpace: ''
     });
 
-    const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useSpacesForEventQuery({}, {
+    const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useSpacesForEventQuery({ eventId: params?.eventId }, {
         refetchOnMountOrArgChange: true,
     });
 
     useEffect(() => {
         const fetchAddress = async () => {
-            if (GetCategorySuccess && isSuccess) {
+            if (GetCategorySuccess && isSuccess && spaceData) {
                 const allCategories = Array.isArray(GetCategoryData?.data)
                     ? GetCategoryData.data.map((cat, index) => ({
                         id: index,
@@ -94,6 +96,8 @@ const EditEvent = () => {
                     ...prevState,
                     eventCategories: mergedCategories,
                 }));
+                const selectedSpace = spaceData?.data?.tenantSpaces?.filter((item) => item?.id === data?.data?.leaseSpace?.id)
+                console.log(selectedSpace)
                 setEventData((prevState) => ({
                     ...prevState,
                     eventCategories: mergedCategories,
@@ -108,27 +112,30 @@ const EditEvent = () => {
                         ]
                         : [],
                     eventTitle: data?.data?.details?.htmlContent,
-                    space: data?.data?.space?.id,
+                    // space: data?.data?.space?.id,
+                    space: data?.data?.leaseSpace?.id ? data?.data?.leaseSpace?.id : data?.data?.space?.id,
                     location: { lat: data?.data?.space?.location?.lat, long: data?.data?.space?.location?.long },
-                    streetAddress: address
+                    streetAddress: address,
+                    // lease: selectedSpace[0]?.id,
+                    toSendSpace: data?.data?.leaseSpace?.id ? selectedSpace[0]?.space?.id : data?.data?.space?.id
                 }));
             }
         }
         fetchAddress()
-    }, [GetCategorySuccess, isSuccess, data]);
+    }, [GetCategorySuccess, isSuccess, data, spaceData]);
     // States and Ref
     const mainImageRef = useRef(null)
     const profileImageRef = useRef(null)
 
     const [openMapModal, setMapModal] = useState(false);
-
-    const spaceOptions = [
+    let spaceOptions = [
         ...(spaceData?.data?.availableSpaces?.map((space) => {
             const item = {
                 location: {
                     lat: space?.brand?.location?.lat,
                     long: space?.brand?.location?.long,
-                    additional: space?.brand?.location?.additional
+                    additional: space?.brand?.location?.additional,
+                    lease: ""
                 }
             }
             return {
@@ -143,13 +150,15 @@ const EditEvent = () => {
                 location: {
                     lat: tenant?.space?.brand?.location?.lat,
                     long: tenant?.space?.brand?.location?.long,
-                    additional: tenant?.space?.brand?.location?.additional
+                    additional: tenant?.space?.brand?.location?.additional,
+                    lease: tenant?.id,
+                    tenantSpaceId: tenant?.space?.id
                 }
             }
             if (tenant.space) {
                 return {
-                    label: tenant.space.spaceName,
-                    value: tenant.space.id,
+                    label: `${tenant.space.spaceName} (LS)`,
+                    value: tenant?.id,
                     item: item,
                 };
             }
@@ -161,7 +170,7 @@ const EditEvent = () => {
 
     useEffect(() => {
         if (spaceData) {
-            
+
             if (eventData?.space !== "") {
                 let bookedDates = [];
 
@@ -174,11 +183,11 @@ const EditEvent = () => {
 
                     if (selectedSpace?.calendarEvents?.length > 0) {
                         bookedDates = selectedSpace.calendarEvents
-                        .filter((item) => item?.eventId !== data?.data?.id)
-                        .map((item) => ({
-                            start: new Date(item?.start),
-                            end: new Date(item?.end),
-                        }));
+                            .filter((item) => item?.eventId !== data?.data?.id)
+                            .map((item) => ({
+                                start: new Date(item?.start),
+                                end: new Date(item?.end),
+                            }));
                     }
                     setBookedRanges(bookedDates);
                     return;
@@ -186,7 +195,7 @@ const EditEvent = () => {
 
 
                 let tenantSpace = spaceData?.data?.tenantSpaces?.find(
-                    (tenant) => tenant?.space?.id === eventData?.space
+                    (tenant) => tenant?.id === eventData?.space
                 );
 
                 if (tenantSpace) {
@@ -225,6 +234,7 @@ const EditEvent = () => {
 
             }
         }
+        console.log(eventData)
     }, [spaceData, eventData, eventData?.space])
 
     const tabs = [
@@ -555,6 +565,7 @@ const EditEvent = () => {
                     }}
                     loading={loadingButton === "PUBLISH"}
                     onClick={HandlePublishSubmit}
+                    // onClick={() => console.log(eventData)}
                     loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
                     disabled={loadingButton && loadingButton !== "PUBLISH"}
                 >
