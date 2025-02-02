@@ -575,30 +575,60 @@ export class EventController {
       }
 
       if (tab == "Event") {
-        const [events, totalItems] = await this.eventRepo
+        const rawEvents = await this.eventRepo
           .createQueryBuilder("event")
           .leftJoinAndSelect("event.brand", "brand")
           .leftJoinAndSelect("event.space", "space")
           .leftJoinAndSelect("space.brand", "spaceBrand")
-
+          .leftJoin(
+            (qb) => {
+              return qb
+                .select("rsvp_sub.event", "eventId")
+                .addSelect("COUNT(rsvp_sub.id)", "rsvpCount")
+                .from("rsvp", "rsvp_sub")
+                .groupBy("rsvp_sub.event");
+            },
+            "rsvpCountSubquery",
+            "rsvpCountSubquery.eventId = event.id"
+          )
+          .addSelect(
+            "COALESCE(rsvpCountSubquery.rsvpCount, 0)",
+            "event_rsvpCount"
+          )
           .where("event.user = :userId", { userId: req.user?.id })
           .leftJoinAndSelect("event.user", "user")
 
           .skip(skipNumber)
           .take(takeNumber)
           .orderBy("event.createdAt", "DESC")
-          .getManyAndCount();
+          .getRawAndEntities();
 
-        if (events.length === 0) {
+        if (!rawEvents.entities.length) {
           res.status(200).json(handleResponse("No Events Found"));
           return next();
         }
 
-        events.forEach((event) => {
-          parseCoverImages(event);
-          parseCoverImages(event.brand);
-          parseCoverImages(event.space);
+        const { entities: rsvpEvents, raw } = rawEvents;
+        const events = rsvpEvents.map((rsvp, index) => {
+          const rawData = raw[index];
+          parseCoverImages(rsvp);
+          parseCoverImages(rsvp.brand);
+          parseCoverImages(rsvp.space);
+       
+
+          return {
+            ...rsvp,
+          
+            rsvpCount: Number(rawData.event_rsvpCount) || 0,
+          };
         });
+        
+
+
+        const [, totalItems] = await this.eventRepo
+          .createQueryBuilder("event")
+          .where("event.user = :userId", { userId: req.user?.id })
+          .getManyAndCount();
 
         res.status(200).json(
           handleResponse("Events Fetched Successfully", {

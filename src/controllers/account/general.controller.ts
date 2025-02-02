@@ -347,7 +347,6 @@ export class GeneralController {
         });
       }
 
-      const totalResults = spaceCount + eventCount + brandCount;
       let saveQuery;
       let savedEntitiesQuery = this.savedEntity
         .createQueryBuilder("savedEntity")
@@ -399,6 +398,7 @@ export class GeneralController {
         ...brand,
         isFavourite: savedEntityIds.has(brand.id),
       }));
+      const totalResults = spaceCount + updatedEvents.length + brandCount;
 
       const response = {
         spaces: updatedSpaces,
