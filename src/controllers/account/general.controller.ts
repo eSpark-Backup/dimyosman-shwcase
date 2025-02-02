@@ -95,6 +95,8 @@ export class GeneralController {
       let eventQuery = this.eventsRepo
         .createQueryBuilder("event")
         .leftJoinAndSelect("event.brand", "brand")
+        .leftJoinAndSelect("event.space", "space")
+        .leftJoinAndSelect("space.brand", "spaceBrand")
         .andWhere("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
         .andWhere("event.user != :userId", { userId })
         .addSelect((subQuery) => {
@@ -193,6 +195,38 @@ export class GeneralController {
             );
           })
         );
+
+        spaceQuery.andWhere(
+          new Brackets((qb) => {
+            qb.where(
+              `(${earthRadius} * acos(
+                        cos(radians(:lat)) *
+                        cos(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.lat')) * 1)) *
+                        cos(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.long')) * 1) - radians(:long)) +
+                        sin(radians(:lat)) *
+                        sin(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.lat')) * 1))
+                    )) <= :radius`,
+              { lat: newlat, long: newlong, radius: searchRadius }
+            );
+          })
+        );
+        eventQuery.andWhere(
+          new Brackets((qb) => {
+            qb.where(
+              `(${earthRadius} * acos(
+                        cos(radians(:lat)) *
+                        cos(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.lat')) * 1)) *
+                        cos(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.long')) * 1) - radians(:long)) +
+                        sin(radians(:lat)) *
+                        sin(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.lat')) * 1))
+                    )) <= :radius`,
+              { lat: newlat, long: newlong, radius: searchRadius }
+            );
+          })
+        );
+
+
+
       }
 
       if (additional) {
