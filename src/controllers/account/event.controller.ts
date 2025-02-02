@@ -226,6 +226,7 @@ export class EventController {
         .createQueryBuilder("event")
         .where("event.id = :id", { id })
         .leftJoinAndSelect("event.leaseSpace", "leaseSpace")
+        .leftJoinAndSelect("leaseSpace.space", "space")
         .getOne();
       if (!existingEvent) {
         return next(res.status(404).json({ message: "Event not found" }));
@@ -235,6 +236,7 @@ export class EventController {
         (!leaseId || leaseId == undefined) &&
         existingEvent.leaseSpace &&
         existingEvent.leaseSpace != null
+        && existingEvent.leaseSpace.space.id != spaceId
       ) {
         const findExistingLease = await this.leaseSpaceRepo.findOne({
           where: { id: existingEvent.leaseSpace.id },
