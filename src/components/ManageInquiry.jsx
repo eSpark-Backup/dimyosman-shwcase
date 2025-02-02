@@ -123,7 +123,7 @@ const DetailHeading = ({ name, weight, onClick }) => {
   );
 };
 
-const parseFormat = (date) => {
+const parsedFormat = (date) => {
   return parse(date, "dd.MM.yyyy", new Date());
 };
 
@@ -234,6 +234,23 @@ const ManageInquiry = ({
     }
   }, [details]);
 
+  useEffect(() => {
+    if (
+      !startDateClick &&
+      inquiryDetails?.contractDetails?.leaseInfo?.startDate
+    ) {
+      const start = inquiryDetails?.contractDetails?.leaseInfo?.startDate;
+
+      setSelectedStartDate(parsedFormat(start));
+    }
+
+    if (!endDateClick && inquiryDetails?.contractDetails?.leaseInfo?.endDate) {
+      const end = inquiryDetails?.contractDetails?.leaseInfo?.endDate;
+
+      setSelectedEndDate(parsedFormat(end));
+    }
+  }, [inquiryDetails, startDateClick, endDateClick]);
+
   const handleStartDateChange = (newValue) => {
     setSelectedStartDate(newValue);
   };
@@ -244,22 +261,6 @@ const ManageInquiry = ({
 
   const handleStartOK = (val) => {
     const formattedDate = format(val, "dd.MM.yyyy");
-    const end = inquiryDetails?.contractDetails?.leaseInfo?.endDate;
-
-    if (parseFormat(formattedDate) > parseFormat(end)) {
-      toast.error("Start date should be less than end date");
-      setInquiryDetails((prev) => ({
-        ...prev,
-        contractDetails: {
-          ...prev.contractDetails,
-          leaseInfo: {
-            ...prev.contractDetails.leaseInfo,
-            startDate: "",
-          },
-        },
-      }));
-      return;
-    }
 
     if (val !== null) {
       setInquiryDetails((prev) => ({
@@ -277,22 +278,6 @@ const ManageInquiry = ({
 
   const handleEndOK = (val) => {
     const formattedDate = format(val, "dd.MM.yyyy");
-    const start = inquiryDetails?.contractDetails?.leaseInfo?.startDate;
-
-    if (parseFormat(formattedDate) < parseFormat(start)) {
-      toast.error("End date should be greater than start date");
-      setInquiryDetails((prev) => ({
-        ...prev,
-        contractDetails: {
-          ...prev.contractDetails,
-          leaseInfo: {
-            ...prev.contractDetails.leaseInfo,
-            endDate: "",
-          },
-        },
-      }));
-      return;
-    }
 
     if (val !== null) {
       setInquiryDetails((prev) => ({
@@ -364,6 +349,25 @@ const ManageInquiry = ({
         }
       });
     } else {
+      const start = updateInquiryObject?.contractDetails?.leaseInfo?.startDate
+      const end = updateInquiryObject?.contractDetails?.leaseInfo?.endDate
+      const leaseAmount = updateInquiryObject?.contractDetails?.leaseInfo?.leaseTotal
+
+      if (startDateClick && parsedFormat(start) > parsedFormat(end)) {
+        toast.error("Start date should be less than end date");
+        return;
+      }
+
+      if (endDateClick && parsedFormat(end) < parsedFormat(start)) {
+        toast.error("End date should be greater than start date");
+        return;
+      }
+
+      if(leaseAmount?.length === 1){
+        toast.error("Lease amount should be greater than 0");
+        return;
+      }
+
       leaseSpace({ data: updateInquiryObject }).then((res) => {
         if (res?.error) {
           toast.error(res?.error?.data?.message || "something went wrong");
@@ -991,11 +995,7 @@ const ManageInquiry = ({
                 height: "31px",
                 textTransform: "capitalize",
                 background:
-                  inquiryDetails?.contractDetails?.leaseInfo?.startDate ===
-                    "" ||
-                  inquiryDetails?.contractDetails?.leaseInfo?.endDate === ""
-                    ? "light-dark(rgba(239, 239, 239, 0.3), rgba(19, 1, 1, 0.3))"
-                    : "linear-gradient(0deg, rgba(0, 20, 28, 0.7), rgba(0, 20, 28, 0.7)), #FFFFFF",
+                  "linear-gradient(0deg, rgba(0, 20, 28, 0.7), rgba(0, 20, 28, 0.7)), #FFFFFF",
                 borderRadius: "5px",
                 fontWeight: 600,
                 fontSize: "16px",
@@ -1006,13 +1006,6 @@ const ManageInquiry = ({
               loading={isLoading || isTenantLoading}
               loadingIndicator={
                 <CircularProgress size={15} sx={{ color: "#ffffff" }} />
-              }
-              disabled={
-                spc
-                  ? false
-                  : inquiryDetails?.contractDetails?.leaseInfo?.startDate ===
-                      "" ||
-                    inquiryDetails?.contractDetails?.leaseInfo?.endDate === ""
               }
             >
               {spc ? "Submit" : "Submit for Signature"}
