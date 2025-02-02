@@ -1,5 +1,15 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { ActionType, Brand, Events, LeaseSpace, RSVP, SavedEntity, SavedEntityType, Spaces, User } from "../../entity";
+import {
+  ActionType,
+  Brand,
+  Events,
+  LeaseSpace,
+  RSVP,
+  SavedEntity,
+  SavedEntityType,
+  Spaces,
+  User,
+} from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
 import { handleResponse, logger, parseCoverImages } from "../../utils";
@@ -22,7 +32,7 @@ export class EventController {
     private eventRepo: Repository<Events>,
     private rsvpEventRepo: Repository<RSVP>,
     private savedEntity: Repository<SavedEntity>,
-    private leaseSpaceRepo:Repository<LeaseSpace>
+    private leaseSpaceRepo: Repository<LeaseSpace>
   ) {}
 
   async createEvent(
@@ -56,7 +66,7 @@ export class EventController {
         spaceId,
         eventDate,
         coverOrder,
-        leaseId
+        leaseId,
       } = req.body;
       const checkName = await this.eventRepo.findOne({ where: { eventName } });
 
@@ -66,9 +76,11 @@ export class EventController {
           HTTP_STATUS.BAD_REQUEST
         );
       }
-      let leaseSpace:LeaseSpace;
-      if(leaseId){
-         leaseSpace = await this.leaseSpaceRepo.findOne({ where: { id: leaseId } });
+      let leaseSpace: LeaseSpace;
+      if (leaseId) {
+        leaseSpace = await this.leaseSpaceRepo.findOne({
+          where: { id: leaseId },
+        });
         if (!leaseSpace) {
           throw new ApiError("Lease Space not found", HTTP_STATUS.NOT_FOUND);
         }
@@ -116,7 +128,7 @@ export class EventController {
       newEvent.user = user as User;
       newEvent.brand = brand as Brand;
       newEvent.space = space as Spaces;
-      newEvent.leaseSpace = leaseSpace as LeaseSpace || null;
+      newEvent.leaseSpace = (leaseSpace as LeaseSpace) || null;
       newEvent.eventDate = eventDate;
       newEvent.coverImages = JSON.stringify(coverUrls) as Object;
       newEvent.eventImage = imageUrls[0].url as string;
@@ -133,7 +145,7 @@ export class EventController {
         fs.unlinkSync(filePath);
         console.log(`Deleted file: ${filePath}`);
       });
-      if(leaseSpace){
+      if (leaseSpace) {
         leaseSpace.event = event;
         await this.leaseSpaceRepo.save(leaseSpace);
       }
@@ -177,16 +189,13 @@ export class EventController {
         spaceId,
         eventDate,
         coverKeys,
-        leaseId
+        leaseId,
       } = req.body;
-
-
 
       const space = await this.spaceRepo.findOne({ where: { id: spaceId } });
       if (!space) {
         throw new ApiError("Space not found", HTTP_STATUS.NOT_FOUND);
       }
-
 
       const coverFilesPath = path.join(process.cwd(), "uploads");
       const imageFilesPath = path.join(process.cwd(), "uploads");
@@ -213,7 +222,8 @@ export class EventController {
       if (typeof coverKeys === "string" && !Array.isArray(coverKeys)) {
         coverKeys = coverKeys.split(",").map((item) => item.trim());
       }
-      const existingEvent = await this.eventRepo.createQueryBuilder("event")
+      const existingEvent = await this.eventRepo
+        .createQueryBuilder("event")
         .where("event.id = :id", { id })
         .leftJoinAndSelect("event.leaseSpace", "leaseSpace")
         .getOne();
@@ -221,21 +231,32 @@ export class EventController {
         return next(res.status(404).json({ message: "Event not found" }));
       }
 
-      
-      if(leaseId){
-        const findExistingLease= await this.leaseSpaceRepo.findOne({ where: { id: existingEvent.leaseSpace.id } });
+      if (leaseId) {
+        const findExistingLease = await this.leaseSpaceRepo.findOne({
+          where: { id: existingEvent.leaseSpace.id },
+        });
         findExistingLease.isUsed = false;
         findExistingLease.event = null;
         await this.leaseSpaceRepo.save(findExistingLease);
 
-        const leaseSpace = await this.leaseSpaceRepo.findOne({ where: { id: leaseId } });
+        const leaseSpace = await this.leaseSpaceRepo.findOne({
+          where: { id: leaseId },
+        });
         if (!leaseSpace) {
           throw new ApiError("Lease Space not found", HTTP_STATUS.NOT_FOUND);
         }
         leaseSpace.isUsed = true;
         leaseSpace.event = existingEvent;
         await this.leaseSpaceRepo.save(leaseSpace);
-        existingEvent.leaseSpace=leaseSpace;
+        existingEvent.leaseSpace = leaseSpace;
+      } else if (existingEvent.leaseSpace && existingEvent.leaseSpace != null) {
+        const findExistingLease = await this.leaseSpaceRepo.findOne({
+          where: { id: existingEvent.leaseSpace.id },
+        });
+        findExistingLease.isUsed = false;
+        findExistingLease.event = null;
+        await this.leaseSpaceRepo.save(findExistingLease);
+        existingEvent.leaseSpace = null;
       }
       if (eventName) {
         const checkName = await this.eventRepo.findOne({
@@ -380,18 +401,19 @@ export class EventController {
     try {
       const { id } = req.params;
       const { attendanceDates } = req.body;
-      const findRSVP= await this.rsvpEventRepo.createQueryBuilder("rsvp")
-      .where("rsvp.user = :userId", { userId: req.user?.id })
-      .andWhere("rsvp.event = :eventId", { eventId: id })
-      .getOne();
+      const findRSVP = await this.rsvpEventRepo
+        .createQueryBuilder("rsvp")
+        .where("rsvp.user = :userId", { userId: req.user?.id })
+        .andWhere("rsvp.event = :eventId", { eventId: id })
+        .getOne();
 
-      if(findRSVP){
-        findRSVP.attendanceDates=attendanceDates;
+      if (findRSVP) {
+        findRSVP.attendanceDates = attendanceDates;
         await this.rsvpEventRepo.save(findRSVP);
         res.status(200).json(handleResponse("RSVP Updated Successful"));
         return next();
       }
-      
+
       const event = await this.eventRepo.findOne({ where: { id } });
       if (!event) {
         throw new ApiError("Event not found", HTTP_STATUS.NOT_FOUND);
@@ -468,14 +490,14 @@ export class EventController {
               .andWhere("rsvp.user = :userId", { userId: req.user?.id })
               .limit(1);
           }, "event_rsvp")
-  
+
           .getRawAndEntities();
 
         if (!singleEvent) {
           res.status(200).json(handleResponse("Event not found"));
           return next();
         }
-      const { entities: rsvpEvents, raw } = singleEvent;
+        const { entities: rsvpEvents, raw } = singleEvent;
 
         const formattedRsvpEvents = rsvpEvents.map((rsvp, index) => {
           const rawData = raw[index];
@@ -489,10 +511,10 @@ export class EventController {
           const eventDate =
             rsvp.eventDate &&
             (rsvp.eventDate as [{ startDate: string; endDate: string }]);
-  
+
           if (eventDate) {
             const currentDate = new Date();
-  
+
             let eventStatus = "Ended";
             if (currentDate < new Date(eventDate[0].startDate)) {
               eventStatus = "Upcoming";
@@ -502,7 +524,7 @@ export class EventController {
             ) {
               eventStatus = "Ongoing";
             }
-  
+
             return {
               ...rsvp,
               rsvpCount: Number(rawData.event_rsvpCount) || 0,
@@ -510,7 +532,7 @@ export class EventController {
               eventStatus,
             };
           }
-  
+
           return {
             ...rsvp,
             event_rsvp,
@@ -518,31 +540,28 @@ export class EventController {
           };
         });
 
-      
+        const savedEntities = await this.savedEntity
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FAVORITE,
+          })
+          .andWhere("savedEntity.type = :type", { type: SavedEntityType.EVENT })
+          .leftJoinAndSelect("savedEntity.event", "event")
+          .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+          .getMany();
 
-         const savedEntities= await this.savedEntity.createQueryBuilder("savedEntity")
-              .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
-              .andWhere("savedEntity.type = :type", { type: SavedEntityType.EVENT })
-              .leftJoinAndSelect("savedEntity.event", "event")
-              .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
-              .getMany();
+        const savedEventIds = new Set(
+          savedEntities.map((entity) => entity.event?.id).filter(Boolean) // Remove undefined/null values
+        );
 
-              const savedEventIds = new Set(
-                savedEntities
-                  .map(entity => entity.event?.id)
-                  .filter(Boolean) // Remove undefined/null values
-              );
+        const event = formattedRsvpEvents.map((activity) => ({
+          ...activity,
+          isFavourite: savedEventIds.has(activity.id),
+        }));
 
-              const event = formattedRsvpEvents.map((activity) => ({
-                ...activity,
-                isFavourite: savedEventIds.has(activity.id),
-              }));
-              
-          
-            
-              
-              
-        res.status(200).json(handleResponse("Event Found Successfully", event[0]));
+        res
+          .status(200)
+          .json(handleResponse("Event Found Successfully", event[0]));
         return next();
       }
 
