@@ -238,6 +238,9 @@ const Search = () => {
                   features={item?.features}
                   search={true}
                   isFavourite={item?.isFavourite}
+                  rsvpDates={item?.rsvpDates}
+                  startDate={item?.startDate}
+                  endDate={item?.endDate}
                   handleAction={(fullItem) => {
                     if(fullItem?.activity === "space"){
                       const detail = saveAllSpaces?.find(

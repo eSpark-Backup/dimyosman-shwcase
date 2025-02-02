@@ -34,38 +34,35 @@ const Details = ({ spaceInquire, details, myProfile }) => {
     details = null; // Default case if `activity` doesn't match any
   }
 
-  ///these dates will come from backend to render in calendar
-  const apiDates = ["2025-02-25", "2025-02-28"];
-
   const [addRsvp, { isLoading: rsvpLoading }] = useAddRsvpDateMutation();
 
   const [selectedDates, setSelectedDates] = useState(
-    apiDates && apiDates.length > 0 ? apiDates.map((date) => dayjs(date)) : []
+    details?.rsvpDates && details?.rsvpDates.length > 0
+      ? details?.rsvpDates?.map((date) => dayjs(date).format("YYYY-MM-DD"))
+      : []
   );
 
   const [openCalendar, setOpenCalendar] = useState(false);
-  const [tempSelectedDate, setTempSelectedDate] = useState(null);
 
   const handleOk = () => {
-    if (
-      tempSelectedDate &&
-      !selectedDates.some((d) => d.isSame(tempSelectedDate, "day"))
-    ) {
-      setSelectedDates([...selectedDates, tempSelectedDate]);
-      const dateToSend = tempSelectedDate.format("YYYY-MM-DD");
-      const objToSend = {
-        id: myProfile?.id,
-        credentials: {
-          attendanceDates: {
-            dateTime: dateToSend,
-          },
+    const newRsvpDates = selectedDates.map((item) => {
+      return { dateTime: item };
+    });
+    const objToSend = {
+      id: myProfile?.id,
+      credentials: {
+        attendanceDates: {
+          dateTime: "string",
+          rsvpDates: newRsvpDates,
         },
-      };
-      addRsvp(objToSend).then(
-        (res) => res?.data?.status && toast.success(res?.data?.message)
-      );
-    }
-    setOpenCalendar(false);
+      },
+    };
+    addRsvp(objToSend).then((res) => {
+      if (res?.data?.status) {
+        toast.success(res?.data?.message);
+        setOpenCalendar(false);
+      }
+    });
   };
 
   const handleCancel = () => {
@@ -390,11 +387,12 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           <RSVPCalendar
             loading={rsvpLoading}
             modalRef={modalRef}
-            tempSelectedDate={tempSelectedDate}
-            setTempSelectedDate={setTempSelectedDate}
             selectedDates={selectedDates}
+            setSelectedDates={setSelectedDates}
             handleCancel={handleCancel}
             handleOk={handleOk}
+            startDate={details?.startDate}
+            endDate={details?.endDate}
           />
         )}
         {(!myProfile?.owned) && (
@@ -403,7 +401,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               if (myProfile?.type === "event") {
                 setOpenCalendar(2);
               } else {
-                spaceInquire ? () => spaceInquire(myProfile?.id) : () => {};
+                spaceInquire ? spaceInquire(myProfile?.id) : () => {};
               }
             }}
             sx={{
@@ -612,11 +610,12 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           <RSVPCalendar
             loading={rsvpLoading}
             modalRef={modalRef}
-            tempSelectedDate={tempSelectedDate}
-            setTempSelectedDate={setTempSelectedDate}
             selectedDates={selectedDates}
+            setSelectedDates={setSelectedDates}
             handleCancel={handleCancel}
             handleOk={handleOk}
+            startDate={details?.startDate}
+            endDate={details?.endDate}
           />
         )}
         {(!myProfile?.owned) && (
@@ -625,7 +624,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               if (myProfile?.type === "event") {
                 setOpenCalendar(1);
               } else {
-                spaceInquire ? () => spaceInquire(myProfile?.id) : () => {};
+                spaceInquire ? spaceInquire(myProfile?.id) : () => {};
               }
             }}
             sx={{
