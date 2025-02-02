@@ -21,10 +21,24 @@ const Search = () => {
   const pageSize = 7;
   const [hasMore, setHasMore] = useState(true);
   const observerRef = useRef(null);
+  const observerRefs = useRef(null);
   const [loadingStart, setLoadingStart] = useState(false);
   const [openInquiryModal, setOpenInquiryModal] = useState(false);
   const [inquiredDetail, setInquiredDetail] = useState({});
   const [saveAllSpaces, setSaveAllSpaces] = useState([]);
+
+  useEffect(() => {
+    if (!observerRefs.current) {
+      observerRefs.current = true;
+    }
+
+    return () => {
+      if (observerRefs.current) {
+        observerRefs.current = null;
+        dispatch(setPageNumber(1));
+      }
+    };
+  }, []);
 
   const {
     data: searchedData,
@@ -69,7 +83,10 @@ const Search = () => {
             ),
           ];
 
-          const mergedSapcesData = [...saveAllSpaces, ...getObject?.spaces].filter(
+          const mergedSapcesData = [
+            ...saveAllSpaces,
+            ...getObject?.spaces,
+          ].filter(
             (item, index, self) =>
               index === self.findIndex((t) => t?.id === item?.id)
           );
@@ -109,7 +126,15 @@ const Search = () => {
       }
       setHasFetchedData(true);
     }
-  }, [searchedData?.data, isSuccess, isLoading, isFetching, skip, parameters]);
+  }, [
+    searchedData?.data,
+    isSuccess,
+    isLoading,
+    isFetching,
+    skip,
+    parameters,
+    page,
+  ]);
 
   useEffect(() => {
     if (
@@ -242,7 +267,7 @@ const Search = () => {
                   startDate={item?.startDate}
                   endDate={item?.endDate}
                   handleAction={(fullItem) => {
-                    if(fullItem?.activity === "space"){
+                    if (fullItem?.activity === "space") {
                       const detail = saveAllSpaces?.find(
                         (spc) => spc.id === fullItem.id
                       );
@@ -281,7 +306,6 @@ const Search = () => {
           }}
         >
           <Filters
-            allDataLocation={data?.map((loc) => loc.location)?.flat()}
             setHasMore={setHasMore}
             setLoadingStart={setLoadingStart}
             setData={setData}

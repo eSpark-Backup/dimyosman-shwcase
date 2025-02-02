@@ -14,7 +14,7 @@ import {
 
 import { search } from "../assets";
 
-import { setAllCategoriesNotSearch, setRadius } from "../store/slices/search";
+import { setAllCategoriesNotSearch } from "../store/slices/search";
 
 import { useGetGeneralCategoriesQuery } from "../services/general";
 
@@ -34,12 +34,6 @@ const SearchBar = ({
 
   const { pathname } = useLocation();
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    if (pathname !== "/search") {
-      dispatch(setRadius(""));
-    }
-  }, [pathname]);
 
   const { data } = useGetGeneralCategoriesQuery(undefined, {
     skip: pathname === "/search",

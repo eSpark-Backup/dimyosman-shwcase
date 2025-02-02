@@ -342,17 +342,8 @@ const Message = () => {
       dispatch(isActiveMembers(obj.members));
       emitEvent("CHAT_JOINED", obj);
     }
-    const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds")) || [];
 
-    const ifChatIdExists = getUnreadChatIds?.filter(
-      (id) => id !== allGroups[index]?.chatGroups[0]?.id
-    );
-
-    if (ifChatIdExists?.length > 0) {
-      setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
-    } else {
-      deleteCookie("unreadChatIds");
-    }
+    unreadChat(allGroups[index]?.chatGroups[0]?.id);
   };
 
   useEffect(() => {
@@ -387,17 +378,7 @@ const Message = () => {
         dispatch(isActiveMembers(obj.members));
         emitEvent("CHAT_JOINED", obj);
 
-        const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds")) || [];
-
-        const ifChatIdExists = getUnreadChatIds?.filter(
-          (id) => id !== selected?.chatGroup?.id
-        );
-
-        if (ifChatIdExists?.length > 0) {
-          setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
-        } else {
-          deleteCookie("unreadChatIds");
-        }
+        unreadChat(selected?.chatGroup?.id);
       }
 
       if (selectedChatId !== null && expanded !== null) {
@@ -423,7 +404,7 @@ const Message = () => {
             setSelectedGroup(selected);
           }
         }
-
+        unreadChat(selected?.chatGroup?.id);
         setInitialChatId(null);
 
         if (toShare && toShare?.chatId !== selectedChatId) {
@@ -435,6 +416,18 @@ const Message = () => {
       }
     }
   }, [allGroups, expanded, messages, gotToMessage, activeTab, allMessages]);
+
+  const unreadChat = (groupId) => {
+    const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds")) || [];
+
+    const ifChatIdExists = getUnreadChatIds?.filter((id) => id !== groupId);
+
+    if (ifChatIdExists?.length > 0) {
+      setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
+    } else {
+      deleteCookie("unreadChatIds");
+    }
+  };
 
   const filterChats = (type) => {
     const filterGroups =

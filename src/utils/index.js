@@ -318,10 +318,10 @@ export const keysForBrandsSapcesEvents = (object, type) => {
     userImage: object?.brand?.brandImage || "",
     userRole: "brand",
     slides: coverArray,
-    location: object?.brand?.location || [],
   };
 
   if (type === "space") {
+
     const filterPrice =
       object?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") ||
       [];
@@ -342,6 +342,7 @@ export const keysForBrandsSapcesEvents = (object, type) => {
         : "N/A",
       features: spaceFeatures,
       activityImage: object?.spaceImage || "",
+      location: object?.brand?.location || [],
     };
   } else if (type === "event") {
 
@@ -359,6 +360,7 @@ export const keysForBrandsSapcesEvents = (object, type) => {
       deadline: object?.eventDate[0]?.endDate
         ? formatDate(object?.eventDate[0]?.endDate)
         : "N/A",
+      location: object?.space?.brand?.location || [],
     };
   }
 };
