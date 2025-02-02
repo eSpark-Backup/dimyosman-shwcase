@@ -177,6 +177,8 @@ const InputWithMap = ({
         updateEventData("location", updatedLocation);
         updateEventData("mapInstructions", selectedSpaceData[0]?.item?.location?.additional);
         updateEventData("streetAddress", address);
+        updateEventData("leaseId", selectedSpaceData[0]?.item?.location?.lease);
+        updateEventData("toSendSpace", selectedSpaceData[0]?.item?.location?.tenantSpaceId ? selectedSpaceData[0]?.item?.location?.tenantSpaceId : selectedValue);
       }
     }
     else if (activity === "space") {
@@ -413,6 +415,7 @@ const InputWithMap = ({
                     shouldDisableDate={(date) => isDateInRanges(date, bookedRanges)}
                     appearance="default"
                     showOneCalendar
+                    defaultCalendarMonth={selectedDate?.[0] || new Date()}
                   />
                 </LocalizationProvider>
               </Box>

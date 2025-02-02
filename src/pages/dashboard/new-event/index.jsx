@@ -30,14 +30,16 @@ const NewEvent = () => {
         selectedDate: [null, null],
         brand: "",
         space: "",
-        streetAddress: "Address line will be filled automatically."
+        streetAddress: "Address line will be filled automatically.",
+        leaseId: "",
+        toSendSpace: ''
     });
     const [bookedRanges, setBookedRanges] = useState([])
     const { data: brandData, isError: isBrandError, isLoading: BrandLoading, isSuccess: isBrandSuccess, error: brandError, isFetching: isBrandFetching } = useGetAllBrandsQuery({}, {
         refetchOnMountOrArgChange: true,
     });
 
-    const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useSpacesForEventQuery({}, {
+    const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useSpacesForEventQuery({ check: true }, {
         refetchOnMountOrArgChange: true,
     });
 
@@ -86,12 +88,13 @@ const NewEvent = () => {
                 location: {
                     lat: space?.brand?.location?.lat,
                     long: space?.brand?.location?.long,
-                    additional: space?.brand?.location?.additional
+                    additional: space?.brand?.location?.additional,
+                    lease: ""
                 }
             }
             return {
                 label: space.spaceName,
-                value: space.id,
+                value: space?.id,
                 item: item,
             }
         }) || []),
@@ -101,13 +104,15 @@ const NewEvent = () => {
                 location: {
                     lat: tenant?.space?.brand?.location?.lat,
                     long: tenant?.space?.brand?.location?.long,
-                    additional: tenant?.space?.brand?.location?.additional
+                    additional: tenant?.space?.brand?.location?.additional,
+                    lease: tenant?.id,
+                    tenantSpaceId: tenant?.space?.id
                 }
             }
             if (tenant.space) {
                 return {
-                    label: tenant.space.spaceName,
-                    value: tenant.space.id,
+                    label: `${tenant.space.spaceName} (LS)`,
+                    value: tenant?.id,
                     item: item,
                 };
             }
@@ -160,7 +165,7 @@ const NewEvent = () => {
 
 
             let tenantSpace = spaceData?.data?.tenantSpaces?.find(
-                (tenant) => tenant?.space?.id === eventData?.space
+                (tenant) => tenant?.id === eventData?.space
             );
 
             if (tenantSpace) {

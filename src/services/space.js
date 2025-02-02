@@ -216,9 +216,14 @@ export const spaceApi = api.injectEndpoints({
       },
     }),
     spacesForEvent: builder.query({
-      query: ({ } = {}) => {
+      query: ({ check, eventId } = {}) => {
+        const queryParams = new URLSearchParams();
+
+        if (check) queryParams.append("check", check);
+        if (eventId) queryParams.append("eventId", eventId);
+
         return {
-          url: `/space/SpaceForEvent`,
+          url: `/space/SpaceForEvent${queryParams.toString() ? `?${queryParams.toString()}` : ""}`,
           method: "POST",
         };
       },
