@@ -8,6 +8,7 @@ import { updateEvents } from "../../../../store/slices/event";
 import { eventMainImage } from "../../../../assets";
 import { useParams } from "react-router-dom";
 import { fetchAddressFromCoordinates } from "../../../../utils";
+import moment from "moment";
 
 const EventDetails = () => {
   const { id } = useParams();
@@ -52,8 +53,11 @@ const EventDetails = () => {
                   location: address,
                   space: data?.data?.space?.spaceName,
                   spaceCategory: data?.data?.space?.spaceCategory?.map(item => item.name) || [],
-                  startingDate: dayjs(data?.data?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
-                  endingDate: dayjs(data?.data?.eventDate[0]?.endDate).format("DD.MM.YYYY"),
+                  startingDate: moment.utc(data?.data?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
+                  endingDate: moment.utc(data?.data?.eventDate[0]?.endDate).format("DD.MM.YYYY"),
+                  rsvpDates: data?.data?.event_rsvp?.attendanceDates?.rsvpDates ? data?.data?.event_rsvp?.attendanceDates?.rsvpDates?.map(item => item.dateTime) : [],
+                  startDate: data?.data?.eventDate[0]?.startDate || "",
+                  endDate: data?.data?.eventDate[0]?.endDate || "",
                   expectedPoint: {
                     title: "What to Expect:",
                     points: [data?.data?.details?.htmlContent || ""],

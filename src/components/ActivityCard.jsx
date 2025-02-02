@@ -50,6 +50,9 @@ const ActivityCard = ({
   slides,
   search = false,
   isFavourite,
+  startDate,
+  endDate,
+  rsvpDates,
   handleAction = () => {},
 }) => {
   const theme = useTheme();
@@ -61,35 +64,29 @@ const ActivityCard = ({
   const [likeFunc, { isLoading }] = useAddInFavouritesMutation();
   const [addRsvp, { isLoading: rsvpLoading }] = useAddRsvpDateMutation();
 
-  ///these dates will come from backend to render in calendar
-  const apiDates = ["2025-02-25", "2025-02-28"];
-
   const [selectedDates, setSelectedDates] = useState(
-    apiDates && apiDates.length > 0 ? apiDates.map((date) => dayjs(date)) : []
+    rsvpDates && rsvpDates.length > 0 ? rsvpDates?.map((date) => dayjs(date).format("YYYY-MM-DD")) : []
   );
 
   const [openCalendar, setOpenCalendar] = useState(false);
-  const [tempSelectedDate, setTempSelectedDate] = useState(null);
 
   const handleOk = () => {
-    if (
-      tempSelectedDate &&
-      !selectedDates.some((d) => d.isSame(tempSelectedDate, "day"))
-    ) {
-      setSelectedDates([...selectedDates, tempSelectedDate]);
-
-      const dateToSend = tempSelectedDate.format("YYYY-MM-DD");
+    const newRsvpDates = selectedDates.map(item => {return { dateTime: item }})
       const objToSend = {
         id: activityId,
         credentials: {
           attendanceDates: {
-            dateTime: dateToSend,
+            dateTime: "string",
+            rsvpDates: newRsvpDates,
           },
         },
       };
-      addRsvp(objToSend).then(res => res?.data?.status && toast.success(res?.data?.message))
-      setOpenCalendar(false);
-    }
+      addRsvp(objToSend).then((res) => {
+        if (res?.data?.status) {
+          toast.success(res?.data?.message);
+          setOpenCalendar(false);
+        }
+      });
   };
 
   const handleCancel = () => {
@@ -762,11 +759,12 @@ const ActivityCard = ({
             <RSVPCalendar
               loading={rsvpLoading}
               modalRef={modalRef}
-              tempSelectedDate={tempSelectedDate}
-              setTempSelectedDate={setTempSelectedDate}
               selectedDates={selectedDates}
+              setSelectedDates={setSelectedDates}
               handleCancel={handleCancel}
               handleOk={handleOk}
+              startDate={startDate}
+              endDate={endDate}
             />
           )}
           <Button
