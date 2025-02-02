@@ -94,7 +94,7 @@ const Event = () => {
           eventImg: event?.eventImage,
           brand: event?.brand?.brandName,
           brandUrl: `/brand/${event?.brand?.id}`,
-          rsvp: "-",
+          rsvp: event?.rsvpCount,
           startDate: dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
           status: event?.status,
           hostedIn: event?.space?.spaceName,
@@ -120,7 +120,11 @@ const Event = () => {
     }
 
     if (isSuccess) {
-      setMyEventData(transformEventData(data?.data?.events || []));
+      if(tabsForApi[activeTab] === "RSVP"){
+        setMyEventData(transformEventData(data?.data?.map(({ event, ...rest }) =>({ ...rest, ...event })) || []));
+      } else {
+        setMyEventData(transformEventData(data?.data?.events || []));
+      }
       setHasShownErrorToast(false);
     }
 

@@ -128,6 +128,8 @@ const Filters = ({
       dispatch(setLocation({ lat: "", long: "" }));
       dispatch(emptyAllLocations());
       dispatch(setPageNumber(1));
+      dispatch(setSkip(true));
+      dispatch(setRadius(""));
     }
 
     if (pathname === "/search" && !isLessThan1281) {
@@ -229,7 +231,8 @@ const Filters = ({
     });
 
     dispatch(setAllFilterCategories(updatedCategories));
-
+    
+    dispatch(setRadius(""));
     dispatch(setPageNumber(1));
     setHasMore?.(true);
     setLoadingStart?.(false);
