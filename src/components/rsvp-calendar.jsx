@@ -22,8 +22,8 @@ const RSVPCalendar = ({
   handleCancel,
   handleOk,
 }) => {
-  const localStartDate = dayjs.utc(startDate).startOf("day").local();
-  const localEndDate = dayjs.utc(endDate).startOf("day").local();
+  const localStartDate = dayjs.utc(startDate).startOf("day").local().add(1, "day");
+  const localEndDate = dayjs.utc(endDate).startOf("day").local().add(1, "day");
 
   const handleDateSelect = (newDate) => {
     const localNewDate = dayjs(newDate).format("YYYY-MM-DD");
