@@ -1111,6 +1111,7 @@ export class SpaceController {
         let [leaseSpace, totalItems] = await this.leaseSpaceRepo
           .createQueryBuilder("leaseSpace")
           .leftJoinAndSelect("leaseSpace.space", "space")
+          .leftJoinAndSelect("leaseSpace.brand","leaseSpaceBrand")
           .leftJoinAndSelect("leaseSpace.owner", "owner")
           .leftJoinAndSelect("leaseSpace.event", "event")
           .leftJoinAndSelect("leaseSpace.tenant", "tenant")
