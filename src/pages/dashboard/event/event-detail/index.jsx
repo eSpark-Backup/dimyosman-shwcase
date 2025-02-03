@@ -37,8 +37,8 @@ const EventDetails = () => {
           profileName: data?.data?.eventName,
           category: data?.data?.eventCategory || [],
           details: {
-            by: "EcoLux Designs ",
-            starting: dayjs(data?.data?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
+            by: "EcoLux Designs",
+            starting: dayjs(data?.data?.eventDate[0]?.startDate).add(1, 'day').format("DD.MM.YYYY"),
             RSVP: "234566",
             saved: "789k",
           },
@@ -53,16 +53,24 @@ const EventDetails = () => {
                   location: address,
                   space: data?.data?.space?.spaceName,
                   spaceCategory: data?.data?.space?.spaceCategory?.map(item => item.name) || [],
-                  startingDate: moment.utc(data?.data?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
-                  endingDate: moment.utc(data?.data?.eventDate[0]?.endDate).format("DD.MM.YYYY"),
-                  rsvpDates: data?.data?.event_rsvp?.attendanceDates?.rsvpDates ? data?.data?.event_rsvp?.attendanceDates?.rsvpDates?.map(item => item.dateTime) : [],
-                  startDate: data?.data?.eventDate[0]?.startDate || "",
-                  endDate: data?.data?.eventDate[0]?.endDate || "",
+                  startingDate: moment.utc(data?.data?.eventDate[0]?.startDate).add(1, 'day').format("DD.MM.YYYY"),
+                  endingDate: moment.utc(data?.data?.eventDate[0]?.endDate).add(1, 'day').format("DD.MM.YYYY"),
+                  rsvpDates: data?.data?.event_rsvp?.attendanceDates?.rsvpDates
+                    ? data?.data?.event_rsvp?.attendanceDates?.rsvpDates.map(item => 
+                        moment.utc(item.dateTime).add(1, 'day').format()
+                      )
+                    : [],
+                  startDate: moment.utc(data?.data?.eventDate[0]?.startDate).add(1, 'day').format(),
+                  endDate: moment.utc(data?.data?.eventDate[0]?.endDate).add(1, 'day').format(),
                   expectedPoint: {
                     title: "What to Expect:",
                     points: [data?.data?.details?.htmlContent || ""],
                   },
-                  mapLocation: { lat: data?.data?.space?.brand?.location?.lat, long: data?.data?.space?.brand?.location?.long, additional: data?.data?.space?.brand?.location?.additional }
+                  mapLocation: {
+                    lat: data?.data?.space?.brand?.location?.lat,
+                    long: data?.data?.space?.brand?.location?.long,
+                    additional: data?.data?.space?.brand?.location?.additional,
+                  }
                 },
               },
             },
