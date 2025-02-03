@@ -209,7 +209,7 @@ const followingBrandColumns = (gotoDetail, handleAction) => {
   ];
 };
 
-const likedBrandColumns = (likeLoading, gotoDetail, handleAction) => {
+const likedBrandColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
   return [
     {
       name: "Brand Name",
@@ -279,7 +279,8 @@ const likedBrandColumns = (likeLoading, gotoDetail, handleAction) => {
       component: (item) => {
         return (
           <LoadingButton
-            // loading={likeLoading}
+            loading={likeLoading && item?.id === savedId}
+            disabled={likeLoading && item?.id === savedId}
             onClick={() => handleAction(item)}
             sx={{
               minWidth: "83px",
