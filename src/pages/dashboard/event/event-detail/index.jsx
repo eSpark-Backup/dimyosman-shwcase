@@ -62,7 +62,7 @@ const EventDetails = () => {
                     title: "What to Expect:",
                     points: [data?.data?.details?.htmlContent || ""],
                   },
-                  mapLocation: { lat: data?.data?.space?.location?.lat, long: data?.data?.space?.location?.long, additional: data?.data?.space?.location?.additional }
+                  mapLocation: { lat: data?.data?.space?.brand?.location?.lat, long: data?.data?.space?.brand?.location?.long, additional: data?.data?.space?.brand?.location?.additional }
                 },
               },
             },

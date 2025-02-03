@@ -96,7 +96,7 @@ const Event = () => {
           brandUrl: `/brand/${event?.brand?.id}`,
           rsvp: event?.rsvpCount,
           startDate: dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
-          status: event?.status,
+          status: event?.eventStatus || event?.status,
           hostedIn: event?.space?.spaceName,
           spaceUrl: `/space/${event?.space?.id}`,
           action: "Cancel",
@@ -121,9 +121,9 @@ const Event = () => {
 
     if (isSuccess) {
       if(tabsForApi[activeTab] === "RSVP"){
-        setMyEventData(transformEventData(data?.data?.map(({ event, ...rest }) =>({ ...rest, ...event })) || []));
+        data?.data?.length > 0 && setMyEventData(transformEventData(data?.data?.map(({ event, ...rest }) =>({ ...rest, ...event })) || []));
       } else {
-        setMyEventData(transformEventData(data?.data?.events || []));
+        data?.data?.events?.length > 0 && setMyEventData(transformEventData(data?.data?.events || []));
       }
       setHasShownErrorToast(false);
     }
