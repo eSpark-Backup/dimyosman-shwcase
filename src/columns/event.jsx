@@ -130,7 +130,7 @@ const myEventsColumns = (gotoDetail, handleAction, gotoBrand, gotoSpace) => {
   ];
 };
 
-const rsvpEventColumns = (gotoDetail, handleAction) => {
+const rsvpEventColumns = (rsvpLoading, rsvpId, gotoDetail, handleAction) => {
   return [
     {
       name: "Event Name",
@@ -240,7 +240,9 @@ const rsvpEventColumns = (gotoDetail, handleAction) => {
               justifyContent: "flex-end"
             }}
           >
-            <Button
+            <LoadingButton
+              loading={rsvpLoading && rsvpId === item?.rsvpId}
+              disabled={rsvpLoading && rsvpId === item?.rsvpId}
               onClick={() => handleAction(item)}
               sx={{
                 maxHeight: "26px",
@@ -254,7 +256,7 @@ const rsvpEventColumns = (gotoDetail, handleAction) => {
               }}
             >
               {item?.action}
-            </Button>
+            </LoadingButton>
           </Box>
         );
       },
@@ -262,7 +264,7 @@ const rsvpEventColumns = (gotoDetail, handleAction) => {
   ];
 };
 
-const likedEventColumns = (likeLoading, gotoDetail, handleAction) => {
+const likedEventColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
   return [
     {
       name: "Event Name",
@@ -370,7 +372,8 @@ const likedEventColumns = (likeLoading, gotoDetail, handleAction) => {
       component: (item) => {
         return (
           <LoadingButton
-            // loading={likeLoading}
+            loading={likeLoading && savedId === item?.id}
+            disabled={likeLoading && savedId === item?.id}
             onClick={() => handleAction(item)}
             sx={{
               minWidth: "83px",

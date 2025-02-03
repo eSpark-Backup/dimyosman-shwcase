@@ -257,7 +257,7 @@ const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
   ];
 };
 
-const likedSpaceColumns = (likeLoading, gotoDetail, handleAction) => {
+const likedSpaceColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
   return [
     {
       name: "Event Name",
@@ -353,7 +353,8 @@ const likedSpaceColumns = (likeLoading, gotoDetail, handleAction) => {
       component: (item) => {
         return (
           <LoadingButton
-            // loading={likeLoading}
+            loading={likeLoading && savedId === item?.spaceId}
+            disabled={likeLoading && savedId === item?.spaceId}
             onClick={() => handleAction(item)}
             sx={{
               minWidth: "83px",

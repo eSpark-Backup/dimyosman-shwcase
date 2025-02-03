@@ -10,7 +10,7 @@ import {
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { eventTableData } from "../../../constant";
 import { addIcon, eventIconLight, like } from "../../../assets";
-import { useGetAllEventsQuery } from "../../../services/events";
+import { useCancelRsvpMutation, useGetAllEventsQuery } from "../../../services/events";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +18,8 @@ import { useAddInFavouritesMutation, useGetFavouritesQuery } from "../../../serv
 
 const Event = () => {
   const [page, setPage] = useState(1);
+  const [savedId, setSavedId] = useState(null);
+  const [rsvpId, setRsvpId] = useState(null);
   const navigate = useNavigate();
 
   const tabs = [
@@ -42,7 +44,7 @@ const Event = () => {
 
   const [myEventData, setMyEventData] = useState([]);
   const [myEventData2, setMyEventData2] = useState([]);
-  const { data, isError, isLoading, isSuccess, error, isFetching } =
+  const { data, isError, isLoading, isSuccess, error, isFetching, refetch } =
     useGetAllEventsQuery(
       { page, pageSize: 7, tab: tabsForApi[activeTab] },
       {
@@ -58,7 +60,7 @@ const Event = () => {
     isSuccess: isSuccess2,
     error: error2,
     isFetching: isFetching2,
-    refetch,
+    refetch: refetch2,
   } = useGetFavouritesQuery(
     { page, pageSize: 7, entity: "EVENT" },
     {
@@ -89,6 +91,7 @@ const Event = () => {
         })))
       : (newData = apiData.map((event, index) => ({
           id: event?.id,
+          rsvpId: event?.rsvpId,          
           type: "event",
           eventName: event?.eventName,
           eventImg: event?.eventImage,
@@ -96,7 +99,7 @@ const Event = () => {
           brandUrl: `/brand/${event?.brand?.id}`,
           rsvp: event?.rsvpCount,
           startDate: dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
-          status: event?.status,
+          status: event?.eventStatus || event?.status,
           hostedIn: event?.space?.spaceName,
           spaceUrl: `/space/${event?.space?.id}`,
           action: "Cancel",
@@ -121,7 +124,7 @@ const Event = () => {
 
     if (isSuccess) {
       if(tabsForApi[activeTab] === "RSVP"){
-        setMyEventData(transformEventData(data?.data?.map(({ event, ...rest }) =>({ ...rest, ...event })) || []));
+        setMyEventData(transformEventData(data?.data?.map(({ event, ...rest }) =>({ ...rest, ...event, rsvpId: rest?.id })) || []));
       } else {
         setMyEventData(transformEventData(data?.data?.events || []));
       }
@@ -170,6 +173,7 @@ const Event = () => {
   };
 
     const [likeFunc, { isLoading: likeLoading }] = useAddInFavouritesMutation();
+    const [cancelRsvp, { isLoading: rsvpLoading }] = useCancelRsvpMutation();
   
 
   const handleAction = async (item, type) => {
@@ -179,9 +183,17 @@ const Event = () => {
         navigate(`/event/${item?.id}/edit`);
       }
     } else if (type === "remove") {
+      setSavedId(item?.id);
       await likeFunc({ entityId: item?.id, entityType: item?.type?.toUpperCase() }).unwrap();
-      refetch();
+      refetch2();
+      setSavedId(null);
       //remove functionality
+    } else if (type === "Cancel") {
+      //cancel rsvp functionality
+      setRsvpId(item?.rsvpId);
+      await cancelRsvp({id: item?.rsvpId}).unwrap();
+      refetch();
+      setRsvpId(null);
     } else {
       // other action functionality
     }
@@ -242,6 +254,9 @@ const Event = () => {
                 gotoBrand,
                 gotoSpace,
                 likeLoading,
+                rsvpLoading,
+                savedId,
+                rsvpId,
               )[activeTab].column
             }
             total={data && data?.data?.pagination?.totalItems}
