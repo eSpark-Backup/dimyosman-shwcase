@@ -117,7 +117,7 @@ const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
   ];
 };
 
-const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
+const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand, gotoEvent) => {
   return [
     {
       name: "Leasing Name",
@@ -193,7 +193,12 @@ const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
             sx={{
               fontSize: "14px",
               fontWeight: item?.eventUrl ? 600 : 400,
-              cursor: "pointer",
+              cursor: item?.eventUrl === "-" ? "default" : "pointer",
+            }}
+            onClick={() => {
+              if(item?.eventUrl !== "-"){
+                gotoEvent(item);
+              }
             }}
           >
             {item?.event}
@@ -371,7 +376,7 @@ const likedSpaceColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
   ];
 };
 
-const tenantSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
+const tenantSpaceColumns = (gotoDetail, handleAction, gotoBrand, gotoEvent) => {
   return [
     {
       name: "Tenant Name",
@@ -482,7 +487,12 @@ const tenantSpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
             sx={{
               fontSize: "14px",
               fontWeight: item?.eventUrl ? 600 : 400,
-              cursor: "pointer",
+              cursor: item?.eventUrl === "-" ? "default" : "pointer",
+            }}
+            onClick={() => {
+              if(item?.eventUrl !== "-"){
+                gotoEvent(item, "other");
+              }
             }}
           >
             {item?.event}
