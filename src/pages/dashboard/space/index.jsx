@@ -285,7 +285,7 @@ const Space = () => {
         term: "Daily",
         event: space?.event?.eventName || "-",
         brand: space?.brand?.brandName,
-        eventUrl: "-",
+        eventUrl: space?.event?.eventName ? `/event/${space?.event?.id}` : "-",
         brandUrl: `/brand/${space?.brand?.id}`,
         action:
           space?.status === "SubmitForSignature"
@@ -324,7 +324,7 @@ const Space = () => {
             : space?.status === "Active"
             ? "Leasing"
             : "Lease Ended",
-        eventUrl: "-",
+        eventUrl: space?.event?.eventName ? `/event/${space?.event?.id}` : "-",
         brandUrl: `/brand/${space?.brand?.id}`,
         action:
           space?.status === "SubmitForSignature"
@@ -485,6 +485,14 @@ const Space = () => {
     }
   };
 
+  const gotoEvent = (item, type = "") => {
+    if (type === "other") {
+      navigate(item?.eventUrl, { state: { other: true } });
+    } else {
+      navigate(item?.eventUrl);
+    }
+  };
+
   const handleAdd = () => {
     //add functionality
     navigate("/new-space");
@@ -538,7 +546,8 @@ const Space = () => {
           handleAction,
           mySpaceData,
           mySpaceData2,
-          gotoBrand
+          gotoBrand,
+          gotoEvent
         )[activeTab].data.length > 0 ? (
           <DynamicTable
             isLoading={false}
@@ -548,11 +557,12 @@ const Space = () => {
                 handleAction,
                 mySpaceData,
                 mySpaceData2,
-                gotoBrand
+                gotoBrand,
+                gotoEvent
               )[activeTab].data
             }
             columns={
-              spaceTableData(gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand, likeLoading, savedId)[
+              spaceTableData(gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand, likeLoading, savedId, gotoEvent)[
                 activeTab
               ].column
             }

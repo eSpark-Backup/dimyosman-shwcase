@@ -749,7 +749,7 @@ export const eventTableData = (gotoDetail, handleAction, myEventData, myEventDat
     ),
   },
 ];
-export const spaceTableData = (gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand, likeLoading, savedId) => [
+export const spaceTableData = (gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand, likeLoading, savedId, gotoEvent) => [
   {
     data: mySpaceData,
     column: mySpaceColumns(
@@ -763,7 +763,8 @@ export const spaceTableData = (gotoDetail, handleAction, mySpaceData, mySpaceDat
     column: leasingSpaceColumns(
       gotoDetail,
       (item) => handleAction(item, item?.action),
-      gotoBrand
+      gotoBrand,
+      gotoEvent
     ),
   },
   {
@@ -778,6 +779,7 @@ export const spaceTableData = (gotoDetail, handleAction, mySpaceData, mySpaceDat
       gotoDetail,
       (item) => handleAction(item, item?.action),
       gotoBrand,
+      gotoEvent
     ),
   },
 ];
