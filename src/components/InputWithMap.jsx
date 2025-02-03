@@ -86,7 +86,7 @@ const InputWithMap = ({
   useEffect(() => {
     if (!defaultDate || !Array.isArray(defaultDate)) {
       setSelectedDate([null, null]);
-      onDateChange([null, null]); // Ensure onDateChange is called
+      onDateChange && onDateChange([null, null]); // Ensure onDateChange is called
       return;
     }
 
