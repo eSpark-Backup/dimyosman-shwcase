@@ -127,7 +127,7 @@ export class SpaceController {
       .getManyAndCount();
 
       if (totalSpaces === 0 && totalTenantSpaces === 0) {
-        throw new ApiError("No spaces found", HTTP_STATUS.BAD_REQUEST);
+        throw new ApiError("No spaces found", HTTP_STATUS.OK);
       }
 
       if (spaces.length > 0) {
