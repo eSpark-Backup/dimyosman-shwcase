@@ -39,6 +39,7 @@ import {
   emptyAllLocations,
   emptyCategoryNames,
   emptyFilters,
+  setAllSearchData,
   setAllFilterCategories,
   setCategoryNames,
   setEntity,
@@ -46,6 +47,7 @@ import {
   setPageNumber,
   setRadius,
   setSkip,
+  setSpaceSearchData,
 } from "../store/slices/search";
 
 const icons = [
@@ -80,7 +82,6 @@ const Filters = ({
   setOpenFilterDrawer = null,
   setHasMore = null,
   setLoadingStart = null,
-  setData = null,
   loadingStart = false,
 }) => {
   const isLessThan1281 = useMediaQuery("(max-width:1281px)");
@@ -130,6 +131,8 @@ const Filters = ({
       dispatch(setPageNumber(1));
       dispatch(setSkip(true));
       dispatch(setRadius(""));
+      dispatch(setAllSearchData([]));
+      dispatch(setSpaceSearchData([]));
     }
 
     if (pathname === "/search" && !isLessThan1281) {
@@ -152,7 +155,8 @@ const Filters = ({
 
       dispatch(setRadius(debouncedRadius));
       dispatch(setSkip(false));
-      setData?.([]);
+      dispatch(setAllSearchData([]));
+      dispatch(setSpaceSearchData([]));
       setOpenFilterDrawer?.(false);
     }
   }, [debouncedRadius, dispatch, parameters.radius]);
@@ -236,7 +240,8 @@ const Filters = ({
     dispatch(setPageNumber(1));
     setHasMore?.(true);
     setLoadingStart?.(false);
-    setData?.([]);
+    dispatch(setAllSearchData([]));
+    dispatch(setSpaceSearchData([]));
 
     dispatch(emptyCategoryNames());
     dispatch(setEntity(entity.type));

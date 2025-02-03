@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { Stack, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { getSmallSidebar, sidebarRoutes } from "../constant";
+import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../store/slices/activity";
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const dispatch = useDispatch()
   const splittedPath = `/${pathname.split("/")[1]}`;
   const splittedSubPath = splittedPath.split("-");
   const currentPath =
@@ -39,7 +42,18 @@ const Sidebar = () => {
           <Stack
             className="sidebar-item"
             id={item.title}
-            onClick={() => navigate(item.link)}
+            onClick={() => {
+              if (item.title !== "Activity") {
+                localStorage.removeItem("scrollPosition");
+                dispatch(setAllActivityData([]));
+                dispatch(setSpaceData([]));
+                dispatch(setActivityPageNumber(1));
+              }
+              
+              localStorage.removeItem("searchScrollPosition"); 
+              navigate(item.link);
+
+            }}
             onMouseOver={() => setHovered(ind)}
             onMouseOut={() => setHovered(false)}
             direction="row"

@@ -11,34 +11,32 @@ import { keysForBrandsSapcesEvents } from "../../../utils";
 
 import { useGetGeneralSearchQuery } from "../../../services/general";
 
-import { setAllLocations, setPageNumber } from "../../../store/slices/search";
+import {
+  setAllSearchData,
+  setAllLocations,
+  setPageNumber,
+  setSpaceSearchData,
+} from "../../../store/slices/search";
+import {
+  setActivityPageNumber,
+  setAllActivityData,
+  setSpaceData,
+} from "../../../store/slices/activity";
 
 const Search = () => {
   const dispatch = useDispatch();
 
-  const { parameters, skip, page } = useSelector((state) => state.search);
+  const { parameters, skip, page, allData, spaceData } = useSelector(
+    (state) => state.search
+  );
 
   const pageSize = 7;
   const [hasMore, setHasMore] = useState(true);
   const observerRef = useRef(null);
-  const observerRefs = useRef(null);
+  const scrollContainerRef = useRef(null);
   const [loadingStart, setLoadingStart] = useState(false);
   const [openInquiryModal, setOpenInquiryModal] = useState(false);
   const [inquiredDetail, setInquiredDetail] = useState({});
-  const [saveAllSpaces, setSaveAllSpaces] = useState([]);
-
-  useEffect(() => {
-    if (!observerRefs.current) {
-      observerRefs.current = true;
-    }
-
-    return () => {
-      if (observerRefs.current) {
-        observerRefs.current = null;
-        dispatch(setPageNumber(1));
-      }
-    };
-  }, []);
 
   const {
     data: searchedData,
@@ -47,11 +45,19 @@ const Search = () => {
     isFetching,
   } = useGetGeneralSearchQuery(
     { page, pageSize, parameters },
-    { skip, refetchOnMountOrArgChange: skip ? false : true }
+    {
+      skip,
+      refetchOnMountOrArgChange: skip ? false : allData?.length ? false : true,
+    }
   );
 
-  const [data, setData] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
+
+  useEffect(() => {
+    dispatch(setAllActivityData([]));
+    dispatch(setSpaceData([]));
+    dispatch(setActivityPageNumber(1));
+  }, []);
 
   useEffect(() => {
     if (isSuccess) {
@@ -83,14 +89,12 @@ const Search = () => {
             ),
           ];
 
-          const mergedSapcesData = [
-            ...saveAllSpaces,
-            ...getObject?.spaces,
-          ].filter(
+          const mergedSapcesData = [...spaceData, ...getObject?.spaces].filter(
             (item, index, self) =>
               index === self.findIndex((t) => t?.id === item?.id)
           );
-          setSaveAllSpaces(mergedSapcesData);
+
+          dispatch(setSpaceSearchData(mergedSapcesData));
         }
 
         updatedData?.sort((a, b) => {
@@ -100,20 +104,18 @@ const Search = () => {
         });
 
         if (page === 1) {
-          setData(updatedData);
-
+          dispatch(setAllSearchData(updatedData));
           const locations = updatedData?.map((loc) => loc.location)?.flat();
           dispatch(setAllLocations(locations));
         } else {
-          const mergedData = [...data, ...updatedData].filter(
+          const mergedData = [...allData, ...updatedData].filter(
             (item, index, self) =>
               index === self.findIndex((t) => t?.id === item?.id)
           );
 
           const locations = mergedData?.map((loc) => loc.location)?.flat();
           dispatch(setAllLocations(locations));
-
-          setData(mergedData);
+          dispatch(setAllSearchData(mergedData));
         }
 
         setHasMore(
@@ -122,7 +124,8 @@ const Search = () => {
         );
         setLoadingStart(false);
       } else {
-        setData([]);
+        dispatch(setAllSearchData([]));
+        dispatch(setSpaceSearchData([]));
       }
       setHasFetchedData(true);
     }
@@ -137,6 +140,14 @@ const Search = () => {
   ]);
 
   useEffect(() => {
+    const searchScrollPosition = localStorage.getItem("searchScrollPosition");
+    if (scrollContainerRef.current && searchScrollPosition) {
+      scrollContainerRef.current.scrollTop = parseInt(searchScrollPosition, 10);
+      localStorage.removeItem("searchScrollPosition");
+    }
+  }, []);
+
+  useEffect(() => {
     if (
       !hasMore ||
       skip ||
@@ -147,16 +158,11 @@ const Search = () => {
 
     setLoadingStart(true);
 
-    let timeoutId = null;
-
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
           if (!isFetching) {
-            timeoutId = setTimeout(() => {
-              // setPage((prevPage) => prevPage + 1);
-              dispatch(setPageNumber(page + 1));
-            }, 300);
+            dispatch(setPageNumber(page + 1));
           }
         }
       },
@@ -171,9 +177,8 @@ const Search = () => {
       if (observerRef.current) {
         observer.unobserve(observerRef.current);
       }
-      if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [hasMore, skip, isFetching, data.length]);
+  }, [hasMore, skip, isFetching, allData.length]);
 
   const makeBrandsData = (el) => {
     const coverArray =
@@ -195,6 +200,15 @@ const Search = () => {
       slides: coverArray,
       location: el?.location || [],
     };
+  };
+
+  const handleNavigation = () => {
+    if (scrollContainerRef.current) {
+      localStorage.setItem(
+        "searchScrollPosition",
+        scrollContainerRef.current.scrollTop
+      );
+    }
   };
 
   if (page === 1 && (isLoading || isFetching)) {
@@ -225,13 +239,14 @@ const Search = () => {
             flexDirection: "column",
             rowGap: "12px",
           }}
+          ref={scrollContainerRef}
         >
-          {!skip && data.length === 0 && hasFetchedData ? (
+          {!skip && allData.length === 0 && hasFetchedData ? (
             <Box sx={{ width: "100%" }}>
               <h1>No Results Found</h1>
             </Box>
-          ) : data?.length ? (
-            data?.map((item, index) => {
+          ) : allData?.length ? (
+            allData?.map((item, index) => {
               return (
                 <ActivityCard
                   key={index}
@@ -266,9 +281,10 @@ const Search = () => {
                   rsvpDates={item?.rsvpDates}
                   startDate={item?.startDate}
                   endDate={item?.endDate}
+                  handleNavigation={handleNavigation}
                   handleAction={(fullItem) => {
                     if (fullItem?.activity === "space") {
-                      const detail = saveAllSpaces?.find(
+                      const detail = spaceData?.find(
                         (spc) => spc.id === fullItem.id
                       );
 
@@ -279,13 +295,13 @@ const Search = () => {
                 />
               );
             })
-          ) : skip === true && data.length === 0 ? (
+          ) : skip === true && allData.length === 0 ? (
             <Box sx={{ width: "100%" }}>
               <h1>Please Select Filters</h1>
             </Box>
           ) : null}
 
-          {data?.length > 0 && hasMore && (
+          {allData?.length > 0 && hasMore && (
             <div
               ref={observerRef}
               style={{ minHeight: 10, textAlign: "center" }}
@@ -308,8 +324,6 @@ const Search = () => {
           <Filters
             setHasMore={setHasMore}
             setLoadingStart={setLoadingStart}
-            setData={setData}
-            data={data}
             loadingStart={isFetching || isLoading}
           />
         </Grid>

@@ -142,6 +142,7 @@ const ManageInquiry = ({
   activeTab = null,
   page = null,
   setRefetchTriggered = null,
+  eventName = "",
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -166,7 +167,6 @@ const ManageInquiry = ({
       },
       tenantDetails: {
         tenant: "",
-        event: "",
         tenantOwner: "",
         additionalInfo: "",
       },
@@ -220,7 +220,6 @@ const ManageInquiry = ({
           },
           tenantDetails: {
             tenant: details?.tenant,
-            event: details?.events || "Ecolux Chic Pop-Up",
             tenantOwner: details?.tenantOwner,
             additionalInfo: details?.tenantAdditionalInfo || "",
           },
@@ -349,9 +348,10 @@ const ManageInquiry = ({
         }
       });
     } else {
-      const start = updateInquiryObject?.contractDetails?.leaseInfo?.startDate
-      const end = updateInquiryObject?.contractDetails?.leaseInfo?.endDate
-      const leaseAmount = updateInquiryObject?.contractDetails?.leaseInfo?.leaseTotal
+      const start = updateInquiryObject?.contractDetails?.leaseInfo?.startDate;
+      const end = updateInquiryObject?.contractDetails?.leaseInfo?.endDate;
+      const leaseAmount =
+        updateInquiryObject?.contractDetails?.leaseInfo?.leaseTotal;
 
       if (startDateClick && parsedFormat(start) > parsedFormat(end)) {
         toast.error("Start date should be less than end date");
@@ -363,7 +363,7 @@ const ManageInquiry = ({
         return;
       }
 
-      if(leaseAmount?.length === 1){
+      if (leaseAmount?.length === 1) {
         toast.error("Lease amount should be greater than 0");
         return;
       }
@@ -549,10 +549,7 @@ const ManageInquiry = ({
             name="Tenant"
             subtitle={inquiryDetails?.contractDetails?.tenantDetails?.tenant}
           />
-          <SubHeading
-            name="Event"
-            subtitle={inquiryDetails?.contractDetails?.tenantDetails?.event}
-          />
+          {spc && <SubHeading name="Event" subtitle={eventName} />}
           <SubHeading
             name="Owner"
             subtitle={
