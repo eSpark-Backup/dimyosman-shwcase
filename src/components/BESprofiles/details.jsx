@@ -393,6 +393,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             handleOk={handleOk}
             startDate={details?.startDate}
             endDate={details?.endDate}
+            isDetails={true}
           />
         )}
         {(!myProfile?.owned) && (
@@ -401,7 +402,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               if (myProfile?.type === "event") {
                 setOpenCalendar(2);
               } else {
-                spaceInquire ? spaceInquire(myProfile?.id) : () => {};
+                spaceInquire ? spaceInquire(myProfile?.id) : () => { };
               }
             }}
             sx={{
@@ -616,6 +617,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             handleOk={handleOk}
             startDate={details?.startDate}
             endDate={details?.endDate}
+            isDetails={true}
           />
         )}
         {(!myProfile?.owned) && (
@@ -624,7 +626,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               if (myProfile?.type === "event") {
                 setOpenCalendar(1);
               } else {
-                spaceInquire ? spaceInquire(myProfile?.id) : () => {};
+                spaceInquire ? spaceInquire(myProfile?.id) : () => { };
               }
             }}
             sx={{
