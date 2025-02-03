@@ -1,34 +1,39 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
+import { useInView } from "react-intersection-observer";
+
+import moment from "moment/moment";
 
 import { Box, Grid, Typography, LinearProgress, CircularProgress } from "@mui/material";
-import { useInView } from "react-intersection-observer";
+
 import { ActivityCard } from "../../../components";
 import SpaceInquireModal from "../../../components/SpaceInquireModal";
 
 import { useGetActivityDataQuery } from "../../../services/activity";
-import moment from "moment/moment";
+import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../../../store/slices/activity";
 
 const Activity = () => {
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const { data, isSuccess, isError, error, isFetching } = useGetActivityDataQuery({
-    page, pageSize: 10
-  }, { refetchOnMountOrArgChange: true })
+const dispatch = useDispatch();
 
-  const [activityData, setActivityData] = useState([]);
+const { allActivityData, activitySpaceData, page } = useSelector((state) => state.activity);
+
+  const [total, setTotal] = useState(0);
+
+  const { data, isSuccess, isError, error, isFetching, isLoading } = useGetActivityDataQuery({
+    page, pageSize: 10
+  }, { refetchOnMountOrArgChange: allActivityData?.length ? false : true })
+
   const [hasFetchedData, setHasFetchedData] = useState(false);
   const [openInquiryModal, setOpenInquiryModal] = useState(false);
   const [inquiredDetail, setInquiredDetail] = useState({});
-  const [saveAllActivity,setSaveAllActivity] = useState([])
+  const scrollContainerRef = useRef(null);
 
   useEffect(() => {
-    setIsLoading(true);
     if (isSuccess) {
       if (!data?.data && page === 1) {
-        setActivityData([]);
+        dispatch(setAllActivityData([]));
         setHasFetchedData(true); 
-        setIsLoading(false);
         return;
       }
       if (data?.data) {
@@ -66,9 +71,9 @@ const Activity = () => {
             endDate: item?.type === "event" && item?.eventDate[0]?.endDate || "",
           };
         }) || [];
-        const mergedData = [...activityData, ...updatedData];
+        const mergedData = [...allActivityData, ...updatedData];
 
-        const mergedSapcesData = [...saveAllActivity, ...data.data.activity].filter(
+        const mergedSapcesData = [...activitySpaceData, ...data.data.activity].filter(
           (item, index, self) =>
             index === self.findIndex((t) => t?.id === item?.id)
         );
@@ -76,23 +81,42 @@ const Activity = () => {
         const uniqueData = Array.from(
           new Map(mergedData.map((item) => [item.id, item])).values()
         );
-        setActivityData(uniqueData);
-        setSaveAllActivity(mergedSapcesData)
+        dispatch(setAllActivityData(uniqueData));
+        dispatch(setSpaceData(mergedSapcesData))
         setTotal(data?.data?.pagination?.totalItems);
       }
       setHasFetchedData(true); 
-      setIsLoading(false);
     }
   }, [isSuccess, data, page]);
 
+
+  useEffect(() => {
+    const scrollPosition = localStorage.getItem("scrollPosition");
+    if (scrollContainerRef.current && scrollPosition) {
+      scrollContainerRef.current.scrollTop = parseInt(scrollPosition, 10);
+      localStorage.removeItem("scrollPosition"); 
+    }
+  }, []);
+
   const { ref, inView } = useInView({ threshold: 0.5 });
   useEffect(() => {
-    if (inView && !isLoading && !isFetching && activityData.length < total) {
-      setPage((prev) => prev + 1);
-    }
-  }, [inView, isLoading, isFetching, activityData.length, total]);
 
-  if ((isLoading && page === 1)) {
+    if (inView && !isLoading && !isFetching && allActivityData.length < total) {
+      dispatch(setActivityPageNumber(page + 1));
+    }
+
+  }, [inView, isLoading, isFetching, allActivityData.length, total]);
+
+  const handleNavigation = () => {
+    if (scrollContainerRef.current) {
+      localStorage.setItem(
+        "scrollPosition",
+        scrollContainerRef.current.scrollTop
+      );
+    }
+  };
+
+  if (page === 1 && (isLoading || isFetching)) {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />
@@ -100,7 +124,7 @@ const Activity = () => {
     )
   }
 
-  if (hasFetchedData && !isLoading && activityData?.length === 0) {
+  if (hasFetchedData && !isLoading && allActivityData?.length === 0) {
     return (
       <Box sx={{ width: "100%" }}>
         <h1>No Data Found</h1>
@@ -110,8 +134,7 @@ const Activity = () => {
 
   return (
     <>
-
-      <Grid container sx={{ display: 'flex', justifyContent: "space-between" }}>
+      <Grid container sx={{ display: "flex", justifyContent: "space-between" }}>
         <Grid
           item
           xs={12}
@@ -127,8 +150,9 @@ const Activity = () => {
             rowGap: "12px",
             // border:"1px solid red"
           }}
+          ref={scrollContainerRef}
         >
-          {activityData?.map((item, index) => (
+          {allActivityData?.map((item, index) => (
             <ActivityCard
               isFavourite={item?.isFavourite}
               key={index}
@@ -155,9 +179,10 @@ const Activity = () => {
               rsvpDates={item?.rsvpDates}
               startDate={item?.startDate}
               endDate={item?.endDate}
+              handleNavigation={handleNavigation}
               handleAction={(fullItem) => {
                 if (fullItem.activity === "space") {
-                  const detail = saveAllActivity?.find(
+                  const detail = activitySpaceData?.find(
                     (spc) => spc.id === fullItem.id
                   );
                   setInquiredDetail(detail);
@@ -169,7 +194,7 @@ const Activity = () => {
           <div ref={ref} style={{ minHeight: 10, textAlign: "center" }}>
             {isFetching && <CircularProgress />}
           </div>
-          {!isFetching && !isLoading && activityData.length >= total &&
+          {!isFetching && !isLoading && allActivityData.length >= total &&
             <Typography fontWeight={700} fontSize={18} textAlign="center">
               You have seen all!
             </Typography>
@@ -185,13 +210,14 @@ const Activity = () => {
             display: { xs: "none", lg: "flex" },
             flexDirection: "column",
             justifyContent: "space-between",
-          }}>
+          }}
+        >
           <Box
             sx={{
               background: "white",
               height: "49%",
               width: "100%",
-              borderRadius: "5px"
+              borderRadius: "5px",
             }}
           ></Box>
           <Box
@@ -199,7 +225,7 @@ const Activity = () => {
               background: "white",
               height: "49%",
               width: "100%",
-              borderRadius: "5px"
+              borderRadius: "5px",
             }}
           ></Box>
         </Grid>

@@ -1,6 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
+  allData: [],
+  spaceData: [],
   skip: true,
   parameters: {
     entity: "",
@@ -22,6 +24,12 @@ const slice = createSlice({
   name: "search",
   initialState,
   reducers: {
+    setAllSearchData: (state, action) => {
+      state.allData = action.payload;
+    },
+    setSpaceSearchData: (state, action) => {
+      state.spaceData = action.payload;
+    },
     setAllFilterCategories: (state, action) => {
       state.allFilterCategories = action.payload;
     },
@@ -79,6 +87,8 @@ const slice = createSlice({
 });
 
 export const {
+  setAllSearchData,
+  setSpaceSearchData,
   setAllFilterCategories,
   setEntity,
   setName,

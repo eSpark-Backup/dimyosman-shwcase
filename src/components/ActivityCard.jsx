@@ -54,6 +54,7 @@ const ActivityCard = ({
   endDate,
   rsvpDates,
   handleAction = () => {},
+  handleNavigation = () => {},
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -130,7 +131,12 @@ const ActivityCard = ({
         >
           <Box
             onClick={
-              id && id === 1 ? () => navigate(`/${userRole}/${id}`) : () => {}
+              id && id === 1
+                ? () => {
+                    navigate(`/${userRole}/${id}`);
+                    handleNavigation();
+                  }
+                : () => {}
             }
             sx={{
               cursor: "pointer",
@@ -214,10 +220,12 @@ const ActivityCard = ({
           <Box
             onClick={
               activityId
-                ? () =>
+                ? () => {
                     navigate(`/${activity}/${activityId}`, {
                       state: search ? { other: true } : null,
-                    })
+                    });
+                    handleNavigation();
+                  }
                 : () => {}
             }
             sx={{
@@ -257,10 +265,12 @@ const ActivityCard = ({
         <Box
           onClick={
             activityId
-              ? () =>
+              ? () => {
                   navigate(`/${activity}/${activityId}`, {
                     state: search ? { other: true } : null,
-                  })
+                  });
+                  handleNavigation();
+                }
               : () => {}
           }
           sx={{
@@ -302,7 +312,7 @@ const ActivityCard = ({
             <DynamicPaginationSwiper
               onClick={
                 activityId
-                  ? () => navigate(`/${activity}/${activityId}`)
+                  ? () => { navigate(`/${activity}/${activityId}`); handleNavigation(); }
                   : () => {}
               }
               slides={slides}
@@ -312,7 +322,7 @@ const ActivityCard = ({
           <img
             onClick={
               activityId
-                ? () => navigate(`/${activity}/${activityId}`)
+                ? () => { navigate(`/${activity}/${activityId}`); handleNavigation(); }
                 : () => {}
             }
             src={slides[0]}
@@ -328,10 +338,12 @@ const ActivityCard = ({
           <DynamicPaginationSwiper
             onClick={
               activityId
-                ? () =>
+                ? () => {
                     navigate(`/${activity}/${activityId}`, {
                       state: search ? { other: true } : null,
-                    })
+                    });
+                    handleNavigation();
+                  }
                 : () => {}
             }
             slides={slides}
@@ -360,10 +372,12 @@ const ActivityCard = ({
             component="section"
             onClick={
               activityId
-                ? () =>
+                ? () => {
                     navigate(`/${activity}/${activityId}`, {
                       state: search ? { other: true } : null,
-                    })
+                    });
+                    handleNavigation();
+                  }
                 : () => {}
             }
             sx={{
@@ -431,7 +445,7 @@ const ActivityCard = ({
                   color: theme.palette.primary.main,
                   fontWeight: "600",
                   fontSize: { xs: "20px", md: "24px" },
-                  textAlign: "start"
+                  textAlign: "start",
                 }}
                 variant="h2"
               >
@@ -597,7 +611,10 @@ const ActivityCard = ({
               <Typography
                 onClick={
                   activity !== "space" && activityLocationId
-                    ? () => navigate(`/space/${activityLocationId}`)
+                    ? () => {
+                        navigate(`/space/${activityLocationId}`);
+                        handleNavigation();
+                      }
                     : () => {}
                 }
                 style={{
@@ -734,10 +751,12 @@ const ActivityCard = ({
             variant="text"
             onClick={
               activityId
-                ? () =>
+                ? () => {
                     navigate(`/${activity}/${activityId}`, {
                       state: search ? { other: true } : null,
-                    })
+                    });
+                    handleNavigation();
+                  }
                 : () => {}
             }
             sx={{

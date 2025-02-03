@@ -282,7 +282,7 @@ const Space = () => {
             : "Lease Ended",
         price: space?.contractDetails?.leaseInfo?.leaseTotal,
         term: "Daily",
-        event: space?.contractDetails?.tenantDetails?.event,
+        event: space?.event?.eventName || "-",
         brand: space?.brand?.brandName,
         eventUrl: "-",
         brandUrl: `/brand/${space?.brand?.id}`,
@@ -310,7 +310,7 @@ const Space = () => {
         eventImg: space?.space?.spaceImage,
         brand: space?.brand?.brandName,
         owner: space?.owner?.name,
-        event: space?.contractDetails?.tenantDetails?.event,
+        event: space?.event?.eventName || "-",
         starting: space?.contractDetails?.leaseInfo?.startDate,
         ending: space?.contractDetails?.leaseInfo?.endDate,
         lease: space?.contractDetails?.leaseInfo?.leaseTotal,
@@ -530,20 +530,33 @@ const Space = () => {
           handleChange={handleChange}
           handleAdd={handleAdd}
         />
-        {spaceTableData(gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand)[
-          activeTab
-        ].data.length > 0 ? (
+        {spaceTableData(
+          gotoDetail,
+          handleAction,
+          mySpaceData,
+          mySpaceData2,
+          gotoBrand
+        )[activeTab].data.length > 0 ? (
           <DynamicTable
             isLoading={false}
             data={
-              spaceTableData(gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand)[
-                activeTab
-              ].data
+              spaceTableData(
+                gotoDetail,
+                handleAction,
+                mySpaceData,
+                mySpaceData2,
+                gotoBrand
+              )[activeTab].data
             }
             columns={
-              spaceTableData(gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand, likeLoading)[
-                activeTab
-              ].column
+              spaceTableData(
+                gotoDetail,
+                handleAction,
+                mySpaceData,
+                mySpaceData2,
+                gotoBrand,
+                likeLoading
+              )[activeTab].column
             }
             total={data && data?.data?.pagination?.totalItems}
             handlePageChange={handlePageChange}
@@ -558,9 +571,7 @@ const Space = () => {
             paddingY={4}
           >
             <Typography sx={{ fontWeight: 400 }} color="primary" variant="h5">
-              {
-                tabs[activeTab].error
-              }
+              {tabs[activeTab].error}
             </Typography>
             {activeTab === 0 ? (
               <Button
@@ -614,6 +625,7 @@ const Space = () => {
           ownerSign={tenantDetails?.ownerSign}
           tenantSign={tenantDetails?.tenantSign}
           status={tenantDetails?.status}
+          eventName={tenantDetails?.event?.eventName || "-"}
           refetch={refetch}
           tabsForApi={tabsForApi}
           activeTab={activeTab}
