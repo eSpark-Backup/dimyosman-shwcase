@@ -21,9 +21,10 @@ const RSVPCalendar = ({
   endDate,
   handleCancel,
   handleOk,
+  isDetails
 }) => {
-  const localStartDate = dayjs.utc(startDate).startOf("day").local().add(1, "day");
-  const localEndDate = dayjs.utc(endDate).startOf("day").local().add(1, "day");
+  const localStartDate = dayjs.utc(startDate).startOf("day").local().add(isDetails ? 0 : 1, "day");
+  const localEndDate = dayjs.utc(endDate).startOf("day").local().add(isDetails ? 0 : 1, "day");
 
   const handleDateSelect = (newDate) => {
     const localNewDate = dayjs(newDate).format("YYYY-MM-DD");
@@ -91,13 +92,13 @@ const RSVPCalendar = ({
                     color: isHighlighted
                       ? "#FFF"
                       : isInRange
-                      ? "#00141C"
-                      : "#9E9EA4",
+                        ? "#00141C"
+                        : "#9E9EA4",
                     backgroundColor: isHighlighted
                       ? "#00141C"
                       : isInRange
-                      ? "#D1E8FF"
-                      : "transparent",
+                        ? "#D1E8FF"
+                        : "transparent",
                     borderRadius: "50%",
                     opacity: isInRange ? 1 : 0.5,
                     pointerEvents: isInRange ? "auto" : "none",
@@ -105,25 +106,25 @@ const RSVPCalendar = ({
                       color: isHighlighted
                         ? "#FFF"
                         : isInRange
-                        ? "#00141C"
-                        : "#9E9EA4",
+                          ? "#00141C"
+                          : "#9E9EA4",
                       backgroundColor: isHighlighted
                         ? "#00141C"
                         : isInRange
-                        ? "#D1E8FF"
-                        : "transparent",
+                          ? "#D1E8FF"
+                          : "transparent",
                     },
                     ":focus": {
                       color: isHighlighted
                         ? "#FFF"
                         : isInRange
-                        ? "#00141C"
-                        : "#9E9EA4",
+                          ? "#00141C"
+                          : "#9E9EA4",
                       backgroundColor: isHighlighted
                         ? "#00141C"
                         : isInRange
-                        ? "#D1E8FF"
-                        : "transparent",
+                          ? "#D1E8FF"
+                          : "transparent",
                     },
                   }}
                 />
@@ -157,7 +158,7 @@ const RSVPCalendar = ({
             <Button onClick={handleCancel}>Cancel</Button>
             <Button
               sx={{ fontWeight: "700 !important" }}
-              onClick={!loading ? handleOk : () => {}}
+              onClick={!loading ? handleOk : () => { }}
             >
               {loading ? <CircularProgress size={20} /> : "OK"}
             </Button>
