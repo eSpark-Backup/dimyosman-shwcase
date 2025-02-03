@@ -47,7 +47,7 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
           const category = item?.type === "brand" ? item?.brandCategory : item?.type === "event" ? item?.eventCategory : item?.spaceCategory
         
           return {
-            profileId: 2,
+            profileId: item?.type === "brand" ? item?.user?.id : item?.brand?.id,
             activity: item?.type,
             id: item?.id || "",
             userName: item?.type === "event" ? item?.brand?.brandName : item?.type === "brand" ? item?.user?.name : item?.brand?.brandName || "",
@@ -58,8 +58,8 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
             activityLocationId: item?.type === "event" ? item?.space?.id : "",
             activityLocation2: item?.type === "event" ? item?.brand?.brandName : "",
             activityAddress: "123 Williamsburg Ave, Brooklyn, NY 11211",
-            value: item?.type === "event" ? moment.utc(new Date(item?.eventDate[0]?.startDate)).format("DD.MM.YYYY.") : filterPrice[0]?.price ? `$${filterPrice[0]?.price}/day` : "N/A",
-            deadline: item?.type === "event" ? moment.utc(new Date(item?.eventDate[0]?.endDate)).format("DD.MM.YYYY.") : filterPrice[0]?.minimum ? `minimum lease: ${filterPrice[0]?.minimum} days` : "N/A",
+            value: item?.type === "event" ? moment.utc(new Date(item?.eventDate[0]?.startDate)).add(1, 'day').format("DD.MM.YYYY.") : filterPrice[0]?.price ? `$${filterPrice[0]?.price}/day` : "N/A",
+            deadline: item?.type === "event" ? moment.utc(new Date(item?.eventDate[0]?.endDate)).add(1, 'day').format("DD.MM.YYYY.") : filterPrice[0]?.minimum ? `minimum lease: ${filterPrice[0]?.minimum} days` : "N/A",
             userImage: item?.type === "event" ? item?.brand?.brandImage : item?.type === "brand" ? item?.user?.profileImage : item?.brand?.brandImage || "",
             activityImage: item?.type === "event" ? item?.eventImage : item?.type === "brand" ? item?.brandImage : item?.spaceImage || "",
             features: spaceFeatures,
