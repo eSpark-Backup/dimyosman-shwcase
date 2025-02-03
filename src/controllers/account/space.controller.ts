@@ -1174,6 +1174,7 @@ export class SpaceController {
           .createQueryBuilder("leaseSpace")
           .leftJoinAndSelect("leaseSpace.space", "space")
           .leftJoinAndSelect("leaseSpace.owner", "owner")
+          .leftJoinAndSelect("leaseSpace.event", "event")
           .leftJoinAndSelect("leaseSpace.brand", "leaseBrand")
           .where("owner.id = :userId", { userId: req.user?.id })
 
