@@ -712,7 +712,7 @@ export const likedSpaceData = [
   },
 ];
 
-export const brandTableData = (gotoDetail, handleAction, myBrandData, myBrandData2, likeLoading) => [
+export const brandTableData = (gotoDetail, handleAction, myBrandData, myBrandData2, likeLoading, savedId) => [
   {
     data: myBrandData,
     column: myBrandColumns(gotoDetail, (item) => handleAction(item, "edit")),
@@ -725,31 +725,31 @@ export const brandTableData = (gotoDetail, handleAction, myBrandData, myBrandDat
   },
   {
     data: myBrandData2,
-    column: likedBrandColumns(likeLoading, gotoDetail, (item) =>
+    column: likedBrandColumns(likeLoading, savedId, gotoDetail, (item) =>
       handleAction(item, "remove")
     ),
   },
 ];
 
-export const eventTableData = (gotoDetail, handleAction, myEventData, myEventData2, gotoBrand, gotoSpace, likeLoading) => [
+export const eventTableData = (gotoDetail, handleAction, myEventData, myEventData2, gotoBrand, gotoSpace, likeLoading, rsvpLoading, savedId, rsvpId) => [
   {
     data: myEventData,
     column: myEventsColumns(gotoDetail, (item) => handleAction(item, "edit"), gotoBrand, gotoSpace),
   },
   {
     data: myEventData,
-    column: rsvpEventColumns(gotoDetail, (item) =>
+    column: rsvpEventColumns(rsvpLoading, rsvpId, gotoDetail, (item) =>
       handleAction(item, item?.action)
     ),
   },
   {
     data: myEventData2,
-    column: likedEventColumns(likeLoading, gotoDetail, (item) =>
+    column: likedEventColumns(likeLoading, savedId, gotoDetail, (item) =>
       handleAction(item, "remove")
     ),
   },
 ];
-export const spaceTableData = (gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand, likeLoading) => [
+export const spaceTableData = (gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand, likeLoading, savedId) => [
   {
     data: mySpaceData,
     column: mySpaceColumns(
@@ -768,7 +768,7 @@ export const spaceTableData = (gotoDetail, handleAction, mySpaceData, mySpaceDat
   },
   {
     data: mySpaceData2,
-    column: likedSpaceColumns(likeLoading, gotoDetail, (item) =>
+    column: likedSpaceColumns(likeLoading, savedId, gotoDetail, (item) =>
       handleAction(item, "remove")
     ),
   },

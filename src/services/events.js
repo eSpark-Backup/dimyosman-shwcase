@@ -149,6 +149,13 @@ export const eventApi = api.injectEndpoints({
                 credentials: "include",
             }),
         }),
+        cancelRsvp: builder.mutation({
+            query: ({ id }) => ({
+                url: `/event/rsvp/${id}`,
+                method: "DELETE",
+                credentials: "include",
+            }),
+        }),
     }),
 });
 
@@ -157,4 +164,5 @@ export const {
     useGetAllEventsQuery,
     useEditEventMutation,
     useAddRsvpDateMutation,
+    useCancelRsvpMutation,
 } = eventApi;

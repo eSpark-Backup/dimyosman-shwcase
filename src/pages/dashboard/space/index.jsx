@@ -91,6 +91,7 @@ const Space = () => {
   const tabsForApi = ["Space", "Lease", "Saved", "Tenant"];
   const [activeTab, setActiveTab] = useState(0);
   const [page, setPage] = useState(1);
+  const [savedId, setSavedId] = useState(null);
   const [showInquiryModal, setShowIinquiryModal] = useState(false);
   const [afterSignature, setAfterSignature] = useState(false);
   const [tenantDetails, setTenantDetails] = useState(null);
@@ -433,11 +434,13 @@ const Space = () => {
 
   const handleAction = async (item, type) => {
     if (type === "remove") {
+      setSavedId(item?.spaceId);
       await likeFunc({
         entityId: item?.spaceId,
         entityType: item?.type?.toUpperCase(),
       }).unwrap();
       refetch2();
+      setSavedId(null);
       return;
     }
     const findLeaseDetails = (type, itemId) => {
@@ -541,7 +544,7 @@ const Space = () => {
               ].data
             }
             columns={
-              spaceTableData(gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand, likeLoading)[
+              spaceTableData(gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand, likeLoading, savedId)[
                 activeTab
               ].column
             }

@@ -42,6 +42,7 @@ const Brand = () => {
     },
   ];
   const [page, setPage] = useState(1);
+  const [savedId, setSavedId] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
@@ -86,8 +87,10 @@ const Brand = () => {
     } else if (type === "unfollow") {
       //unfollow functionality
     } else if (type === "remove") {
+      setSavedId(item?.id);
       await likeFunc({ entityId: item?.id, entityType: item?.type?.toUpperCase() }).unwrap();
       refetch();
+      setSavedId(null);
     }
   };
 
@@ -230,7 +233,7 @@ const Brand = () => {
                 .data
             }
             columns={
-              brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2, likeLoading)[activeTab]
+              brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2, likeLoading, savedId)[activeTab]
                 .column
             }
             total={data && data?.data?.pagination?.totalItems}
