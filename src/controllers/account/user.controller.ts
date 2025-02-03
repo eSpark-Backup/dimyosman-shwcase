@@ -433,6 +433,7 @@ export class UserController {
         query
           .leftJoinAndSelect("savedEntity.event", "event")
           .leftJoinAndSelect("event.brand", "brand")
+          .leftJoinAndSelect("event.space", "space")
           .andWhere("savedEntity.type = :type", {
             type: SavedEntityType.EVENT,
           });
