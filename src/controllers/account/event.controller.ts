@@ -402,6 +402,30 @@ export class EventController {
     }
   }
 
+  async deleteRSVPEvent(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const rsvpEvent = await this.rsvpEventRepo.findOne({
+        where: { id },
+      });
+      if (!rsvpEvent) {
+        throw new ApiError("RSVP Event not found", HTTP_STATUS.NOT_FOUND);
+      }
+      await this.rsvpEventRepo.remove(rsvpEvent);
+      res.status(200).json(handleResponse("RSVP Event Deleted Successfully"));
+      return next();
+    } catch (error) {
+      logger.error(
+        `EventController :: deleteRSVPEvent :: ${(error as Error)?.message}`
+      );
+      return next(error);
+    }
+  }
+
   async rsvpEvent(
     req: ICustomRequest,
     res: Response,

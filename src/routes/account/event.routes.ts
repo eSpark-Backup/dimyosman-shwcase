@@ -287,6 +287,45 @@ router.post(
   (req, res, next) => eventController.rsvpEvent(req, res, next)
 );
 
+
+
+/**
+ * @swagger
+ * /event/rsvp/{id}:
+ *   delete:
+ *     summary: Delete RSVP an existing event
+ *     description: This endpoint allows users with the USER role to RSVP an existing event.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - Event
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the event to RSVP
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: event rsvp successfully.
+ *       400:
+ *         description: Validation error.
+ *       403:
+ *         description: Forbidden.
+ *       404:
+ *         description: event not found.
+ *       500:
+ *         description: Server error.
+ */
+router.delete(
+  "/rsvp/:id",
+  checkJwt,
+  validateRoles([ROLES.USER]),
+  (req, res, next) => eventController.deleteRSVPEvent(req, res, next)
+);
+
+
 /**
  * @swagger
  * /event/{id}:
