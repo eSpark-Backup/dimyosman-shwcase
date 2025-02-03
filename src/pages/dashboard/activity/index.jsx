@@ -47,7 +47,7 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
           const category = item?.type === "brand" ? item?.brandCategory : item?.type === "event" ? item?.eventCategory : item?.spaceCategory
         
           return {
-            profileId: 2,
+            profileId: item?.type === "brand" ? item?.user?.id : item?.brand?.id,
             activity: item?.type,
             id: item?.id || "",
             userName: item?.type === "event" ? item?.brand?.brandName : item?.type === "brand" ? item?.user?.name : item?.brand?.brandName || "",
