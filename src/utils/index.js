@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import { emptyInquiryCount, emptyNotificationCount, setGoToMessage } from "../store/slices/notification";
+import moment from "moment";
 
 export function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -355,10 +356,10 @@ export const keysForBrandsSapcesEvents = (object, type) => {
       activityName: object?.eventName || "",
       activityImage: object?.eventImage || "",
       value: object?.eventDate[0]?.startDate
-        ? formatDate(object?.eventDate[0]?.startDate)
+        ? moment.utc(new Date(object?.eventDate[0]?.startDate)).add(1, 'day').format("DD.MM.YYYY")
         : "N/A",
       deadline: object?.eventDate[0]?.endDate
-        ? formatDate(object?.eventDate[0]?.endDate)
+        ? moment.utc(new Date(object?.eventDate[0]?.endDate)).add(1, 'day').format("DD.MM.YYYY")
         : "N/A",
       location: object?.space?.brand?.location || [],
     };
