@@ -35,6 +35,7 @@ import eventMain2 from "./activity-main-2.svg";
 import eventMain3 from "./activity-main-3.svg";
 import miniMap from "./micro-map.svg";
 import like from "./like.svg";
+import liked from "./liked.svg";
 import comment from "./comment.svg";
 import share from "./share.svg";
 import brandIcon from "./brand.svg";
@@ -66,6 +67,9 @@ import logoText from "./logo-text.svg";
 import brandIconlight from "./brand-icon.png";
 import brandBadge from "./brand-badge.png";
 import eventIconLight from "./event-icon.png";
+import spaceIconLight from "./space-icon.png";
+import calenderIconLight from "./calendar-icon.png";
+import settingsIconLight from "./settings-icon.png";
 import activeItemIcon from "./activeItemIcon.svg";
 import notActiveIcon from "./notActiveItemIcon.svg";
 import add from "./addIcon.svg";
@@ -112,6 +116,11 @@ import messageIcon from "./message-icon.svg";
 import profileIcon from "./profile-icon.svg";
 import settingsIcon from "./settings-icon.svg";
 import profilePicture from "./profile-picture.png";
+import allIconLight from "./shw-icon.png";
+import memberIconLight from "./member-icon.png";
+import mediumMap from "./medium-map.png"
+import mapMarkerSpace from "./map_marker_space.svg"
+import mapMarkerBrand from "./map_marker_brand.svg"
 
 export {
   react,
@@ -149,6 +158,7 @@ export {
   eventMain,
   miniMap,
   like,
+  liked,
   comment,
   share,
   brandIcon,
@@ -182,6 +192,9 @@ export {
   brandIconlight,
   brandBadge,
   eventIconLight,
+  spaceIconLight,
+  calenderIconLight,
+  settingsIconLight,
   eventBadge,
   activeItemIcon,
   notActiveIcon,
@@ -226,5 +239,11 @@ export {
   profileIcon,
   attachment,
   settingsIcon,
-  profilePicture
+  profilePicture,
+  allIconLight,
+  memberIconLight,
+  // mediumMap
+  mediumMap,
+  mapMarkerBrand,
+  mapMarkerSpace
 };

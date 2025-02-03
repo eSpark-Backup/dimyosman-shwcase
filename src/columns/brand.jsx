@@ -1,5 +1,6 @@
 import { Box, Button, Stack, Tooltip, Typography } from "@mui/material";
 import { brandBadge } from "../assets";
+import { LoadingButton } from "@mui/lab";
 
 const myBrandColumns = (gotoDetail, handleAction) => {
   return [
@@ -42,7 +43,7 @@ const myBrandColumns = (gotoDetail, handleAction) => {
                     position: "absolute",
                     bottom: 0,
                     right: 0,
-                    zIndex: 99,
+                    zIndex: 8,
                   }}
                   width={16}
                   height={16}
@@ -150,7 +151,7 @@ const followingBrandColumns = (gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="brand-icon">
                   <img
-                    style={{ width: "100%" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover"  }}
                     src={item?.brandImg}
                     alt="brand-img"
                   />
@@ -208,7 +209,7 @@ const followingBrandColumns = (gotoDetail, handleAction) => {
   ];
 };
 
-const likedBrandColumns = (gotoDetail, handleAction) => {
+const likedBrandColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
   return [
     {
       name: "Brand Name",
@@ -236,7 +237,7 @@ const likedBrandColumns = (gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="brand-image">
                   <img
-                    style={{ width: "100%" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover"  }}
                     src={item?.brandImg}
                     alt="brand-img"
                   />
@@ -277,7 +278,9 @@ const likedBrandColumns = (gotoDetail, handleAction) => {
       key: "action",
       component: (item) => {
         return (
-          <Button
+          <LoadingButton
+            loading={likeLoading && item?.id === savedId}
+            disabled={likeLoading && item?.id === savedId}
             onClick={() => handleAction(item)}
             sx={{
               minWidth: "83px",
@@ -287,7 +290,7 @@ const likedBrandColumns = (gotoDetail, handleAction) => {
             }}
           >
             Remove
-          </Button>
+          </LoadingButton>
         );
       },
     },

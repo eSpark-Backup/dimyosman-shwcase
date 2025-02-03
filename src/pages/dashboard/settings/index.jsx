@@ -12,7 +12,7 @@ import {
   eye,
   facebook,
   google,
-  settingsIcon,
+  settingsIconLight,
   uploadIcon,
 } from "../../../assets";
 
@@ -53,6 +53,8 @@ const flexContentCenter = {
 const formGroupStyle = {
   ...flexItemCenter,
   width: "100%",
+  alignItems: { xs: "flex-start", sm: "center"},
+  flexDirection: { xs: "column", sm: "row" }
 };
 
 const authBtnStyle = {
@@ -275,7 +277,7 @@ const Settings = () => {
             }}
             role="space-icon"
           >
-            <img src={settingsIcon} alt="event" />
+            <img src={settingsIconLight} alt="event" />
           </figure>
         </Box>
       </Stack>
@@ -455,7 +457,13 @@ const Settings = () => {
                 change password
               </Typography>
 
-              <Box sx={{ display: "flex" }}>
+              <Box
+                sx={{
+                  display: "flex",   
+                  alignItems: { xs: "flex-start", sm: "center"},
+                  flexDirection: { xs: "column", sm: "row" }
+                }}
+              >
                 <Typography
                   style={{
                     fontWeight: 300,

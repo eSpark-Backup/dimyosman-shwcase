@@ -95,7 +95,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                         ":hover": {
                             backgroundColor: "rgb(0, 20, 28, 0.2)"
                         },
-                        zIndex: 99
+                        zIndex: 8
                     }}
                 >
                     <figure
@@ -125,7 +125,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                         ":hover": {
                             backgroundColor: isEdit ? "rgb(0, 20, 28, 0.9)" : "#4d5b60"
                         },
-                        zIndex: 99
+                        zIndex: 8
                     }}
                     onClick={() => isEdit ? navigate(`/profile/${location?.pathname.split("/").at(-2)}`) : navigate(`/profile/${location?.pathname.split("/").at(-1)}/edit`)}
                 >
@@ -138,10 +138,10 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                     sx={{
                         position: "absolute",
                         width: { xs: "90%", md: "70%", lg: "50%", xl: "40%" },
-                        top: { xs: "50%", md: "10px", lg: "10px", xl: "20px" },
+                        top: { xs: "50%", md: "20px" },
                         left: "50%",
                         transform: "translate(-50%, -50%)",
-                        zIndex: 99
+                        zIndex: 8
                     }}
                 >
                     <Box
@@ -280,10 +280,11 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                         <Box
                             sx={{
                                 display: "flex",
-                                justifyContent: "space-between",
+                                justifyContent: "center",
                                 alignItems: "center",
                                 width: "100%",
-                                flexWrap: "wrap"
+                                flexWrap: "wrap",
+                                gap: "16px",
                             }}
                         >
                             {
@@ -298,12 +299,14 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                                     >
                                         <Typography
                                             sx={{
+                                                fontSize: "12px",
                                                 fontWeight: "300",
                                                 color: theme.palette.primary.main
                                             }}
                                         >{item?.name}</Typography>
                                         <Typography
                                             sx={{
+                                                fontSize: "12px",
                                                 fontWeight: "600",
                                                 color: theme.palette.primary.main
                                             }}
@@ -324,7 +327,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                             position: "absolute",
                             bottom: 0,
                             right: "20px",
-                            zIndex: 99
+                            zIndex: 10
                         }}
                     >
                         <Box

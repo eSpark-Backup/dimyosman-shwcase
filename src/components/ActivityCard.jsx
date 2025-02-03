@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Box, Button, Divider, Stack, Typography, useTheme } from "@mui/material";
 import {
   accountIcon,
@@ -11,6 +11,7 @@ import {
   eventMain3,
   flag,
   like,
+  liked,
   miniMap,
   miniMap2,
   share,
@@ -19,8 +20,15 @@ import {
 } from "../assets/index.js";
 import DynamicPaginationSwiper from "./Slider.jsx";
 import { useNavigate } from "react-router-dom";
+import { useAddInFavouritesMutation } from "../services/favourite.js";
+import { toast } from "react-toastify";
+import dayjs from "dayjs";
+import RSVPCalendar from "./rsvp-calendar.jsx";
+import { useClickOutside } from "../utils/index.js";
+import { useAddRsvpDateMutation } from "../services/events.js";
 
 const ActivityCard = ({
+  fullItem = {},
   id,
   activityId,
   userName,
@@ -40,9 +48,55 @@ const ActivityCard = ({
   deadline,
   features,
   slides,
+  search = false,
+  isFavourite,
+  startDate,
+  endDate,
+  rsvpDates,
+  handleAction = () => {},
+  handleNavigation = () => {},
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const [likePost, setLikePost] = useState(isFavourite);
+  useEffect(() => {
+    setLikePost(isFavourite);
+  },[isFavourite])
+  const [likeFunc, { isLoading }] = useAddInFavouritesMutation();
+  const [addRsvp, { isLoading: rsvpLoading }] = useAddRsvpDateMutation();
+
+  const [selectedDates, setSelectedDates] = useState(
+    rsvpDates && rsvpDates.length > 0 ? rsvpDates?.map((date) => dayjs(date).format("YYYY-MM-DD")) : []
+  );
+
+  const [openCalendar, setOpenCalendar] = useState(false);
+
+  const handleOk = () => {
+    const newRsvpDates = selectedDates.map(item => {return { dateTime: item }})
+      const objToSend = {
+        id: activityId,
+        credentials: {
+          attendanceDates: {
+            dateTime: "string",
+            rsvpDates: newRsvpDates,
+          },
+        },
+      };
+      addRsvp(objToSend).then((res) => {
+        if (res?.data?.status) {
+          toast.success(res?.data?.message);
+          setOpenCalendar(false);
+        }
+      });
+  };
+
+  const handleCancel = () => {
+    setOpenCalendar(false);
+  };
+
+  const modalRef = useRef();
+  useClickOutside(modalRef, () => setOpenCalendar(false));
+
   return (
     <Box
       sx={{
@@ -58,9 +112,9 @@ const ActivityCard = ({
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: { xs: "flex-start", md: "center" },
+          alignItems: "center",
           padding: { xs: "0px 8px", md: "0px 20px" },
-          flexDirection: { xs: "column", sm: "row" },
+          flexDirection: "row",
           rowGap: "10px",
         }}
       >
@@ -70,19 +124,26 @@ const ActivityCard = ({
             width: { xs: "100%", md: "80%" },
             display: "flex",
             columnGap: "10px",
-            alignItems: { xs: "flex-start", sm: "center" },
-            flexDirection: { xs: "column", sm: "row" },
+            alignItems: "center",
+            flexDirection: "row",
             rowGap: "10px",
           }}
         >
           <Box
             onClick={
-              id && id === 1 ? () => navigate(`/${userRole}/${id}`) : () => {}
+              id && userRole === "brand"
+                ? () => {
+                    navigate(`/${userRole}/${id}`);
+                    handleNavigation();
+                  }
+                : () => {}
             }
             sx={{
               cursor: "pointer",
               width: "64px",
               height: "64px",
+              minWidth: "64px",
+              minHeight: "64px",
               position: "relative",
             }}
           >
@@ -93,17 +154,32 @@ const ActivityCard = ({
                 height: "62px",
               }}
             >
-              <figure
-                style={{ width: "100%", height: "100%" }}
-                role="img"
-                aria-labelledby="profile-figcaption"
-              >
-                <img
-                  src={userImage}
-                  alt="User Image"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              {userImage ? (
+                <figure
+                  style={{ width: "100%", height: "100%" }}
+                  role="img"
+                  aria-labelledby="profile-figcaption"
+                >
+                  <img
+                    src={userImage}
+                    alt="User Image"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                </figure>
+              ) : (
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    bgcolor: "rgba(0, 28, 20, 0.4)",
+                    borderRadius: "5px",
+                  }}
                 />
-              </figure>
+              )}
             </Box>
             <Box
               sx={{
@@ -144,7 +220,12 @@ const ActivityCard = ({
           <Box
             onClick={
               activityId
-                ? () => navigate(`/${activity}/${activityId}`)
+                ? () => {
+                    navigate(`/${activity}/${activityId}`, {
+                      state: search ? { other: true } : null,
+                    });
+                    handleNavigation();
+                  }
                 : () => {}
             }
             sx={{
@@ -163,7 +244,15 @@ const ActivityCard = ({
                 fontSize: { xs: "12px", md: "16px" },
               }}
             >
-              <span style={{ display: "inline-block", fontWeight: 600, marginRight: "5px" }}>{userName} </span>
+              <span
+                style={{
+                  display: "inline-block",
+                  fontWeight: 600,
+                  marginRight: "5px",
+                }}
+              >
+                {userName}{" "}
+              </span>
               published a new{" "}
               {activity === "event"
                 ? "Event!"
@@ -175,7 +264,14 @@ const ActivityCard = ({
         </Box>
         <Box
           onClick={
-            activityId ? () => navigate(`/${activity}/${activityId}`) : () => {}
+            activityId
+              ? () => {
+                  navigate(`/${activity}/${activityId}`, {
+                    state: search ? { other: true } : null,
+                  });
+                  handleNavigation();
+                }
+              : () => {}
           }
           sx={{
             cursor: "pointer",
@@ -216,7 +312,7 @@ const ActivityCard = ({
             <DynamicPaginationSwiper
               onClick={
                 activityId
-                  ? () => navigate(`/${activity}/${activityId}`)
+                  ? () => { navigate(`/${activity}/${activityId}`); handleNavigation(); }
                   : () => {}
               }
               slides={slides}
@@ -226,7 +322,7 @@ const ActivityCard = ({
           <img
             onClick={
               activityId
-                ? () => navigate(`/${activity}/${activityId}`)
+                ? () => { navigate(`/${activity}/${activityId}`); handleNavigation(); }
                 : () => {}
             }
             src={slides[0]}
@@ -242,8 +338,13 @@ const ActivityCard = ({
           <DynamicPaginationSwiper
             onClick={
               activityId
-                ? () => navigate(`/${activity}/${activityId}`)
-                : () => { }
+                ? () => {
+                    navigate(`/${activity}/${activityId}`, {
+                      state: search ? { other: true } : null,
+                    });
+                    handleNavigation();
+                  }
+                : () => {}
             }
             slides={slides}
           />
@@ -271,7 +372,12 @@ const ActivityCard = ({
             component="section"
             onClick={
               activityId
-                ? () => navigate(`/${activity}/${activityId}`)
+                ? () => {
+                    navigate(`/${activity}/${activityId}`, {
+                      state: search ? { other: true } : null,
+                    });
+                    handleNavigation();
+                  }
                 : () => {}
             }
             sx={{
@@ -339,6 +445,7 @@ const ActivityCard = ({
                   color: theme.palette.primary.main,
                   fontWeight: "600",
                   fontSize: { xs: "20px", md: "24px" },
+                  textAlign: "start",
                 }}
                 variant="h2"
               >
@@ -504,7 +611,10 @@ const ActivityCard = ({
               <Typography
                 onClick={
                   activity !== "space" && activityLocationId
-                    ? () => navigate(`/space/${activityLocationId}`)
+                    ? () => {
+                        navigate(`/space/${activityLocationId}`);
+                        handleNavigation();
+                      }
                     : () => {}
                 }
                 style={{
@@ -563,16 +673,16 @@ const ActivityCard = ({
             >
               {activity === "event" ? "Starting" : "Lease"} from:
             </Typography>
-              <Typography
-                style={{
-                  fontSize: "32px",
-                  fontWeight: "600",
-                  textAlign: "left",
-                  lineHeight: "140%",
-                }}
-              >
-                {value}
-              </Typography>
+            <Typography
+              style={{
+                fontSize: "32px",
+                fontWeight: "600",
+                textAlign: "left",
+                lineHeight: "140%",
+              }}
+            >
+              {value}
+            </Typography>
             <Typography
               style={{
                 fontWeight: "300",
@@ -591,7 +701,7 @@ const ActivityCard = ({
           display: "flex",
           justifyContent: "space-between",
           padding: { xs: "0px 8px", md: "0px 20px" },
-          flexDirection: { xs: "column", md: "row" },
+          flexDirection: "row",
           rowGap: "15px",
           alignItems: "center",
         }}
@@ -599,61 +709,117 @@ const ActivityCard = ({
         <Box
           sx={{
             display: "flex",
-            columnGap: "25px",
+            columnGap: "10px",
           }}
         >
-          <img src={like} alt="Like Icon" />
+          <img
+            onClick={() => {
+              if (!isLoading) {
+                likeFunc({
+                  entityId: activityId,
+                  entityType: activity?.toLocaleUpperCase(),
+                }).then((res) => {
+                  res?.data?.status &&
+                    toast.success(
+                      res?.data?.message
+                        .replace("Entity", "Post")
+                        .replace(" successfully", "")
+                    );
+                  setLikePost(!likePost);
+                });
+              }
+            }}
+            style={{
+              cursor: isLoading ? "not-allowed" : "pointer",
+              animation: isLoading ? "pulse 1s infinite" : "none",
+              opacity: isLoading ? 0.5 : 1,
+            }}
+            src={likePost ? liked : like}
+            className={`like-icon ${isLoading ? "loading" : ""}`}
+            alt="Like Icon"
+          />
           {activity !== "space" && <img src={comment} alt="Comment Icon" />}
           <img src={share} alt="Share Icon" />
         </Box>
-        <Stack direction="row" alignItems="center" justifyContent="center" gap={2}>
-        <Button
-          variant="text"
-          onClick={
-            activityId ? () => navigate(`/${activity}/${activityId}`) : () => {}
-          }
-          sx={{
-            backgroundColor: "transparent",
-            width: { xs: "150px", sm: "220px" },
-            height: "31px",
-            fontSize: "16px",
-            fontWeight: 600,
-            color: theme.palette.primary.main,
-            textTransform: "capitalize",
-            ":hover": {
-              backgroundColor: "rgb(209, 219, 215, 0.4)",
-            },
-          }}
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="center"
+          sx={{ position: "relative", gap: { xs: 1, sm: 2 } }}
         >
-          Learn more
-        </Button>
-        <Button
-          sx={{
-            backgroundColor: "rgb(209, 219, 215, 0.4)",
-            width: { xs: "150px", sm: "220px" },
-            height: "31px",
-            fontSize: "16px",
-            fontWeight: "700",
-            color: theme.palette.primary.main,
-            display: "flex",
-            columnGap: "5px",
-            textTransform: "none",
-            ":hover": {
-              backgroundColor: "rgb(209, 219, 215, 0.4)",
-            },
-          }}
-        >
-          {activity === "event" ? (
-            "RSVP"
-          ) : activity === "brand" ? (
-            "Follow"
-          ) : (
-            <>
-              <img src={calender} alt="Calender Icon" />
-              Inquire
-            </>
+          <Button
+            variant="text"
+            onClick={
+              activityId
+                ? () => {
+                    navigate(`/${activity}/${activityId}`, {
+                      state: search ? { other: true } : null,
+                    });
+                    handleNavigation();
+                  }
+                : () => {}
+            }
+            sx={{
+              backgroundColor: "transparent",
+              width: { xs: "120px", sm: "220px" },
+              height: "31px",
+              fontSize: "16px",
+              fontWeight: 600,
+              color: theme.palette.primary.main,
+              textTransform: "capitalize",
+              ":hover": {
+                backgroundColor: "rgb(209, 219, 215, 0.4)",
+              },
+            }}
+          >
+            Learn more
+          </Button>
+          {openCalendar && activity === "event" && (
+            <RSVPCalendar
+              loading={rsvpLoading}
+              modalRef={modalRef}
+              selectedDates={selectedDates}
+              setSelectedDates={setSelectedDates}
+              handleCancel={handleCancel}
+              handleOk={handleOk}
+              startDate={startDate}
+              endDate={endDate}
+            />
           )}
-        </Button>
+          <Button
+            sx={{
+              backgroundColor: "rgb(209, 219, 215, 0.4)",
+              width: { xs: "120px", sm: "220px" },
+              height: "31px",
+              fontSize: "16px",
+              fontWeight: "700",
+              color: theme.palette.primary.main,
+              display: "flex",
+              columnGap: "5px",
+              textTransform: "none",
+              ":hover": {
+                backgroundColor: "rgb(209, 219, 215, 0.4)",
+              },
+            }}
+            onClick={() => {
+              if (activity === "event") {
+                setOpenCalendar(true);
+              } else {
+                handleAction(fullItem);
+              }
+            }}
+          >
+            {activity === "event" ? (
+              "RSVP"
+            ) : activity === "brand" ? (
+              "Follow"
+            ) : (
+              <>
+                <img src={calender} alt="Calender Icon" />
+                Inquire
+              </>
+            )}
+          </Button>
         </Stack>
       </Box>
     </Box>

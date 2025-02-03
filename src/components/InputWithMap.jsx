@@ -5,7 +5,7 @@ import Input from './input';
 import DatePicker from 'react-date-picker';
 import 'react-date-picker/dist/DatePicker.css';
 import 'react-calendar/dist/Calendar.css';
-import { formatDate } from '../utils';
+import { fetchAddressFromCoordinates, formatDate } from '../utils';
 import CheckBox from './CheckBox';
 import { useClickOutside } from '../utils';
 import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers';
@@ -45,7 +45,6 @@ const InputWithMap = ({
   const datePickerRef = useRef(null);
   const containerRef = useRef(null);
   const [openDatePicker, setOpenDatePicker] = useState(false);
-
   const isDateInRanges = (date, ranges) => {
     return ranges.some(
       (range) => date >= range.start && date <= range.end
@@ -87,20 +86,31 @@ const InputWithMap = ({
   useEffect(() => {
     if (!defaultDate || !Array.isArray(defaultDate)) {
       setSelectedDate([null, null]);
+      onDateChange && onDateChange([null, null]); // Ensure onDateChange is called
       return;
     }
 
     const isValidDefault = isRangeValid(
-      defaultDate?.map((date) => (date ? new Date(date) : null)),
+      defaultDate.map((date) => (date ? new Date(date) : null)),
       bookedRanges
     );
 
-    setSelectedDate(
+    setSelectedDate((prev) => {
+      const newDate = isValidDefault
+        ? defaultDate.map((date) => (date ? new Date(date) : null))
+        : [null, null];
+
+      return JSON.stringify(prev) !== JSON.stringify(newDate) ? newDate : prev;
+    });
+
+    onDateChange(
       isValidDefault
-        ? defaultDate?.map((date) => (date ? new Date(date) : null))
+        ? defaultDate.map((date) => (date ? new Date(date) : null))
         : [null, null]
     );
   }, [defaultDate, bookedRanges]);
+
+
 
   const formatStartDate = (dateRange) =>
     dateRange && dateRange[0] ? dayjs(dateRange[0]).format("DD.MM.YYYY") : "dd.mm.yyyy";
@@ -161,15 +171,33 @@ const InputWithMap = ({
   };
 
 
-  const handleSelectChange = (e) => {
+  const handleSelectChange = async (e) => {
     const selectedValue = e.target.value;
     const selectedSpaceData = options.filter((item) => item.value === e.target.value)
     const updatedLocation = { lat: selectedSpaceData[0]?.item?.location?.lat, long: selectedSpaceData[0]?.item?.location?.long }
+    let address = "";
+    if (selectedSpaceData[0]?.item?.location?.lat && selectedSpaceData[0]?.item?.location?.long) {
+      address = await fetchAddressFromCoordinates(
+        selectedSpaceData[0]?.item?.location?.lat,
+        selectedSpaceData[0]?.item?.location?.long
+      );
+    }
     if (activity === "event") {
       if (eventData.space !== selectedValue) {
         updateEventData("space", selectedValue);
         updateEventData("location", updatedLocation);
         updateEventData("mapInstructions", selectedSpaceData[0]?.item?.location?.additional);
+        updateEventData("streetAddress", address);
+        updateEventData("leaseId", selectedSpaceData[0]?.item?.location?.lease);
+        updateEventData("toSendSpace", selectedSpaceData[0]?.item?.location?.tenantSpaceId ? selectedSpaceData[0]?.item?.location?.tenantSpaceId : selectedValue);
+      }
+    }
+    else if (activity === "space") {
+      if (eventData.selectedBrand !== selectedValue) {
+        updateEventData("selectedBrand", selectedValue);
+        updateEventData("location", updatedLocation);
+        updateEventData("mapInstructions", selectedSpaceData[0]?.item?.location?.additional);
+        updateEventData("streetAddress", address);
       }
     }
 
@@ -256,7 +284,7 @@ const InputWithMap = ({
                 categories
                   ?.filter(cat => cat.selected)
                   .map((cat, index) => (
-                    <Box key={cat.name} display="flex" alignItems="center" marginRight={2} columnGap={1.5} sx={{ width: { xs: "100%", sm: "45%", lg: "30%" } }}>
+                    <Box key={index} display="flex" alignItems="center" marginRight={2} columnGap={1.5} sx={{ width: { xs: "100%", sm: "45%", lg: "30%" } }}>
                       <CheckBox checked={cat.selected} onChange={() => HandleCategoryChange(cat?.id)} />
                       <Box sx={{ display: "flex", columnGap: "8px" }}>
                         <img src={cat.icon} alt="Amenity Icon" style={{ width: "16px", height: "16px" }} />
@@ -303,7 +331,7 @@ const InputWithMap = ({
         {(activity === "brand" && !edit) &&
           <Typography fontSize={14} fontWeight={300} sx={{ fontStyle: "italic" }}>Click on the map to select Address.</Typography>
         }
-        <figure role="img" aria-labelledby="profile-map" onClick={(activity === 'event' && selectedValue !== "") || activity === 'space' || activity === 'brand' ? handleClick : undefined} style={{ cursor: activity === 'space' || selectedValue !== "" ? 'pointer' : 'default' }}>
+        <figure role="img" aria-labelledby="profile-map" onClick={(activity === 'event' && selectedValue !== "") || (activity === 'space' && selectedValue !== "") || activity === 'brand' ? handleClick : undefined} style={{ cursor: activity === 'space' || selectedValue !== "" ? 'pointer' : 'default' }}>
           <img width="100%" height="auto" src={miniMap} alt="map" />
           <figcaption
             style={activity === "brand" && !edit ?

@@ -14,6 +14,7 @@ import { LoadingButton } from '@mui/lab'
 import { profileContent } from '../../../constant'
 import { useGetMyChatsQuery } from '../../../services/chats'
 import { removeMychat } from '../../../store/slices/chat'
+import { fetchAddressFromCoordinates } from '../../../utils'
 
 const EditBrand = () => {
   const navigate = useNavigate();
@@ -33,7 +34,8 @@ const EditBrand = () => {
     brandTitle: null,
     brandCategories: [],
     location: {},
-    mapInstructions: ""
+    mapInstructions: "",
+    streetAddress: ""
   });
   const [currentIndex, setCurrentIndex] = useState(0);
   const params = useParams();
@@ -42,7 +44,7 @@ const EditBrand = () => {
   const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({
     page: 1, pageSize: 7, id: params?.brandId
   }, { refetchOnMountOrArgChange: true });
-    const { refetch } = useGetMyChatsQuery(undefined);
+  const { refetch } = useGetMyChatsQuery(undefined);
 
   useEffect(() => {
     if (isError) {
@@ -57,37 +59,53 @@ const EditBrand = () => {
   }, [IsGetCategoryError])
 
   useEffect(() => {
-    if (GetCategorySuccess && isSuccess) {
-      const allCategories = Array.isArray(GetCategoryData?.data) ? GetCategoryData?.data?.map((cat, index) => ({
-        id: index,
-        name: cat?.name,
-        selected: false,
-      })) : [];
-      
-      const selectedCategories = Array.isArray(data?.data?.brandCategory) ? data?.data?.brandCategory?.map((cat) => cat?.name) : [];
-
-      const mergedCategories = allCategories.map((category) => ({
-        ...category,
-        selected: selectedCategories?.includes(category.name),
-      }));
-
-      setBrandData((prevState) => ({
-        ...prevState,
-        brandCategories: mergedCategories,
-      }));
-      setBrandData((prevState) => ({
-        ...prevState,
-        brandCategories: mergedCategories,
-        brandName: data?.data?.brandName,
-        profileImage: data?.data?.brandImage,
-        brandOverview: data?.data?.details?.description,
-        brandTitle: data?.data?.details?.htmlContent,
-        location: data?.data?.location,
-        cover: data?.data?.coverImages,
-        mapInstructions: data?.data?.location?.additional
-      }));
-    }
+    const fetchAndSetAddress = async () => {
+      if (GetCategorySuccess && isSuccess) {
+        const allCategories = Array.isArray(GetCategoryData?.data) ? GetCategoryData?.data?.map((cat, index) => ({
+          id: index,
+          name: cat?.name,
+          selected: false,
+        })) : [];
+  
+        const selectedCategories = Array.isArray(data?.data?.brandCategory)
+          ? data?.data?.brandCategory?.map((cat) => cat?.name)
+          : [];
+  
+        const mergedCategories = allCategories.map((category) => ({
+          ...category,
+          selected: selectedCategories?.includes(category.name),
+        }));
+  
+        let address = "";
+        if (data?.data?.location?.lat && data?.data?.location?.long) {
+          address = await fetchAddressFromCoordinates(
+            data.data.location.lat,
+            data.data.location.long
+          );
+        }
+  
+        setBrandData((prevState) => ({
+          ...prevState,
+          brandCategories: mergedCategories,
+          brandName: data?.data?.brandName,
+          profileImage: data?.data?.brandImage,
+          brandOverview: data?.data?.details?.description,
+          brandTitle: data?.data?.details?.htmlContent,
+          location: data?.data?.location,
+          cover: data?.data?.coverImages,
+          mapInstructions: data?.data?.location?.additional,
+          streetAddress: address,
+        }));
+      }
+    };
+  
+    fetchAndSetAddress();
   }, [GetCategorySuccess, isSuccess, data]);
+  
+
+  useEffect(() => { 
+    console.log(brandData)
+  }, [brandData])
 
 
   const handleMainFileInputClick = () => {
@@ -346,7 +364,7 @@ const EditBrand = () => {
           width: "max-content",
           justifyContent: "center",
           alignItems: "center",
-          zIndex: 99,
+          zIndex: 10,
           right: 0,
           marginRight: "16px",
         }}
@@ -540,7 +558,7 @@ const EditBrand = () => {
             </Box>
             :
             <>
-              <InputWithMap inputLabel={"Brand Overview:"} inputValue={brandData?.brandOverview} setInputValue={(value) => setBrandData({ ...brandData, brandOverview: value })} handleClick={() => setMapModal(true)} mapDescription={"Click on the map to select Address."} activity={"brand"} />
+              <InputWithMap inputLabel={"Brand Overview:"} inputValue={brandData?.brandOverview} setInputValue={(value) => setBrandData({ ...brandData, brandOverview: value })} handleClick={() => setMapModal(true)} mapDescription={brandData?.streetAddress} activity={"brand"} />
               <Box
                 sx={{
                   width: "98%",
@@ -600,7 +618,7 @@ const EditBrand = () => {
         }
       </Box>
       <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-        <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[brandData?.location?.lat, brandData?.location?.long]} setBrandData={setBrandData} instructionValue={brandData?.mapInstructions}
+        <MapModal activity={"brand"} value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[brandData?.location?.lat, brandData?.location?.long]} setBrandData={setBrandData} instructionValue={brandData?.mapInstructions}
           setInstructionValue={(e) => setBrandData((prev) => ({
             ...prev,
             mapInstructions: e.target.value

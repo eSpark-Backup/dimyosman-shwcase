@@ -65,6 +65,25 @@ export const authApi = api.injectEndpoints({
         credentials: "include",
       }),
     }),
+    getUserFavourities: builder.query({
+      query: ({ page, pageSize, entity } = {}) => {
+        const baseUrl = "/user/favourites";
+        const queryParams = new URLSearchParams();
+
+        if (pageSize) queryParams.append("pageSize", pageSize);
+        if (page) queryParams.append("page", page);
+        if (entity) queryParams.append("entity", entity);
+
+        const queryString = queryParams.toString()
+          ? `?${queryParams.toString()}`
+          : "";
+
+        return {
+          url: `${baseUrl}${queryString}`,
+          method: "GET",
+        };
+      },
+    }),
   }),
 });
 
@@ -77,4 +96,5 @@ export const {
   useUpdateProfileMutation,
   useChangePwMutation,
   useChangeProfileImageMutation,
+  useGetUserFavouritiesQuery
 } = authApi;

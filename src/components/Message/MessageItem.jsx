@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
@@ -7,11 +7,13 @@ import {
   AccordionSummary,
   Box,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 
 import ActivityType from "./ActivityType";
 
 import { isActiveMembers } from "../../store/slices/chat";
+import { emptyGoToMessage, setFromNotification } from "../../store/slices/notification";
 
 import { deleteCookie, getCookie, setCookie } from "../../utils";
 
@@ -24,16 +26,18 @@ const MessageItem = ({
   selectedGroup,
   setSelectedChatId,
   emitEvent,
-  onlineUsers
+  onlineUsers,
 }) => {
-  const detailsRef = useRef(null);
+    const isLessThan768 = useMediaQuery("(max-width:768px)");
 
-  const getUnreadMessage =
-    getCookie("unread") && JSON.parse(getCookie("unread"));
-  const getUnreadChatIds =
-    getCookie("unreadChatIds") && JSON.parse(getCookie("unreadChatIds"));
+    const detailsRef = useRef(null);
+    const messageRefs = useRef({});
+
+    const getUnreadChatIds =
+      getCookie("unreadChatIds") && JSON.parse(getCookie("unreadChatIds"));
 
   const { user } = useSelector((state) => state.auth);
+  const { gotToMessage } = useSelector((state) => state.notification);
 
   const dispatch = useDispatch();
 
@@ -43,28 +47,38 @@ const MessageItem = ({
     }
   }, [expanded]);
 
-  const getCount = (id) => {
-    const ifCountExists = getUnreadMessage?.filter((msg) => msg.chatId === id);
+  const handleGroup = (el) => {
+    const obj = {
+      userId: user.userChatId,
+      members: el?.members,
+    };
+    dispatch(isActiveMembers(obj.members));
+    emitEvent("CHAT_JOINED", obj);
 
-    if (ifCountExists?.length > 0) {
-      const count = getUnreadMessage?.find((msg) => msg.chatId === id)?.count;
-
-      return count;
-    }
+    setSelectedChatId(el?.chatId);
+    setSelectedGroup({ chatGroup: el, group: message });
+    getUnreadChatIds && filterCount(el?.chatId);
   };
 
-  const filterCount = (id) => {
-    const ifCountExists = getUnreadMessage?.filter((msg) => msg.chatId !== id);
-    const ifChatIdExists = getUnreadChatIds?.filter((id) => id !== id);
+  const filterCount = (chatId) => {
+    const ifChatIdExists = getUnreadChatIds?.filter((id) => id !== chatId);
 
-    if (ifCountExists?.length > 0) {
-      setCookie("unread", JSON.stringify(ifCountExists));
+    if (ifChatIdExists?.length > 0) {
       setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
     } else {
-      deleteCookie("unread");
       deleteCookie("unreadChatIds");
     }
   };
+
+    useEffect(() => {
+      if (gotToMessage && messageRefs.current[gotToMessage?.chatId]) {
+
+        messageRefs.current[gotToMessage?.chatId].current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }, [gotToMessage, expanded]);
 
   return (
     <Accordion
@@ -147,7 +161,7 @@ const MessageItem = ({
           {message.parentName}
         </Typography>
 
-        {getUnreadMessage?.length
+        {getUnreadChatIds?.length
           ? message?.chatGroups?.some((msg) =>
               getUnreadChatIds?.includes(msg.chatId)
             ) && (
@@ -179,32 +193,33 @@ const MessageItem = ({
       >
         {message?.chatGroups?.length
           ? message.chatGroups.map((el, i) => {
+            messageRefs.current[el.chatId] = messageRefs.current[el.chatId] || React.createRef();
+
               return (
                 <Box
                   key={i}
+                  ref={messageRefs.current[el.chatId]}
                   sx={{
                     display: "flex",
                     alignItems: el?.creator ? "center" : "unset",
                     padding: 1,
-                    bgcolor:
-                      selectedGroup?.chatGroup?.chatId === el?.chatId
-                        ? "rgba(209, 219, 215, 0.6)"
-                        : "#ffffff",
+                    bgcolor: isLessThan768
+                      ? "transparent"
+                      : selectedGroup?.chatGroup?.chatId === el?.chatId
+                      ? "rgba(209, 219, 215, 0.6)"
+                      : "#ffffff",
                     cursor: "pointer",
                     position: "relative",
                     borderRadius: "3px",
+                    borderBottom:
+                      isLessThan768 && i !== message.chatGroups.length - 1
+                        ? "1px solid rgba(209, 219, 215, 0.6)"
+                        : "none",
                   }}
                   onClick={() => {
-                    const obj = {
-                      userId: user.userChatId,
-                      members: el?.members,
-                    };
-                    dispatch(isActiveMembers(obj.members));
-                    emitEvent("CHAT_JOINED", obj);
-
-                    setSelectedChatId(el?.chatId);
-                    setSelectedGroup({ chatGroup: el, group: message });
-                    getCount(el.chatId) && filterCount(el?.chatId);
+                    dispatch(emptyGoToMessage());
+                    dispatch(setFromNotification(false));
+                    handleGroup(el);
                   }}
                 >
                   <Box
@@ -297,26 +312,6 @@ const MessageItem = ({
                         }}
                       >
                         <span>{el.creator}</span>
-                        {getUnreadMessage?.length && getCount(el.chatId) && (
-                          <Box
-                            component={"span"}
-                            sx={{
-                              minWidth: "15px",
-                              height: "15px",
-                              borderRadius: "50%",
-                              backgroundColor: "#ee6161",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: "10px",
-                              color: "#ffffff",
-                              padding:
-                                getCount(el.chatId) > 10 ? "0px 4px" : "0px",
-                            }}
-                          >
-                            {getCount(el.chatId)}
-                          </Box>
-                        )}
                       </Typography>
                     )}
 
@@ -345,19 +340,21 @@ const MessageItem = ({
                     </Box>
                   </Box>
 
-                  {el.read && (
-                    <Box
-                      sx={{
-                        width: "10px",
-                        height: "10px",
-                        borderRadius: "50%",
-                        backgroundColor: theme.palette.error.danger,
-                        position: "absolute",
-                        top: "-4px",
-                        right: "-3px",
-                      }}
-                    />
-                  )}
+                  {getUnreadChatIds?.length
+                    ? getUnreadChatIds?.includes(el.chatId) && (
+                        <Box
+                          sx={{
+                            width: "10px",
+                            height: "10px",
+                            borderRadius: "50%",
+                            backgroundColor: theme.palette.error.danger,
+                            position: "absolute",
+                            top: "-4px",
+                            right: "-3px",
+                          }}
+                        />
+                      )
+                    : null}
                 </Box>
               );
             })

@@ -15,10 +15,11 @@ const Events = ({ myProfile, addNewEvent }) => {
   return (
     <Box>
       <Stack
-        sx={{ marginRight: "48px" }}
-        direction="row"
+        sx={{ marginRight: { xs: "0px", md: "48px" } }}
+        direction={{ xs: "column", md: "row" }}
         alignItems="center"
         justifyContent="space-between"
+        rowGap={1}
       >
         <Stack
           component="section"
@@ -97,12 +98,12 @@ const Events = ({ myProfile, addNewEvent }) => {
             <Box
               key={`event-${ind + 1}`}
               sx={{
-                width: "328px"
+                width: { xs: "100%", md: "328px" }
               }}
             >
               <EventCard
-               onClick={() => navigate(`/event/${event?.id}`)} 
-               event={event} key={ind} />
+                onClick={() => navigate(`/event/${event?.id}`)}
+                event={event} key={ind} />
             </Box>
           );
         })}

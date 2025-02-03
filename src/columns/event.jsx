@@ -1,6 +1,7 @@
 import { Box, Button, Stack, Tooltip, Typography } from "@mui/material";
 import { eventBadge } from "../assets";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { LoadingButton } from "@mui/lab";
 
 const myEventsColumns = (gotoDetail, handleAction, gotoBrand, gotoSpace) => {
   return [
@@ -42,7 +43,7 @@ const myEventsColumns = (gotoDetail, handleAction, gotoBrand, gotoSpace) => {
                     position: "absolute",
                     bottom: 0,
                     right: 0,
-                    zIndex: 99,
+                    zIndex: 8,
                   }}
                   width={16}
                   height={16}
@@ -129,7 +130,7 @@ const myEventsColumns = (gotoDetail, handleAction, gotoBrand, gotoSpace) => {
   ];
 };
 
-const rsvpEventColumns = (gotoDetail, handleAction) => {
+const rsvpEventColumns = (rsvpLoading, rsvpId, gotoDetail, handleAction) => {
   return [
     {
       name: "Event Name",
@@ -157,7 +158,7 @@ const rsvpEventColumns = (gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="event-icon">
                   <img
-                    style={{ width: "100%" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover"  }}
                     src={item?.eventImg}
                     alt="event-img"
                   />
@@ -239,7 +240,9 @@ const rsvpEventColumns = (gotoDetail, handleAction) => {
               justifyContent: "flex-end"
             }}
           >
-            <Button
+            <LoadingButton
+              loading={rsvpLoading && rsvpId === item?.rsvpId}
+              disabled={rsvpLoading && rsvpId === item?.rsvpId}
               onClick={() => handleAction(item)}
               sx={{
                 maxHeight: "26px",
@@ -253,7 +256,7 @@ const rsvpEventColumns = (gotoDetail, handleAction) => {
               }}
             >
               {item?.action}
-            </Button>
+            </LoadingButton>
           </Box>
         );
       },
@@ -261,7 +264,7 @@ const rsvpEventColumns = (gotoDetail, handleAction) => {
   ];
 };
 
-const likedEventColumns = (gotoDetail, handleAction) => {
+const likedEventColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
   return [
     {
       name: "Event Name",
@@ -289,7 +292,7 @@ const likedEventColumns = (gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="event-icon">
                   <img
-                    style={{ width: "100%" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover"  }}
                     src={item?.eventImg}
                     alt="event-img"
                   />
@@ -330,9 +333,12 @@ const likedEventColumns = (gotoDetail, handleAction) => {
               fontSize: "14px",
               fontWeight: item?.brandUrl ? 600 : 400,
               cursor: "pointer",
+              a: {
+                color: "#00141C !important"
+              }
             }}
           >
-            {item?.brand}
+            {item?.brandUrl ? <Link to={item?.brandUrl}>{item?.brand}</Link> :  item?.brand}
           </Typography>
         );
       },
@@ -365,7 +371,9 @@ const likedEventColumns = (gotoDetail, handleAction) => {
       key: "action",
       component: (item) => {
         return (
-          <Button
+          <LoadingButton
+            loading={likeLoading && savedId === item?.id}
+            disabled={likeLoading && savedId === item?.id}
             onClick={() => handleAction(item)}
             sx={{
               minWidth: "83px",
@@ -376,7 +384,7 @@ const likedEventColumns = (gotoDetail, handleAction) => {
             }}
           >
             Remove
-          </Button>
+          </LoadingButton>
         );
       },
     },

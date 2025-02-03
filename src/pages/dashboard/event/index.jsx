@@ -1,58 +1,113 @@
 import { useEffect, useState } from "react";
-import { Box, Button, Card, LinearProgress, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  LinearProgress,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { eventTableData } from "../../../constant";
 import { addIcon, eventIconLight, like } from "../../../assets";
-import { useGetAllEventsQuery } from "../../../services/events";
+import { useCancelRsvpMutation, useGetAllEventsQuery } from "../../../services/events";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
+import { useAddInFavouritesMutation, useGetFavouritesQuery } from "../../../services/favourite";
 
 const Event = () => {
-  const [page, setPage] = useState(1)
-  const navigate = useNavigate()
+  const [page, setPage] = useState(1);
+  const [savedId, setSavedId] = useState(null);
+  const [rsvpId, setRsvpId] = useState(null);
+  const navigate = useNavigate();
 
   const tabs = [
     {
       label: "My Events",
       icon: null,
+      error: "You don't currently own any events. Would you like to add a new one?"
     },
     {
       label: "RSVP Events",
       icon: null,
+      error: "You don't currently have RSVP events."
     },
     {
       label: "Saved Events",
       icon: like,
+      error: "You don't currently have saved events."
     },
   ];
+  const tabsForApi = ["Event", "RSVP", "Saved"];
   const [activeTab, setActiveTab] = useState(0);
 
   const [myEventData, setMyEventData] = useState([]);
-  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllEventsQuery({ page, pageSize: 7 }, {
-    refetchOnMountOrArgChange: true,
-    refetchOnFocus: true
-  });
+  const [myEventData2, setMyEventData2] = useState([]);
+  const { data, isError, isLoading, isSuccess, error, isFetching, refetch } =
+    useGetAllEventsQuery(
+      { page, pageSize: 7, tab: tabsForApi[activeTab] },
+      {
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true,
+        skip: tabsForApi[activeTab] === "Saved",
+      }
+    );
+  const {
+    data: data2,
+    isError: isError2,
+    isLoading: isLoading2,
+    isSuccess: isSuccess2,
+    error: error2,
+    isFetching: isFetching2,
+    refetch: refetch2,
+  } = useGetFavouritesQuery(
+    { page, pageSize: 7, entity: "EVENT" },
+    {
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      skip:
+        tabsForApi[activeTab] === "Event" || tabsForApi[activeTab] === "RSVP",
+    }
+  );
 
-  const transformEventData = (apiData) => {
-    return apiData.map((event, index) => ({
-      id: event?.id,
-      type: "event",
-      eventName: event?.eventName,
-      eventImg: event?.eventImage,
-      brand: event?.brand?.brandName,
-      brandUrl: `/brand/${event?.brand?.id}`,
-      rsvp: "-",
-      startDate: dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
-      status: event?.status,
-      hostedIn: event?.space?.spaceName,
-      spaceUrl: `/space/${event?.space?.id}`,
-      action: "Cancel",
-    }));
+  const transformEventData = (apiData, type) => {
+    let newData;
+    type === "fav"
+      ? (newData = apiData.map(({event}, index) => ({
+          id: event?.id,
+          type: "event",
+          eventName: event?.eventName,
+          eventImg: event?.eventImage,
+          brand: event?.brand?.brandName,
+          brandUrl: `/brand/${event?.brand?.id}`,
+          rsvp: "-",
+          startDate: dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
+          status: event?.status,
+          hostedIn: event?.space?.spaceName,
+          spaceUrl: `/space/${event?.space?.id}`,
+          action: "Cancel",
+          category: event?.eventCategory[0]?.name
+        })))
+      : (newData = apiData.map((event, index) => ({
+          id: event?.id,
+          rsvpId: event?.rsvpId,          
+          type: "event",
+          eventName: event?.eventName,
+          eventImg: event?.eventImage,
+          brand: event?.brand?.brandName,
+          brandUrl: `/brand/${event?.brand?.id}`,
+          rsvp: event?.rsvpCount,
+          startDate: dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
+          status: event?.eventStatus || event?.status,
+          hostedIn: event?.space?.spaceName,
+          spaceUrl: `/space/${event?.space?.id}`,
+          action: "Cancel",
+        })));
+    return newData;
   };
 
   const [hasShownErrorToast, setHasShownErrorToast] = useState(false);
-
 
   useEffect(() => {
     if (isError && !hasShownErrorToast) {
@@ -61,11 +116,39 @@ const Event = () => {
       setMyEventData([]);
     }
 
+    if (isError2 && !hasShownErrorToast) {
+      toast.error(error2?.data?.message, { toastId: "error-toast" });
+      setHasShownErrorToast(true);
+      setMyEventData2([]);
+    }
+
     if (isSuccess) {
-      setMyEventData(transformEventData(data?.data?.events || []));
+      if(tabsForApi[activeTab] === "RSVP"){
+        setMyEventData(transformEventData(data?.data?.map(({ event, ...rest }) =>({ ...rest, ...event, rsvpId: rest?.id })) || []));
+      } else {
+        setMyEventData(transformEventData(data?.data?.events || []));
+      }
       setHasShownErrorToast(false);
     }
-  }, [isError, isSuccess, error, hasShownErrorToast, page, data]);
+
+    if (isSuccess2) {
+      setMyEventData2(
+        transformEventData(data2?.data?.savedEntities || [], "fav")
+      );
+      setHasShownErrorToast(false);
+    }
+  }, [
+    isError,
+    isError2,
+    isSuccess,
+    isSuccess2,
+    error,
+    error2,
+    hasShownErrorToast,
+    page,
+    data,
+    data2,
+  ]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
@@ -77,26 +160,40 @@ const Event = () => {
 
   const gotoDetail = (item) => {
     //go to detail page functionality
-    navigate(`/event/${item?.id}`)
+    navigate(`/event/${item?.id}`);
   };
 
   const gotoBrand = (item) => {
     //go to detail page functionality
-    navigate(item?.brandUrl)
+    navigate(item?.brandUrl);
   };
 
   const gotoSpace = (item) => {
-    navigate(item?.spaceUrl)
+    navigate(item?.spaceUrl);
   };
 
-  const handleAction = (item, type) => {
+    const [likeFunc, { isLoading: likeLoading }] = useAddInFavouritesMutation();
+    const [cancelRsvp, { isLoading: rsvpLoading }] = useCancelRsvpMutation();
+  
+
+  const handleAction = async (item, type) => {
     if (type === "edit") {
       //edit functionality
       if (location?.pathname === "/event") {
-        navigate(`/event/${item?.id}/edit`)
+        navigate(`/event/${item?.id}/edit`);
       }
     } else if (type === "remove") {
+      setSavedId(item?.id);
+      await likeFunc({ entityId: item?.id, entityType: item?.type?.toUpperCase() }).unwrap();
+      refetch2();
+      setSavedId(null);
       //remove functionality
+    } else if (type === "Cancel") {
+      //cancel rsvp functionality
+      setRsvpId(item?.rsvpId);
+      await cancelRsvp({id: item?.rsvpId}).unwrap();
+      refetch();
+      setRsvpId(null);
     } else {
       // other action functionality
     }
@@ -104,21 +201,21 @@ const Event = () => {
 
   const handleAdd = () => {
     if (location?.pathname === "/event") {
-      navigate("/new-event")
+      navigate("/new-event");
     }
   };
 
-  if (isLoading || isFetching) {
+  if (isLoading || isLoading2 || isFetching || isFetching2) {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />
       </Box>
-    )
+    );
   }
 
   return (
     <Box>
-      <Stack direction="row" justifyContent="flex-end">
+      <Stack direction="row" justifyContent={{ xs: "center", sm: "flex-end" }}>
         <img src={eventIconLight} alt="event" />
       </Stack>
       <Card sx={{ marginY: 2 }}>
@@ -128,11 +225,40 @@ const Event = () => {
           handleChange={handleChange}
           handleAdd={handleAdd}
         />
-        {eventTableData(gotoDetail, handleAction, myEventData, gotoBrand, gotoSpace)[activeTab].data.length > 0 ? (
+        {eventTableData(
+          gotoDetail,
+          handleAction,
+          myEventData,
+          myEventData2,
+          gotoBrand,
+          gotoSpace
+        )[activeTab].data.length > 0 ? (
           <DynamicTable
             isLoading={false}
-            data={eventTableData(gotoDetail, handleAction, myEventData, gotoBrand, gotoSpace)[activeTab].data}
-            columns={eventTableData(gotoDetail, handleAction, myEventData, gotoBrand, gotoSpace)[activeTab].column}
+            data={
+              eventTableData(
+                gotoDetail,
+                handleAction,
+                myEventData,
+                myEventData2,
+                gotoBrand,
+                gotoSpace
+              )[activeTab].data
+            }
+            columns={
+              eventTableData(
+                gotoDetail,
+                handleAction,
+                myEventData,
+                myEventData2,
+                gotoBrand,
+                gotoSpace,
+                likeLoading,
+                rsvpLoading,
+                savedId,
+                rsvpId,
+              )[activeTab].column
+            }
             total={data && data?.data?.pagination?.totalItems}
             handlePageChange={handlePageChange}
             page={page}
@@ -147,10 +273,10 @@ const Event = () => {
           >
             <Typography sx={{ fontWeight: 400 }} color="primary" variant="h5">
               {
-                "You don't currently own any events. Would you like to add a new one?"
+                tabs[activeTab].error
               }
             </Typography>
-            <Button
+            {activeTab === 0 && <Button
               onClick={handleAdd}
               startIcon={
                 <img
@@ -180,7 +306,7 @@ const Event = () => {
               }}
             >
               Add New
-            </Button>
+            </Button>}
           </Stack>
         )}
       </Card>

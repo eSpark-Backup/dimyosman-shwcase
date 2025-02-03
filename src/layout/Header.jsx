@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
-import { Box, Button, Stack, Typography, useTheme } from "@mui/material";
+import { useEffect, useRef, useState } from "react";
+import { Box, Button, Drawer, Stack, Typography, useTheme } from "@mui/material";
+import FilterListIcon from '@mui/icons-material/FilterList';
 import {
   brand,
   brandHover,
@@ -17,36 +18,91 @@ import {
 } from "../assets";
 import { BadgeComp, SearchBar } from "../components";
 import { addIcon, chatIcon, bellIcon } from "../assets";
-import { useNavigate } from "react-router-dom";
-import { useClickOutside } from "../utils";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  getCookie,
+  removeActiveNotifications,
+  removeNewInquiry,
+  useClickOutside,
+} from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { logout as logoutFunc } from "../store/slices/auth";
 import { removeMychat } from "../store/slices/chat";
+import Notification from "../components/Notification";
+import Filters from "../components/Filters";
+import { emptyGoToMessage, emptyNotification, setFromNotification } from "../store/slices/notification";
 
 const Header = ({ isLogin }) => {
+  const getInquiryCount = getCookie("newInquiry") || 0;
+  const getNotificationCount = getCookie("newNotification") || 0;
+
+  const { count, countInquiry } = useSelector((state) => state.notification);
   const userData = useSelector((state) => state.auth);
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { pathname } = useLocation();
   const addRef = useRef();
   const profileRef = useRef();
+  const notificationRef = useRef();
+  const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
   const [openProfilePopup, setOpenProfilePopup] = useState(false);
   const [addPopup, setAddPopup] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
   useClickOutside(addRef, () => setAddPopup(false));
   useClickOutside(profileRef, () => setOpenProfilePopup(false));
+  useClickOutside(notificationRef, () => setShowNotification(false));
 
   const handleLogout = () => {
-    dispatch(logoutFunc())
-    dispatch(removeMychat())
+    dispatch(logoutFunc());
+    dispatch(removeMychat());
+    dispatch(emptyNotification());
     setAddPopup(false);
     setOpenProfilePopup(false);
-    navigate("/auth?type=login")
+    setShowNotification(false);
+    navigate("/auth?type=login");
   };
 
   const handleNavigate = (link) => {
     navigate(link);
     setAddPopup(false);
   };
+
+  const handleFilterDrawer = (link) => {
+    setOpenFilterDrawer(true);
+  };
+
+  const iconClick = (type) => {
+    if (type === "chat") {
+      navigate("/message");
+      removeNewInquiry(dispatch);
+    } else {
+      removeActiveNotifications(dispatch);
+      setShowNotification(true);
+    }
+  };
+
+    useEffect(() => {
+      const sidebarItems = document.querySelectorAll(".sidebar-item");
+
+      sidebarItems.forEach((item) => {
+        item.addEventListener("click", handleClick);
+      });
+
+      return () => {
+        sidebarItems.forEach((item) => {
+          item.removeEventListener("click", handleClick);
+        });
+      };
+    }, [pathname]);
+
+    const handleClick = (event) => {
+      const clickedItemId = event.target.id;
+      if (clickedItemId !== "Messages") {
+        dispatch(emptyGoToMessage());
+        dispatch(setFromNotification(false));
+      }
+    };
 
   const addPopuptabs = [
     {
@@ -93,7 +149,7 @@ const Header = ({ isLogin }) => {
           display: open ? "block" : "none",
           position: "absolute",
           top: "58px",
-          right: title ? "210px" : 0,
+          right: title ? { xs: "120px", sm: "210px" } : 0,
           border: "1px solid #D1DBD7",
           background: "#fff",
           borderRadius: "0px 0px 5px 5px",
@@ -160,34 +216,73 @@ const Header = ({ isLogin }) => {
         <nav>
           <div className="logo">
             <img width={42} height={42} src={logoIcon} alt="Icon" />
-            <img className="text-icon" src={logoText} alt="Icon" style={{ height: "22px" }} />
+            <img
+              className="text-icon"
+              src={logoText}
+              alt="Icon"
+              style={{ height: "22px" }}
+            />
           </div>
           {isLogin && (
             <div className="search-bar">
               <div className="search-box">
-                <SearchBar name={"query"} placeholder={"Search..."} />
+                <SearchBar
+                  name={"query"}
+                  placeholder={"Search..."}
+                  handleFilterDrawer={handleFilterDrawer}
+                />
               </div>
             </div>
           )}
           {isLogin ? (
-            <ul
-              style={{ position: "relative" }}
-              className="nav-links2"
-            >
+            <ul style={{ position: "relative" }} className="nav-links2">
+              <li className="add_filter">
+                <Button
+                  sx={{
+                    backgroundColor: "rgb(0, 20, 28, 0.4)",
+                    width: "32px",
+                    height: "32px",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                    display: "flex",
+                    position: "relative",
+                    minWidth: "auto",
+                  }}
+                >
+                  <FilterListIcon onClick={() => handleFilterDrawer()} />
+                </Button>
+              </li>
+
               <li ref={addRef}>
-                <BadgeComp onClick={() => setAddPopup(true)} imageSrc={addIcon} bg={theme.palette.transparent} />
+                <BadgeComp
+                  onClick={() => setAddPopup(true)}
+                  imageSrc={addIcon}
+                  bg={theme.palette.transparent}
+                />
                 <Popup open={addPopup} title="Add New:" data={addPopuptabs} />
               </li>
+
               <li>
                 <BadgeComp
+                  onClick={() => iconClick("chat")}
                   imageSrc={chatIcon}
                   bg={theme.palette.error.danger}
+                  count={countInquiry || getInquiryCount}
                 />
               </li>
-              <li>
+              <li ref={notificationRef}>
                 <BadgeComp
+                  onClick={() => iconClick("bell")}
                   imageSrc={bellIcon}
                   bg={theme.palette.error.danger}
+                  count={count || getNotificationCount}
+                />
+                <Notification
+                  open={showNotification}
+                  theme={theme}
+                  setShowNotification={setShowNotification}
                 />
               </li>
               {userData?.user?.profileImage ? (
@@ -233,7 +328,7 @@ const Header = ({ isLogin }) => {
               <hr className="nav-items-breaker" />
               <li>Help</li>
               <Button
-                onClick={() => isLogin ? setOpenProfilePopup(true) : ()=>{}}
+                onClick={() => (isLogin ? setOpenProfilePopup(true) : () => {})}
                 className="user-btn1"
                 sx={{
                   minWidth: "32px",
@@ -250,6 +345,19 @@ const Header = ({ isLogin }) => {
           )}
         </nav>
       </div>
+
+      <Drawer
+        anchor="right"
+        open={openFilterDrawer}
+        onClose={() => setOpenFilterDrawer(false)}
+        sx={{
+          "& .MuiPaper-root": {
+            padding: 0,
+          },
+        }}
+      >
+        <Filters setOpenFilterDrawer={setOpenFilterDrawer} />
+      </Drawer>
     </>
   );
 };

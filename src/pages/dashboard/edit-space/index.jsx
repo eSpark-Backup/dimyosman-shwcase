@@ -12,6 +12,7 @@ import { LoadingButton } from '@mui/lab';
 import { toast } from 'react-toastify';
 import { useEditSpaceMutation, useGetAllSpaceQuery, useNewSpaceMutation } from '../../../services/space';
 import { useNavigate, useParams } from 'react-router-dom';
+import { fetchAddressFromCoordinates } from '../../../utils';
 
 const EditSpace = () => {
     const theme = useTheme()
@@ -33,7 +34,8 @@ const EditSpace = () => {
         selectedBrand: "",
         price: [],
         amenities: [],
-        mapInstructions: ""
+        mapInstructions: "",
+        streetAddress: ""
     });
 
     const mainImageRef = useRef(null)
@@ -66,57 +68,71 @@ const EditSpace = () => {
     }, [IsGetCategoryError])
 
     useEffect(() => {
-        if (
-            GetCategorySuccess &&
-            isSuccess &&
-            AmeitiesSuccess &&
-            IsBrandSuccess &&
-            GetCategoryData?.data &&
-            AmenitiesData?.data &&
-            data?.data
-        ) {
-            const allCategories = GetCategoryData?.data?.map((cat, index) => ({
-                id: index,
-                name: cat?.name,
-                selected: false,
-            }));
-            const allAmenities = AmenitiesData?.data?.map((amenity, index) => ({
-                id: index,
-                name: amenity?.amenitiesName,
-                selected: false,
-                icon: amenity?.amenitiesImage
-            }));
+        const fetchAddress = async () => {
+            if (
+                GetCategorySuccess &&
+                isSuccess &&
+                AmeitiesSuccess &&
+                IsBrandSuccess &&
+                GetCategoryData?.data &&
+                AmenitiesData?.data &&
+                data?.data
+            ) {
+                const allCategories = GetCategoryData?.data?.map((cat, index) => ({
+                    id: index,
+                    name: cat?.name,
+                    selected: false,
+                }));
+                const allAmenities = AmenitiesData?.data?.map((amenity, index) => ({
+                    id: index,
+                    name: amenity?.amenitiesName,
+                    selected: false,
+                    icon: amenity?.amenitiesImage
+                }));
 
-            const selectedCategories = data?.data?.spaceCategory?.map((cat) => cat?.name);
+                const selectedCategories = data?.data?.spaceCategory?.map((cat) => cat?.name);
 
-            const mergedCategories = allCategories.map((category) => ({
-                ...category,
-                selected: selectedCategories?.includes(category.name),
-            }));
+                const mergedCategories = allCategories.map((category) => ({
+                    ...category,
+                    selected: selectedCategories?.includes(category.name),
+                }));
 
-            const selectedAmenity = data?.data?.amenity?.map((amenity) => amenity?.name);
+                const selectedAmenity = data?.data?.amenity?.map((amenity) => amenity?.name);
 
-            const mergedAmenities = allAmenities.map((amenity) => ({
-                ...amenity,
-                selected: selectedAmenity?.includes(amenity.name),
-            }));
-            setSpaceData({
-                cover: data?.data?.coverImages || [],
-                profileImage: data?.data?.spaceImage || null,
-                spaceName: data?.data?.spaceName || "",
-                spaceCategories: mergedCategories || [],
-                spaceOverview: data?.data?.details?.description || "",
-                spaceTitle: data?.data?.details?.htmlContent || null,
-                location: {
-                    lat: data?.data?.location?.lat || null,
-                    long: data?.data?.location?.long || null,
-                },
-                selectedBrand: data?.data?.brand?.id || "",
-                price: data?.data?.pricing || [],
-                amenities: mergedAmenities || [],
-                mapInstructions: data?.data?.location?.additional || "",
-            });
+                const mergedAmenities = allAmenities.map((amenity) => ({
+                    ...amenity,
+                    selected: selectedAmenity?.includes(amenity.name),
+                }));
+
+                let address = "";
+                if (data?.data?.brand?.location?.lat && data?.data?.brand?.location?.long) {
+                    address = await fetchAddressFromCoordinates(
+                        data?.data?.brand?.location?.lat,
+                        data?.data?.brand?.location?.long
+                    );
+                }
+                console.log(address)
+
+                setSpaceData({
+                    cover: data?.data?.coverImages || [],
+                    profileImage: data?.data?.spaceImage || null,
+                    spaceName: data?.data?.spaceName || "",
+                    spaceCategories: mergedCategories || [],
+                    spaceOverview: data?.data?.details?.description || "",
+                    spaceTitle: data?.data?.details?.htmlContent || null,
+                    location: {
+                        lat: data?.data?.brand?.location?.lat || null,
+                        long: data?.data?.brand?.location?.long || null
+                    },
+                    selectedBrand: data?.data?.brand?.id || "",
+                    price: data?.data?.pricing || [],
+                    amenities: mergedAmenities || [],
+                    mapInstructions: data?.data?.brand?.location?.additional || "",
+                    streetAddress: address
+                });
+            }
         }
+        fetchAddress()
     }, [GetCategorySuccess, isSuccess, AmeitiesSuccess, IsBrandSuccess, GetCategoryData, AmenitiesData, data]);
 
 
@@ -407,7 +423,7 @@ const EditSpace = () => {
                     width: "max-content",
                     justifyContent: "center",
                     alignItems: "center",
-                    zIndex: 99,
+                    zIndex: 10,
                     right: 0,
                     marginRight: "16px",
                 }}
@@ -499,7 +515,7 @@ const EditSpace = () => {
                     rowGap: "32px",
                 }}
             >
-                <InputWithMap inputLabel={"Space Overview:"} inputValue={spaceData?.spaceOverview} setInputValue={(value) => setSpaceData({ ...spaceData, spaceOverview: value })} mapInstruction={"Click on the map to change/adjust."} mapDescription={"Brand Address is displayed automatically"} activity={"space"} eventName={"Select your Brand"}
+                <InputWithMap inputLabel={"Space Overview:"} inputValue={spaceData?.spaceOverview} setInputValue={(value) => setSpaceData({ ...spaceData, spaceOverview: value })} mapInstruction={"Click on the map to change/adjust."} mapDescription={spaceData?.streetAddress} activity={"space"} eventName={"Select your Brand"}
                     defaultPrice={
                         spaceData?.price?.length > 0
                             ? spaceData.price : "xxx/day"
@@ -578,7 +594,7 @@ const EditSpace = () => {
                 />
             </ReusableModal>
             <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-                <MapModal value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[spaceData?.location?.lat, spaceData?.location?.long]} instructionValue={spaceData?.mapInstructions}
+                <MapModal activity={"space"} disabled={true} value={address} setValue={setAddress} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[spaceData?.location?.lat, spaceData?.location?.long]} instructionValue={spaceData?.mapInstructions}
                     setInstructionValue={(e) => setSpaceData((prev) => ({
                         ...prev,
                         mapInstructions: e.target.value

@@ -44,12 +44,15 @@
 // Second
 
 import { createContext, useContext, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
 import { io } from "socket.io-client";
 
+import { toast } from "react-toastify";
+
 import { useGetMyChatsQuery } from "../services/chats";
+import { useGetNotificationDataQuery } from "../services/notifications";
 
 import {
   emptyActiveMembers,
@@ -57,7 +60,16 @@ import {
   getMyChat,
   isUserHasChat,
 } from "../store/slices/chat";
+import {
+  getNotification,
+  getNotificationCount,
+  setFromNotification,
+  setGoToMessage,
+} from "../store/slices/notification";
+
 import { getCookie, setCookie } from "../utils";
+
+// import { setHasPaymentDone, setRedirectTab } from "../store/slices/space";
 
 const SocketContext = createContext(null);
 
@@ -69,11 +81,29 @@ const SocketProvider = ({ children }) => {
   const socket = useRef(null);
   const { user } = useSelector((state) => state.auth);
   const { activeMembers, messages } = useSelector((state) => state.chat);
+  const { activeTabForNotif } = useSelector((state) => state.space);
+
   const { data, isSuccess, refetch } = useGetMyChatsQuery(undefined, {
     skip: !user,
   });
+  const {
+    data: notificationData,
+    isSuccess: notificationSuccess,
+    refetch: notificationRefetch,
+  } = useGetNotificationDataQuery(undefined, { skip: !user });
+
   const { pathname } = useLocation();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (
+      notificationData?.data &&
+      notificationData?.data?.notifications?.length > 0
+    ) {
+      dispatch(getNotification(notificationData?.data?.notifications));
+    }
+  }, [notificationSuccess, notificationData]);
 
   useEffect(() => {
     if (isSuccess && data) {
@@ -95,6 +125,14 @@ const SocketProvider = ({ children }) => {
       }
     }
   }, [isSuccess, data]);
+
+  const handleNotificationUpdate = (cookieName, action) => {
+    const currentValue = getCookie(cookieName);
+    const newCount = currentValue ? parseInt(currentValue) + 1 : 1;
+
+    setCookie(cookieName, newCount);
+    dispatch(action(newCount));
+  };
 
   useEffect(() => {
     if (user && !socket.current) {
@@ -120,9 +158,61 @@ const SocketProvider = ({ children }) => {
         refetch();
       });
 
-      socket.current.on("NEW_REQUEST", () => {
+      socket.current.on("NEW_NOTIFICATION", (data) => {
+        // console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
+
+        if (pathname !== "/space") {
+          notificationRefetch().then(() => {
+            handleNotificationUpdate("newNotification", getNotificationCount);
+            let redName = data.redirect;
+
+            toast.info(data?.name, {
+              position: "bottom-right",
+              onClick: () => {
+                dispatch(setRedirectTab(redName));
+              },
+            });
+          });
+        }
+      });
+
+      socket.current.on("NEW_REQUEST", (data) => {
         // console.log("NEW_REQUEST EVENT TRIGGERED.");
-        refetch();
+
+        notificationRefetch().then(() => {
+          handleNotificationUpdate("newNotification", getNotificationCount);
+          if (pathname !== "/message") {
+            handleNotificationUpdate("newInquiry", getNotificationCount);
+          }
+
+          const navigateData = {
+            spaceName: data.receiverSpaceName,
+            chatId: data.chatId,
+          };
+
+          toast.info(data?.name, {
+            position: "bottom-right",
+            onClick: () => {
+              dispatch(setGoToMessage(navigateData));
+              dispatch(setFromNotification(true));
+
+              if (pathname !== "/message") {
+                navigate("/message");
+              }
+            },
+          });
+
+          const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
+
+          if (!getUnreadChatIds) {
+            setCookie("unreadChatIds", JSON.stringify([data.chatId]));
+          } else {
+            if (!getUnreadChatIds.includes(data.chatId)) {
+              getUnreadChatIds.push(data.chatId);
+              setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
+            }
+          }
+        });
       });
 
       return () => {
@@ -148,27 +238,13 @@ const SocketProvider = ({ children }) => {
         });
 
         const handleNewMessageAlert = (data) => {
-          const getNotReadMessage = JSON.parse(getCookie("unread"));
           const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
 
-          if (!getNotReadMessage) {
-            setCookie(
-              "unread",
-              JSON.stringify([{ chatId: data.chatId, count: 1 }])
-            );
+          if (!getUnreadChatIds) {
             setCookie("unreadChatIds", JSON.stringify([data.chatId]));
             return;
           }
 
-          const updatedMessages = getNotReadMessage?.some(
-            (el) => el.chatId === data.chatId
-          )
-            ? getNotReadMessage.map((el) =>
-                el.chatId === data.chatId ? { ...el, count: el.count + 1 } : el
-              )
-            : [...getNotReadMessage, { chatId: data.chatId, count: 1 }];
-
-          setCookie("unread", JSON.stringify(updatedMessages));
           if (!getUnreadChatIds.includes(data.chatId)) {
             getUnreadChatIds.push(data.chatId);
             setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));

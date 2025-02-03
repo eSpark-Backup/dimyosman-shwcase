@@ -6,7 +6,7 @@ export const eventApi = api.injectEndpoints({
             query: (eventData) => {
                 const formData = new FormData();
                 formData.append("brandId", eventData?.brand?.id)
-                formData.append("spaceId", eventData?.space)
+                formData.append("spaceId", eventData?.toSendSpace)
                 formData.append("eventName", eventData?.eventName)
                 // formData.append("minLeaseDays", "Hello")
 
@@ -52,6 +52,9 @@ export const eventApi = api.injectEndpoints({
                 if (eventData?.profileImage) {
                     formData.append('image', eventData.profileImage);
                 }
+                if (eventData?.leaseId !== "") {
+                    formData.append('leaseId', eventData.leaseId);
+                }
                 formData.append("status", eventData?.status)
 
 
@@ -63,12 +66,13 @@ export const eventApi = api.injectEndpoints({
             },
         }),
         getAllEvents: builder.query({
-            query: ({ id, page, pageSize } = {}) => {
+            query: ({ id, page, pageSize, tab } = {}) => {
                 const baseUrl = id ? `/event/${id}` : '/event';
                 const queryParams = new URLSearchParams();
 
                 if (pageSize) queryParams.append('pageSize', pageSize);
                 if (page) queryParams.append('page', page);
+                if (tab) queryParams.append("tab", tab);
 
                 const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
                 return {
@@ -81,8 +85,7 @@ export const eventApi = api.injectEndpoints({
             query: ({ eventData, id }) => {
                 const formData = new FormData();
                 formData.append('eventName', eventData?.eventName);
-                formData.append("spaceId", eventData?.space)
-
+                formData.append("spaceId", eventData?.toSendSpace)
                 const selectedCategories = eventData?.eventCategories
                     ?.filter(item => item.selected)
                     ?.map(item => ({ name: item.name }));
@@ -119,6 +122,10 @@ export const eventApi = api.injectEndpoints({
                     }
                 }
 
+                if (eventData?.leaseId !== "") {
+                    formData.append('leaseId', eventData.leaseId);
+                }
+
 
                 if (eventData?.profileImage) {
                     if (eventData.profileImage instanceof File) {
@@ -134,12 +141,28 @@ export const eventApi = api.injectEndpoints({
                 };
             },
         }),
-
+        addRsvpDate: builder.mutation({
+            query: ({ id, credentials }) => ({
+                url: `/event/rsvp/${id}`,
+                method: "POST",
+                body: credentials,
+                credentials: "include",
+            }),
+        }),
+        cancelRsvp: builder.mutation({
+            query: ({ id }) => ({
+                url: `/event/rsvp/${id}`,
+                method: "DELETE",
+                credentials: "include",
+            }),
+        }),
     }),
 });
 
 export const {
     useNewEventMutation,
     useGetAllEventsQuery,
-    useEditEventMutation
+    useEditEventMutation,
+    useAddRsvpDateMutation,
+    useCancelRsvpMutation,
 } = eventApi;

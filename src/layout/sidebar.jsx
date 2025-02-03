@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { Stack, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { getSmallSidebar, sidebarRoutes } from "../constant";
+import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../store/slices/activity";
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const dispatch = useDispatch()
   const splittedPath = `/${pathname.split("/")[1]}`;
   const splittedSubPath = splittedPath.split("-");
   const currentPath =
@@ -18,7 +21,8 @@ const Sidebar = () => {
       alignItems="center"
       gap={1}
       sx={{
-        zIndex: 999,
+        display: { xs: "none", sm: "block" },
+        zIndex: 11,
         position: "fixed",
         left: "16px",
         top: "80px",
@@ -36,7 +40,20 @@ const Sidebar = () => {
         const hover = hovered === ind;
         return (
           <Stack
-            onClick={() => navigate(item.link)}
+            className="sidebar-item"
+            id={item.title}
+            onClick={() => {
+              if (item.title !== "Activity") {
+                localStorage.removeItem("scrollPosition");
+                dispatch(setAllActivityData([]));
+                dispatch(setSpaceData([]));
+                dispatch(setActivityPageNumber(1));
+              }
+              
+              localStorage.removeItem("searchScrollPosition"); 
+              navigate(item.link);
+
+            }}
             onMouseOver={() => setHovered(ind)}
             onMouseOut={() => setHovered(false)}
             direction="row"
@@ -64,9 +81,10 @@ const Sidebar = () => {
               sx={{
                 width: "196px",
                 color: (theme) => theme.palette.primary.main,
-                display: getSmallSidebar(pathname)
-                  ? "none"
-                  : { xs: "none", lg: "block" },
+                display:
+                  getSmallSidebar(pathname) || pathname === "/message"
+                    ? "none"
+                    : { xs: "none", lg: "block" },
               }}
             >
               {item.title}

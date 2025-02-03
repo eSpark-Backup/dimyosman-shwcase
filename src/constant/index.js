@@ -66,6 +66,7 @@ import {
   leasingSpaceColumns,
   likedSpaceColumns,
   mySpaceColumns,
+  tenantSpaceColumns,
 } from "../columns/space";
 
 export const sidebarRoutes = [
@@ -122,7 +123,6 @@ export const sidebarRoutes = [
 export const getSmallSidebar = (currentLink) => {
   const id = currentLink.split("/")[2];
   const smallSidebarLink = [
-    "/message",
     `/profile/${id}`,
     `/profile/${id}/edit`,
     `/brand/${id}`,
@@ -134,7 +134,13 @@ export const getSmallSidebar = (currentLink) => {
     `/space/${id}`,
     "/new-space",
     `/space/${id}/edit`,
+    `/settings`,
+    `/calendar`,
   ];
+  return smallSidebarLink.includes(currentLink);
+};
+export const getFullSidebar = (currentLink) => {
+  const smallSidebarLink = [`/settings`, `/calendar`];
   return smallSidebarLink.includes(currentLink);
 };
 
@@ -706,7 +712,7 @@ export const likedSpaceData = [
   },
 ];
 
-export const brandTableData = (gotoDetail, handleAction, myBrandData) => [
+export const brandTableData = (gotoDetail, handleAction, myBrandData, myBrandData2, likeLoading, savedId) => [
   {
     data: myBrandData,
     column: myBrandColumns(gotoDetail, (item) => handleAction(item, "edit")),
@@ -718,46 +724,62 @@ export const brandTableData = (gotoDetail, handleAction, myBrandData) => [
     ),
   },
   {
-    data: likedBrandData,
-    column: likedBrandColumns(gotoDetail, (item) =>
+    data: myBrandData2,
+    column: likedBrandColumns(likeLoading, savedId, gotoDetail, (item) =>
       handleAction(item, "remove")
     ),
   },
 ];
 
-export const eventTableData = (gotoDetail, handleAction, myEventData, gotoBrand, gotoSpace) => [
+export const eventTableData = (gotoDetail, handleAction, myEventData, myEventData2, gotoBrand, gotoSpace, likeLoading, rsvpLoading, savedId, rsvpId) => [
   {
     data: myEventData,
     column: myEventsColumns(gotoDetail, (item) => handleAction(item, "edit"), gotoBrand, gotoSpace),
   },
   {
-    data: rsvcEventData,
-    column: rsvpEventColumns(gotoDetail, (item) =>
+    data: myEventData,
+    column: rsvpEventColumns(rsvpLoading, rsvpId, gotoDetail, (item) =>
       handleAction(item, item?.action)
     ),
   },
   {
-    data: likedEventData,
-    column: likedEventColumns(gotoDetail, (item) =>
+    data: myEventData2,
+    column: likedEventColumns(likeLoading, savedId, gotoDetail, (item) =>
       handleAction(item, "remove")
     ),
   },
 ];
-export const spaceTableData = (gotoDetail, handleAction, mySpaceData,gotoBrand) => [
+export const spaceTableData = (gotoDetail, handleAction, mySpaceData, mySpaceData2, gotoBrand, likeLoading, savedId, gotoEvent) => [
   {
     data: mySpaceData,
-    column: mySpaceColumns(gotoDetail, (item) => handleAction(item, "edit"), gotoBrand),
-  },
-  {
-    data: leaseSpaceData,
-    column: leasingSpaceColumns(gotoDetail, (item) =>
-      handleAction(item, item?.action)
+    column: mySpaceColumns(
+      gotoDetail,
+      (item) => handleAction(item, "edit"),
+      gotoBrand
     ),
   },
   {
-    data: likedSpaceData,
-    column: likedSpaceColumns(gotoDetail, (item) =>
+    data: mySpaceData,
+    column: leasingSpaceColumns(
+      gotoDetail,
+      (item) => handleAction(item, item?.action),
+      gotoBrand,
+      gotoEvent
+    ),
+  },
+  {
+    data: mySpaceData2,
+    column: likedSpaceColumns(likeLoading, savedId, gotoDetail, (item) =>
       handleAction(item, "remove")
+    ),
+  },
+  {
+    data: mySpaceData,
+    column: tenantSpaceColumns(
+      gotoDetail,
+      (item) => handleAction(item, item?.action),
+      gotoBrand,
+      gotoEvent
     ),
   },
 ];

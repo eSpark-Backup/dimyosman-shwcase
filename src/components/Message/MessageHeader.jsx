@@ -1,13 +1,27 @@
+import { useDispatch } from "react-redux";
+
 import { Box, Stack, Typography, useMediaQuery } from "@mui/material";
 
 import { star } from "../../assets";
 
-const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail,onlineUsers }) => {
+import { emptyGoToMessage } from "../../store/slices/notification";
+
+const MessageHeader = ({
+  selectedGroup,
+  theme,
+  ActivityType,
+  GroupDetail,
+  onlineUsers,
+  setSelectedChatId,
+  setInitialChatId,
+}) => {
+  const dispatch = useDispatch();
+
   const { chatGroup, group } = selectedGroup;
 
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1100 = useMediaQuery("(max-width:1100px)");
-
+  const isLessThan768 = useMediaQuery("(max-width:768px)");
 
   return (
     <Box
@@ -19,12 +33,22 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail,onlineU
         borderRadius: "5px",
       }}
     >
-      <Box display={"flex"}>
-        <Box display={"flex"}>
+      <Box gap={"10px"} display={"flex"}>
+        <Box sx={{ width: { xs: "100%", md: "auto" } }} display={"flex"}>
           <Box
             sx={{
               width: isLessThan1100 ? "76px" : isLessThan1280 ? "86px" : "96px",
               height: isLessThan1100
+                ? "76px"
+                : isLessThan1280
+                ? "86px"
+                : "96px",
+              minWidth: isLessThan1100
+                ? "76px"
+                : isLessThan1280
+                ? "86px"
+                : "96px",
+              minHeight: isLessThan1100
                 ? "76px"
                 : isLessThan1280
                 ? "86px"
@@ -58,7 +82,7 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail,onlineU
             <ActivityType type={chatGroup?.activity} theme={theme} />
 
             {onlineUsers?.length
-              ? chatGroup.members?.some((member) =>
+              ? chatGroup?.members?.some((member) =>
                   onlineUsers?.includes(member)
                 ) && (
                   <Box
@@ -79,27 +103,51 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail,onlineU
           <Box
             marginLeft={"10px"}
             sx={{
+              width: "100%",
               display: "flex",
               flexDirection: "column",
               justifyContent:
                 chatGroup?.isInquiryRole === "sender" ? "normal" : "center",
             }}
           >
-            <Typography
-              variant="h1"
-              sx={{
-                fontWeight: 600,
-                fontSize: isLessThan1100
-                  ? "24px"
-                  : isLessThan1280
-                  ? "28px"
-                  : "32px",
-                lineHeight: isLessThan1280 ? "34px" : "45px",
-                textAlign: "left",
-              }}
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
             >
-              {chatGroup?.childName}
-            </Typography>
+              <Typography
+                variant="h1"
+                sx={{
+                  fontWeight: 600,
+                  fontSize: isLessThan1100
+                    ? "24px"
+                    : isLessThan1280
+                    ? "28px"
+                    : "32px",
+                  lineHeight: isLessThan1280 ? "34px" : "45px",
+                  textAlign: "left",
+                }}
+              >
+                {chatGroup?.childName}
+              </Typography>
+              {isLessThan768 && (
+                <Typography
+                  onClick={() => {
+                    dispatch(emptyGoToMessage());
+                    setSelectedChatId(null);
+                    setInitialChatId(null);
+                  }}
+                  sx={{
+                    cursor: "pointer",
+                    fontWeight: 500,
+                    fontSize: isLessThan1100 ? "16px" : "20px",
+                    lineHeight: isLessThan1100 ? "18px" : "28px",
+                  }}
+                >
+                  Back
+                </Typography>
+              )}
+            </Stack>
 
             {chatGroup?.isInquiryRole === "sender" && (
               <Typography
@@ -117,7 +165,6 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail,onlineU
               sx={{
                 display: "flex",
                 alignItems: "center",
-                gap: 2,
                 flexWrap: "wrap",
                 columnGap: isLessThan1100 ? 1 : 2,
               }}
@@ -142,7 +189,7 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail,onlineU
                       marginRight: 0.8,
                     }}
                   >
-                    {group?.rating.toFixed(1)}
+                    {group?.rating?.toFixed(1)}
                   </Typography>
 
                   <Box sx={{ display: "flex", gap: 0.5 }}>
@@ -178,7 +225,7 @@ const MessageHeader = ({ selectedGroup, theme, ActivityType, GroupDetail,onlineU
                 color: "rgba(0, 20, 28, 0.8)",
               }}
             >
-              {group?.rating.toFixed(1)}
+              {group?.rating?.toFixed(1)}
             </Typography>
 
             <Box>

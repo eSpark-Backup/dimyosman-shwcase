@@ -1,39 +1,57 @@
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import { Box } from "@mui/material";
 
-import { allMessages } from "../../constant";
+import {
+  emptyGoToMessage,
+  setFromNotification,
+} from "../../store/slices/notification";
 
-const hasReadTrue = (messages) => {
-  for (const item of messages) {
-    if (item.read) return true;
-    if (item.messageGroups && hasReadTrue(item.messageGroups)) return true;
-  }
-  return false;
-};
+const IconBadge = ({ icon, bg, type, activeBG, onClick, activeTab }) => {
+  const dispatch = useDispatch();
+  const { fromNotification } = useSelector((state) => state.notification);
 
-const isMessageRead = (type) => {
-  return allMessages.some((item) => item.activity === type && item.read);
-};
+  useEffect(() => {
+    if (fromNotification) {
+      if (activeTab !== "space") {
+        callFn();
+      }
+    }
+  }, [fromNotification]);
 
-const IconBadge = ({ icon, bg, type, theme }) => {
-  const isRead =
-    isMessageRead(type) || (hasReadTrue(allMessages) && type === "message");
+  const callFn = () => {
+    onClick("all");
+  };
 
   return (
     <Box
       sx={{
-        bgcolor: bg,
+        bgcolor: activeTab === type ? activeBG : bg,
         height: "48px",
         width: "48px",
+        minHeight: "48px",
+        minWidth: "48px",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         borderRadius: "5px",
-        marginRight: 2,
         position: "relative",
+        cursor: "pointer",
+        transition: "background-color 0.3s ease-in-out",
+
+        "&:hover": {
+          bgcolor: activeBG,
+        },
 
         "&:last-child": {
           marginRight: 0,
         },
+      }}
+      onClick={() => {
+        dispatch(emptyGoToMessage());
+        dispatch(setFromNotification(false));
+        onClick(type);
       }}
     >
       <img src={icon} alt="Icon" />

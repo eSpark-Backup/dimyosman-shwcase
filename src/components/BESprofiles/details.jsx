@@ -1,12 +1,20 @@
 import { Box, Button, Divider, Stack, Tooltip, Typography } from "@mui/material";
-import { calender, comment, like, miniMap, share } from "../../assets";
-import { useState } from "react";
+import { calender, comment, like, liked, miniMap, share } from "../../assets";
+import { useRef, useState } from "react";
 import ReusableModal from "../Modal";
 import MapModal from "../MapModal";
 import { useSelector } from "react-redux";
 import { useLocation, useParams } from "react-router-dom";
+import { useAddInFavouritesMutation } from "../../services/favourite";
+import { toast } from "react-toastify";
+import RSVPCalendar from "../rsvp-calendar";
+import dayjs from "dayjs";
+import { useClickOutside } from "../../utils";
+import { useAddRsvpDateMutation } from "../../services/events";
 
 const Details = ({ spaceInquire, details, myProfile }) => {
+  const [likeFunc, { isLoading }] = useAddInFavouritesMutation();
+  const [likePost, setLikePost] = useState(myProfile?.isFavourite);
   const [openMapModal, setMapModal] = useState(false);
   const { events } = useSelector((state) => state?.event);
   const { brands } = useSelector((state) => state?.brand);
@@ -25,6 +33,45 @@ const Details = ({ spaceInquire, details, myProfile }) => {
   } else {
     details = null; // Default case if `activity` doesn't match any
   }
+
+  const [addRsvp, { isLoading: rsvpLoading }] = useAddRsvpDateMutation();
+
+  const [selectedDates, setSelectedDates] = useState(
+    details?.rsvpDates && details?.rsvpDates.length > 0
+      ? details?.rsvpDates?.map((date) => dayjs(date).format("YYYY-MM-DD"))
+      : []
+  );
+
+  const [openCalendar, setOpenCalendar] = useState(false);
+
+  const handleOk = () => {
+    const newRsvpDates = selectedDates.map((item) => {
+      return { dateTime: item };
+    });
+    const objToSend = {
+      id: myProfile?.id,
+      credentials: {
+        attendanceDates: {
+          dateTime: "string",
+          rsvpDates: newRsvpDates,
+        },
+      },
+    };
+    addRsvp(objToSend).then((res) => {
+      if (res?.data?.status) {
+        toast.success(res?.data?.message);
+        setOpenCalendar(false);
+      }
+    });
+  };
+
+  const handleCancel = () => {
+    setOpenCalendar(false);
+  };
+
+  const modalRef = useRef();
+  useClickOutside(modalRef, () => setOpenCalendar(false));
+
   return (
     <Box>
       <Stack
@@ -90,7 +137,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                     flexWrap: "wrap",
                     rowGap: "15px",
                     flexDirection: { xs: "column", md: "row" },
-                    justifyContent:"space-between"
+                    justifyContent: "space-between"
                   }}
                 >
                   {details?.feature?.points?.map(
@@ -282,6 +329,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         alignItems="flex-end"
         paddingY={2}
         gap={1}
+        sx={{ position: "relative" }}
       >
         <Stack
           direction="row"
@@ -290,10 +338,32 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           gap={1}
         >
           <img
-            style={{ cursor: "pointer", padding: "5px" }}
+            style={{
+              padding: "5px",
+              cursor: isLoading ? "not-allowed" : "pointer",
+              animation: isLoading ? "pulse 1s infinite" : "none",
+              opacity: isLoading ? 0.5 : 1,
+            }}
             width={32}
             height={32}
-            src={like}
+            onClick={() => {
+              if (!isLoading) {
+                likeFunc({
+                  entityId: myProfile?.id,
+                  entityType: myProfile?.type?.toLocaleUpperCase(),
+                }).then((res) => {
+                  res?.data?.status &&
+                    toast.success(
+                      res?.data?.message
+                        .replace("Entity", "Post")
+                        .replace(" successfully", "")
+                    );
+                  setLikePost(!likePost);
+                });
+              }
+            }}
+            src={likePost ? liked : like}
+            className={`like-icon ${isLoading ? "loading" : ""}`}
             alt="like"
           />
           {myProfile.type !== "space" && !myProfile?.owned && (
@@ -313,9 +383,28 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             alt="share"
           />
         </Stack>
-        {(myProfile.type === "space" && !myProfile?.owned) && (
+        {openCalendar === 2 && myProfile?.type === "event" && (
+          <RSVPCalendar
+            loading={rsvpLoading}
+            modalRef={modalRef}
+            selectedDates={selectedDates}
+            setSelectedDates={setSelectedDates}
+            handleCancel={handleCancel}
+            handleOk={handleOk}
+            startDate={details?.startDate}
+            endDate={details?.endDate}
+            isDetails={true}
+          />
+        )}
+        {(!myProfile?.owned) && (
           <Button
-            onClick={spaceInquire ? () => spaceInquire(myProfile?.id) : () => { }}
+            onClick={() => {
+              if (myProfile?.type === "event") {
+                setOpenCalendar(2);
+              } else {
+                spaceInquire ? spaceInquire(myProfile?.id) : () => { };
+              }
+            }}
             sx={{
               background: (theme) => theme.palette.button.secondary,
               color: (theme) => theme.palette.primary.main,
@@ -464,6 +553,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         alignItems="flex-end"
         paddingTop={2}
         gap={1}
+        sx={{ position: "relative" }}
       >
         <Stack
           direction="row"
@@ -472,10 +562,32 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           gap={1}
         >
           <img
-            style={{ cursor: "pointer", padding: "5px" }}
+            style={{
+              padding: "5px",
+              cursor: isLoading ? "not-allowed" : "pointer",
+              animation: isLoading ? "pulse 1s infinite" : "none",
+              opacity: isLoading ? 0.5 : 1,
+            }}
             width={32}
             height={32}
-            src={like}
+            onClick={() => {
+              if (!isLoading) {
+                likeFunc({
+                  entityId: myProfile?.id,
+                  entityType: myProfile?.type?.toLocaleUpperCase(),
+                }).then((res) => {
+                  res?.data?.status &&
+                    toast.success(
+                      res?.data?.message
+                        .replace("Entity", "Post")
+                        .replace(" successfully", "")
+                    );
+                  setLikePost(!likePost);
+                });
+              }
+            }}
+            src={likePost ? liked : like}
+            className={`like-icon ${isLoading ? "loading" : ""}`}
             alt="like"
           />
           {myProfile.type !== "space" && !myProfile?.owned && (
@@ -495,9 +607,28 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             alt="share"
           />
         </Stack>
-        {(myProfile.type === "space" && !myProfile?.owned) && (
+        {openCalendar === 1 && myProfile?.type === "event" && (
+          <RSVPCalendar
+            loading={rsvpLoading}
+            modalRef={modalRef}
+            selectedDates={selectedDates}
+            setSelectedDates={setSelectedDates}
+            handleCancel={handleCancel}
+            handleOk={handleOk}
+            startDate={details?.startDate}
+            endDate={details?.endDate}
+            isDetails={true}
+          />
+        )}
+        {(!myProfile?.owned) && (
           <Button
-            onClick={spaceInquire ? () => spaceInquire(myProfile?.id) : () => { }}
+            onClick={() => {
+              if (myProfile?.type === "event") {
+                setOpenCalendar(1);
+              } else {
+                spaceInquire ? spaceInquire(myProfile?.id) : () => { };
+              }
+            }}
             sx={{
               background: (theme) => theme.palette.button.secondary,
               color: (theme) => theme.palette.primary.main,
@@ -529,7 +660,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         )}
       </Stack>
       <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-        <MapModal disabled={true} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[details?.mapLocation?.lat, details?.mapLocation?.long]} instructionValue={details?.mapLocation?.additional} />
+        <MapModal activity={activity === "/event" ? "event" : activity === "/brand" ? "brand" : "space"} disabled={true} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[details?.mapLocation?.lat, details?.mapLocation?.long]} instructionValue={details?.mapLocation?.additional} />
       </ReusableModal>
     </Box>
   );
