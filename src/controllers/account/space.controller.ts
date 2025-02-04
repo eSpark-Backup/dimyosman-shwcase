@@ -894,7 +894,7 @@ export class SpaceController {
 
         switch (termName) {
           case "Day":
-            if (days <= 6) {
+            if (days >0) {
               totalPrice = termPrice * days;
               termDetails = { term: "Day", price: termPrice, days };
               break;
