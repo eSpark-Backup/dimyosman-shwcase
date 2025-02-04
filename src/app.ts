@@ -62,9 +62,9 @@ const swaggerSpec = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 AppDataSource.initialize()
-  .then(() => {
-    connectDb(mongoURI);
-    console.log("Database connection established successfully");
+  .then(async () => {
+  await   connectDb(mongoURI);
+    console.log("✅ SQL Database connection established successfully");
     app.use(clearUploadsFolder);
     app.use("/api", router);
     app.use("/api/chat", ChatRouter);
@@ -157,6 +157,6 @@ AppDataSource.initialize()
     app.use(errorHandler);
   })
   .catch((error: any) => {
-    console.error("Error connecting to the database:", error);
+    console.error("❌ Error connecting to the database:", error);
   });
 export { server, app, envMode, userSocketIDs };

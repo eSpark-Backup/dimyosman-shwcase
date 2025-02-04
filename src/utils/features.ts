@@ -13,30 +13,16 @@ const cookieOptions = {
   secure: true,
 };
 
-const connectDb = async (
-  uri: string,
-  retries: number = 5,
-  delay: number = 2000
-) => {
-  let attempt = 0;
-
-  while (attempt < retries) {
+const connectDb = async (uri: string, delay: number = 2000) => {
+  while (true) {
     try {
-      const data = await mongoose.connect(uri, { dbName: "ShwCase" });
-      console.log(`Connected to the database: ${data.connection.host}`);
-      return;
+      const connection = await mongoose.connect(uri, { dbName: "ShwCase" });
+      console.log(`✅ Connected to MongoDB: ${connection.connection.host}`);
+      return connection;
     } catch (err) {
-      attempt++;
-      console.log(
-        `Attempt ${attempt} failed. Error connecting to the database. \n${err}`
-      );
-      if (attempt < retries) {
-        console.log(`Retrying in ${delay / 1000} seconds...`);
-        await new Promise((res) => setTimeout(res, delay));
-      } else {
-        console.log("All retry attempts failed. Exiting...");
-        throw err;
-      }
+      console.error(`❌ MongoDB Connection Failed: ${err.message}`);
+      console.log(`🔄 Retrying in ${delay / 1000} seconds...`);
+      await new Promise((res) => setTimeout(res, delay));
     }
   }
 };
