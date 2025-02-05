@@ -891,19 +891,21 @@ export class SpaceController {
       for (const term of pricing) {
         const { term: termName, price, minimum } = term;
         const termPrice = parseFloat(price);
+        const minTerm = parseInt(minimum, 10);
 
         switch (termName) {
           case "Day":
-            if (days <= 6) {
+            if (days <= 6 && days >= minTerm) {
               totalPrice = termPrice * days;
               termDetails = { term: "Day", price: termPrice, days };
               break;
             }
             break;
           case "Week":
-            if (days >= 7 && days <= 29) {
+            if (days >= 7 && days <= 29 ) {
               const weeks = Math.floor(days / 7);
               const additionalDays = days % 7;
+              if(weeks >= minTerm){
               totalPrice =
                 weeks * termPrice +
                 calculateAdditionalDays(termPrice, 7, additionalDays);
@@ -915,10 +917,12 @@ export class SpaceController {
               };
               break;
             }
+          }
             break;
           case "Month":
-            if (days >= 30 && days <= 364) {
+            if (days >= 30 && days <= 364 ) {
               const months = Math.floor(days / 30);
+              if(months >= minTerm){
               const additionalDays = days % 30;
               totalPrice =
                 months * termPrice +
@@ -931,10 +935,13 @@ export class SpaceController {
               };
               break;
             }
+          }
             break;
+            
           case "Year":
-            if (days >= 365) {
+            if (days >= 365  ) {
               const years = Math.floor(days / 365);
+              if(years >= minTerm){
               const additionalDays = days % 365;
               totalPrice =
                 years * termPrice +
@@ -947,6 +954,7 @@ export class SpaceController {
               };
               break;
             }
+          }
             break;
           default:
             break;
@@ -958,7 +966,7 @@ export class SpaceController {
       if (totalPrice === 0) {
         res
           .status(400)
-          .json({ error: "Invalid days for the provided pricing terms." });
+          .json({ error: "Number of days should be greater or equal to minimum." });
         return next();
       }
 
