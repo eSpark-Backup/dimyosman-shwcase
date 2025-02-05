@@ -341,6 +341,16 @@ export class GeneralController {
 
         (space as any).calendarEvents = calendarEvents;
       }
+       spaces.map((space) => {
+        const totalPricing = calculatePricing(
+          space.pricing as PricingTerm[],
+          1
+        );
+        return {
+          ...space,
+          totalPricing,
+        };
+      });
       if (brands.length > 0) {
         brands.forEach((brand) => {
           parseCoverImages(brand);
