@@ -1029,6 +1029,22 @@ export class SpaceController {
           1
         );
 
+        let [tenantSpaceDetail, totalLeasSpace] = await this.leaseSpaceRepo
+        .createQueryBuilder("leaseSpace")
+
+        .leftJoinAndSelect("leaseSpace.owner", "owner")
+        .leftJoinAndSelect("leaseSpace.event", "event")
+        .leftJoinAndSelect("leaseSpace.brand", "leaseBrand")
+        .leftJoinAndSelect("leaseSpace.space", "space")
+        .where("owner.id = :userId", { userId: req.user?.id })
+        .andWhere("leaseSpace.space = :spaceId", { spaceId: singleSpace.id })
+        .leftJoinAndSelect("space.brand", "brand")
+        .leftJoinAndSelect("space.user", "user")
+        .orderBy("leaseSpace.createdAt", "DESC")
+        .skip(skipNumber)
+        .take(takeNumber)
+        .getManyAndCount();
+
           const savedEntities= await this.savedEntity.createQueryBuilder("savedEntity")
                       .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
                       .andWhere("savedEntity.type = :type", { type: SavedEntityType.SPACE })
@@ -1043,6 +1059,8 @@ export class SpaceController {
                           
               const isFavourite = savedEventIds.has(singleSpace.id);
               const space = {
+                tenantSpaceDetail,
+                totalLeasSpace,
                 ...singleSpace,
                 isFavourite,
               };
