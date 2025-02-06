@@ -229,21 +229,100 @@ export class UserController {
       }
 
       const imageFilesPath = path.join(process.cwd(), "uploads");
+      const coverFilesPath = path.join(process.cwd(), "uploads");
+
+      const coverFiles = fs
+        .readdirSync(coverFilesPath)
+        .filter((file) => file.startsWith("cover")); // Filter for cover files
 
       const imageFiles = fs
         .readdirSync(path.join(imageFilesPath))
         .filter((file) => file.startsWith("image")); // Filter for image files
 
-      if (imageFiles.length < 1) {
-        throw new ApiError("No image file found", HTTP_STATUS.NOT_FOUND);
-      }
+    
 
       const imageFileObjects: IFileObject[] = imageFiles.map((file) =>
         commonHelper.createFileObject(path.join(imageFilesPath, file), "image")
       );
+      const coverFileObjects: IFileObject[] = coverFiles.map((file) =>
+        commonHelper.createFileObject(path.join(coverFilesPath, file), "cover")
+      );
+
+      let { coverKeys, about } = req.body;
+
+      if (Array.isArray(coverKeys)) {
+        coverKeys = coverKeys.filter((key) => typeof key === "string");
+      }
+      if (typeof coverKeys === "string" && !Array.isArray(coverKeys)) {
+        coverKeys = coverKeys.split(",").map((item) => item.trim());
+      }
+      let oldCoverImages: UploadResult[] = [];
+      const FolderName = `${CLOUD_FOLDERS.USER}/${user.name.trim()}`;
+      if (typeof user.coverImages === "string") {
+        try {
+          oldCoverImages = JSON.parse(
+            user.coverImages
+          ) as UploadResult[];
+        } catch (error) {
+          logger.error("Failed to parse coverImages:", error);
+          oldCoverImages = [];
+        }
+      } else {
+        oldCoverImages = [];
+      }
+
+      const coverUrls = (
+        coverFileObjects?.length > 0
+          ? await uploadService.uploadMultipleFiles(
+              coverFileObjects,
+              FolderName
+            )
+          : []
+      ) as UploadResult[];
+
+      for (const oldCoverImage of oldCoverImages) {
+        if (coverKeys && coverKeys.length > 0) {
+          const coverKeyNumbers = coverKeys
+            .map((key: any) => {
+              const splitKey = key.split("+");
+              return {
+                key: splitKey[0],
+                order: parseInt(splitKey[1], 10),
+              };
+            })
+            .filter((keyData: any) => !isNaN(keyData.order)); // Filter out invalid or undefined numbers
+
+          const matchingKey = coverKeyNumbers.find(
+            (keyData: any) => oldCoverImage.public_id.includes(keyData.key) // Match based on the key part of the public_id
+          );
+
+          if (!matchingKey) {
+            await uploadService.deleteFile(oldCoverImage.public_id);
+          } else {
+            const { order } = matchingKey;
+
+            const validOrder = Math.max(
+              1,
+              Math.min(order, coverUrls.length + 1)
+            );
+
+            if (validOrder === coverUrls.length + 1) {
+              coverUrls.push(oldCoverImage);
+            } else {
+              coverUrls.splice(validOrder - 1, 0, oldCoverImage);
+            }
+          }
+        } else {
+          if (
+            !coverUrls.some((url) => url.public_id === oldCoverImage.public_id)
+          ) {
+            await uploadService.deleteFile(oldCoverImage.public_id);
+          }
+        }
+      }
+
 
       const oldUserImage = user.profileImage;
-      const FolderName = `${CLOUD_FOLDERS.USER}/${user.name.trim()}`;
       const imageUrls = (
         imageFileObjects?.length > 0
           ? await uploadService.uploadMultipleFiles(
@@ -260,8 +339,11 @@ export class UserController {
       }
       user.profileImage = imageUrls[0]?.url;
       user.imageKey = imageUrls[0]?.public_id;
+      user.about =about || user.about;
+      user.coverImages = JSON.stringify(coverUrls) as Object 
       await this.usersRepo.save(user);
       const { password: _, ...userProfile } = user;
+      userProfile.coverImages = JSON.parse(userProfile.coverImages as Object as string);
 
       const chatUser = await UserForChat.findById(req.user?._id);
       chatUser.avatar = imageUrls[0]?.url;
@@ -400,6 +482,8 @@ export class UserController {
       }
 
       const { password: _, ...userProfile } = user;
+      userProfile.coverImages = JSON.parse(userProfile.coverImages as Object as string);
+
       res
         .status(HTTP_STATUS.OK)
         .json(
@@ -693,6 +777,7 @@ export class UserController {
           },
           relations: ["event"],
         });
+
       } else if (entityType === SavedEntityType.SPACE) {
         existingFavourite = await this.SavedEntityRepo.findOne({
           where: {
@@ -719,7 +804,7 @@ export class UserController {
         await this.SavedEntityRepo.remove(existingFavourite);
         res
           .status(HTTP_STATUS.OK)
-          .json(handleResponse("Entity removed from favourites successfully"));
+          .json(handleResponse(`Removed from Saved ${entityType} successfully`));
         return next();
       }
 
@@ -738,7 +823,7 @@ export class UserController {
         .status(HTTP_STATUS.CREATED)
         .json(
           handleResponse(
-            "Entity added to favourites successfully",
+            `Added to Saved ${entityType} successfully`,
             newFavourite
           )
         );

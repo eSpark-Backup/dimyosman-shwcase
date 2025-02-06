@@ -36,6 +36,13 @@ export class User extends BaseEntity {
   @Column({ type: "varchar", length: 500, nullable: true })
   profileImage: string;
 
+  @Column({ type: "json", nullable: true })
+  about: object;
+
+  @Column({ type: "json", nullable: true })
+  coverImages: object;
+
+
   @Column({ type: "varchar", length: 500, nullable: true })
   imageKey: string;
 

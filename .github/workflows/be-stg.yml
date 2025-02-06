@@ -122,6 +122,7 @@ jobs:
           echo "SMTP_SERVICE: ${{ secrets.SMTP_SERVICE }}" >> .env
           echo "SMTP_PASS: ${{ secrets.SMTP_PASS }}" >> .env
           echo "SMTP_FROM: ${{ secrets.SMTP_FROM }}" >> .env
+          echo "GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}" >> .env
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-publish
@@ -199,6 +200,7 @@ jobs:
           SMTP_SERVICE: ${{ secrets.SMTP_SERVICE }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
 
         run: |
           docker compose pull

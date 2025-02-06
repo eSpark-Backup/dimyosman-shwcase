@@ -31,6 +31,10 @@ const schema = new Schema(
       type: String,
       required: false,
     },
+    receiverEvent: {
+      type: String,
+      required: false,
+    },
     creatorBrand: {
       type: String,
       required: false,

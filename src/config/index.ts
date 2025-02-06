@@ -14,7 +14,11 @@ export const configs = {
   JWT_SECRET_KEY: <string>getEnv("JWT_SECRET"),
   EXPIRES_IN: <string>getEnv("EXPIRES_IN"),
   LINK_SECRET_KEY: <string>getEnv("LINK_SECRET_KEY"),
+
+  GOOGLE_MAPS_API_KEY: <string>getEnv("GOOGLE_MAPS_API_KEY"),
 };
+
+
 
 export const MAILER_CONFIG = {
   host: getEnv("SMTP_HOST"),

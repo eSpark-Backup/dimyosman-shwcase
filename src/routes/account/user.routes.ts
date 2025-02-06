@@ -13,6 +13,7 @@ import {
 } from "../../middleware";
 import { Notification } from "../../models";
 import { FILE_FIELDS, ROLES } from "../../constants";
+import { parseJsonFields } from "../../utils";
 
 const router = Router();
 const userRepository = AppDataSource.getRepository(User);
@@ -394,10 +395,25 @@ router.put(
  *           schema:
  *             type: object
  *             properties:
+ *               about:
+ *                 type: object
+ *                 description: Details about the User.
  *               image:
  *                 type: string
  *                 format: binary
  *                 description: Profile image of the User.
+ *               cover:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: Array of cover images for the User.
+ *               coverKeys:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of cover keys for the space.
+ *
  *     responses:
  *       201:
  *         description: user profile updated successfully.
@@ -412,7 +428,11 @@ router.put(
   "/profileImage",
   checkJwt,
   validateRoles([ROLES.USER]),
-  handleMultipleFiles([{ name: FILE_FIELDS.IMAGE, maxCount: 1 }]),
+  handleMultipleFiles([
+    { name: FILE_FIELDS.COVER, maxCount: 3 },
+    { name: FILE_FIELDS.IMAGE, maxCount: 1 },
+  ]),
+  parseJsonFields(["about"]),
   (req, res, next) => userController.updateProfileImage(req, res, next)
 );
 

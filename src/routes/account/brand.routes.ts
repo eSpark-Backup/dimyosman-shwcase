@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { BrandValidation, validate } from "../../validations";
-import { Brand, SavedEntity, User } from "../../entity";
+import { Brand, Events, SavedEntity, User } from "../../entity";
 import { AppDataSource } from "../../typeorm.config";
 import { BrandController } from "../../controllers/account";
 import {
@@ -19,12 +19,14 @@ const router = Router();
 const brandRepository = AppDataSource.getRepository(Brand);
 const userRepository = AppDataSource.getRepository(User);
 const savedEntityRepository=AppDataSource.getRepository(SavedEntity)
+const eventEntityRepository=AppDataSource.getRepository(Events)
 
 const brandController = new BrandController(
   brandRepository,
   userRepository,
   Chat,
   Notification,
+  eventEntityRepository,
   Message,
   savedEntityRepository
 
@@ -396,6 +398,9 @@ router.delete("/:id", checkJwt, validateRoles([ROLES.USER]), (req, res, next) =>
  *             properties:
  *               message:
  *                 type: string
+ *               senderBrandId:
+ *                 type: string
+ *                 description: ID of the brand.
  *     responses:
  *       200:
  *         description: Brand deleted successfully.

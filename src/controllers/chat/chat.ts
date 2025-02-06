@@ -1,4 +1,4 @@
-import { Brand, Spaces } from "../../entity";
+import { Brand, Events, Spaces } from "../../entity";
 import {
   ALERT,
   NEW_MESSAGE,
@@ -38,6 +38,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
         groupChat,
         creator,
         receiverBrand,
+        receiverEvent,
         senderBrand,
         receiverSpace,
         directChat,
@@ -46,6 +47,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
         const otherMember = getOtherMember(members, req.socketUserId);
         const brandRepository = AppDataSource.getRepository(Brand);
         const spaceRepository = AppDataSource.getRepository(Spaces);
+        const eventRepository = AppDataSource.getRepository(Events);
 
         // Populate receiverBrand and senderBrand if needed
         const populatedReceiverBrand = receiverBrand
@@ -95,6 +97,21 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
               .getOne()
           : null;
 
+        const populateReceiverEvent = receiverEvent
+        ? await eventRepository.createQueryBuilder("event")
+            .where("event.id = :id", { id: receiverEvent })
+            .leftJoinAndSelect("event.user", "user")
+            .select([
+              "event.id",
+              "event.eventName",
+              "event.eventImage",
+              "user.id",
+              "user.name",
+              "user.userChatId",
+            ])
+            .getOne()
+            : null;
+
         return {
           _id,
           groupChat,
@@ -110,6 +127,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
           receiverBrand: populatedReceiverBrand,
           senderBrand: populatedSenderBrand,
           receiverSpace: populatedReceiverSpace,
+          receiverEvent: populateReceiverEvent,
           name: otherMember.name,
           members: members.reduce((prev: any, curr: any) => {
             if (curr._id.toString() !== req.socketUserId.toString()) {

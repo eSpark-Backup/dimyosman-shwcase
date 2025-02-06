@@ -13,6 +13,7 @@ import { PricingTerm } from "../interfaces";
 import { config } from "dotenv";
 import { configs } from "../config";
 import { ApiError } from "../errors";
+import CryptoJS from "crypto-js";
 
 /**
  * @description : For set success response data
@@ -145,6 +146,32 @@ export const getTime = (
   }
 };
 
+export const generateShareableLink = (entity: { id: string; type: string } | { id: string; type: string }[]) => {
+  const entitiesArray = Array.isArray(entity) ? entity : [entity];
+  const jsonString = JSON.stringify(entitiesArray);
+  const encrypted = CryptoJS.AES.encrypt(jsonString, configs.LINK_SECRET_KEY).toString();
+  const encoded = encodeURIComponent(encrypted);
+
+  return `https://shwcase-stg.esparkconsultants.com/share?data=${encoded}`;
+};
+
+
+export const decryptShareableLink = (encryptedData: string) => {
+  try {
+    const decodedData = decodeURIComponent(encryptedData);
+
+    const decrypted = CryptoJS.AES.decrypt(decodedData, configs.LINK_SECRET_KEY).toString(CryptoJS.enc.Utf8);
+
+    if (!decrypted) {
+      throw new Error("Decryption failed");
+    }
+
+    return JSON.parse(decrypted);
+  } catch (error) {
+    console.error("Error decrypting data:", error);
+    return null; 
+  }
+};
 export const generateToken = (
   payload: { userId: string; newEmail: string },
   expiresIn: string = "1h"
