@@ -11,6 +11,7 @@ import { DynamicTable, FilterationTabs } from "../../../components";
 import { brandTableData } from "../../../constant";
 import {
   addIcon,
+  brandIcon,
   brandIconlight,
   brandMain,
   eventMain,
@@ -76,7 +77,7 @@ const Brand = () => {
   );
 
   const [likeFunc, { isLoading: likeLoading }] = useAddInFavouritesMutation();
-  
+
 
   const handleAction = async (item, type) => {
     if (type === "edit") {
@@ -116,46 +117,46 @@ const Brand = () => {
     let newData;
     type === "fav"
       ? (newData = apiData.map(({ brand, createdAt, eventsCount, followerCount }, index) => ({
-          id: brand?.id,
-          type: "brand",
-          brandName: brand.brandName || "N/A",
-          brandImg: brand.brandImage || "",
-          brandCategory:
-            brand.brandCategory && brand.brandCategory.length > 0
-              ? brand.brandCategory.map((item) => item.name).join(", ")
-              : "N/A",
-          events: eventsCount || "-",
-          followers: followerCount || "-",
-          status: brand.status || "N/A",
-          savedDate: moment(new Date(createdAt)).format("DD.MM.YYYY.") || "-",
-          colHeader1: "Table cell",
-          colHeader2: "Table cell",
-          colHeader3: "Table cell",
-          colHeader4: "Table cell",
-          colHeader5: "Table cell",
-          colHeader6: "Table cell",
-          colHeader7: "Table cell",
-        })))
+        id: brand?.id,
+        type: "brand",
+        brandName: brand.brandName || "N/A",
+        brandImg: brand.brandImage || "",
+        brandCategory:
+          brand.brandCategory && brand.brandCategory.length > 0
+            ? brand.brandCategory.map((item) => item.name).join(", ")
+            : "N/A",
+        events: eventsCount || "-",
+        followers: followerCount || "-",
+        status: brand.status || "N/A",
+        savedDate: moment(new Date(createdAt)).format("DD.MM.YYYY.") || "-",
+        colHeader1: "Table cell",
+        colHeader2: "Table cell",
+        colHeader3: "Table cell",
+        colHeader4: "Table cell",
+        colHeader5: "Table cell",
+        colHeader6: "Table cell",
+        colHeader7: "Table cell",
+      })))
       : (newData = apiData.map((brand, index) => ({
-          id: brand?.id,
-          type: "brand",
-          brandName: brand.brandName || "N/A",
-          brandImg: brand.brandImage || "",
-          brandCategory:
-            brand.brandCategory && brand.brandCategory.length > 0
-              ? brand.brandCategory.map((item) => item.name).join(", ")
-              : "N/A",
-          events: brand.events || "-",
-          followers: brand.followers || "-",
-          status: brand.status || "N/A",
-          colHeader1: "Table cell",
-          colHeader2: "Table cell",
-          colHeader3: "Table cell",
-          colHeader4: "Table cell",
-          colHeader5: "Table cell",
-          colHeader6: "Table cell",
-          colHeader7: "Table cell",
-        })));
+        id: brand?.id,
+        type: "brand",
+        brandName: brand.brandName || "N/A",
+        brandImg: brand.brandImage || "",
+        brandCategory:
+          brand.brandCategory && brand.brandCategory.length > 0
+            ? brand.brandCategory.map((item) => item.name).join(", ")
+            : "N/A",
+        events: brand.events || "-",
+        followers: brand.followers || "-",
+        status: brand.status || "N/A",
+        colHeader1: "Table cell",
+        colHeader2: "Table cell",
+        colHeader3: "Table cell",
+        colHeader4: "Table cell",
+        colHeader5: "Table cell",
+        colHeader6: "Table cell",
+        colHeader7: "Table cell",
+      })));
     return newData;
   };
 
@@ -215,7 +216,23 @@ const Brand = () => {
   return (
     <Box>
       <Stack direction="row" justifyContent={{ xs: "center", sm: "flex-end" }}>
-        <img src={brandIconlight} alt="brand" />
+        <Box
+          sx={{
+            cursor: "pointer",
+            background: "rgba(196, 119, 127, 0.2)",
+            width: "48px",
+            height: "48px",
+            borderRadius: "5px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <img
+            src={brandIcon}
+            alt=""
+          />
+        </Box>
       </Stack>
       <Card sx={{ marginY: 2 }}>
         <FilterationTabs
