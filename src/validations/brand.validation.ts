@@ -55,6 +55,7 @@ export class BrandValidation {
       .optional(),
   });
   static sendMessage=Joi.object({
-    message:Joi.string().required()
+    message:Joi.string().required(),
+    senderBrandId:Joi.string().required()
   })
 }
