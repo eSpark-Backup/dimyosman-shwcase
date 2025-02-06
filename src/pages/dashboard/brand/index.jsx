@@ -228,10 +228,21 @@ const Brand = () => {
             alignItems: "center",
           }}
         >
-          <img
-            src={brandIcon}
-            alt=""
-          />
+          <figure
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            role="space-icon"
+          >
+            <img
+              src={brandIcon}
+              alt=""
+            />
+          </figure>
         </Box>
       </Stack>
       <Card sx={{ marginY: 2 }}>
