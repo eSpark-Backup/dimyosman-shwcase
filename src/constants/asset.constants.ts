@@ -3,6 +3,11 @@ export const ALLOWED_IMG_TYPES = [
   "image/jpg",
   "image/tiff",
   "image/png",
+  "image/gif",
+  "image/bmp",
+  "image/svg+xml", // Allow SVG format
+
+
 ];
 
 export enum MAX_FILES_COUNTS {
