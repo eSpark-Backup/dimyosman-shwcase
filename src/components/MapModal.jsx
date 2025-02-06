@@ -14,57 +14,45 @@ const MapModal = ({
     const theme = useTheme();
 
     const [position, setPosition] = useState(initialPosition);
-    const [suggestions, setSuggestions] = useState([]); // New state to store place suggestions
+    const [suggestions, setSuggestions] = useState([]);
+    const autocompleteService = useRef(null); // Persistent reference for AutocompleteService
+
+    useEffect(() => {
+        if (!window.google || !window.google.maps || !window.google.maps.places) return;
+        autocompleteService.current = new google.maps.places.AutocompleteService();
+    }, []);
 
     const handleSearch = (e) => {
         if (disabled) return;
         const query = e.target.value;
         setValue(query);
 
-        if (query.length >= 3) {
-            fetch(
-                `https://maps.googleapis.com/maps/api/geocode/json?address=${query}&key=${apiKey}`
-            )
-                .then((response) => response.json())
-                .then((data) => {
-                    if (data.results[0]) {
-                        const lat = data.results[0].geometry.location.lat;
-                        const lng = data.results[0].geometry.location.lng;
-                        const address = data.results[0].formatted_address;
-                        setPosition([lat, lng]);
-                        setStreetAddress(address);
-
-                        if (markerRef.current) {
-                            markerRef.current.setPosition({ lat, lng });
-                        }
-
-                        setBrandData((prevData) => ({
-                            ...prevData,
-                            location: { lat, long: lng },
-                            streetAddress: address
-                        }));
-                    }
-                })
-                .catch((error) => console.error("Error fetching location:", error));
+        if (query.length >= 3 && autocompleteService.current) {
+            autocompleteService.current.getPlacePredictions({ input: query }, (predictions, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK) {
+                    setSuggestions(predictions || []);
+                } else {
+                    setSuggestions([]);
+                }
+            });
+        } else {
+            setSuggestions([]);
         }
     };
 
     const handleSelectPlace = (place) => {
-        setValue(place.description); // Set input value to selected place
-        setSuggestions([]); // Clear suggestions after selection
+        setValue(place.description);
+        setSuggestions([]);
 
-        // Fetch details of the selected place
-        fetch(
-            `https://maps.googleapis.com/maps/api/geocode/json?place_id=${place.place_id}&key=${apiKey}`
-        )
+        // Fetch details for selected place
+        fetch(`https://maps.googleapis.com/maps/api/geocode/json?place_id=${place.place_id}&key=${apiKey}`)
             .then((response) => response.json())
             .then((data) => {
                 if (data.results[0]) {
-                    const lat = data.results[0].geometry.location.lat;
-                    const lng = data.results[0].geometry.location.lng;
-                    const address = data.results[0].formatted_address;
+                    const { lat, lng } = data.results[0].geometry.location;
+                    const formattedAddress = data.results[0].formatted_address;
                     setPosition([lat, lng]);
-                    setStreetAddress(address);
+                    setStreetAddress(formattedAddress);
 
                     if (markerRef.current) {
                         markerRef.current.setPosition({ lat, lng });
@@ -73,8 +61,10 @@ const MapModal = ({
                     setBrandData((prevData) => ({
                         ...prevData,
                         location: { lat, long: lng },
-                        streetAddress: address
+                        streetAddress: formattedAddress
                     }));
+
+                    if (map) map.panTo({ lat, lng });
                 }
             })
             .catch((error) => console.error("Error fetching location details:", error));
@@ -160,7 +150,7 @@ const MapModal = ({
     }, [position, map]);
 
     return (
-        <>
+        <Box sx={{ position: "relative" }}>
             <Input
                 sx={{ border: "1px solid #D1DBD7 !important" }}
                 value={value}
@@ -190,9 +180,9 @@ const MapModal = ({
                 </Box>
             )}
 
-            <Box sx={{ height: '300px', width: '100%' }} ref={mapRef} />
+            <Box sx={{ height: '300px', width: '100%', top: "6px" }} ref={mapRef} />
 
-            <Box sx={{ display: "flex", flexDirection: "column", rowGap: "3px" }}>
+            <Box sx={{ display: "flex", flexDirection: "column", rowGap: "3px", pt: "8px" }}>
                 <Typography variant='h5' sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "600" }}>
                     <span style={{ fontWeight: "300" }}>{addressLine} </span>
                     {streetAddress}
@@ -200,7 +190,7 @@ const MapModal = ({
                 <Input disabled={disabled} type={"text"} placeholder={"Additional instructions like entrances, floors..."} value={instructionValue} onInputChange={setInstructionValue} />
             </Box>
 
-            <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <Box sx={{ display: "flex", justifyContent: "flex-end", pt: "10px" }}>
                 <Button
                     sx={{
                         height: "31px",
@@ -216,7 +206,7 @@ const MapModal = ({
                     {buttonVal}
                 </Button>
             </Box>
-        </>
+        </Box>
     );
 };
 
