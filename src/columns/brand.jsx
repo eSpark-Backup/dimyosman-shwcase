@@ -113,6 +113,7 @@ const myBrandColumns = (gotoDetail, handleAction) => {
               maxHeight: "26px",
               fontSize: "14px",
               fontWeight: "600",
+              textTransform: "none"
             }}
           >
             Edit
@@ -199,6 +200,7 @@ const followingBrandColumns = (gotoDetail, handleAction) => {
               maxHeight: "26px",
               fontSize: "14px",
               fontWeight: "600",
+              textTransform: "none"
             }}
           >
             Unfollow
@@ -287,6 +289,7 @@ const likedBrandColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
               maxHeight: "26px",
               fontSize: "14px",
               fontWeight: "600",
+              textTransform: "none"
             }}
           >
             Remove
