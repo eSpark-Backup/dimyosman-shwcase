@@ -51,6 +51,14 @@ export const chatApi = api.injectEndpoints({
         }
       },
     }),
+    sendDirectMessage: builder.mutation({
+      query: ({ id, credentials }) => ({
+        url: `/brand/${id}`,
+        method: "POST",
+        body: credentials,
+        credentials: "include",
+      }),
+    }),
   }),
 });
 
@@ -58,4 +66,5 @@ export const {
   useGetMyChatsQuery,
   useGetChatsForContactsQuery,
   useGetAllChatDetailsQuery,
+  useSendDirectMessageMutation,
 } = chatApi;
