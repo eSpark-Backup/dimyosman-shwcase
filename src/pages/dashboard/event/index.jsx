@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { eventTableData } from "../../../constant";
-import { addIcon, eventIconLight, like } from "../../../assets";
+import { addIcon, eventIconLight, flag, like } from "../../../assets";
 import { useCancelRsvpMutation, useGetAllEventsQuery } from "../../../services/events";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
@@ -216,7 +216,34 @@ const Event = () => {
   return (
     <Box>
       <Stack direction="row" justifyContent={{ xs: "center", sm: "flex-end" }}>
-        <img src={eventIconLight} alt="event" />
+        <Box
+          sx={{
+            cursor: "pointer",
+            background: "rgba(148, 185, 134, 0.3)",
+            width: "48px",
+            height: "48px",
+            borderRadius: "5px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <figure
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            role="space-icon"
+          >
+            <img
+              src={flag}
+              alt=""
+            />
+          </figure>
+        </Box>
       </Stack>
       <Card sx={{ marginY: 2 }}>
         <FilterationTabs
