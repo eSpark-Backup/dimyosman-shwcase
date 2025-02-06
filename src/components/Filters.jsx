@@ -51,7 +51,7 @@ import {
 } from "../store/slices/search";
 
 const icons = [
-  { icon: allIconLight, type: "not" },
+  // { icon: allIconLight, type: "not" },
   {
     icon: brandIcon,
     bg: "rgba(196, 119, 127, 0.2)",
