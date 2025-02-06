@@ -9,7 +9,9 @@ import {
   CategoryType,
   SavedEntity,
   ActionType,
+  SavedEntityType,
 } from "../../entity";
+import { decryptShareableLink, generateShareableLink } from "../../utils";
 import { ApiError } from "../../errors";
 import { Brackets, Repository } from "typeorm";
 import {
@@ -224,9 +226,6 @@ export class GeneralController {
             );
           })
         );
-
-
-
       }
 
       if (additional) {
@@ -341,7 +340,7 @@ export class GeneralController {
 
         (space as any).calendarEvents = calendarEvents;
       }
-       spaces.map((space) => {
+      spaces.map((space) => {
         const totalPricing = calculatePricing(
           space.pricing as PricingTerm[],
           1
@@ -397,16 +396,19 @@ export class GeneralController {
       const updatedSpaces = spaces.map((space) => ({
         ...space,
         isFavourite: savedEntityIds.has(space.id),
+        shareableLink: generateShareableLink({ id: space.id, type: "space" }),
       }));
 
       const updatedEvents = events.map((event) => ({
         ...event,
         isFavourite: savedEntityIds.has(event.id),
+        shareableLink: generateShareableLink({ id: event.id, type: "event" }),
       }));
 
       const updatedBrands = brands.map((brand) => ({
         ...brand,
         isFavourite: savedEntityIds.has(brand.id),
+        shareableLink: generateShareableLink({ id: brand.id, type: "brand" }),
       }));
       const totalResults = spaceCount + updatedEvents.length + brandCount;
 
@@ -698,16 +700,19 @@ export class GeneralController {
       const eventsWithType = formattedRsvpEvents.map((event: any) => ({
         ...event,
         type: "event",
+        shareableLink: generateShareableLink({ id: event.id, type: "event" }),
       }));
 
       const brandsWithType = brands.map((brand: any) => ({
         ...brand,
         type: "brand",
+        shareableLink: generateShareableLink({ id: brand.id, type: "brand" }),
       }));
 
       const spacesWithType = spaces.map((space: any) => ({
         ...space,
         type: "space",
+        shareableLink: generateShareableLink({ id: space.id, type: "space" }),
       }));
 
       const activity = [
@@ -769,6 +774,238 @@ export class GeneralController {
     } catch (error) {
       logger.error(
         `GeneralController :: General Activity :: ${(error as Error)?.message}`
+      );
+      return next(error);
+    }
+  }
+
+  async getSharedEntity(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { data } = req.params;
+      const entities = decryptShareableLink(data as string);
+      const { id, type } = entities[0];
+
+      let entity;
+      if (type === "space") {
+        entity = await this.spaceRepo
+          .createQueryBuilder("space")
+          .leftJoinAndSelect("space.brand", "brand")
+          .where("space.id = :id", { id })
+          .leftJoinAndSelect("space.user", "user")
+          .getOne();
+        if (typeof entity.coverImages === "string") {
+          entity.coverImages = JSON.parse(entity.coverImages);
+        }
+        const events = await this.eventsRepo
+          .createQueryBuilder("event")
+          .where("event.space = :spaceId", { spaceId: entity.id })
+          .getMany();
+
+        const calendarEvents = events.flatMap((event) => {
+          const eventDates: EventDate[] = Array.isArray(event.eventDate)
+            ? event.eventDate
+            : JSON.parse(event.eventDate as unknown as string);
+
+          return eventDates.map((dateRange) => ({
+            eventId: event.id,
+            title: event.eventName,
+            start: new Date(dateRange.startDate),
+            end: new Date(dateRange.endDate),
+          }));
+        });
+        (entity as any).calendarEvents = calendarEvents;
+        const totalPricing = calculatePricing(
+          entity.pricing as PricingTerm[],
+          1
+        );
+
+        const savedEntities = await this.savedEntity
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FAVORITE,
+          })
+          .andWhere("savedEntity.type = :type", { type: SavedEntityType.SPACE })
+          .leftJoinAndSelect("savedEntity.space", "space")
+          .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+          .getMany();
+        const savedEventIds = new Set(
+          savedEntities.map((entity) => entity.space?.id).filter(Boolean) // Remove undefined/null values
+        );
+
+        const isFavourite = savedEventIds.has(entity.id);
+        const space = {
+          ...entity,
+          isFavourite,
+          type:"space",
+        };
+        res.status(200).json(handleResponse("Space Found Successfully", space));
+        return next();
+      } else if (type === "event") {
+        entity = await this.eventsRepo
+          .createQueryBuilder("event")
+          .where("event.id = :id", { id })
+          .leftJoinAndSelect("event.user", "user")
+          .leftJoinAndSelect("event.brand", "brand")
+          .leftJoinAndSelect("event.space", "space")
+          .leftJoinAndSelect("event.leaseSpace", "leaseSpace")
+          .leftJoinAndSelect("space.brand", "spaceBrand")
+          .leftJoin(
+            (qb) => {
+              return qb
+                .select("rsvp_sub.event", "eventId")
+                .addSelect("COUNT(rsvp_sub.id)", "rsvpCount")
+                .from("rsvp", "rsvp_sub")
+                .groupBy("rsvp_sub.event");
+            },
+            "rsvpCountSubquery",
+            "rsvpCountSubquery.eventId = event.id"
+          )
+          .addSelect(
+            "COALESCE(rsvpCountSubquery.rsvpCount, 0)",
+            "event_rsvpCount"
+          )
+          .addSelect((subQuery) => {
+            return subQuery
+              .select(
+                `COALESCE(
+                  JSON_OBJECT(
+                      'id', rsvp.id,
+                      'attendanceDates', rsvp.attendanceDates,
+                      'verifyAttendance', rsvp.verifyAttendance,
+                      'review', rsvp.review,
+                      'rating', rsvp.rating
+                  ), '{}')`,
+                "event_rsvp"
+              )
+              .from("RSVP", "rsvp")
+              .where("rsvp.event = event.id")
+              .andWhere("rsvp.user = :userId", { userId: req.user?.id })
+              .limit(1);
+          }, "event_rsvp")
+
+          .getRawAndEntities();
+        if (!entity) {
+          res.status(200).json(handleResponse("Event not found"));
+          return next();
+        }
+        const { entities: rsvpEvents, raw } = entity;
+        const formattedRsvpEvents = rsvpEvents.map((rsvp, index) => {
+          const rawData = raw[index];
+          parseCoverImages(rsvp);
+          parseCoverImages(rsvp.brand);
+          parseCoverImages(rsvp.space);
+          let event_rsvp;
+          if (rawData.event_rsvp) {
+            event_rsvp = JSON.parse(rawData.event_rsvp);
+          }
+          const eventDate =
+            rsvp.eventDate &&
+            (rsvp.eventDate as [{ startDate: string; endDate: string }]);
+
+          if (eventDate) {
+            const currentDate = new Date();
+
+            let eventStatus = "Ended";
+            if (currentDate < new Date(eventDate[0].startDate)) {
+              eventStatus = "Upcoming";
+            } else if (
+              currentDate >= new Date(eventDate[0].startDate) &&
+              currentDate <= new Date(eventDate[0].endDate)
+            ) {
+              eventStatus = "Ongoing";
+            }
+
+            return {
+              ...rsvp,
+              rsvpCount: Number(rawData.event_rsvpCount) || 0,
+              event_rsvp,
+              eventStatus,
+            };
+          }
+
+          return {
+            ...rsvp,
+            event_rsvp,
+            rsvpCount: Number(rawData.event_rsvpCount) || 0,
+          };
+        });
+        const savedEntities = await this.savedEntity
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FAVORITE,
+          })
+          .andWhere("savedEntity.type = :type", { type: SavedEntityType.EVENT })
+          .leftJoinAndSelect("savedEntity.event", "event")
+          .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+          .getMany();
+
+        const savedEventIds = new Set(
+          savedEntities.map((entity) => entity.event?.id).filter(Boolean) // Remove undefined/null values
+        );
+
+        const event = formattedRsvpEvents.map((activity) => ({
+          ...activity,
+          isFavourite: savedEventIds.has(activity.id),
+          type: "event",
+        }));
+
+        res
+          .status(200)
+          .json(handleResponse("Event Found Successfully", event[0]));
+        return next();
+      } else if (type === "brand") {
+        entity = await this.brandRepo.createQueryBuilder
+        ("brand")
+        .where("brand.id = :id", { id })
+        .leftJoinAndSelect("brand.user", "user")
+        .getOne();
+        if (!entity) {
+          res.status(200).json(handleResponse("Brand not found"));
+          return next();
+        }
+
+        if (typeof entity.coverImages === "string") {
+          entity.coverImages = JSON.parse(entity.coverImages);
+        }
+
+        const savedEntities= await this.savedEntity.createQueryBuilder("savedEntity")
+        .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
+        .andWhere("savedEntity.type = :type", { type: SavedEntityType.BRAND })
+        .leftJoinAndSelect("savedEntity.brand", "brand")
+        .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+        .getMany();
+
+        const savedEventIds = new Set(
+          savedEntities
+            .map(entity => entity.brand?.id)
+            .filter(Boolean) // Remove undefined/null values
+        );
+        
+        const isFavourite = savedEventIds.has(entity.id);
+        const brand = {
+          ...entity,
+          isFavourite,
+          type: "brand",
+        };
+        res.status(200).json(handleResponse("Brand Found Successfully", brand));
+       
+      } else {
+        throw new ApiError("Invalid entity type", HTTP_STATUS.BAD_REQUEST);
+      }
+      if (!entity) {
+        throw new ApiError("Entity not found", HTTP_STATUS.NOT_FOUND);
+      }
+      res
+        .status(200)
+        .json(handleResponse("Entity Fetched Successfully", entity));
+      return next();
+    } catch (error) {
+      logger.error(
+        `GeneralController :: Get Shared Entity :: ${(error as Error)?.message}`
       );
       return next(error);
     }
