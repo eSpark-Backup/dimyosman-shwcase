@@ -1,8 +1,15 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { ActionType, Brand, BrandStatus, Events, SavedEntity, SavedEntityType, User } from "../../entity";
+import {
+  ActionType,
+  Brand,
+  BrandStatus, Events,
+  SavedEntity,
+  SavedEntityType,
+  User,
+} from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { emitEvent, handleResponse, logger } from "../../utils";
+import { emitEvent, generateShareableLink, handleResponse, logger } from "../../utils";
 import { commonHelper } from "../../helpers";
 
 import {
@@ -429,11 +436,11 @@ let receiverEvent;
       const skipNumber = Number(skip);
       const takeNumber = Number(take);
       if (id && id !== "{id}") {
-        const singleBrand = await this.brandRepo.createQueryBuilder
-        ("brand")
-        .where("brand.id = :id", { id })
-        .leftJoinAndSelect("brand.user", "user")
-        .getOne();
+        const singleBrand = await this.brandRepo
+          .createQueryBuilder("brand")
+          .where("brand.id = :id", { id })
+          .leftJoinAndSelect("brand.user", "user")
+          .getOne();
 
         if (!singleBrand) {
           res.status(200).json(handleResponse("Brand not found"));
@@ -444,40 +451,74 @@ let receiverEvent;
           singleBrand.coverImages = JSON.parse(singleBrand.coverImages);
         }
 
-          const savedEntities= await this.savedEntity.createQueryBuilder("savedEntity")
-                      .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
-                      .andWhere("savedEntity.type = :type", { type: SavedEntityType.BRAND })
-                      .leftJoinAndSelect("savedEntity.brand", "brand")
-                      .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
-                      .getMany();
-        
-                      const savedEventIds = new Set(
-                        savedEntities
-                          .map(entity => entity.brand?.id)
-                          .filter(Boolean) // Remove undefined/null values
-                      );
-                      
-                      const isFavourite = savedEventIds.has(singleBrand.id);
-                      const brand = {
-                        ...singleBrand,
-                        isFavourite,
-                      };
-                    
+        const savedEntities = await this.savedEntity
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FAVORITE,
+          })
+          .andWhere("savedEntity.type = :type", { type: SavedEntityType.BRAND })
+          .leftJoinAndSelect("savedEntity.brand", "brand")
+          .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+          .andWhere("brand.id = :brandId", { brandId: singleBrand.id })
+          .getOne();
 
+        const followedEntities = await this.savedEntity
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FOLLOW,
+          })
+          .andWhere("savedEntity.type = :type", { type: SavedEntityType.BRAND })
+          .leftJoinAndSelect("savedEntity.brand", "brand")
+          .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+          .andWhere("brand.id = :brandId", { brandId: singleBrand.id })
+          .getOne();
+
+          const [getFollowedCount,getLikedCount]= await Promise.all([
+            this.savedEntity
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FOLLOW,
+            })
+            .andWhere("savedEntity.type = :type", { type: SavedEntityType.BRAND })
+            .leftJoinAndSelect("savedEntity.brand", "brand")
+            .andWhere("brand.id = :brandId", { brandId: singleBrand.id })
+            .getCount(),
+            this.savedEntity
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FAVORITE,
+            })
+            .andWhere("savedEntity.type = :type", { type: SavedEntityType.BRAND })
+            .leftJoinAndSelect("savedEntity.brand", "brand")
+            .andWhere("brand.id = :brandId", { brandId: singleBrand.id })
+            .getCount()
+          ])
+
+        const isFavourite = savedEntities ? true : false;
+        const isFollowed = followedEntities ? true : false;
+
+        const brand = {
+          ...singleBrand,
+          followedCount:getFollowedCount,
+          shareableLink: generateShareableLink({ id: singleBrand.id, type: "brand" }),
+          likedCount:getLikedCount,
+          isFavourite,
+          isFollowed,
+        };
 
         res.status(200).json(handleResponse("Brand Found Successfully", brand));
         return next();
       }
 
-      const [brands, totalItems] = await this.brandRepo.createQueryBuilder
-      ("brand")
-      .where("brand.user = :userId", { userId: req.user?.id })
-      .leftJoinAndSelect("brand.user", "user")
+      const [brands, totalItems] = await this.brandRepo
+        .createQueryBuilder("brand")
+        .where("brand.user = :userId", { userId: req.user?.id })
+        .leftJoinAndSelect("brand.user", "user")
 
-      .orderBy("brand.createdAt", "DESC")
-      .skip(skipNumber)
-      .take(takeNumber)
-      .getManyAndCount();
+        .orderBy("brand.createdAt", "DESC")
+        .skip(skipNumber)
+        .take(takeNumber)
+        .getManyAndCount();
 
       if (brands.length === 0) {
         res.status(200).json(handleResponse("No Brands Found"));

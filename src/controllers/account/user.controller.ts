@@ -808,15 +808,13 @@ export class UserController {
         return next();
       }
 
-      // Create a new SavedEntity object
       const newFavourite = this.SavedEntityRepo.create({
         user: { id: userId },
         type: entityType,
         actionType: ActionType.FAVORITE,
-        [entityType.toLowerCase()]: { id: entityId }, // Map the relationship dynamically
+        [entityType.toLowerCase()]: { id: entityId }, 
       });
 
-      // Save the favourite entity
       await this.SavedEntityRepo.save(newFavourite);
 
       res
@@ -891,7 +889,7 @@ export class UserController {
         await this.SavedEntityRepo.remove(existingFavourite);
         res
           .status(HTTP_STATUS.OK)
-          .json(handleResponse("Entity removed from favourites successfully"));
+          .json(handleResponse(`${entityType} Unfollowed successfully`));
         return next();
       }
 
@@ -910,7 +908,7 @@ export class UserController {
         .status(HTTP_STATUS.CREATED)
         .json(
           handleResponse(
-            "Entity added to favourites successfully",
+           `${entityType} Followed successfully`,
             newFavourite
           )
         );

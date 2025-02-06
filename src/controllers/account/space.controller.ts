@@ -15,6 +15,7 @@ import { Repository } from "typeorm";
 import {
   calculatePricing,
   emitEvent,
+  generateShareableLink,
   handleResponse,
   logger,
 } from "../../utils";
@@ -1045,24 +1046,60 @@ export class SpaceController {
         .take(takeNumber)
         .getManyAndCount();
 
-          const savedEntities= await this.savedEntity.createQueryBuilder("savedEntity")
-                      .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
-                      .andWhere("savedEntity.type = :type", { type: SavedEntityType.SPACE })
-                      .leftJoinAndSelect("savedEntity.space", "space")
-                      .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
-                      .getMany();
-                      const savedEventIds = new Set(
-                        savedEntities
-                          .map(entity => entity.space?.id)
-                          .filter(Boolean) // Remove undefined/null values
-                      );      
+        
+         const [savedEntities,followedEntities] = await Promise.all([
+          this.savedEntity
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
+            .andWhere("savedEntity.type = :type", { type: SavedEntityType.SPACE })
+            .leftJoinAndSelect("savedEntity.space", "space")
+            .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+            .andWhere("savedEntity.space = :spaceId", { spaceId: singleSpace.id })
+            .getOne(),
+        
+          this.savedEntity
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FOLLOW })
+            .andWhere("savedEntity.type = :type", { type: SavedEntityType.SPACE })
+            .leftJoinAndSelect("savedEntity.space", "space")
+            .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+            .andWhere("savedEntity.space = :spaceId", { spaceId: singleSpace.id })
+            .getOne(),
+        ]);
+
+        const [getFollowedCount,getLikedCount]= await Promise.all([
+          this.savedEntity
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FOLLOW,
+          })
+          .andWhere("savedEntity.type = :type", { type: SavedEntityType.SPACE })
+          .leftJoinAndSelect("savedEntity.space", "space")
+          .andWhere("space.id = :spaceId", { spaceId: singleSpace.id })
+          .getCount(),
+          this.savedEntity
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FAVORITE,
+          })
+          .andWhere("savedEntity.type = :type", { type: SavedEntityType.SPACE })
+          .leftJoinAndSelect("savedEntity.space", "space")
+          .andWhere("space.id = :spaceId", { spaceId: singleSpace.id })
+          .getCount()
+        ])
                           
-              const isFavourite = savedEventIds.has(singleSpace.id);
+        const isFavourite = savedEntities ? true : false;
+        const isFollowed = followedEntities ? true : false
+
               const space = {
                 tenantSpaceDetail,
+                 shareableLink: generateShareableLink({ id: singleSpace.id, type: "space" }),
                 totalLeasSpace,
+                likedCount:getLikedCount,
+                followedCount:getFollowedCount,
                 ...singleSpace,
                 isFavourite,
+                isFollowed,
               };
 
         res.status(200).json(handleResponse("Space Found Successfully", space));

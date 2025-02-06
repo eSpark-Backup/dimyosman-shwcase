@@ -363,9 +363,19 @@ export class GeneralController {
           actionType: ActionType.FAVORITE,
         })
         .andWhere("savedEntity.user = :userId", { userId: req.user?.id });
+      let followedEntitiesQuery= this.savedEntity
+      .createQueryBuilder("savedEntity")
+      .where("savedEntity.ActionType = :actionType", {
+        actionType: ActionType.FOLLOW,
+      })
+      .andWhere("savedEntity.user = :userId", { userId: req.user?.id });
 
       if (entity === "SPACE") {
         savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect(
+          "savedEntity.space",
+          "space"
+        );
+        followedEntitiesQuery = followedEntitiesQuery.leftJoinAndSelect(
           "savedEntity.space",
           "space"
         );
@@ -374,8 +384,16 @@ export class GeneralController {
           "savedEntity.event",
           "event"
         );
+        followedEntitiesQuery = followedEntitiesQuery.leftJoinAndSelect(
+          "savedEntity.event",
+          "event"
+        );
       } else if (entity === "BRAND") {
         savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect(
+          "savedEntity.brand",
+          "brand"
+        );
+        followedEntitiesQuery = followedEntitiesQuery.leftJoinAndSelect(
           "savedEntity.brand",
           "brand"
         );
@@ -384,9 +402,17 @@ export class GeneralController {
       }
 
       const savedEntities = await savedEntitiesQuery.getMany();
+      const followedEntities = await followedEntitiesQuery.getMany();
 
       const savedEntityIds = new Set(
         savedEntities
+          .map(
+            (entity) => entity.space?.id || entity.event?.id || entity.brand?.id
+          )
+          .filter(Boolean)
+      );
+      const followedEntityIds = new Set(
+        followedEntities
           .map(
             (entity) => entity.space?.id || entity.event?.id || entity.brand?.id
           )
@@ -397,18 +423,21 @@ export class GeneralController {
         ...space,
         isFavourite: savedEntityIds.has(space.id),
         shareableLink: generateShareableLink({ id: space.id, type: "space" }),
+        isFollowed: followedEntityIds.has(space.id),
       }));
 
       const updatedEvents = events.map((event) => ({
         ...event,
         isFavourite: savedEntityIds.has(event.id),
         shareableLink: generateShareableLink({ id: event.id, type: "event" }),
+        isFollowed: followedEntityIds.has(event.id),
       }));
 
       const updatedBrands = brands.map((brand) => ({
         ...brand,
         isFavourite: savedEntityIds.has(brand.id),
         shareableLink: generateShareableLink({ id: brand.id, type: "brand" }),
+        isFollowed: followedEntityIds.has(brand.id),
       }));
       const totalResults = spaceCount + updatedEvents.length + brandCount;
 
@@ -727,6 +756,7 @@ export class GeneralController {
           totalPricing,
         };
       });
+      
 
       const eventsWithType = formattedRsvpEvents.map((event: any) => ({
         ...event,
@@ -765,19 +795,35 @@ export class GeneralController {
       const totalItems = sortedActivity.length;
       const totalPages = Math.ceil(totalItems / takeNumber);
 
-      const savedEntities = await this.savedEntity
-        .createQueryBuilder("savedEntity")
-        .where("savedEntity.ActionType = :actionType", {
-          actionType: ActionType.FAVORITE,
-        })
-        .leftJoinAndSelect("savedEntity.space", "space")
-        .leftJoinAndSelect("savedEntity.brand", "brand")
-        .leftJoinAndSelect("savedEntity.event", "event")
-        .where("savedEntity.user = :userId", { userId: req.user?.id })
-
-        .getMany();
+    const [savedEntities,followedEntities] = await Promise.all([
+             this.savedEntity
+               .createQueryBuilder("savedEntity")
+               .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
+               .leftJoinAndSelect("savedEntity.event", "event")
+               .leftJoinAndSelect("savedEntity.space", "space")
+                .leftJoinAndSelect("savedEntity.brand", "brand")
+               .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+               .getMany(),
+           
+             this.savedEntity
+               .createQueryBuilder("savedEntity")
+               .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FOLLOW })
+               .leftJoinAndSelect("savedEntity.event", "event")
+                .leftJoinAndSelect("savedEntity.space", "space")
+                .leftJoinAndSelect("savedEntity.brand", "brand")
+               .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+               .getMany(),
+           ]);
+        
       const savedEntityIds = new Set(
         savedEntities
+          .map(
+            (entity) => entity.space?.id || entity.event?.id || entity.brand?.id
+          )
+          .filter(Boolean)
+      );
+      const followedEntityIds = new Set(
+        followedEntities
           .map(
             (entity) => entity.space?.id || entity.event?.id || entity.brand?.id
           )
@@ -787,6 +833,7 @@ export class GeneralController {
       const updatedPaginatedActivity = paginatedActivity.map((activity) => ({
         ...activity,
         isFavourite: savedEntityIds.has(activity.id),
+        isFollowed: followedEntityIds.has(activity.id),
       }));
 
       res.status(200).json(
@@ -988,7 +1035,7 @@ export class GeneralController {
           .status(200)
           .json(handleResponse("Event Found Successfully", event[0]));
         return next();
-      } else if (type === "brand") {
+      } else if (type == "brand") {
         entity = await this.brandRepo.createQueryBuilder
         ("brand")
         .where("brand.id = :id", { id })
@@ -1023,7 +1070,7 @@ export class GeneralController {
           type: "brand",
         };
         res.status(200).json(handleResponse("Brand Found Successfully", brand));
-       
+        return next();
       } else {
         throw new ApiError("Invalid entity type", HTTP_STATUS.BAD_REQUEST);
       }

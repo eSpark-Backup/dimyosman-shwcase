@@ -12,7 +12,12 @@ import {
 } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { handleResponse, logger, parseCoverImages } from "../../utils";
+import {
+  generateShareableLink,
+  handleResponse,
+  logger,
+  parseCoverImages,
+} from "../../utils";
 import { CLOUD_FOLDERS, HTTP_STATUS, PAGINATION } from "../../constants";
 import { uploadService } from "../../services";
 import {
@@ -235,8 +240,8 @@ export class EventController {
       if (
         (!leaseId || leaseId == undefined) &&
         existingEvent.leaseSpace &&
-        existingEvent.leaseSpace != null
-        && existingEvent.leaseSpace.space.id != spaceId
+        existingEvent.leaseSpace != null &&
+        existingEvent.leaseSpace.space.id != spaceId
       ) {
         const findExistingLease = await this.leaseSpaceRepo.findOne({
           where: { id: existingEvent.leaseSpace.id },
@@ -248,14 +253,14 @@ export class EventController {
       }
 
       if (leaseId) {
-        if(existingEvent.leaseSpace && existingEvent.leaseSpace.id ) {
-        const findExistingLease = await this.leaseSpaceRepo.findOne({
-          where: { id: existingEvent.leaseSpace.id },
-        });
-        findExistingLease.isUsed = false;
-        findExistingLease.event = null;
-        await this.leaseSpaceRepo.save(findExistingLease);
-      }
+        if (existingEvent.leaseSpace && existingEvent.leaseSpace.id) {
+          const findExistingLease = await this.leaseSpaceRepo.findOne({
+            where: { id: existingEvent.leaseSpace.id },
+          });
+          findExistingLease.isUsed = false;
+          findExistingLease.event = null;
+          await this.leaseSpaceRepo.save(findExistingLease);
+        }
         const leaseSpace = await this.leaseSpaceRepo.findOne({
           where: { id: leaseId },
         });
@@ -573,23 +578,70 @@ export class EventController {
           };
         });
 
-        const savedEntities = await this.savedEntity
-          .createQueryBuilder("savedEntity")
-          .where("savedEntity.ActionType = :actionType", {
-            actionType: ActionType.FAVORITE,
-          })
-          .andWhere("savedEntity.type = :type", { type: SavedEntityType.EVENT })
-          .leftJoinAndSelect("savedEntity.event", "event")
-          .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
-          .getMany();
+        const [savedEntities, followedEntities] = await Promise.all([
+          this.savedEntity
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FAVORITE,
+            })
+            .andWhere("savedEntity.type = :type", {
+              type: SavedEntityType.EVENT,
+            })
+            .leftJoinAndSelect("savedEntity.event", "event")
+            .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+            .getMany(),
+
+          this.savedEntity
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FOLLOW,
+            })
+            .andWhere("savedEntity.type = :type", {
+              type: SavedEntityType.EVENT,
+            })
+            .leftJoinAndSelect("savedEntity.event", "event")
+            .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+            .getMany(),
+        ]);
+        const [getFollowedCount, getSavedCount] = await Promise.all([
+          this.savedEntity
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FOLLOW,
+            })
+            .andWhere("savedEntity.type = :type", {
+              type: SavedEntityType.EVENT,
+            })
+            .getCount(),
+
+          this.savedEntity
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FAVORITE,
+            })
+            .andWhere("savedEntity.type = :type", {
+              type: SavedEntityType.EVENT,
+            })
+            .getCount(),
+        ]);
 
         const savedEventIds = new Set(
           savedEntities.map((entity) => entity.event?.id).filter(Boolean) // Remove undefined/null values
+        );
+        const followedEventIds = new Set(
+          followedEntities.map((entity) => entity.event?.id).filter(Boolean) // Remove undefined/null values
         );
 
         const event = formattedRsvpEvents.map((activity) => ({
           ...activity,
           isFavourite: savedEventIds.has(activity.id),
+          followedCount: getFollowedCount,
+          shareableLink: generateShareableLink({
+            id: activity.id,
+            type: "event",
+          }),
+          likedCount: getSavedCount,
+          isFollowing: followedEventIds.has(activity.id),
         }));
 
         res
@@ -638,16 +690,13 @@ export class EventController {
           parseCoverImages(rsvp);
           parseCoverImages(rsvp.brand);
           parseCoverImages(rsvp.space);
-       
 
           return {
             ...rsvp,
-          
+
             rsvpCount: Number(rawData.event_rsvpCount) || 0,
           };
         });
-        
-
 
         const [, totalItems] = await this.eventRepo
           .createQueryBuilder("event")
