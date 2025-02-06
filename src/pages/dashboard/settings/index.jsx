@@ -12,6 +12,7 @@ import {
   eye,
   facebook,
   google,
+  settingsIcon,
   settingsIconLight,
   uploadIcon,
 } from "../../../assets";
@@ -277,7 +278,7 @@ const Settings = () => {
             }}
             role="space-icon"
           >
-            <img src={settingsIconLight} alt="event" />
+            <img src={settingsIcon} alt="event" />
           </figure>
         </Box>
       </Stack>
