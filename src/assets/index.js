@@ -68,7 +68,7 @@ import brandIconlight from "./brand-icon.png";
 import brandBadge from "./brand-badge.svg";
 import eventIconLight from "./event-icon.png";
 import spaceIconLight from "./space-icon.png";
-import calenderIconLight from "./calendar-icon.png";
+import calenderIconLight from "./calendar-icon.svg";
 import settingsIconLight from "./settings-icon.png";
 import activeItemIcon from "./activeItemIcon.svg";
 import notActiveIcon from "./notActiveItemIcon.svg";
