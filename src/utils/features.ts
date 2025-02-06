@@ -5,12 +5,37 @@ import { v4 as uuid } from "uuid";
 import { getBase64, getSockets } from "../lib";
 import { UploadResult } from "../interfaces";
 import { CHAT_COOKIE } from "../constants";
+import { configs } from "../config";
+import axios from "axios";
 
 const cookieOptions = {
   maxAge: 15 * 24 * 60 * 60 * 1000,
   sameSite: "none",
   httpOnly: true,
   secure: true,
+};
+
+
+const getPlaceSuggestions = async (query: string) => {
+  try {
+    const response = await axios.get(
+      `https://maps.googleapis.com/maps/api/place/autocomplete/json`,
+      {
+        params: {
+          input: query,
+          key: configs.GOOGLE_MAPS_API_KEY,
+        },
+      }
+    );
+
+    return response.data.predictions.map((place: any) => ({
+      description: place.description,
+      placeId: place.place_id,
+    }));
+  } catch (error) {
+    console.error("Error fetching place suggestions:", error);
+    return [];
+  }
 };
 
 const connectDb = async (uri: string, delay: number = 2000) => {
@@ -111,4 +136,5 @@ export {
   deleteFilesFromCloudinary,
   emitEvent,
   uploadFilesToCloudinary,
+  getPlaceSuggestions
 };

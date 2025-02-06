@@ -11,7 +11,7 @@ import {
   ActionType,
   SavedEntityType,
 } from "../../entity";
-import { decryptShareableLink, generateShareableLink } from "../../utils";
+import { decryptShareableLink, generateShareableLink, getPlaceSuggestions } from "../../utils";
 import { ApiError } from "../../errors";
 import { Brackets, Repository } from "typeorm";
 import {
@@ -434,6 +434,37 @@ export class GeneralController {
       );
       return next(error);
     }
+  }
+
+  async getSuggestion(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try{
+
+      const { query } = req.query as { query: string };
+      if (!query) {
+         res.status(400).json({ error: "Query input is required" });
+      }
+    
+      const suggestions = await getPlaceSuggestions(query);
+      res
+      .status(200)
+      .json(handleResponse("Location Fetch completed successfully", suggestions));
+
+
+
+    }
+    catch (error) {
+      logger.error(
+        `GeneralController :: Get Suggestion :: ${(error as Error)?.message}`
+      );
+      return next(error);
+    }
+  
+  
+  
   }
 
   async getCategoriesByType(

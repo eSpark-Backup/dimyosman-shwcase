@@ -777,6 +777,7 @@ export class UserController {
           },
           relations: ["event"],
         });
+
       } else if (entityType === SavedEntityType.SPACE) {
         existingFavourite = await this.SavedEntityRepo.findOne({
           where: {
@@ -803,7 +804,7 @@ export class UserController {
         await this.SavedEntityRepo.remove(existingFavourite);
         res
           .status(HTTP_STATUS.OK)
-          .json(handleResponse("Entity removed from favourites successfully"));
+          .json(handleResponse(`Removed from Saved ${entityType} successfully`));
         return next();
       }
 
@@ -822,7 +823,7 @@ export class UserController {
         .status(HTTP_STATUS.CREATED)
         .json(
           handleResponse(
-            "Entity added to favourites successfully",
+            `Added to Saved ${entityType} successfully`,
             newFavourite
           )
         );
