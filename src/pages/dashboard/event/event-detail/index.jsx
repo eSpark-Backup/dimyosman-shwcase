@@ -20,13 +20,14 @@ const EventDetails = () => {
     const fetchAddress = async () => {
       if (isSuccess) {
         let address = "";
-        if (data?.data?.space?.location?.lat && data?.data?.space?.location?.long) {
+        if (data?.data?.space?.brand?.location?.lat && data?.data?.space?.brand?.location?.long) {
           address = await fetchAddressFromCoordinates(
-            data?.data?.space?.location?.lat,
-            data?.data?.space?.location?.long
+            data?.data?.space?.brand?.location?.lat,
+            data?.data?.space?.brand?.location?.long
           );
         }
         const updatedEvents = {
+          shareableLink: data?.data?.shareableLink,
           isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
           by: 1,

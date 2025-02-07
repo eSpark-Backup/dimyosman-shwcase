@@ -151,12 +151,30 @@ const NewBrand = () => {
         mainImageRef.current.click();
     };
 
-    const handleMainImageChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const updatedCover = [...brandData.cover];
-            updatedCover[currentIndex] = file;
-            setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+    const handleMainImageChange = (files) => {
+        if (files.length > 0) {
+            if(brandData.cover.length === 0) {
+                setBrandData((prev) => ({ ...prev, cover: files }));
+            }
+            if(brandData.cover.length === 1) {
+                const updatedCover = [...brandData.cover];
+                updatedCover[1] = files[0];
+                files?.length > 1 ? updatedCover[2] = files[1] : null;
+                setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+                const nextIndex = brandData.cover.length;
+                if (nextIndex < 3) {
+                    setCurrentIndex(nextIndex);
+                }
+            }
+            if(brandData.cover.length === 2) {
+                const updatedCover = [...brandData.cover];
+                updatedCover[2] = files[0];
+                setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+                const nextIndex = brandData.cover.length;
+                if (nextIndex < 3) {
+                    setCurrentIndex(nextIndex);
+                }
+            }
         }
     };
 
@@ -353,6 +371,7 @@ const NewBrand = () => {
                 imageRef={mainImageRef}
                 icon={brandIcon}
                 activity="brand"
+                cover={brandData.cover}
                 editImage={brandData.cover[currentIndex] ? URL.createObjectURL(brandData.cover[currentIndex]) : null}
                 handleAdd={handleAddImage}
                 handleRemove={handleRemoveImage}

@@ -8,7 +8,7 @@ import Events from "./events";
 import Stats from "./stats";
 import Reviews from "./reviews";
 import Spaces from "./spaces";
-import Teenacy from "./teenacy";
+import Tenancy from "./teenacy";
 import { brandBadge, eventBadge, spaceBadge, star } from "../../assets";
 
 const BESProfile = ({ spaceInquire, type, data }) => {
@@ -32,12 +32,13 @@ const BESProfile = ({ spaceInquire, type, data }) => {
     Stats,
     Reviews,
     Spaces,
-    Teenacy,
+    Tenancy,
   };
 
   const mapTabsToComponents = (myProfile, tabs) => {
     return tabs?.map((tab) => ({
       label: tab.label,
+      show: tab?.props === false ? false : true,
       component: () => {
         const Component = componentsMap[tab.label];
         return (

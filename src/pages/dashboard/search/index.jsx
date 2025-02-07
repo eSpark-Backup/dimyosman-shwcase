@@ -185,6 +185,8 @@ const Search = () => {
       el?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
 
     return {
+      isFollowed: el?.isFollowed,
+      shareableLink: el?.shareableLink,
       isFavourite: el?.isFavourite,
       id: el?.id,
       brandId: el?.id,
@@ -249,6 +251,7 @@ const Search = () => {
             allData?.map((item, index) => {
               return (
                 <ActivityCard
+                  shareableLink={item?.shareableLink}
                   key={index}
                   fullItem={item}
                   id={item?.profileId}

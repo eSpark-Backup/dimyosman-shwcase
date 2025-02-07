@@ -184,16 +184,31 @@ const Event = () => {
       }
     } else if (type === "remove") {
       setSavedId(item?.id);
-      await likeFunc({ entityId: item?.id, entityType: item?.type?.toUpperCase() }).unwrap();
-      refetch2();
-      setSavedId(null);
+      likeFunc({
+        entityId: item?.id,
+        entityType: item?.type?.toUpperCase(),
+      }).then((res) => {
+        if (res?.data?.status) {
+          toast.success(
+            res?.data?.message
+              .replace("Entity", "Post")
+              .replace(" successfully", "")
+          );
+          refetch2();
+          setSavedId(null);
+        }
+      });
       //remove functionality
     } else if (type === "Cancel") {
       //cancel rsvp functionality
       setRsvpId(item?.rsvpId);
-      await cancelRsvp({id: item?.rsvpId}).unwrap();
-      refetch();
-      setRsvpId(null);
+      cancelRsvp({ id: item?.rsvpId }).then((res) => {
+        if (res?.data?.status) {
+          toast.success(res?.data?.message);
+          refetch();
+          setRsvpId(null);
+        }
+      });
     } else {
       // other action functionality
     }

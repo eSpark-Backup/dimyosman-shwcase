@@ -31,7 +31,7 @@ const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="event-image">
                   <img
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "5px" }}
                     src={item?.eventImg}
                     alt="event-img"
                   />
@@ -144,7 +144,7 @@ const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand, gotoEvent) => 
 
                 <figure style={{ width: "100%", height: "100%" }} role="event-icon">
                   <img
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "5px" }}
                     src={item?.eventImg}
                     alt="event-img"
                   />
@@ -292,7 +292,7 @@ const likedSpaceColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
                     style={{
                       width: "100%",
                       height: "100%",
-                      objectFit: "cover",
+                      objectFit: "cover", borderRadius: "5px"
                     }}
                     src={item?.eventImg}
                     alt="event-img"
@@ -409,7 +409,7 @@ const tenantSpaceColumns = (gotoDetail, handleAction, gotoBrand, gotoEvent) => {
                     style={{
                       width: "100%",
                       height: "100%",
-                      objectFit: "cover",
+                      objectFit: "cover", borderRadius: "5px"
                     }}
                     src={item?.eventImg}
                     alt="event-img"

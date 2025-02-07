@@ -51,6 +51,8 @@ const BrandDetails = () => {
 
 
         const brandData = {
+          shareableLink: data?.data?.shareableLink,
+          isFollowed: data?.data?.isFollowed,
           isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
           type: "brand",

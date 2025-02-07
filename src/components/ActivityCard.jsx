@@ -26,6 +26,11 @@ import dayjs from "dayjs";
 import RSVPCalendar from "./rsvp-calendar.jsx";
 import { useClickOutside } from "../utils/index.js";
 import { useAddRsvpDateMutation } from "../services/events.js";
+import CommentModal from "./commentModal.jsx";
+import CommentSuccessModal from "./commentSuccessModal.jsx";
+import ShareModal from "./shareModal.jsx";
+import { useFollowMutation } from "../services/follower.js";
+import { LoadingButton } from "@mui/lab";
 
 const ActivityCard = ({
   fullItem = {},
@@ -35,6 +40,7 @@ const ActivityCard = ({
   userRole,
   userImage,
   mainImage,
+  shareableLink,
   activity,
   activityLocationId,
   activityName,
@@ -50,6 +56,7 @@ const ActivityCard = ({
   slides,
   search = false,
   isFavourite,
+  isFollowed,
   startDate,
   endDate,
   rsvpDates,
@@ -58,11 +65,19 @@ const ActivityCard = ({
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const [commentModal, setCommentModal] = useState(false);
+  const [successModal, setSuccessModal] = useState(false);
+  const [shareModal, setShareModal] = useState(false);
   const [likePost, setLikePost] = useState(isFavourite);
+  const [followPost, setFollowPost] = useState(isFollowed);
   useEffect(() => {
     setLikePost(isFavourite);
-  },[isFavourite])
+  }, [isFavourite]);
+  useEffect(() => {
+    setFollowPost(isFollowed);
+  }, [isFollowed]);
   const [likeFunc, { isLoading }] = useAddInFavouritesMutation();
+  const [follow, { isLoading: followLoading }] = useFollowMutation();
   const [addRsvp, { isLoading: rsvpLoading }] = useAddRsvpDateMutation();
 
   const [selectedDates, setSelectedDates] = useState(
@@ -166,7 +181,8 @@ const ActivityCard = ({
                     style={{
                       width: "100%",
                       height: "100%",
-                      objectFit: "cover",
+                      objectFit: "cover",                      
+                      borderRadius: "5px",
                     }}
                   />
                 </figure>
@@ -194,8 +210,8 @@ const ActivityCard = ({
                 width: "16px",
                 height: "16px",
                 position: "absolute",
-                bottom: "0px",
-                right: "0px",
+                bottom: "3px",
+                right: "1px",
                 borderRadius: "5px",
                 display: "flex",
                 justifyContent: "center",
@@ -398,7 +414,7 @@ const ActivityCard = ({
               <img
                 src={activityImage}
                 alt=""
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                style={{ width: "100%", height: "100%", objectFit: "cover",borderRadius:"5px" }}
               />
               <Box
                 sx={{
@@ -738,8 +754,27 @@ const ActivityCard = ({
             className={`like-icon ${isLoading ? "loading" : ""}`}
             alt="Like Icon"
           />
-          {activity !== "space" && <img src={comment} alt="Comment Icon" />}
-          <img src={share} alt="Share Icon" />
+          {activity !== "space" && (
+            <img
+              onClick={() => setCommentModal(activityId)}
+              src={comment}
+              alt="Comment Icon"
+              style={{ cursor: "pointer" }}
+            />
+          )}
+          <img
+            onClick={
+              () => setShareModal({
+                id: activityId,
+                profileName: activityName,
+                profileImage: activityImage,
+                profileType: activity
+              })
+            }
+            src={share}
+            alt="Share Icon"
+            style={{ cursor: "pointer" }}
+          />
         </Box>
         <Stack
           direction="row"
@@ -786,7 +821,9 @@ const ActivityCard = ({
               endDate={endDate}
             />
           )}
-          <Button
+          <LoadingButton
+            loading={followLoading}
+            disabled={followLoading}
             sx={{
               backgroundColor: "rgb(209, 219, 215, 0.4)",
               width: { xs: "120px", sm: "220px" },
@@ -804,6 +841,17 @@ const ActivityCard = ({
             onClick={() => {
               if (activity === "event") {
                 setOpenCalendar(true);
+              } else if (activity === "brand") {
+                if (!followLoading) {
+                  follow({
+                    entityId: activityId,
+                    entityType: "BRAND",
+                  }).then((res) => {
+                    res?.data?.status &&
+                      toast.success(`You ${followPost ? "Unfollowed" : "Followed"} ${activityName}`);
+                      setFollowPost(!followPost);
+                  });
+                }
               } else {
                 handleAction(fullItem);
               }
@@ -812,16 +860,23 @@ const ActivityCard = ({
             {activity === "event" ? (
               "RSVP"
             ) : activity === "brand" ? (
-              "Follow"
+              followPost ? "Unfollow" : "Follow"
             ) : (
               <>
                 <img src={calender} alt="Calender Icon" />
                 Inquire
               </>
             )}
-          </Button>
+          </LoadingButton>
         </Stack>
       </Box>
+      <CommentModal
+        open={commentModal}
+        handleClose={() => setCommentModal(false)}
+        handleSuccess={() => setSuccessModal(true)}
+      />
+      <CommentSuccessModal open={successModal} handleClose={() => setSuccessModal(false)} />
+      <ShareModal shareableLink={shareableLink} open={shareModal} handleClose={() => setShareModal(false)} />
     </Box>
   );
 };
