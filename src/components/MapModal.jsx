@@ -76,7 +76,7 @@ const MapModal = ({
                         markerRef.current.setPosition({ lat, lng });
                     }
 
-                    setBrandData((prevData) => ({
+                    setBrandData && setBrandData((prevData) => ({
                         ...prevData,
                         location: { lat, long: lng },
                         streetAddress: formattedAddress
@@ -99,7 +99,7 @@ const MapModal = ({
                     const address = data.results[0].formatted_address;
                     setStreetAddress(address);
 
-                    setBrandData((prevData) => ({
+                    setBrandData  && setBrandData((prevData) => ({
                         ...prevData,
                         address,
                         streetAddress: address
@@ -144,7 +144,7 @@ const MapModal = ({
                     marker.setPosition({ lat, lng });
                     fetchAddressFromCoordinates(lat, lng);
 
-                    setBrandData((prevData) => ({
+                    setBrandData && setBrandData((prevData) => ({
                         ...prevData,
                         location: { lat, long: lng },
                     }));
@@ -195,8 +195,8 @@ const MapModal = ({
             {suggestions.length > 0 && (
                 <Box sx={{ maxHeight: 200, overflowY: 'auto', position: 'absolute', zIndex: 1, width: '100%', backgroundColor: 'white', border: '1px solid #ddd' }}>
                     <List>
-                        {suggestions.map((suggestion) => (
-                            <ListItem button key={suggestion.place_id} onClick={() => handleSelectPlace(suggestion)} sx={{ cursor: "pointer" }}>
+                        {suggestions.map((suggestion, index) => (
+                            <ListItem component={"button"} key={index} onClick={() => handleSelectPlace(suggestion)} sx={{ cursor: "pointer", backgroundColor:"white" }}>
                                 <ListItemText primary={suggestion.description} />
                             </ListItem>
                         ))}
