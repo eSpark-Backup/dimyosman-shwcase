@@ -222,10 +222,10 @@ const SpaceDetails = () => {
                 ],
               },
             },
-            {
-              label: "Reviews",
-              props: null,
-            },
+            // {
+            //   label: "Reviews",
+            //   props: null,
+            // },
           ],
         }
         dispatch(updateSpace([updatedSpace]));

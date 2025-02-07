@@ -78,10 +78,10 @@ const EventDetails = () => {
               label: "Stats",
               props: null,
             },
-            {
-              label: "Reviews",
-              props: null,
-            },
+            // {
+            //   label: "Reviews",
+            //   props: null,
+            // },
           ],
         };
 

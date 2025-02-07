@@ -238,7 +238,7 @@ const EditEvent = () => {
 
     const tabs = [
         { label: "Details", component: <></> },
-        { label: "Reviews", component: <></> },
+        // { label: "Reviews", component: <></> },
     ];
 
     const [reviews, setReviews] = useState(eventReviews);

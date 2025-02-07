@@ -65,7 +65,7 @@ const BrandDetails = () => {
             followes: data?.data?.followedCount,
             saved: data?.data?.likedCount,
           },
-          rating: 5,
+          rating: 0,
           ratingBased: "Based on 12345 reviews from 12345 Events",
           tabs: [
             {
@@ -95,10 +95,10 @@ const BrandDetails = () => {
               label: "Stats",
               props: null,
             },
-            {
-              label: "Reviews",
-              props: null,
-            },
+            // {
+            //   label: "Reviews",
+            //   props: null,
+            // },
           ],
         };
 
