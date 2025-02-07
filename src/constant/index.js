@@ -56,6 +56,7 @@ import {
   followingBrandColumns,
   likedBrandColumns,
   myBrandColumns,
+  myDraftBrandColumns,
 } from "../columns/brand";
 import {
   likedEventColumns,
@@ -712,7 +713,7 @@ export const likedSpaceData = [
   },
 ];
 
-export const brandTableData = (gotoDetail, handleAction, myBrandData, myBrandData2, likeLoading, savedId) => [
+export const brandTableData = (gotoDetail, handleAction, myBrandData, myBrandData2, likeLoading, savedId, myBrandData3) => [
   {
     data: myBrandData,
     column: myBrandColumns(gotoDetail, (item) => handleAction(item, "edit")),
@@ -728,6 +729,10 @@ export const brandTableData = (gotoDetail, handleAction, myBrandData, myBrandDat
     column: likedBrandColumns(likeLoading, savedId, gotoDetail, (item) =>
       handleAction(item, "remove")
     ),
+  },
+  {
+    data: myBrandData3,
+    column: myDraftBrandColumns(gotoDetail, (item) => handleAction(item, "edit")),
   },
 ];
 

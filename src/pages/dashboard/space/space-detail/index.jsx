@@ -44,7 +44,7 @@ const SpaceDetails = () => {
           category: data?.data?.spaceCategory,
           details: {
             by: data?.data?.user?.name,
-            saved: "789k",
+            saved: data?.data?.likedCount,
           },
           rating: 5,
           ratingBased: "Based on 12345 reviews from 12345 Leases",

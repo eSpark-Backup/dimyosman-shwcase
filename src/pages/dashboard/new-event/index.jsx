@@ -75,7 +75,12 @@ const NewEvent = () => {
     const editorRef = useRef(null);
     const quillRef = useRef(null);
 
-    const options = brandData?.data?.groupedBrands?.draftBrands?.map((brand) => ({
+    // console.log(brandData?.data?.groupedBrands)
+
+    const options = [
+        ...(brandData?.data?.groupedBrands?.draftBrands || []),
+        ...(brandData?.data?.groupedBrands?.publishedBrands || [])
+    ].map((brand) => ({
         label: brand.brandName,
         value: brand.id,
         item: brand,

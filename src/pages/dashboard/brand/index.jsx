@@ -41,6 +41,16 @@ const Brand = () => {
       icon: like,
       error: "You don't currently have saved brand."
     },
+    {
+      label: "Drafted Brands",
+      icon: null,
+      error: "You don't currently have any draft brand."
+    },
+    {
+      label: "Archived Brands",
+      icon: null,
+      error: "You don't currently have any Archive brand."
+    },
   ];
   const [page, setPage] = useState(1);
   const [savedId, setSavedId] = useState(null);
@@ -76,6 +86,16 @@ const Brand = () => {
     }
   );
 
+  const { data: data3, isError: isError3, isLoading: isLoading3, isSuccess: isSuccess3, error: error3, isFetching: isFetching3 } =
+    useGetAllBrandsQuery(
+      { page, pageSize: 7 },
+      {
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true,
+        skip: activeTab !== 3,
+      }
+    );
+
   const [likeFunc, { isLoading: likeLoading }] = useAddInFavouritesMutation();
 
 
@@ -103,13 +123,14 @@ const Brand = () => {
   };
   const [myBrandData, setMyBrandData] = useState([]);
   const [myBrandData2, setMyBrandData2] = useState([]);
+  const [myBrandData3, setMyBrandData3] = useState([]);
   const { data, isError, isLoading, isSuccess, error, isFetching } =
     useGetAllBrandsQuery(
       { page, pageSize: 7 },
       {
         refetchOnMountOrArgChange: true,
         refetchOnFocus: true,
-        skip: activeTab !== 0,
+        skip: activeTab === 1 || activeTab === 2,
       }
     );
 
@@ -188,6 +209,12 @@ const Brand = () => {
       );
       setHasShownErrorToast(false);
     }
+    if (isSuccess3) {
+      setMyBrandData3(
+        transformBrandData(data3?.data?.groupedBrands?.draftBrands || [])
+      );
+      setHasShownErrorToast(false);
+    }
   }, [
     isError,
     isError2,
@@ -199,13 +226,17 @@ const Brand = () => {
     page,
     data,
     data2,
+    isError,
+    error3,
+    data3,
+    isError3,
   ]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
 
-  if (isLoading2 || isLoading || isFetching2 || isFetching) {
+  if (isLoading2 || isLoading || isFetching2 || isFetching || isLoading3 || isFetching3) {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />
@@ -252,17 +283,17 @@ const Brand = () => {
           handleChange={handleChange}
           handleAdd={handleAdd}
         />
-        {brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2)[activeTab].data
-          .length > 0 ? (
+        {brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2, myBrandData3)[activeTab]?.data
+          ?.length > 0 ? (
           <DynamicTable
             isLoading={isLoading || isFetching}
             data={
-              brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2)[activeTab]
-                .data
+              brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2, myBrandData3)[activeTab]
+                ?.data
             }
             columns={
-              brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2, likeLoading, savedId)[activeTab]
-                .column
+              brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2, likeLoading, savedId, myBrandData3)[activeTab]
+                ?.column
             }
             total={data && data?.data?.pagination?.totalItems}
             handlePageChange={handlePageChange}
