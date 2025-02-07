@@ -75,6 +75,15 @@ export function getCookie(name) {
 export function deleteCookie(name) {
   document.cookie = `${name}=; Max-Age=-1; path=/`;
 }
+
+export const deleteAllCookiesExcept = (exceptions = []) => {
+  document.cookie.split(";").forEach((cookie) => {
+    const name = cookie.split("=")[0].trim();
+    if (!exceptions.includes(name)) {
+      deleteCookie(name);
+    }
+  });
+};
 // FOR PICKER
 export const addEmoji = (
   emoji,
@@ -307,7 +316,7 @@ export const keysForBrandsSapcesEvents = (object, type) => {
     object?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
 
   const coverObject = {
-    profileId: 2,
+    profileId: object?.brand?.id,
     shareableLink: object?.shareableLink,
     isFavourite: object?.isFavourite,
     id: object?.id,

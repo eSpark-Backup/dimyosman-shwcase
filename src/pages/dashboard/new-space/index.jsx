@@ -93,12 +93,30 @@ const NewSpace = () => {
 
 
     // Functions
-    const HandleMainImageChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const updatedCover = [...spaceData.cover];
-            updatedCover[currentIndex] = file;
-            setSpaceData((prev) => ({ ...prev, cover: updatedCover }));
+    const handleMainImageChange = (files) => {
+        if (files.length > 0) {
+            if(spaceData.cover.length === 0) {
+                setSpaceData((prev) => ({ ...prev, cover: files }));
+            }
+            if(spaceData.cover.length === 1) {
+                const updatedCover = [...spaceData.cover];
+                updatedCover[1] = files[0];
+                files?.length > 1 ? updatedCover[2] = files[1] : null;
+                setSpaceData((prev) => ({ ...prev, cover: updatedCover }));
+                const nextIndex = spaceData.cover.length;
+                if (nextIndex < 3) {
+                    setCurrentIndex(nextIndex);
+                }
+            }
+            if(spaceData.cover.length === 2) {
+                const updatedCover = [...spaceData.cover];
+                updatedCover[2] = files[0];
+                setSpaceData((prev) => ({ ...prev, cover: updatedCover }));
+                const nextIndex = spaceData.cover.length;
+                if (nextIndex < 3) {
+                    setCurrentIndex(nextIndex);
+                }
+            }
         }
     };
 
@@ -438,7 +456,7 @@ const NewSpace = () => {
                     Archive
                 </LoadingButton>
             </Box>
-            <FullWidthImgInput activity={"space"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={spaceIcon} editImage={spaceData.cover[currentIndex] ? URL.createObjectURL(spaceData.cover[currentIndex]) : null} handleAdd={handleAddImage}
+            <FullWidthImgInput activity={"space"} HandleChange={handleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={spaceIcon} cover={spaceData.cover} editImage={spaceData.cover[currentIndex] ? URL.createObjectURL(spaceData.cover[currentIndex]) : null} handleAdd={handleAddImage}
                 handleRemove={handleRemoveImage}
                 currentIndex={currentIndex}
                 HandleSlideChange={HandleSlideChange}

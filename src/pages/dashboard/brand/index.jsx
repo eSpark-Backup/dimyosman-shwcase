@@ -107,13 +107,25 @@ const Brand = () => {
     } else if (type === "unfollow") {
       setFollowId(item?.id);
       await follow({ entityId: item?.id, entityType: item?.type?.toUpperCase() }).unwrap();
+      toast.success(`You Unfollowed ${item?.brandName}`);
       refetch3();
       setFollowId(null);
     } else if (type === "remove") {
       setSavedId(item?.id);
-      await likeFunc({ entityId: item?.id, entityType: item?.type?.toUpperCase() }).unwrap();
-      refetch();
-      setSavedId(null);
+      likeFunc({
+        entityId: item?.id,
+        entityType: item?.type?.toUpperCase(),
+      }).then((res) => {
+        if (res?.data?.status) {
+          toast.success(
+            res?.data?.message
+              .replace("Entity", "Post")
+              .replace(" successfully", "")
+          );
+          refetch();
+          setSavedId(null);
+        }
+      });
     }
   };
 
@@ -132,7 +144,7 @@ const Brand = () => {
       {
         refetchOnMountOrArgChange: true,
         refetchOnFocus: true,
-        skip: activeTab !== 0,
+        skip: activeTab === 1 || activeTab === 2,
       }
     );
 
@@ -206,7 +218,7 @@ const Brand = () => {
 
     if (isSuccess) {
       setMyBrandData(
-        transformBrandData(data?.data?.groupedBrands?.publishedBrands || [])
+        transformBrandData(data?.data?.groupedBrands?.allBrands || [])
       );
       setHasShownErrorToast(false);
     }
