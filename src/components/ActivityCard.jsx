@@ -181,7 +181,8 @@ const ActivityCard = ({
                     style={{
                       width: "100%",
                       height: "100%",
-                      objectFit: "cover",
+                      objectFit: "cover",                      
+                      borderRadius: "5px",
                     }}
                   />
                 </figure>
@@ -209,8 +210,8 @@ const ActivityCard = ({
                 width: "16px",
                 height: "16px",
                 position: "absolute",
-                bottom: "0px",
-                right: "0px",
+                bottom: "3px",
+                right: "1px",
                 borderRadius: "5px",
                 display: "flex",
                 justifyContent: "center",
@@ -413,7 +414,7 @@ const ActivityCard = ({
               <img
                 src={activityImage}
                 alt=""
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                style={{ width: "100%", height: "100%", objectFit: "cover",borderRadius:"5px" }}
               />
               <Box
                 sx={{

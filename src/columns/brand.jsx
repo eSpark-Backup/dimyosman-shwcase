@@ -30,7 +30,7 @@ const myBrandColumns = (gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="brand-image">
                   <img
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "5px" }}
                     src={item?.brandImg}
                     alt="brand-img"
                   />
@@ -152,7 +152,7 @@ const followingBrandColumns = (followLoading, followId, gotoDetail, handleAction
 
                 <figure style={{ width: "100%", height: "100%" }} role="brand-icon">
                   <img
-                    style={{ width: "100%", height: "100%", objectFit: "cover"  }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "5px" }}
                     src={item?.brandImg}
                     alt="brand-img"
                   />
@@ -241,7 +241,7 @@ const likedBrandColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="brand-image">
                   <img
-                    style={{ width: "100%", height: "100%", objectFit: "cover"  }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "5px" }}
                     src={item?.brandImg}
                     alt="brand-img"
                   />
