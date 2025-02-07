@@ -32,3 +32,5 @@
 [31m{"level":"error","message":"UserController :: addToFavourites :: ER_DATA_TOO_LONG: Data too long for column 'spaceId' at row 1","timestamp":"2025-01-31 01:01:48"}[39m
 [31m{"level":"error","message":"UserController :: addToFavourites :: ER_DATA_TOO_LONG: Data too long for column 'spaceId' at row 1","timestamp":"2025-01-31 01:02:00"}[39m
 [31m{"level":"error","message":"UserController :: getFavourites :: Relation with property path brandId in entity was not found.","timestamp":"2025-01-31 01:09:41"}[39m
+[31m{"level":"error","message":"GeneralController :: Get Shared Entity :: Cannot set headers after they are sent to the client","timestamp":"2025-02-06 22:31:39"}[39m
+[31m{"level":"error","message":"GeneralController :: Get Shared Entity :: Cannot set headers after they are sent to the client","timestamp":"2025-02-06 22:32:41"}[39m

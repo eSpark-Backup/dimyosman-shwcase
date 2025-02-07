@@ -296,6 +296,12 @@ let receiverEvent;
       if (!existingBrand) {
         return next(res.status(404).json({ message: "Brand not found" }));
       }
+      if(existingBrand.status==BrandStatus.ARCHIVE && status== BrandStatus.PUBLISH){
+        throw new ApiError(
+          "You cannot publish an archived brand, first draft it",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
       const checkName = await this.brandRepo.findOne({ where: { brandName } });
       if (checkName && checkName.brandName !== existingBrand.brandName) {
         throw new ApiError(
@@ -493,50 +499,7 @@ let receiverEvent;
         }, "event_rsvp")
 
         .getRawAndEntities();
-        const { entities: rsvpEvents, raw } = singleEvent;
-        const totalEventsCount=rsvpEvents.length;
-
-          const brandEvents = rsvpEvents.map((rsvp, index) => {
-                  const rawData = raw[index];
-                  parseCoverImages(rsvp);
-                  parseCoverImages(rsvp.brand);
-                  parseCoverImages(rsvp.space);
-                  let event_rsvp;
-                  if (rawData.event_rsvp) {
-                    event_rsvp = JSON.parse(rawData.event_rsvp);
-                  }
-                  const eventDate =
-                    rsvp.eventDate &&
-                    (rsvp.eventDate as [{ startDate: string; endDate: string }]);
-        
-                  if (eventDate) {
-                    const currentDate = new Date();
-        
-                    let eventStatus = "Ended";
-                    if (currentDate < new Date(eventDate[0].startDate)) {
-                      eventStatus = "Upcoming";
-                    } else if (
-                      currentDate >= new Date(eventDate[0].startDate) &&
-                      currentDate <= new Date(eventDate[0].endDate)
-                    ) {
-                      eventStatus = "Ongoing";
-                    }
-        
-                    return {
-                      ...rsvp,
-                      rsvpCount: Number(rawData.event_rsvpCount) || 0,
-                      event_rsvp,
-                      eventStatus,
-                    };
-                  }
-        
-                  return {
-                    ...rsvp,
-                    event_rsvp,
-                    rsvpCount: Number(rawData.event_rsvpCount) || 0,
-                  };
-                });
-
+   
 
 
 
@@ -582,6 +545,53 @@ let receiverEvent;
             .andWhere("brand.id = :brandId", { brandId: singleBrand.id })
             .getCount()
           ])
+
+
+          const { entities: rsvpEvents, raw } = singleEvent;
+          const totalEventsCount=rsvpEvents.length;
+  
+            const brandEvents = rsvpEvents.map((rsvp, index) => {
+                    const rawData = raw[index];
+                    parseCoverImages(rsvp);
+                    parseCoverImages(rsvp.brand);
+                    parseCoverImages(rsvp.space);
+                    let event_rsvp;
+                    if (rawData.event_rsvp) {
+                      event_rsvp = JSON.parse(rawData.event_rsvp);
+                    }
+                    const eventDate =
+                      rsvp.eventDate &&
+                      (rsvp.eventDate as [{ startDate: string; endDate: string }]);
+          
+                    if (eventDate) {
+                      const currentDate = new Date();
+          
+                      let eventStatus = "Ended";
+                      if (currentDate < new Date(eventDate[0].startDate)) {
+                        eventStatus = "Upcoming";
+                      } else if (
+                        currentDate >= new Date(eventDate[0].startDate) &&
+                        currentDate <= new Date(eventDate[0].endDate)
+                      ) {
+                        eventStatus = "Ongoing";
+                      }
+          
+                      return {
+                        ...rsvp,
+                        rsvpCount: Number(rawData.event_rsvpCount) || 0,
+                        event_rsvp,
+                        eventStatus,
+                      };
+                    }
+          
+                    return {
+                      ...rsvp,
+                      event_rsvp,
+                      rsvpCount: Number(rawData.event_rsvpCount) || 0,
+                    };
+                  });
+  
+
 
         const isFavourite = savedEntities ? true : false;
         const isFollowed = followedEntities ? true : false;
@@ -632,6 +642,7 @@ let receiverEvent;
         archivedBrands: brands.filter(
           (brand) => brand.status === BrandStatus.ARCHIVE
         ),
+        allBrands: brands,
         totalItems,
       };
 
