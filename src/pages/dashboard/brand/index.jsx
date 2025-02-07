@@ -107,13 +107,25 @@ const Brand = () => {
     } else if (type === "unfollow") {
       setFollowId(item?.id);
       await follow({ entityId: item?.id, entityType: item?.type?.toUpperCase() }).unwrap();
+      toast.success(`You unfollowed ${item?.brandName}`);
       refetch3();
       setFollowId(null);
     } else if (type === "remove") {
       setSavedId(item?.id);
-      await likeFunc({ entityId: item?.id, entityType: item?.type?.toUpperCase() }).unwrap();
-      refetch();
-      setSavedId(null);
+      likeFunc({
+        entityId: item?.id,
+        entityType: item?.type?.toUpperCase(),
+      }).then((res) => {
+        if (res?.data?.status) {
+          toast.success(
+            res?.data?.message
+              .replace("Entity", "Post")
+              .replace(" successfully", "")
+          );
+          refetch();
+          setSavedId(null);
+        }
+      });
     }
   };
 
