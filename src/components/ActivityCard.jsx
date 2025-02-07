@@ -235,9 +235,11 @@ const ActivityCard = ({
           </Box>
           <Box
             onClick={
-              id && userRole === "brand"
+              activityId
                 ? () => {
-                    navigate(`/${userRole}/${id}`);
+                    navigate(`/${activity}/${activityId}`, {
+                      state: search ? { other: true } : null,
+                    });
                     handleNavigation();
                   }
                 : () => {}
