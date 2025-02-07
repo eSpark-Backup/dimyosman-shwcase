@@ -624,6 +624,7 @@ export class GeneralController {
         .leftJoinAndSelect("event.space", "space")
         .leftJoinAndSelect("space.brand", "spaceBrand")
         .where("event.user != :userId", { userId: req.user?.id })
+        .andWhere("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
         .leftJoinAndSelect("event.user", "user")
         .leftJoin(
           (qb) => {
@@ -666,12 +667,14 @@ export class GeneralController {
         .createQueryBuilder("brand")
         .leftJoinAndSelect("brand.user", "user")
         .where("brand.user != :userId", { userId: req.user?.id })
+        .andWhere("brand.status = :STATUS", { STATUS: BRAND_STATUS.PUBLISH })
         .orderBy("brand.createdAt", "DESC")
         .getManyAndCount();
       let [spaces] = await this.spaceRepo
         .createQueryBuilder("space")
         .leftJoinAndSelect("space.brand", "brand")
         .where("space.user != :userId", { userId: req.user?.id })
+        .andWhere("space.status = :STATUS", { STATUS: SPACE_STATUS.PUBLISH })
         .leftJoinAndSelect("space.user", "user")
         .orderBy("space.createdAt", "DESC")
         .getManyAndCount();

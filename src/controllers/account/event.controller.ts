@@ -3,6 +3,7 @@ import {
   ActionType,
   Brand,
   Events,
+  EventStatus,
   LeaseSpace,
   RSVP,
   SavedEntity,
@@ -120,9 +121,17 @@ export class EventController {
       if (!brand) {
         throw new ApiError("Brand not found", HTTP_STATUS.NOT_FOUND);
       }
-      const space = await this.spaceRepo.findOne({ where: { id: spaceId } });
-      if (!space) {
-        throw new ApiError("Space not found", HTTP_STATUS.NOT_FOUND);
+      let space = null;
+      if (spaceId) {
+        space = await this.spaceRepo.findOne({ where: { id: spaceId } });
+        if (!space) {
+          throw new ApiError("Space not found", HTTP_STATUS.NOT_FOUND);
+        }
+      } else if (!spaceId && status == EventStatus.PUBLISH) {
+        throw new ApiError(
+          "Space is required for Publishing an Event",
+          HTTP_STATUS.BAD_REQUEST
+        );
       }
 
       const newEvent = new Events();
@@ -132,7 +141,7 @@ export class EventController {
       newEvent.status = status;
       newEvent.user = user as User;
       newEvent.brand = brand as Brand;
-      newEvent.space = space as Spaces;
+      newEvent.space = (space as Spaces) || null;
       newEvent.leaseSpace = (leaseSpace as LeaseSpace) || null;
       newEvent.eventDate = eventDate;
       newEvent.coverImages = JSON.stringify(coverUrls) as Object;
@@ -196,10 +205,35 @@ export class EventController {
         coverKeys,
         leaseId,
       } = req.body;
+      const existingEvent = await this.eventRepo
+        .createQueryBuilder("event")
+        .where("event.id = :id", { id })
+        .leftJoinAndSelect("event.leaseSpace", "leaseSpace")
+        .leftJoinAndSelect("leaseSpace.space", "space")
+        .getOne();
+      if (!existingEvent) {
+        return next(res.status(404).json({ message: "Event not found" }));
+      }
+      if (
+        existingEvent.status == EventStatus.ARCHIVE &&
+        status == EventStatus.PUBLISH
+      ) {
+        throw new ApiError(
+          "You can't publish an archived event, first draft it",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
 
-      const space = await this.spaceRepo.findOne({ where: { id: spaceId } });
-      if (!space) {
-        throw new ApiError("Space not found", HTTP_STATUS.NOT_FOUND);
+      let space = null;
+      if (spaceId) {
+        space = await this.spaceRepo.findOne({ where: { id: spaceId } });
+        if (!space && status == EventStatus.PUBLISH && spaceId) {
+          throw new ApiError("Space not found", HTTP_STATUS.NOT_FOUND);
+        }
+      }else if(!spaceId && status == EventStatus.PUBLISH){
+        throw new ApiError("Space is required for Publishing an Event", HTTP_STATUS.BAD_REQUEST);
+      }else if(!spaceId && (status == EventStatus.DRAFT || status == EventStatus.ARCHIVE)){
+        existingEvent.space = null;
       }
 
       const coverFilesPath = path.join(process.cwd(), "uploads");
@@ -226,15 +260,6 @@ export class EventController {
 
       if (typeof coverKeys === "string" && !Array.isArray(coverKeys)) {
         coverKeys = coverKeys.split(",").map((item) => item.trim());
-      }
-      const existingEvent = await this.eventRepo
-        .createQueryBuilder("event")
-        .where("event.id = :id", { id })
-        .leftJoinAndSelect("event.leaseSpace", "leaseSpace")
-        .leftJoinAndSelect("leaseSpace.space", "space")
-        .getOne();
-      if (!existingEvent) {
-        return next(res.status(404).json({ message: "Event not found" }));
       }
 
       if (

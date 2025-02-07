@@ -55,7 +55,8 @@ const eventController = new EventController(
  *                 description: Id of the Brand.
  *               spaceId:
  *                 type: string
- *                 description: Id of the Space.
+ *                 description: Id of the Space
+ *                 required: false
  *               eventName:
  *                 type: string
  *                 description: Name of the event.

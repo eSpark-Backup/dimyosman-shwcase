@@ -9,6 +9,7 @@ import {
   SavedEntity,
   SavedEntityType,
   ActionType,
+  SpaceStatus,
 } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
@@ -716,6 +717,9 @@ export class SpaceController {
       const existingSpace = await this.spaceRepo.findOne({ where: { id } });
       if (!existingSpace) {
         return next(res.status(404).json({ message: "Space not found" }));
+      }
+      if(existingSpace.status==SpaceStatus.ARCHIVE && status==SpaceStatus.PUBLISH){
+        throw new ApiError("You can't publish an archived space, first draft it", HTTP_STATUS.BAD_REQUEST);
       }
       const brand = await this.brandRepo.findOne({ where: { id: brandId } });
       if (!brand) {

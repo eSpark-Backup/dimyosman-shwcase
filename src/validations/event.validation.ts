@@ -13,7 +13,7 @@ export class EventValidation {
       .required(),
     leaseId: Joi.string().optional(),
     brandId: Joi.string().required(),
-    spaceId: Joi.string().required(),
+    spaceId: Joi.string().optional(),
     eventDate: Joi.array()
       .items(
         Joi.object({

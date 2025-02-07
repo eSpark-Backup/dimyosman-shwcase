@@ -16,7 +16,7 @@ import {
   logger,
   verifyToken,
 } from "../../utils";
-import { CLOUD_FOLDERS, HTTP_STATUS } from "../../constants";
+import { CLOUD_FOLDERS, EVENT_STATUS, HTTP_STATUS } from "../../constants";
 import jwt from "jsonwebtoken";
 import { UserForChat } from "../../models";
 
@@ -680,6 +680,7 @@ export class UserController {
         this.eventsRepo
           .createQueryBuilder("events")
           .where("events.user = :userId", { userId })
+          .andWhere("events.status = :status", { status:EVENT_STATUS.PUBLISH })
           .getMany(),
         this.rsvpEventRepo
           .createQueryBuilder("rsvp")
