@@ -20,10 +20,12 @@ import { BadgeComp, SearchBar } from "../components";
 import { addIcon, chatIcon, bellIcon } from "../assets";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
+  setCookie,
   getCookie,
   removeActiveNotifications,
   removeNewInquiry,
   useClickOutside,
+  deleteAllCookiesExcept,
 } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { logout as logoutFunc } from "../store/slices/auth";
@@ -31,6 +33,7 @@ import { removeMychat } from "../store/slices/chat";
 import Notification from "../components/Notification";
 import Filters from "../components/Filters";
 import { emptyGoToMessage, emptyNotification, setFromNotification } from "../store/slices/notification";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const Header = ({ isLogin }) => {
   const getInquiryCount = getCookie("newInquiry") || 0;
@@ -53,7 +56,14 @@ const Header = ({ isLogin }) => {
   useClickOutside(profileRef, () => setOpenProfilePopup(false));
   useClickOutside(notificationRef, () => setShowNotification(false));
 
+  const { logout: logoutAuth } = useAuth0();
+
+
   const handleLogout = () => {
+    setCookie("logout", true);
+    logoutAuth({ returnTo: window.location.origin, openUrl: false });
+    deleteAllCookiesExcept(["unreadChatIds", "newNotification", "newInquiry"]);
+    
     dispatch(logoutFunc());
     dispatch(removeMychat());
     dispatch(emptyNotification());
@@ -289,7 +299,8 @@ const Header = ({ isLogin }) => {
                 <Box sx={{ width: "50px", height: "50px" }} ref={profileRef}>
                   <img
                     onClick={() => setOpenProfilePopup(true)}
-                    src={userData?.user?.profileImage}
+                    src={userData?.user?.profileImage || user}
+                    referrerPolicy="no-referrer"
                     alt="User"
                     style={{
                       cursor: "pointer",
