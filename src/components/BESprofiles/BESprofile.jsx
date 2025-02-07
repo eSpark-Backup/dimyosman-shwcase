@@ -283,7 +283,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
               </Stack>
             </Stack>
           </Stack>
-          <Stack
+          {/* <Stack
             component="section"
             direction="column"
             justifyContent="center"
@@ -328,7 +328,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
             >
               {myProfile?.ratingBased}
             </Typography>
-          </Stack>
+          </Stack> */}
         </Stack>
         <OutlinedTabs tabs={myProfile?.tabs} />
       </Box>

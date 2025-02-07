@@ -7,6 +7,7 @@ import { updateBrands } from "../../../../store/slices/brand";
 import { brandMain } from "../../../../assets";
 import { Box, LinearProgress } from "@mui/material";
 import { fetchAddressFromCoordinates } from "../../../../utils";
+import dayjs from "dayjs";
 
 const BrandDetails = () => {
   const params = useParams()
@@ -26,6 +27,29 @@ const BrandDetails = () => {
           );
         }
 
+        const eventData = data?.data?.brandEvents?.map((item) => ({
+          slides: [item?.coverImages?.[0]?.url],
+          profileName: item?.eventName,
+          category: item?.eventCategory?.map(category => category.name) || [],
+          id: item?.id,
+          status: item?.eventStatus,
+          tabs: [
+            {
+              props: {
+                details: {
+                  overview: item?.details?.description || null
+                }
+              }
+            }
+          ],
+          details: {
+            by: data?.data?.brandName,
+            starting: dayjs.utc(item?.eventDate?.[0]?.startDate).add(1, "day").startOf("day").local().format("DD.MM.YYYY"),
+            RSVP: item?.rsvpCount
+          }
+        }));
+
+
         const brandData = {
           shareableLink: data?.data?.shareableLink,
           isFollowed: data?.data?.isFollowed,
@@ -38,12 +62,12 @@ const BrandDetails = () => {
           profileName: data?.data?.brandName,
           category: data?.data?.brandCategory,
           details: {
-            by: "Emily Thompson",
-            events: "1234",
-            followes: "234566",
-            saved: "789k",
+            by: data?.data?.user?.name,
+            events: data?.data?.totalEventsCount,
+            followes: data?.data?.followedCount,
+            saved: data?.data?.likedCount,
           },
-          rating: 5,
+          rating: 0,
           ratingBased: "Based on 12345 reviews from 12345 Events",
           tabs: [
             {
@@ -65,16 +89,18 @@ const BrandDetails = () => {
             },
             {
               label: "Events",
-              props: null,
+              props: {
+                eventData
+              },
             },
             {
               label: "Stats",
               props: null,
             },
-            {
-              label: "Reviews",
-              props: null,
-            },
+            // {
+            //   label: "Reviews",
+            //   props: null,
+            // },
           ],
         };
 

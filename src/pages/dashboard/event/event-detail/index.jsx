@@ -38,10 +38,10 @@ const EventDetails = () => {
           profileName: data?.data?.eventName,
           category: data?.data?.eventCategory || [],
           details: {
-            by: "EcoLux Designs",
-            starting: dayjs(data?.data?.eventDate[0]?.startDate).add(1, 'day').format("DD.MM.YYYY"),
-            RSVP: "234566",
-            saved: "789k",
+            by: data?.data?.brand?.brandName,
+            starting: dayjs(data?.data?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
+            RSVP: data?.data?.rsvpCount,
+            saved: data?.data?.likedCount,
           },
           rating: 5,
           ratingBased: "Based on 12345 reviews from 12345 Events",
@@ -79,10 +79,10 @@ const EventDetails = () => {
               label: "Stats",
               props: null,
             },
-            {
-              label: "Reviews",
-              props: null,
-            },
+            // {
+            //   label: "Reviews",
+            //   props: null,
+            // },
           ],
         };
 

@@ -45,7 +45,7 @@ const SpaceDetails = () => {
           category: data?.data?.spaceCategory,
           details: {
             by: data?.data?.user?.name,
-            saved: "789k",
+            saved: data?.data?.likedCount,
           },
           rating: 5,
           ratingBased: "Based on 12345 reviews from 12345 Leases",
@@ -80,10 +80,10 @@ const SpaceDetails = () => {
               label: "Tenancy",
               props: data?.data?.tenantSpaceDetail?.length > 0 ? { tenancy: data?.data?.tenantSpaceDetail } : false,
             },
-            {
-              label: "Reviews",
-              props: null,
-            },
+            // {
+            //   label: "Reviews",
+            //   props: null,
+            // },
           ],
         }
         dispatch(updateSpace([updatedSpace]));

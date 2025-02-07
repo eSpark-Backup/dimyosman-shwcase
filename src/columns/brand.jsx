@@ -302,4 +302,6 @@ const likedBrandColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
   ];
 };
 
+
+
 export { myBrandColumns, followingBrandColumns, likedBrandColumns };

@@ -234,12 +234,11 @@ const EditEvent = () => {
 
             }
         }
-        console.log(eventData)
     }, [spaceData, eventData, eventData?.space])
 
     const tabs = [
         { label: "Details", component: <></> },
-        { label: "Reviews", component: <></> },
+        // { label: "Reviews", component: <></> },
     ];
 
     const [reviews, setReviews] = useState(eventReviews);

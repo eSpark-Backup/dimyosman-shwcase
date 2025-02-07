@@ -144,7 +144,7 @@ const Brand = () => {
       {
         refetchOnMountOrArgChange: true,
         refetchOnFocus: true,
-        skip: activeTab !== 0,
+        skip: activeTab === 1 || activeTab === 2,
       }
     );
 
@@ -218,7 +218,7 @@ const Brand = () => {
 
     if (isSuccess) {
       setMyBrandData(
-        transformBrandData(data?.data?.groupedBrands?.publishedBrands || [])
+        transformBrandData(data?.data?.groupedBrands?.allBrands || [])
       );
       setHasShownErrorToast(false);
     }
