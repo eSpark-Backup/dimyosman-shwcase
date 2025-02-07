@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import Input from './input';
 import { Box, Button, IconButton, InputAdornment, Typography, useTheme, List, ListItem, ListItemText } from '@mui/material';
 import { locationIcon, mapMarker, mapMarkerBrand, mapMarkerSpace } from '../assets';
+import { useGetGeneralLocationQuery } from '../services/general';
 
 const MapModal = ({
     value, setValue, addressLine, address, handleClose, buttonVal, initialPosition, setBrandData, instructionValue, setInstructionValue, disabled, activity
@@ -12,40 +13,57 @@ const MapModal = ({
     const [map, setMap] = useState(null);
     const [streetAddress, setStreetAddress] = useState(address);
     const theme = useTheme();
+    const [isSelecting, setIsSelecting] = useState(false);
 
     const [position, setPosition] = useState(initialPosition);
     const [suggestions, setSuggestions] = useState([]);
     const autocompleteService = useRef(null); // Persistent reference for AutocompleteService
+    const { data, error } = useGetGeneralLocationQuery({ query: value }, {
+        skip: !value || value.length < 3 || isSelecting,
+    });
+
 
     useEffect(() => {
         if (!window.google || !window.google.maps || !window.google.maps.places) return;
         autocompleteService.current = new google.maps.places.AutocompleteService();
     }, []);
 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (mapRef.current && !mapRef.current.contains(event.target)) {
+                setSuggestions([]);
+            }
+        };
+
+        document.addEventListener("click", handleClickOutside);
+        return () => {
+            document.removeEventListener("click", handleClickOutside);
+        };
+    }, []);
+
+
     const handleSearch = (e) => {
         if (disabled) return;
-        const query = e.target.value;
-        setValue(query);
+        setIsSelecting(false)
+        setValue(e.target.value);
+    };
 
-        if (query.length >= 3 && autocompleteService.current) {
-            autocompleteService.current.getPlacePredictions({ input: query }, (predictions, status) => {
-                if (status === google.maps.places.PlacesServiceStatus.OK) {
-                    setSuggestions(predictions || []);
-                } else {
-                    setSuggestions([]);
-                }
-            });
+    useEffect(() => {
+        if (data?.status && data?.data) {
+            setSuggestions(data.data);
         } else {
             setSuggestions([]);
         }
-    };
+    }, [data]);
 
     const handleSelectPlace = (place) => {
+        console.log(place)
         setValue(place.description);
         setSuggestions([]);
+        setIsSelecting(true);
 
         // Fetch details for selected place
-        fetch(`https://maps.googleapis.com/maps/api/geocode/json?place_id=${place.place_id}&key=${apiKey}`)
+        fetch(`https://maps.googleapis.com/maps/api/geocode/json?place_id=${place.placeId}&key=${apiKey}`)
             .then((response) => response.json())
             .then((data) => {
                 if (data.results[0]) {
@@ -66,6 +84,7 @@ const MapModal = ({
 
                     if (map) map.panTo({ lat, lng });
                 }
+                setSuggestions([]);
             })
             .catch((error) => console.error("Error fetching location details:", error));
     };
@@ -149,6 +168,11 @@ const MapModal = ({
         }
     }, [position, map]);
 
+
+    useEffect(() => {
+        console.log(suggestions)
+    }, [suggestions])
+
     return (
         <Box sx={{ position: "relative" }}>
             <Input
@@ -172,7 +196,7 @@ const MapModal = ({
                 <Box sx={{ maxHeight: 200, overflowY: 'auto', position: 'absolute', zIndex: 1, width: '100%', backgroundColor: 'white', border: '1px solid #ddd' }}>
                     <List>
                         {suggestions.map((suggestion) => (
-                            <ListItem button key={suggestion.place_id} onClick={() => handleSelectPlace(suggestion)}>
+                            <ListItem button key={suggestion.place_id} onClick={() => handleSelectPlace(suggestion)} sx={{ cursor: "pointer" }}>
                                 <ListItemText primary={suggestion.description} />
                             </ListItem>
                         ))}
