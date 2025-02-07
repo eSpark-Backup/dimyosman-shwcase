@@ -28,10 +28,11 @@ const BrandDetails = () => {
         }
 
         const eventData = data?.data?.brandEvents?.map((item) => ({
-          slides: item?.coverImages?.[0]?.url,
+          slides: [item?.coverImages?.[0]?.url],
           profileName: item?.eventName,
           category: item?.eventCategory?.map(category => category.name) || [],
           id: item?.id,
+          status: item?.eventStatus,
           tabs: [
             {
               props: {
@@ -43,12 +44,10 @@ const BrandDetails = () => {
           ],
           details: {
             by: data?.data?.brandName,
-            starting: dayjs.utc(item?.eventDate?.[0]?.startDate).add(1, "day").startOf("day").local().format("DD MM YYYY"),
+            starting: dayjs.utc(item?.eventDate?.[0]?.startDate).add(1, "day").startOf("day").local().format("DD.MM.YYYY"),
             RSVP: item?.rsvpCount
           }
         }));
-
-        console.log(eventData)
 
 
         const brandData = {
@@ -88,7 +87,9 @@ const BrandDetails = () => {
             },
             {
               label: "Events",
-              props: {},
+              props: {
+                eventData
+              },
             },
             {
               label: "Stats",

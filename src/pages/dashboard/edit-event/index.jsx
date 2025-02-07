@@ -234,7 +234,6 @@ const EditEvent = () => {
 
             }
         }
-        console.log(eventData)
     }, [spaceData, eventData, eventData?.space])
 
     const tabs = [

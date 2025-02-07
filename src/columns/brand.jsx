@@ -152,7 +152,7 @@ const followingBrandColumns = (gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="brand-icon">
                   <img
-                    style={{ width: "100%", height: "100%", objectFit: "cover"  }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     src={item?.brandImg}
                     alt="brand-img"
                   />
@@ -239,7 +239,7 @@ const likedBrandColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="brand-image">
                   <img
-                    style={{ width: "100%", height: "100%", objectFit: "cover"  }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     src={item?.brandImg}
                     alt="brand-img"
                   />
@@ -300,126 +300,6 @@ const likedBrandColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
   ];
 };
 
-const myDraftBrandColumns = (gotoDetail, handleAction) => {
-  return [
-    {
-      name: "Brand Name",
-      key: "brandName",
-      component: (item) => {
-        return (
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="flex-start"
-            gap={2}
-            sx={{ cursor: "pointer" }}
-            onClick={() => gotoDetail(item)}
-          >
-            <Box
-              sx={{
-                background: "#ccd0d2",
-                borderRadius: "5px",
-                width: "32px",
-                height: "32px",
-                position: "relative",
-              }}
-            >
-              {item?.brandImg && (
 
-                <figure style={{ width: "100%", height: "100%" }} role="brand-image">
-                  <img
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    src={item?.brandImg}
-                    alt="brand-img"
-                  />
-                </figure>
-              )}
 
-              <figure style={{ width: "100%", height: "100%" }} role="brand-icon">
-                <img
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    right: 0,
-                    zIndex: 8,
-                  }}
-                  width={16}
-                  height={16}
-                  src={brandBadge}
-                  alt="brand-icon"
-                />
-              </figure>
-            </Box>
-            <Tooltip title={item?.brandName?.length > 30 ? item?.brandName : ""}>
-              <Typography
-                textAlign="left"
-                sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
-              >
-                {item?.brandName?.length > 30
-                  ? `${item?.brandName.slice(0, 29)}...`
-                  : item?.brandName}
-              </Typography>
-            </Tooltip>
-          </Stack>
-        );
-      },
-    },
-    { name: "Brand Category", key: "brandCategory" },
-    {
-      name: "Events",
-      key: "events",
-    },
-    { name: "Followers", key: "followers" },
-    { name: "Status", key: "status" },
-    {
-      name: "Col Header",
-      key: "colHeader1",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader2",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader3",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader4",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader5",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader6",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader7",
-    },
-    {
-      name: "Action",
-      key: "action",
-      component: (item) => {
-        return (
-          <Button
-            onClick={() => handleAction(item)}
-            sx={{
-              width: "56px",
-              maxHeight: "26px",
-              fontSize: "14px",
-              fontWeight: "600",
-              textTransform: "none"
-            }}
-          >
-            Edit
-          </Button>
-        );
-      },
-    },
-  ];
-};
-
-export { myBrandColumns, followingBrandColumns, likedBrandColumns, myDraftBrandColumns };
+export { myBrandColumns, followingBrandColumns, likedBrandColumns };
