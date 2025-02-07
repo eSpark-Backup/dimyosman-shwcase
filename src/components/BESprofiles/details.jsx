@@ -14,11 +14,14 @@ import { useAddRsvpDateMutation } from "../../services/events";
 import CommentModal from "../commentModal";
 import CommentSuccessModal from "../commentSuccessModal";
 import ShareModal from "../shareModal";
+import { LoadingButton } from "@mui/lab";
+import { useFollowMutation } from "../../services/follower";
 
 const Details = ({ spaceInquire, details, myProfile }) => {
-  console.log(details, myProfile)
   const [likeFunc, { isLoading }] = useAddInFavouritesMutation();
   const [likePost, setLikePost] = useState(myProfile?.isFavourite);
+  const [follow, { isLoading: followLoading }] = useFollowMutation();
+  const [followPost, setFollowPost] = useState(myProfile?.isFollowed);
   const [openMapModal, setMapModal] = useState(false);
   const { events } = useSelector((state) => state?.event);
   const { brands } = useSelector((state) => state?.brand);
@@ -414,10 +417,27 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           />
         )}
         {(!myProfile?.owned) && (
-          <Button
+          <LoadingButton
+            loading={followLoading}
+            disabled={followLoading}
             onClick={() => {
               if (myProfile?.type === "event") {
                 setOpenCalendar(2);
+              } else if (myProfile?.type === "brand") {
+                if (!followLoading) {
+                  follow({
+                    entityId: myProfile?.id,
+                    entityType: "BRAND",
+                  }).then((res) => {
+                    res?.data?.status &&
+                      toast.success(
+                        `You ${followPost ? "unfollowed" : "followed"} ${
+                          myProfile?.profileName
+                        }`
+                      );
+                    setFollowPost(!followPost);
+                  });
+                }
               } else {
                 spaceInquire ? spaceInquire(myProfile?.id) : () => { };
               }
@@ -445,11 +465,13 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               <img src={calender} alt="Calender Icon" />
             )}
             {myProfile?.type === "brand"
-              ? "Follow"
+              ? followPost
+                ? "Unfollow"
+                : "Follow"
               : myProfile?.type === "event"
                 ? "RSVP"
                 : "Inquire"}
-          </Button>
+          </LoadingButton>
         )}
       </Stack>
       {details?.expectedPoint && (
@@ -647,10 +669,27 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           />
         )}
         {(!myProfile?.owned) && (
-          <Button
+          <LoadingButton
+            loading={followLoading}
+            disabled={followLoading}
             onClick={() => {
               if (myProfile?.type === "event") {
                 setOpenCalendar(1);
+              } else if (myProfile?.type === "brand") {
+                if (!followLoading) {
+                  follow({
+                    entityId: myProfile?.id,
+                    entityType: "BRAND",
+                  }).then((res) => {
+                    res?.data?.status &&
+                      toast.success(
+                        `You ${followPost ? "unfollowed" : "followed"} ${
+                          myProfile?.profileName
+                        }`
+                      );
+                    setFollowPost(!followPost);
+                  });
+                }
               } else {
                 spaceInquire ? spaceInquire(myProfile?.id) : () => { };
               }
@@ -678,11 +717,13 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               <img src={calender} alt="Calender Icon" />
             )}
             {myProfile?.type === "brand"
-              ? "Follow"
+              ? followPost
+                ? "Unfollow"
+                : "Follow"
               : myProfile?.type === "event"
                 ? "RSVP"
                 : "Inquire"}
-          </Button>
+          </LoadingButton>
         )}
       </Stack>
       <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
@@ -694,7 +735,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         handleSuccess={()  => setSuccessModal(true)}
       />
       <CommentSuccessModal open={successModal} handleClose={() => setSuccessModal(false)} />
-      <ShareModal open={shareModal} handleClose={() => setShareModal(false)} />
+      <ShareModal shareableLink={myProfile?.shareableLink} open={shareModal} handleClose={() => setShareModal(false)} />
     </Box>
   );
 };
