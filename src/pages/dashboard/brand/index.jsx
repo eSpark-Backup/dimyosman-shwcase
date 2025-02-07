@@ -11,6 +11,7 @@ import { DynamicTable, FilterationTabs } from "../../../components";
 import { brandTableData } from "../../../constant";
 import {
   addIcon,
+  brandIcon,
   brandIconlight,
   brandMain,
   eventMain,
@@ -22,6 +23,7 @@ import { useGetAllBrandsQuery } from "../../../services/brands";
 import { toast } from "react-toastify";
 import { useAddInFavouritesMutation, useGetFavouritesQuery } from "../../../services/favourite";
 import moment from "moment";
+import { useFollowMutation, useGetFollowBrandsQuery } from "../../../services/follower";
 
 const Brand = () => {
   const tabs = [
@@ -43,6 +45,7 @@ const Brand = () => {
   ];
   const [page, setPage] = useState(1);
   const [savedId, setSavedId] = useState(null);
+  const [followId, setFollowId] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
@@ -75,8 +78,25 @@ const Brand = () => {
     }
   );
 
+  const {
+    data: data3,
+    isError: isError3,
+    isLoading: isLoading3,
+    isSuccess: isSuccess3,
+    error: error3,
+    isFetching: isFetching3,
+    refetch: refetch3,
+  } = useGetFollowBrandsQuery(
+    { page, pageSize: 7, entity: "BRAND" },
+    {
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      skip: activeTab !== 1,
+    }
+  );
+
   const [likeFunc, { isLoading: likeLoading }] = useAddInFavouritesMutation();
-  
+  const [follow, { isLoading: followLoading }] = useFollowMutation();
 
   const handleAction = async (item, type) => {
     if (type === "edit") {
@@ -85,7 +105,10 @@ const Brand = () => {
         navigate(`/brand/${item?.id}/edit`);
       }
     } else if (type === "unfollow") {
-      //unfollow functionality
+      setFollowId(item?.id);
+      await follow({ entityId: item?.id, entityType: item?.type?.toUpperCase() }).unwrap();
+      refetch3();
+      setFollowId(null);
     } else if (type === "remove") {
       setSavedId(item?.id);
       await likeFunc({ entityId: item?.id, entityType: item?.type?.toUpperCase() }).unwrap();
@@ -102,6 +125,7 @@ const Brand = () => {
   };
   const [myBrandData, setMyBrandData] = useState([]);
   const [myBrandData2, setMyBrandData2] = useState([]);
+  const [myBrandData3, setMyBrandData3] = useState([]);
   const { data, isError, isLoading, isSuccess, error, isFetching } =
     useGetAllBrandsQuery(
       { page, pageSize: 7 },
@@ -116,46 +140,46 @@ const Brand = () => {
     let newData;
     type === "fav"
       ? (newData = apiData.map(({ brand, createdAt, eventsCount, followerCount }, index) => ({
-          id: brand?.id,
-          type: "brand",
-          brandName: brand.brandName || "N/A",
-          brandImg: brand.brandImage || "",
-          brandCategory:
-            brand.brandCategory && brand.brandCategory.length > 0
-              ? brand.brandCategory.map((item) => item.name).join(", ")
-              : "N/A",
-          events: eventsCount || "-",
-          followers: followerCount || "-",
-          status: brand.status || "N/A",
-          savedDate: moment(new Date(createdAt)).format("DD.MM.YYYY.") || "-",
-          colHeader1: "Table cell",
-          colHeader2: "Table cell",
-          colHeader3: "Table cell",
-          colHeader4: "Table cell",
-          colHeader5: "Table cell",
-          colHeader6: "Table cell",
-          colHeader7: "Table cell",
-        })))
+        id: brand?.id,
+        type: "brand",
+        brandName: brand.brandName || "N/A",
+        brandImg: brand.brandImage || "",
+        brandCategory:
+          brand.brandCategory && brand.brandCategory.length > 0
+            ? brand.brandCategory.map((item) => item.name).join(", ")
+            : "N/A",
+        events: eventsCount || "-",
+        followers: followerCount || "-",
+        status: brand.status || "N/A",
+        savedDate: moment(new Date(createdAt)).format("DD.MM.YYYY.") || "-",
+        colHeader1: "Table cell",
+        colHeader2: "Table cell",
+        colHeader3: "Table cell",
+        colHeader4: "Table cell",
+        colHeader5: "Table cell",
+        colHeader6: "Table cell",
+        colHeader7: "Table cell",
+      })))
       : (newData = apiData.map((brand, index) => ({
-          id: brand?.id,
-          type: "brand",
-          brandName: brand.brandName || "N/A",
-          brandImg: brand.brandImage || "",
-          brandCategory:
-            brand.brandCategory && brand.brandCategory.length > 0
-              ? brand.brandCategory.map((item) => item.name).join(", ")
-              : "N/A",
-          events: brand.events || "-",
-          followers: brand.followers || "-",
-          status: brand.status || "N/A",
-          colHeader1: "Table cell",
-          colHeader2: "Table cell",
-          colHeader3: "Table cell",
-          colHeader4: "Table cell",
-          colHeader5: "Table cell",
-          colHeader6: "Table cell",
-          colHeader7: "Table cell",
-        })));
+        id: brand?.id,
+        type: "brand",
+        brandName: brand.brandName || "N/A",
+        brandImg: brand.brandImage || "",
+        brandCategory:
+          brand.brandCategory && brand.brandCategory.length > 0
+            ? brand.brandCategory.map((item) => item.name).join(", ")
+            : "N/A",
+        events: brand.events || "-",
+        followers: brand.followers || "-",
+        status: brand.status || "N/A",
+        colHeader1: "Table cell",
+        colHeader2: "Table cell",
+        colHeader3: "Table cell",
+        colHeader4: "Table cell",
+        colHeader5: "Table cell",
+        colHeader6: "Table cell",
+        colHeader7: "Table cell",
+      })));
     return newData;
   };
 
@@ -174,6 +198,12 @@ const Brand = () => {
       setMyBrandData2([]);
     }
 
+    if (isError3 && !hasShownErrorToast) {
+      toast.error(error3?.data?.message, { toastId: "error-toast" });
+      setHasShownErrorToast(true);
+      setMyBrandData3([]);
+    }
+
     if (isSuccess) {
       setMyBrandData(
         transformBrandData(data?.data?.groupedBrands?.publishedBrands || [])
@@ -187,24 +217,35 @@ const Brand = () => {
       );
       setHasShownErrorToast(false);
     }
+
+    if (isSuccess3) {
+      setMyBrandData3(
+        transformBrandData(data3?.data?.followedEntities || [], "fav")
+      );
+      setHasShownErrorToast(false);
+    }
   }, [
     isError,
     isError2,
+    isError3,
     isSuccess,
     isSuccess2,
+    isSuccess3,
     error,
     error2,
+    error3,
     hasShownErrorToast,
     page,
     data,
     data2,
+    data3,
   ]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
 
-  if (isLoading2 || isLoading || isFetching2 || isFetching) {
+  if (isLoading2 || isLoading || isFetching2 || isFetching || isFetching3 || isLoading3) {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />
@@ -215,7 +256,34 @@ const Brand = () => {
   return (
     <Box>
       <Stack direction="row" justifyContent={{ xs: "center", sm: "flex-end" }}>
-        <img src={brandIconlight} alt="brand" />
+        <Box
+          sx={{
+            cursor: "pointer",
+            background: "rgba(196, 119, 127, 0.2)",
+            width: "48px",
+            height: "48px",
+            borderRadius: "5px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <figure
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            role="space-icon"
+          >
+            <img
+              src={brandIcon}
+              alt=""
+            />
+          </figure>
+        </Box>
       </Stack>
       <Card sx={{ marginY: 2 }}>
         <FilterationTabs
@@ -224,16 +292,16 @@ const Brand = () => {
           handleChange={handleChange}
           handleAdd={handleAdd}
         />
-        {brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2)[activeTab].data
+        {brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2, myBrandData3)[activeTab].data
           .length > 0 ? (
           <DynamicTable
             isLoading={isLoading || isFetching}
             data={
-              brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2)[activeTab]
+              brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2, myBrandData3)[activeTab]
                 .data
             }
             columns={
-              brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2, likeLoading, savedId)[activeTab]
+              brandTableData(gotoDetail, handleAction, myBrandData, myBrandData2, myBrandData3, likeLoading, savedId, followLoading, followId)[activeTab]
                 .column
             }
             total={data && data?.data?.pagination?.totalItems}

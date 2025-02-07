@@ -9,7 +9,7 @@ import {
 import { useEffect, useState } from "react";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { spaceTableData } from "../../../constant";
-import { addIcon, like, spaceIconLight } from "../../../assets";
+import { addIcon, like, spaceIcon, spaceIconLight } from "../../../assets";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useGetAllSpaceQuery } from "../../../services/space";
 import { toast } from "react-toastify";
@@ -530,7 +530,7 @@ const Space = () => {
             }}
             role="space-icon"
           >
-            <img src={spaceIconLight} alt="event" />
+            <img src={spaceIcon} alt="event" />
           </figure>
         </Box>
       </Stack>

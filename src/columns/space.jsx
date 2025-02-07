@@ -103,8 +103,7 @@ const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
               width: "56px",
               maxHeight: "26px",
               fontSize: "14px",
-              fontWeight: "600",
-              
+              fontWeight: "600",              
               textTransform: "none"
             }}
           >
@@ -366,6 +365,7 @@ const likedSpaceColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
               maxHeight: "26px",
               fontSize: "14px",
               fontWeight: "600",
+              textTransform: "none"
             }}
           >
             Remove

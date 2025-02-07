@@ -47,6 +47,7 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
           const category = item?.type === "brand" ? item?.brandCategory : item?.type === "event" ? item?.eventCategory : item?.spaceCategory
         
           return {
+            shareableLink: item?.shareableLink,
             profileId: item?.type === "brand" ? item?.user?.id : item?.brand?.id,
             activity: item?.type,
             id: item?.id || "",
@@ -66,6 +67,7 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
             userRole: item?.type === "brand" ? "user" : item?.type === "space" ? "brand" : "brand",
             slides: coverArray,
             isFavourite: item?.isFavourite,
+            isFollowed: item?.isFollowed,
             rsvpDates: item.event_rsvp?.attendanceDates?.rsvpDates ? item.event_rsvp?.attendanceDates?.rsvpDates?.map(item => item.dateTime) : [],
             startDate: item?.type === "event" && item?.eventDate[0]?.startDate || "",
             endDate: item?.type === "event" && item?.eventDate[0]?.endDate || "",
@@ -154,6 +156,7 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
         >
           {allActivityData?.map((item, index) => (
             <ActivityCard
+              isFollowed={item?.isFollowed}
               isFavourite={item?.isFavourite}
               key={index}
               fullItem={item}
@@ -175,6 +178,7 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
               deadline={item?.deadline}
               userRole={item?.userRole}
               slides={item?.slides}
+              shareableLink={item?.shareableLink}
               features={item?.features}
               rsvpDates={item?.rsvpDates}
               startDate={item?.startDate}

@@ -27,6 +27,7 @@ const EventDetails = () => {
           );
         }
         const updatedEvents = {
+          shareableLink: data?.data?.shareableLink,
           isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
           by: 1,
