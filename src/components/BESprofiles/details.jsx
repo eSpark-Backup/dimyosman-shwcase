@@ -11,8 +11,12 @@ import RSVPCalendar from "../rsvp-calendar";
 import dayjs from "dayjs";
 import { useClickOutside } from "../../utils";
 import { useAddRsvpDateMutation } from "../../services/events";
+import CommentModal from "../commentModal";
+import CommentSuccessModal from "../commentSuccessModal";
+import ShareModal from "../shareModal";
 
 const Details = ({ spaceInquire, details, myProfile }) => {
+  console.log(details, myProfile)
   const [likeFunc, { isLoading }] = useAddInFavouritesMutation();
   const [likePost, setLikePost] = useState(myProfile?.isFavourite);
   const [openMapModal, setMapModal] = useState(false);
@@ -43,6 +47,10 @@ const Details = ({ spaceInquire, details, myProfile }) => {
   );
 
   const [openCalendar, setOpenCalendar] = useState(false);
+  const [commentModal, setCommentModal] = useState(false);
+  const [successModal, setSuccessModal] = useState(false);
+    const [shareModal, setShareModal] = useState(false);
+  
 
   const handleOk = () => {
     const newRsvpDates = selectedDates.map((item) => {
@@ -368,6 +376,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           />
           {myProfile.type !== "space" && !myProfile?.owned && (
             <img
+              onClick={() => setCommentModal(myProfile?.id)}
               style={{ cursor: "pointer", padding: "5px" }}
               width={32}
               height={32}
@@ -376,6 +385,14 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             />
           )}
           <img
+            onClick={
+              () => setShareModal({
+                id: myProfile?.id,
+                profileName: myProfile?.profileName,
+                profileImage: myProfile?.profilePic,
+                profileType: myProfile?.type
+              })
+            }
             style={{ cursor: "pointer", padding: "5px" }}
             width={32}
             height={32}
@@ -592,6 +609,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           />
           {myProfile.type !== "space" && !myProfile?.owned && (
             <img
+              onClick={() => setCommentModal(myProfile?.id)}
               style={{ cursor: "pointer", padding: "5px" }}
               width={32}
               height={32}
@@ -600,6 +618,14 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             />
           )}
           <img
+            onClick={() =>
+              setShareModal({
+                id: myProfile?.id,
+                profileName: myProfile?.profileName,
+                profileImage: myProfile?.profilePic,
+                profileType: myProfile?.type,
+              })
+            }
             style={{ cursor: "pointer", padding: "5px" }}
             width={32}
             height={32}
@@ -662,6 +688,13 @@ const Details = ({ spaceInquire, details, myProfile }) => {
       <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
         <MapModal activity={activity === "/event" ? "event" : activity === "/brand" ? "brand" : "space"} disabled={true} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[details?.mapLocation?.lat, details?.mapLocation?.long]} instructionValue={details?.mapLocation?.additional} />
       </ReusableModal>
+      <CommentModal
+        open={commentModal}
+        handleClose={() => setCommentModal(false)}
+        handleSuccess={()  => setSuccessModal(true)}
+      />
+      <CommentSuccessModal open={successModal} handleClose={() => setSuccessModal(false)} />
+      <ShareModal open={shareModal} handleClose={() => setShareModal(false)} />
     </Box>
   );
 };
