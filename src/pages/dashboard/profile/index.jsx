@@ -39,9 +39,9 @@ const Profile = () => {
       }}
     >
       <ProfileCard
-        coverImg={profileData[0].bannerImage}
         userProfileImg={profileData[0].userImage}
         userName={profileData[0]?.name}
+        editImage={profileData[0].bannerImage}
       />
       <OutlinedTabs tabs={profileTabs} />
     </Box>

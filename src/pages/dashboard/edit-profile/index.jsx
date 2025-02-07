@@ -17,14 +17,61 @@ const EditProfile = () => {
     <h2><strong>Leading the Movement Toward Eco-Conscious Fashion</strong></h2><p>Sustainability isn’t just a trend for me—it’s at the core of everything I do. My hope is to inspire others to make more conscious choices in their wardrobes while still enjoying the luxury and elegance that fashion can bring. I love collaborating with like-minded individuals and brands, and I’m always exploring new ways to push the boundaries of what sustainable fashion can achieve.</p>
     `;
     const [brandTitle, setBrandTitle] = useState(defaultTemplate);
+    const [brandData, setBrandData] = useState({
+        cover: [],
+    });
+    const [currentIndex, setCurrentIndex] = useState(0);
 
-    const HandleMainFileInputClick = () => {
+
+    const handleMainFileInputClick = () => {
         mainImageRef.current.click();
-    }
+    };
 
-    const HandleMainImageChange = async (event) => {
-        const file = event.target.files;
-        console.log(file);
+    const handleMainImageChange = (files) => {
+        if (files.length > 0) {
+            if (brandData.cover.length === 0) {
+                setBrandData((prev) => ({ ...prev, cover: files }));
+            }
+            if (brandData.cover.length === 1) {
+                const updatedCover = [...brandData.cover];
+                updatedCover[1] = files[0];
+                files?.length > 1 ? updatedCover[2] = files[1] : null;
+                setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+                const nextIndex = brandData.cover.length;
+                if (nextIndex < 3) {
+                    setCurrentIndex(nextIndex);
+                }
+            }
+            if (brandData.cover.length === 2) {
+                const updatedCover = [...brandData.cover];
+                updatedCover[2] = files[0];
+                setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+                const nextIndex = brandData.cover.length;
+                if (nextIndex < 3) {
+                    setCurrentIndex(nextIndex);
+                }
+            }
+        }
+    };
+
+    const handleAddImage = () => {
+        const nextIndex = brandData.cover.length;
+        if (nextIndex < 3) {
+            setCurrentIndex(nextIndex);
+        }
+    };
+
+
+    const handleRemoveImage = () => {
+        const updatedCover = brandData.cover.filter((_, index) => index !== currentIndex);
+        setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+        setCurrentIndex((prev) => Math.max(0, prev - 1));
+    };
+
+    const HandleSlideChange = (index) => {
+        if (index >= 0 && index <= brandData.cover.length) {
+            setCurrentIndex(index);
+        }
     };
 
     const HandleProfileFileInputClick = () => {
@@ -85,8 +132,14 @@ const EditProfile = () => {
                 isEdit={true}
                 profileImgRef={profileImageRef}
                 mainImgRef={mainImageRef}
-                handleMainImgChange={HandleMainImageChange}
-                handleMainImgClick={HandleMainFileInputClick}
+                handleMainImgChange={handleMainImageChange}
+                HandleInputCLick={handleMainFileInputClick}
+                cover={brandData?.cover}
+                editImage={brandData.cover[currentIndex] ? URL.createObjectURL(brandData.cover[currentIndex]) : null}
+                handleAdd={handleAddImage}
+                handleRemove={handleRemoveImage}
+                currentIndex={currentIndex}
+                HandleSlideChange={HandleSlideChange}
                 handleProfileChange={HandleProfileImageChange}
                 handleProfileImgClick={HandleProfileFileInputClick}
             />

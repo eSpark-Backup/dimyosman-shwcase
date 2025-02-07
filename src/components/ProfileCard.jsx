@@ -1,12 +1,12 @@
 import { Box, Button, Typography, useTheme } from '@mui/material'
 import React, { useState } from 'react'
-import { accountIcon, brandIcon, eventMain, eventMain2, eventMain3, flag, spaceIcon, uploadIcon, user } from '../assets'
+import { accountIcon, activeItemIcon, add, brandIcon, eventMain, eventMain2, eventMain3, flag, notActiveIcon, spaceIcon, subtract, uploadIcon, user } from '../assets'
 import { profileStats } from '../constant'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ReusableModal from './Modal'
 import ImageModal from './ImageModal'
 
-const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, handleProfileChange, profileImgRef, handleMainImgChange, mainImgRef, handleMainImgClick, coverImg, userProfileImg, userName, imgUrl }) => {
+const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, handleProfileChange, profileImgRef, handleMainImgChange, mainImgRef, coverImg, userProfileImg, userName, imgUrl, editImage, cover, currentIndex, HandleSlideChange, HandleInputCLick, handleRemove }) => {
     const theme = useTheme()
     const location = useLocation()
     const navigate = useNavigate();
@@ -32,39 +32,49 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
         }
     };
 
-    const handleMainImageChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setCoverPreview(e.target.result);
-            };
-            reader.readAsDataURL(file);
+    const handleFileChange = (event) => {
+        const files = Array.from(event.target.files);
+        if (files.length + cover?.length > 3) {
+            toast.error("You can not select more than 3 images. Please first remove the selected image")
+        } else {
+            if (handleMainImgChange) {
+                handleMainImgChange(files);
+            }
         }
-        handleMainImgChange(event);
+        // Reset the file input value to allow selecting the same file again
+        if (mainImgRef && mainImgRef.current) {
+            mainImgRef.current.value = '';
+        }
     };
     return (
         <>
             <Box
                 sx={{
+                    height: "220px",
+                    borderRadius: "5px 5px 0 0",
+                    border: "1px dashed rgba(0, 20, 28, 0.4)",
+                    backgroundColor: "rgba(209, 219, 215, 0.2)",
                     position: "relative",
-                    minHeight: { xs: "400px", md: "180px" },
-                    flex: 1,
-                    backgroundImage: isEdit && coverPreview
-                        ? `linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url(${coverPreview})`
-                        : !isEdit && `url(${coverImg})`,
-                    backgroundPosition: "center",
-                    backgroundSize: "cover",
-                    backgroundRepeat: "no-repeat",
-                    backgroundColor: isEdit && "rgba(209, 219, 215, 0.2)",
-                    border: isEdit && "1px dashed rgba(0, 20, 28, 0.4)",
-                    cursor: "pointer",
-                    borderTopLeftRadius: "5px",
-                    borderTopRightRadius: "5px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    // overflow: "hidden",
                 }}
                 onClick={() => !isEdit && setShowImageModal(true)}
             >
-                {isEdit && (
+                {editImage && (
+                    <img
+                        src={editImage}
+                        alt="edit"
+                        style={{
+                            objectFit: "cover",
+                            width: "100%",
+                            height: "100%",
+                            borderRadius: "5px 5px 0 0",
+                        }}
+                    />
+                )}
+                {editImage && (
                     <Box
                         sx={{
                             position: "absolute",
@@ -72,14 +82,80 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                             left: 0,
                             width: "100%",
                             height: "100%",
-                            backgroundColor: "rgba(0, 0, 0, 0.4)",
-                            zIndex: 1,
-                            pointerEvents: "none",
-                            borderTopLeftRadius: "5px",
-                            borderTopRightRadius: "5px",
+                            backgroundColor: "rgb(185 185 185 / 40%)",
+                            borderRadius: "5px 5px 0 0",
+                            zIndex: 2,
                         }}
                     />
                 )}
+                {isEdit && <Box
+                    sx={{
+                        position: "absolute",
+                        bottom: "10px",
+                        left: "10px",
+                        display: "flex",
+                        columnGap: "20px",
+                        zIndex: 3,
+                    }}
+                >
+
+                    <img
+                        src={add}
+                        alt="Add Icon"
+                        style={{ cursor: "pointer" }}
+                        onClick={HandleInputCLick}
+                    />
+                    <img
+                        src={subtract}
+                        alt="Remove Icon"
+                        style={{ cursor: "pointer" }}
+                        onClick={handleRemove}
+                    />
+                    {Array.from({ length: cover?.length }).map((_, index) => (
+                        <img
+                            key={index}
+                            src={index === currentIndex ? activeItemIcon : notActiveIcon}
+                            alt={index === currentIndex ? "Active Icon" : "Not Active Icon"}
+                            style={{ cursor: "pointer" }}
+                            onClick={() => HandleSlideChange(index)}
+                        />
+                    ))}
+                </Box>}
+                {
+                    isEdit && <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            cursor: "pointer",
+                            zIndex: 3,
+                            position: "absolute",
+                            right: 10,
+                            bottom: 0
+                        }}
+                        onClick={HandleInputCLick}
+                    >
+                        <Typography
+                            component="label"
+                            sx={{
+                                fontSize: "14px",
+                                fontWeight: "300",
+                                color: theme.palette.primary.main,
+                                fontStyle: "italic",
+                            }}
+                        >
+                            Upload image:
+                        </Typography>
+                        <img src={uploadIcon} alt="Upload Icon" />
+                        <input
+                            type="file"
+                            style={{ display: "none" }}
+                            ref={mainImgRef}
+                            multiple
+                            accept="image/*"
+                            onChange={handleFileChange}
+                        />
+                    </Box>
+                }
                 <Button
                     sx={{
                         backgroundColor: "rgb(0, 20, 28, 0.2)",
@@ -220,7 +296,6 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                                         </figure>
                                         <input type="file" style={{ display: "none" }}
                                             ref={profileImgRef}
-                                            //  onChange={handleProfileChange}
                                             onChange={handleImageChange}
                                         />
                                     </Box>
@@ -319,49 +394,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
 
                     </Box>
                 </Box>
-                {
-                    isEdit
-                    &&
-                    <Box
-                        sx={{
-                            position: "absolute",
-                            bottom: 0,
-                            right: "20px",
-                            zIndex: 10
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                rowGap: "0px",
-                                cursor: "pointer"
-                            }}
-                            onClick={handleMainImgClick}
-                        >
-                            <Typography
-                                sx={{
-                                    fontSize: '14px',
-                                    fontWeight: "300",
-                                    color: theme.palette.primary.main,
-                                    fontStyle: "italic"
-                                }}
-                            >
-                                upload image:
-                            </Typography>
-                            <figure
-                                style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "centers" }}
-                                role="img"
 
-                            >
-                                <img src={uploadIcon} alt="Icon" />
-                            </figure>
-                            <input type="file" style={{ display: "none" }}
-                                ref={mainImgRef} onChange={handleMainImageChange}
-                            />
-                        </Box>
-                    </Box>
-                }
 
 
 
