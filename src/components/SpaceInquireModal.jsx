@@ -167,8 +167,6 @@ const SpaceInquireModal = ({
     }
   };
 
-  console.log(pricing);
-
   const handleDateChange = (newValue) => {
     if (newValue === null) {
       setSelectedDate([]);
