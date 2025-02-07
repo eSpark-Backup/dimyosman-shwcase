@@ -618,6 +618,14 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             />
           )}
           <img
+            onClick={() =>
+              setShareModal({
+                id: myProfile?.id,
+                profileName: myProfile?.profileName,
+                profileImage: myProfile?.profilePic,
+                profileType: myProfile?.type,
+              })
+            }
             style={{ cursor: "pointer", padding: "5px" }}
             width={32}
             height={32}

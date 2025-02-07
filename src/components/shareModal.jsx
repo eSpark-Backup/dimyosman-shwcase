@@ -1,13 +1,11 @@
-import { useState } from "react";
 import { toast } from "react-toastify";
 import { Box, Modal, Stack, Typography } from "@mui/material";
 import { brandBadge, close, copyIcon, eventBadge, spaceBadge } from "../assets";
 
-const ShareModal = ({ open, handleClose }) => {
-  const [url] = useState("shwcase.co/NlfVhYygR9mAQasassdsada/Share...");
+const ShareModal = ({ open, handleClose, shareableLink }) => {
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(shareableLink);
       toast.success("Copied to clipboard!");
     } catch (err) {
       toast.error("Failed to copy");
@@ -122,7 +120,7 @@ const ShareModal = ({ open, handleClose }) => {
               textOverflow: "ellipsis",
             }}
           >
-            {url}
+            {shareableLink}
           </Typography>
           <img
             onClick={handleCopy}

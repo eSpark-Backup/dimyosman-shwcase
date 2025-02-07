@@ -27,6 +27,7 @@ const BrandDetails = () => {
         }
 
         const brandData = {
+          shareableLink: data?.data?.shareableLink,
           isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
           type: "brand",

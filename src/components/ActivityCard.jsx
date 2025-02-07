@@ -38,6 +38,7 @@ const ActivityCard = ({
   userRole,
   userImage,
   mainImage,
+  shareableLink,
   activity,
   activityLocationId,
   activityName,
@@ -853,7 +854,7 @@ const ActivityCard = ({
         handleSuccess={() => setSuccessModal(true)}
       />
       <CommentSuccessModal open={successModal} handleClose={() => setSuccessModal(false)} />
-      <ShareModal open={shareModal} handleClose={() => setShareModal(false)} />
+      <ShareModal shareableLink={shareableLink} open={shareModal} handleClose={() => setShareModal(false)} />
     </Box>
   );
 };
