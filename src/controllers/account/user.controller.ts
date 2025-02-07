@@ -804,7 +804,7 @@ export class UserController {
         await this.SavedEntityRepo.remove(existingFavourite);
         res
           .status(HTTP_STATUS.OK)
-          .json(handleResponse(`Removed from Saved ${entityType} successfully`));
+          .json(handleResponse(`Removed from Saved ${entityType.charAt(0).toUpperCase() + entityType.slice(1).toLowerCase()}s successfully`));
         return next();
       }
 
@@ -821,7 +821,7 @@ export class UserController {
         .status(HTTP_STATUS.CREATED)
         .json(
           handleResponse(
-            `Added to Saved ${entityType} successfully`,
+            `Added to Saved ${entityType.charAt(0).toUpperCase() + entityType.slice(1).toLowerCase()}s successfully`,
             newFavourite
           )
         );
@@ -888,8 +888,13 @@ export class UserController {
       if (existingFavourite) {
         await this.SavedEntityRepo.remove(existingFavourite);
         res
-          .status(HTTP_STATUS.OK)
-          .json(handleResponse(`${entityType} Unfollowed successfully`));
+        .status(HTTP_STATUS.OK)
+        .json(
+          handleResponse(
+            `${entityType.charAt(0).toUpperCase() + entityType.slice(1).toLowerCase()} Unfollowed Successfully`
+          )
+        );
+      
         return next();
       }
 
@@ -908,7 +913,7 @@ export class UserController {
         .status(HTTP_STATUS.CREATED)
         .json(
           handleResponse(
-           `${entityType} Followed successfully`,
+           `${entityType.charAt(0).toUpperCase() + entityType.slice(1).toLowerCase()} Followed Successfully`,
             newFavourite
           )
         );
