@@ -107,7 +107,7 @@ const Brand = () => {
     } else if (type === "unfollow") {
       setFollowId(item?.id);
       await follow({ entityId: item?.id, entityType: item?.type?.toUpperCase() }).unwrap();
-      toast.success(`You unfollowed ${item?.brandName}`);
+      toast.success(`You Unfollowed ${item?.brandName}`);
       refetch3();
       setFollowId(null);
     } else if (type === "remove") {

@@ -431,7 +431,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   }).then((res) => {
                     res?.data?.status &&
                       toast.success(
-                        `You ${followPost ? "unfollowed" : "followed"} ${
+                        `You ${followPost ? "Unfollowed" : "Followed"} ${
                           myProfile?.profileName
                         }`
                       );
@@ -683,7 +683,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   }).then((res) => {
                     res?.data?.status &&
                       toast.success(
-                        `You ${followPost ? "unfollowed" : "followed"} ${
+                        `You ${followPost ? "Unfollowed" : "Followed"} ${
                           myProfile?.profileName
                         }`
                       );

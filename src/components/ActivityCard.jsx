@@ -848,7 +848,7 @@ const ActivityCard = ({
                     entityType: "BRAND",
                   }).then((res) => {
                     res?.data?.status &&
-                      toast.success(`You ${followPost ? "unfollowed" : "followed"} ${activityName}`);
+                      toast.success(`You ${followPost ? "Unfollowed" : "Followed"} ${activityName}`);
                       setFollowPost(!followPost);
                   });
                 }
