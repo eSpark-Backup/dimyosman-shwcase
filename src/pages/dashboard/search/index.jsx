@@ -185,6 +185,7 @@ const Search = () => {
       el?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
 
     return {
+      isFollowed: el?.isFollowed,
       shareableLink: el?.shareableLink,
       isFavourite: el?.isFavourite,
       id: el?.id,

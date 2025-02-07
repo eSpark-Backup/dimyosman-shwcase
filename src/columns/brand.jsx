@@ -124,7 +124,7 @@ const myBrandColumns = (gotoDetail, handleAction) => {
   ];
 };
 
-const followingBrandColumns = (gotoDetail, handleAction) => {
+const followingBrandColumns = (followLoading, followId, gotoDetail, handleAction) => {
   return [
     {
       name: "Brand Name",
@@ -193,7 +193,9 @@ const followingBrandColumns = (gotoDetail, handleAction) => {
       key: "action",
       component: (item) => {
         return (
-          <Button
+          <LoadingButton
+            loading={followLoading && item?.id === followId}
+            disabled={followLoading && item?.id === followId}
             onClick={() => handleAction(item)}
             sx={{
               width: "89px",
@@ -204,7 +206,7 @@ const followingBrandColumns = (gotoDetail, handleAction) => {
             }}
           >
             Unfollow
-          </Button>
+          </LoadingButton>
         );
       },
     },
