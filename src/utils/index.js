@@ -316,7 +316,7 @@ export const keysForBrandsSapcesEvents = (object, type) => {
     object?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
 
   const coverObject = {
-    profileId: 2,
+    profileId: object?.brand?.id,
     shareableLink: object?.shareableLink,
     isFavourite: object?.isFavourite,
     id: object?.id,
