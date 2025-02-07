@@ -32,8 +32,7 @@ const OutlinedTabs = ({ tabs, onTabChange }) => {
       >
         {tabs.map((tab) => {
           const active = tab.label === selectedTab.label;
-          return (
-            <Box
+          return  tab?.show === false ? null : <Box
               sx={{
                 width: { xs: "150px", md: `${100 / tabs.length}%` },
                 flexShrink: 0,
@@ -54,7 +53,6 @@ const OutlinedTabs = ({ tabs, onTabChange }) => {
             >
               <Typography fontWeight={600} fontSize={16}>{tab.label}</Typography>
             </Box>
-          );
         })}
       </Stack>
       <Box marginY={2} paddingX={2}>
