@@ -51,7 +51,7 @@ const Tenancy = ({ tenancy }) => {
             return (
               <Stack
                 key={ten?.id}
-                onClick={() => setActiveTen(index)}
+                onClick={() => setActiveTen(ten)}
                 gap={1}
                 sx={{
                   background:
@@ -75,7 +75,7 @@ const Tenancy = ({ tenancy }) => {
           })}
         </Stack>
         <Box sx={{ flex: 1, py: "16px" }}>
-          <Stack gap="20px">
+          <Stack gap="16px">
             <Typography fontSize="16px" fontWeight={600}>
               Tenancy Details
             </Typography>
@@ -97,8 +97,8 @@ const Tenancy = ({ tenancy }) => {
                 {tenancyDetails?.hostDetails?.spaceOwner}
               </Typography>
             </Typography>
-            <Typography>{tenancyDetails?.description}</Typography>
-            <Stack gap="16px">
+            <Typography>{tenancyDetails?.description || "-"}</Typography>
+            <Stack gap="10px">
               <Typography fontSize="12px">
                 Starting:{" "}
                 <Typography fontWeight={500} component="span">
