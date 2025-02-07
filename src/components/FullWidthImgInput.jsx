@@ -1,8 +1,10 @@
 import { Box, Typography, useTheme } from '@mui/material';
 import React from 'react';
 import { activeItemIcon, add, notActiveIcon, subtract, uploadIcon } from '../assets';
+import { toast } from 'react-toastify';
 
 const FullWidthImgInput = ({
+    cover,
     HandleChange,
     imageRef,
     HandleInputCLick,
@@ -17,8 +19,13 @@ const FullWidthImgInput = ({
     const theme = useTheme();
 
     const handleFileChange = (event) => {
-        if (HandleChange) {
-            HandleChange(event);
+        const files = Array.from(event.target.files);
+        if(files.length + cover?.length > 3) {
+            toast.error("You can not select more than 3 images. Please first remove the selected image")
+        } else {
+            if (HandleChange) {
+                HandleChange(files);
+            }
         }
         // Reset the file input value to allow selecting the same file again
         if (imageRef && imageRef.current) {
@@ -126,7 +133,7 @@ const FullWidthImgInput = ({
                     zIndex: 3, // Above the overlay
                 }}
             >
-                {[0, 1, 2].map((index) => (
+                {Array.from({ length : cover.length }).map((_, index) => (
                     <img
                         key={index}
                         src={index === currentIndex ? activeItemIcon : notActiveIcon}
@@ -139,7 +146,7 @@ const FullWidthImgInput = ({
                     src={add}
                     alt="Add Icon"
                     style={{ cursor: "pointer" }}
-                    onClick={handleAdd}
+                    onClick={HandleInputCLick}
                 />
                 <img
                     src={subtract}
@@ -175,6 +182,8 @@ const FullWidthImgInput = ({
                     type="file"
                     style={{ display: "none" }}
                     ref={imageRef}
+                    multiple
+                    accept="image/*"
                     onChange={handleFileChange} // Use the updated handler
                 />
             </Box>
