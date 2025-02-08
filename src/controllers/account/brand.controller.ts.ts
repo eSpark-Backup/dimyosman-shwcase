@@ -2,14 +2,21 @@ import { NextFunction, Request, RequestHandler, Response } from "express";
 import {
   ActionType,
   Brand,
-  BrandStatus, Events,
+  BrandStatus,
+  Events,
   SavedEntity,
   SavedEntityType,
   User,
 } from "../../entity";
 import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
-import { emitEvent, generateShareableLink, handleResponse, logger, parseCoverImages } from "../../utils";
+import {
+  emitEvent,
+  generateShareableLink,
+  handleResponse,
+  logger,
+  parseCoverImages,
+} from "../../utils";
 import { commonHelper } from "../../helpers";
 
 import {
@@ -36,8 +43,8 @@ export class BrandController {
     private userRepo: Repository<User>,
     private chatModel: typeof Chat,
     private notificationModel: typeof Notification,
-        private eventsRepo: Repository<Events>,
-    
+    private eventsRepo: Repository<Events>,
+
     private messageModel: typeof Message,
     private savedEntity: Repository<SavedEntity>
   ) {}
@@ -49,100 +56,111 @@ export class BrandController {
   ): Promise<void> {
     try {
       const { id } = req.params;
-      const { message,senderBrandId } = req.body;
-let receiverEvent;
+      const { message, senderBrandId } = req.body;
+      let receiverEvent;
       const receiverBrand = await this.brandRepo
         .createQueryBuilder("brand")
         .where("brand.id = :id", { id })
         .leftJoinAndSelect("brand.user", "user")
         .getOne();
 
-      
-      const senderBrand =  await this.brandRepo
-      .createQueryBuilder("brand")
-      .where("brand.id = :senderBrandId", { senderBrandId })
-      .leftJoinAndSelect("brand.user", "user")
-      .getOne();
-      if(!receiverBrand){
-        receiverEvent = await this.eventsRepo
-        .createQueryBuilder("event")
-        .where("event.id = :id", { id })
-        .leftJoinAndSelect("event.user", "user")
+      const senderBrand = await this.brandRepo
+        .createQueryBuilder("brand")
+        .where("brand.id = :senderBrandId", { senderBrandId })
+        .leftJoinAndSelect("brand.user", "user")
         .getOne();
+      if (!receiverBrand) {
+        receiverEvent = await this.eventsRepo
+          .createQueryBuilder("event")
+          .where("event.id = :id", { id })
+          .leftJoinAndSelect("event.user", "user")
+          .getOne();
 
         if (!receiverEvent) {
           res.status(200).json(handleResponse("Event/Brand not found"));
           return next();
         }
       }
-      if(receiverBrand){
-      const members = [req.user?._id, receiverBrand.user.userChatId];
+      if (receiverBrand) {
+        const members = [req.user?._id, receiverBrand.user.userChatId];
 
-      const chat = await this.chatModel.create({
-        members,
-        name: `${receiverBrand.brandName}`,
-        directChat: true,
-        senderBrand: senderBrand.id,
+        const chat = await this.chatModel.create({
+          members,
+          name: `${receiverBrand.brandName}`,
+          directChat: true,
+          senderBrand: senderBrand.id,
 
-        receiverBrand: receiverBrand.id,
-        creator: req.user?._id,
-      });
-      await this.notificationModel.create({
-        user: receiverBrand.user.userChatId,
-        title: `New message received for ${receiverBrand.brandName}`,
-        message,
-        type: "info",
-      });
-      const ChatId = chat.id.toString();
+          receiverBrand: receiverBrand.id,
+          creator: req.user?._id,
+        });
+        await this.notificationModel.create({
+          user: receiverBrand.user.userChatId,
+          title: `New message received for ${receiverBrand.brandName}`,
+          message,
+          metadata: {
+            name: `${senderBrand.brandName} sent you a message on Brand ${receiverBrand.brandName}`,  
+            senderBrandImage: senderBrand.brandImage,
+            senderBrandName: senderBrand.brandName,
+            chatId: chat.id.toString(),
+          },
+          type: "info",
+        });
+        const ChatId = chat.id.toString();
 
-      const messageForDB = {
-        content: message,
-        sender: req.user?._id,
-        chat: ChatId,
-      };
-      await this.messageModel.create(messageForDB);
+        const messageForDB = {
+          content: message,
+          sender: req.user?._id,
+          chat: ChatId,
+        };
+        await this.messageModel.create(messageForDB);
 
-      emitEvent(req, REFETCH_CHATS, members);
+        emitEvent(req, REFETCH_CHATS, members);
 
-      emitEvent(req, NEW_NOTIFICATION, [receiverBrand.user.userChatId], {
-        name: `${senderBrand.brandName} sent you a message on Brand ${receiverBrand.brandName}`,
-        senderBrandImage: senderBrand.brandImage,
-        senderBrandName: senderBrand.brandName,
-        chatId: ChatId,
-      });
-    }else if (receiverEvent){
-      const members = [req.user?._id, receiverEvent.user.userChatId];
+        emitEvent(req, NEW_NOTIFICATION, [receiverBrand.user.userChatId], {
+          name: `${senderBrand.brandName} sent you a message on Brand ${receiverBrand.brandName}`,
+          senderBrandImage: senderBrand.brandImage,
+          senderBrandName: senderBrand.brandName,
+          chatId: ChatId,
+        });
+      } else if (receiverEvent) {
+        const members = [req.user?._id, receiverEvent.user.userChatId];
 
-      const chat = await this.chatModel.create({
-        members,
-        name: `${receiverEvent.eventName}`,
-        directChat: true,
-        senderBrand: senderBrand.id,
-        receiverEvent: receiverEvent.id,
-        creator: req.user?._id,
-      });
-      await this.notificationModel.create({
-        user: receiverEvent.user.userChatId,
-        title: `New message received for ${receiverEvent.eventName}`,
-        message,
-        type: "info",
-      });
-      const ChatId = chat.id.toString();
-      const messageForDB = {
-        content: message,
-        sender: req.user?._id,
-        chat: ChatId,
-      };
-      await this.messageModel.create(messageForDB);
-      emitEvent(req, REFETCH_CHATS, members);
+        const chat = await this.chatModel.create({
+          members,
+          name: `${receiverEvent.eventName}`,
+          directChat: true,
+          senderBrand: senderBrand.id,
+          receiverEvent: receiverEvent.id,
+          creator: req.user?._id,
+        });
+        await this.notificationModel.create({
+          user: receiverEvent.user.userChatId,
+          title: `New message received for ${receiverEvent.eventName}`,
+          message,
+          metadata: {
+            name: `${senderBrand.brandName} sent you a message on Event ${receiverEvent.eventName}`,  
+            senderBrandImage: senderBrand.brandImage,
+            senderBrandName: senderBrand.brandName,
+            chatId: chat.id.toString(),
+          },
+          type: "info",
+        });
+        const ChatId = chat.id.toString();
+        const messageForDB = {
+          content: message,
+          sender: req.user?._id,
+          chat: ChatId,
+        };
+        await this.messageModel.create(messageForDB);
+        emitEvent(req, REFETCH_CHATS, members);
 
-      emitEvent(req, NEW_NOTIFICATION, [receiverEvent.user.userChatId], {
-        name: `${senderBrand.brandName} sent you a message on Event ${receiverEvent.eventName}`,
-        senderEventImage: senderBrand.brandImage,
-        senderEventName: senderBrand.brandName,
-        chatId: ChatId,
-      });
-    }
+        emitEvent(req, NEW_NOTIFICATION, [receiverEvent.user.userChatId], {
+          name: `${senderBrand.brandName} sent you a message on Event ${receiverEvent.eventName}`,
+          senderBrandImage: senderBrand.brandImage,
+          senderBrandName: senderBrand.brandName,
+          chatId: ChatId,
+        });
+      }
 
       res.status(200).json(handleResponse("Message Sent Successfully"));
       return next();
@@ -296,7 +314,10 @@ let receiverEvent;
       if (!existingBrand) {
         return next(res.status(404).json({ message: "Brand not found" }));
       }
-      if(existingBrand.status==BrandStatus.ARCHIVE && status== BrandStatus.PUBLISH){
+      if (
+        existingBrand.status == BrandStatus.ARCHIVE &&
+        status == BrandStatus.PUBLISH
+      ) {
         throw new ApiError(
           "You cannot publish an archived brand, first draft it",
           HTTP_STATUS.BAD_REQUEST
@@ -446,7 +467,7 @@ let receiverEvent;
           .createQueryBuilder("brand")
           .where("brand.id = :id", { id })
           .leftJoinAndSelect("brand.user", "user")
-         
+
           .getOne();
 
         if (!singleBrand) {
@@ -458,31 +479,31 @@ let receiverEvent;
           singleBrand.coverImages = JSON.parse(singleBrand.coverImages);
         }
         const singleEvent = await this.eventsRepo
-        .createQueryBuilder("event")
-        .leftJoinAndSelect("event.user", "user")
-      .andWhere("event.brand = :eventId", { eventId: singleBrand.id })
-        .leftJoinAndSelect("event.space", "space")
-        .leftJoinAndSelect("event.leaseSpace", "leaseSpace")
-        .leftJoinAndSelect("space.brand", "spaceBrand")
-        .leftJoin(
-          (qb) => {
-            return qb
-              .select("rsvp_sub.event", "eventId")
-              .addSelect("COUNT(rsvp_sub.id)", "rsvpCount")
-              .from("rsvp", "rsvp_sub")
-              .groupBy("rsvp_sub.event");
-          },
-          "rsvpCountSubquery",
-          "rsvpCountSubquery.eventId = event.id"
-        )
-        .addSelect(
-          "COALESCE(rsvpCountSubquery.rsvpCount, 0)",
-          "event_rsvpCount"
-        )
-        .addSelect((subQuery) => {
-          return subQuery
-            .select(
-              `COALESCE(
+          .createQueryBuilder("event")
+          .leftJoinAndSelect("event.user", "user")
+          .andWhere("event.brand = :eventId", { eventId: singleBrand.id })
+          .leftJoinAndSelect("event.space", "space")
+          .leftJoinAndSelect("event.leaseSpace", "leaseSpace")
+          .leftJoinAndSelect("space.brand", "spaceBrand")
+          .leftJoin(
+            (qb) => {
+              return qb
+                .select("rsvp_sub.event", "eventId")
+                .addSelect("COUNT(rsvp_sub.id)", "rsvpCount")
+                .from("rsvp", "rsvp_sub")
+                .groupBy("rsvp_sub.event");
+            },
+            "rsvpCountSubquery",
+            "rsvpCountSubquery.eventId = event.id"
+          )
+          .addSelect(
+            "COALESCE(rsvpCountSubquery.rsvpCount, 0)",
+            "event_rsvpCount"
+          )
+          .addSelect((subQuery) => {
+            return subQuery
+              .select(
+                `COALESCE(
                   JSON_OBJECT(
                       'id', rsvp.id,
                       'attendanceDates', rsvp.attendanceDates,
@@ -490,18 +511,15 @@ let receiverEvent;
                       'review', rsvp.review,
                       'rating', rsvp.rating
                   ), '{}')`, // Ensure null values don't break the JSON
-              "event_rsvp"
-            )
-            .from("RSVP", "rsvp")
-            .where("rsvp.event = event.id")
-            .andWhere("rsvp.user = :userId", { userId: req.user?.id })
-            .limit(1);
-        }, "event_rsvp")
+                "event_rsvp"
+              )
+              .from("RSVP", "rsvp")
+              .where("rsvp.event = event.id")
+              .andWhere("rsvp.user = :userId", { userId: req.user?.id })
+              .limit(1);
+          }, "event_rsvp")
 
-        .getRawAndEntities();
-   
-
-
+          .getRawAndEntities();
 
         const savedEntities = await this.savedEntity
           .createQueryBuilder("savedEntity")
@@ -525,73 +543,74 @@ let receiverEvent;
           .andWhere("brand.id = :brandId", { brandId: singleBrand.id })
           .getOne();
 
-          const [getFollowedCount,getLikedCount]= await Promise.all([
-            this.savedEntity
+        const [getFollowedCount, getLikedCount] = await Promise.all([
+          this.savedEntity
             .createQueryBuilder("savedEntity")
             .where("savedEntity.ActionType = :actionType", {
               actionType: ActionType.FOLLOW,
             })
-            .andWhere("savedEntity.type = :type", { type: SavedEntityType.BRAND })
+            .andWhere("savedEntity.type = :type", {
+              type: SavedEntityType.BRAND,
+            })
             .leftJoinAndSelect("savedEntity.brand", "brand")
             .andWhere("brand.id = :brandId", { brandId: singleBrand.id })
             .getCount(),
-            this.savedEntity
+          this.savedEntity
             .createQueryBuilder("savedEntity")
             .where("savedEntity.ActionType = :actionType", {
               actionType: ActionType.FAVORITE,
             })
-            .andWhere("savedEntity.type = :type", { type: SavedEntityType.BRAND })
+            .andWhere("savedEntity.type = :type", {
+              type: SavedEntityType.BRAND,
+            })
             .leftJoinAndSelect("savedEntity.brand", "brand")
             .andWhere("brand.id = :brandId", { brandId: singleBrand.id })
-            .getCount()
-          ])
+            .getCount(),
+        ]);
 
+        const { entities: rsvpEvents, raw } = singleEvent;
+        const totalEventsCount = rsvpEvents.length;
 
-          const { entities: rsvpEvents, raw } = singleEvent;
-          const totalEventsCount=rsvpEvents.length;
-  
-            const brandEvents = rsvpEvents.map((rsvp, index) => {
-                    const rawData = raw[index];
-                    parseCoverImages(rsvp);
-                    parseCoverImages(rsvp.brand);
-                    parseCoverImages(rsvp.space);
-                    let event_rsvp;
-                    if (rawData.event_rsvp) {
-                      event_rsvp = JSON.parse(rawData.event_rsvp);
-                    }
-                    const eventDate =
-                      rsvp.eventDate &&
-                      (rsvp.eventDate as [{ startDate: string; endDate: string }]);
-          
-                    if (eventDate) {
-                      const currentDate = new Date();
-          
-                      let eventStatus = "Ended";
-                      if (currentDate < new Date(eventDate[0].startDate)) {
-                        eventStatus = "Upcoming";
-                      } else if (
-                        currentDate >= new Date(eventDate[0].startDate) &&
-                        currentDate <= new Date(eventDate[0].endDate)
-                      ) {
-                        eventStatus = "Ongoing";
-                      }
-          
-                      return {
-                        ...rsvp,
-                        rsvpCount: Number(rawData.event_rsvpCount) || 0,
-                        event_rsvp,
-                        eventStatus,
-                      };
-                    }
-          
-                    return {
-                      ...rsvp,
-                      event_rsvp,
-                      rsvpCount: Number(rawData.event_rsvpCount) || 0,
-                    };
-                  });
-  
+        const brandEvents = rsvpEvents.map((rsvp, index) => {
+          const rawData = raw[index];
+          parseCoverImages(rsvp);
+          parseCoverImages(rsvp.brand);
+          parseCoverImages(rsvp.space);
+          let event_rsvp;
+          if (rawData.event_rsvp) {
+            event_rsvp = JSON.parse(rawData.event_rsvp);
+          }
+          const eventDate =
+            rsvp.eventDate &&
+            (rsvp.eventDate as [{ startDate: string; endDate: string }]);
 
+          if (eventDate) {
+            const currentDate = new Date();
+
+            let eventStatus = "Ended";
+            if (currentDate < new Date(eventDate[0].startDate)) {
+              eventStatus = "Upcoming";
+            } else if (
+              currentDate >= new Date(eventDate[0].startDate) &&
+              currentDate <= new Date(eventDate[0].endDate)
+            ) {
+              eventStatus = "Ongoing";
+            }
+
+            return {
+              ...rsvp,
+              rsvpCount: Number(rawData.event_rsvpCount) || 0,
+              event_rsvp,
+              eventStatus,
+            };
+          }
+
+          return {
+            ...rsvp,
+            event_rsvp,
+            rsvpCount: Number(rawData.event_rsvpCount) || 0,
+          };
+        });
 
         const isFavourite = savedEntities ? true : false;
         const isFollowed = followedEntities ? true : false;
@@ -599,9 +618,12 @@ let receiverEvent;
         const brand = {
           brandEvents,
           ...singleBrand,
-          followedCount:getFollowedCount,
-          shareableLink: generateShareableLink({ id: singleBrand.id, type: "brand" }),
-          likedCount:getLikedCount,
+          followedCount: getFollowedCount,
+          shareableLink: generateShareableLink({
+            id: singleBrand.id,
+            type: "brand",
+          }),
+          likedCount: getLikedCount,
           totalEventsCount,
           isFavourite,
           isFollowed,
