@@ -84,6 +84,12 @@ export const deleteAllCookiesExcept = (exceptions = []) => {
     }
   });
 };
+
+export const logoutAuthUtils = (logoutAuth) => {
+  logoutAuth({ returnTo: window.location.origin, openUrl: false });
+  deleteAllCookiesExcept(["unreadChatIds", "newNotification", "newInquiry"]);
+}
+
 // FOR PICKER
 export const addEmoji = (
   emoji,

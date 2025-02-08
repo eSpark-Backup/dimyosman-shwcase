@@ -30,6 +30,8 @@ import { useVerifyTokenQuery } from './services/auth';
 import { useSelector } from 'react-redux';
 import Search from './pages/dashboard/search';
 import SharedPage from './layout/sharePage';
+import { useAuth0 } from '@auth0/auth0-react';
+import { logoutAuthUtils } from './utils';
 
 function App() {
   const { pathname } = useLocation();
@@ -37,12 +39,15 @@ function App() {
   const token = window.localStorage.getItem("token");
 
   const { data, isLoading, isError, isFetching } = useVerifyTokenQuery(undefined, { skip: !token });
+  const { logout } = useAuth0();
+
 
   useEffect(() => {
     if (!token) {
 
       window.localStorage.removeItem("token");
       if (pathname !== "/auth" && pathname !== "/forgot-password" && pathname !== "/reset-password" && pathname !== "/share") {
+        logoutAuthUtils(logout)
         navigate("/auth?type=login");
       }
     } else if (pathname === "/auth") {
@@ -55,6 +60,7 @@ function App() {
     if (isError) {
 
       window.localStorage.removeItem("token");
+      logoutAuthUtils(logout)
       navigate("/auth?type=login");
     }
   }, [isError, navigate]);

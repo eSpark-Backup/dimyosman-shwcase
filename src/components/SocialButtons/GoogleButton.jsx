@@ -7,6 +7,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { Button } from "@mui/material";
 
 import { google } from "../../assets";
+
 import { deleteCookie, getCookie, setCookie } from "../../utils";
 
 const GoogleButton = ({
@@ -55,13 +56,11 @@ const GoogleButton = ({
       setAuthLoading(true);
       await loginWithPopup({
         connection: "google-oauth2",
-        provider: "google-oauth2",
+        authorizationParams: {
+          prompt: "login",
+        },
       });
-
-      if (isAuthenticated) {
-        setAuthLoading(false);
-      }
-    } catch (error) {
+    } finally {
       setAuthLoading(false);
     }
   };

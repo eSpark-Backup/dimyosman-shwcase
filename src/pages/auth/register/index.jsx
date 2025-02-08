@@ -14,7 +14,7 @@ import { logout as logoutFunc } from '../../../store/slices/auth';
 import { removeMychat } from '../../../store/slices/chat';
 import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
 import GoogleButton from "../../../components/SocialButtons/GoogleButton";
-import { deleteAllCookiesExcept, deleteCookie, getCookie } from "../../../utils";
+import { deleteAllCookiesExcept, deleteCookie, getCookie, logoutAuthUtils } from "../../../utils";
 
 const AUTH0_APP_DOMAIN = import.meta.env.VITE_AUTH0_APP_DOMAIN;
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_AUTH0_GOOGLE_APP_CLIENT_ID;
@@ -34,8 +34,7 @@ const Register = () => {
 
   useEffect(() => {
     if (logoutSession && socialType) {
-      logout({ returnTo: window.location.origin, openUrl: false });
-      deleteAllCookiesExcept(["unreadChatIds", "newNotification", "newInquiry"]);
+        logoutAuthUtils(logout)
 
       setTimeout(() => {
         deleteCookie("logout");
