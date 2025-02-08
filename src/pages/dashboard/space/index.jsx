@@ -435,12 +435,20 @@ const Space = () => {
   const handleAction = async (item, type) => {
     if (type === "remove") {
       setSavedId(item?.spaceId);
-      await likeFunc({
+      likeFunc({
         entityId: item?.spaceId,
         entityType: item?.type?.toUpperCase(),
-      }).unwrap();
-      refetch2();
-      setSavedId(null);
+      }).then((res) => {
+        if (res?.data?.status) {
+          toast.success(
+            res?.data?.message
+              .replace("Entity", "Post")
+              .replace(" successfully", "")
+          );
+          refetch2();
+          setSavedId(null);
+        }
+      });
       return;
     }
     const findLeaseDetails = (type, itemId) => {

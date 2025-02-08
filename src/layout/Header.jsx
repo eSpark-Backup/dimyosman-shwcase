@@ -130,7 +130,7 @@ const Header = ({ isLogin }) => {
       img: space,
       hoverImg: spaceHover,
       title: "Space",
-      // func: () => handleNavigate("/new-space"),
+      func: () => handleNavigate("/new-space"),
     },
   ];
 

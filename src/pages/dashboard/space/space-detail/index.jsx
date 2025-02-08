@@ -45,7 +45,7 @@ const SpaceDetails = () => {
           category: data?.data?.spaceCategory,
           details: {
             by: data?.data?.user?.name,
-            saved: "789k",
+            saved: data?.data?.likedCount,
           },
           rating: 5,
           ratingBased: "Based on 12345 reviews from 12345 Leases",
@@ -77,156 +77,13 @@ const SpaceDetails = () => {
               props: null,
             },
             {
-              label: "Teenacy",
-              props: {
-                teenacy: [
-                  {
-                    tenat: "EcoLux Designs",
-                    event: "Ecolux Chic Pop-Up",
-                    by: "Emily Thompson",
-                    message:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed cursus ante dapibus diam. Sed nisi.",
-                    starting: "28.02.2025.",
-                    ending: "15.04.2025.",
-                    leaseAmount: 2000,
-                  },
-                  {
-                    tenat: "EcoLux Designs",
-                    event: "Ecolux Chic Pop-Up",
-                    by: "Emily Thompson",
-                    message:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed cursus ante dapibus diam. Sed nisi.",
-                    starting: "28.02.2025.",
-                    ending: "15.04.2025.",
-                    leaseAmount: 2000,
-                  },
-                  {
-                    tenat: "EcoLux Designs",
-                    event: "Ecolux Chic Pop-Up",
-                    by: "Emily Thompson",
-                    message:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed cursus ante dapibus diam. Sed nisi.",
-                    starting: "28.02.2025.",
-                    ending: "15.04.2025.",
-                    leaseAmount: 2000,
-                  },
-                  {
-                    tenat: "EcoLux Designs",
-                    event: "Ecolux Chic Pop-Up",
-                    by: "Emily Thompson",
-                    message:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed cursus ante dapibus diam. Sed nisi.",
-                    starting: "28.02.2025.",
-                    ending: "15.04.2025.",
-                    leaseAmount: 2000,
-                  },
-                  {
-                    tenat: "EcoLux Designs",
-                    event: "Ecolux Chic Pop-Up",
-                    by: "Emily Thompson",
-                    message:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed cursus ante dapibus diam. Sed nisi.",
-                    starting: "28.02.2025.",
-                    ending: "15.04.2025.",
-                    leaseAmount: 2000,
-                  },
-                  {
-                    tenat: "EcoLux Designs",
-                    event: "Ecolux Chic Pop-Up",
-                    by: "Emily Thompson",
-                    message:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed cursus ante dapibus diam. Sed nisi.",
-                    starting: "28.02.2025.",
-                    ending: "15.04.2025.",
-                    leaseAmount: 2000,
-                  },
-                  {
-                    tenat: "EcoLux Designs",
-                    event: "Ecolux Chic Pop-Up",
-                    by: "Emily Thompson",
-                    message:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed cursus ante dapibus diam. Sed nisi.",
-                    starting: "28.02.2025.",
-                    ending: "15.04.2025.",
-                    leaseAmount: 2000,
-                  },
-                  {
-                    tenat: "EcoLux Designs",
-                    event: "Ecolux Chic Pop-Up",
-                    by: "Emily Thompson",
-                    message:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed cursus ante dapibus diam. Sed nisi.",
-                    starting: "28.02.2025.",
-                    ending: "15.04.2025.",
-                    leaseAmount: 2000,
-                  },
-                  {
-                    tenat: "EcoLux Designs",
-                    event: "Ecolux Chic Pop-Up",
-                    by: "Emily Thompson",
-                    message:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed cursus ante dapibus diam. Sed nisi.",
-                    starting: "28.02.2025.",
-                    ending: "15.04.2025.",
-                    leaseAmount: 2000,
-                  },
-                  {
-                    tenat: "EcoLux Designs",
-                    event: "Ecolux Chic Pop-Up",
-                    by: "Emily Thompson",
-                    message:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed cursus ante dapibus diam. Sed nisi.",
-                    starting: "28.02.2025.",
-                    ending: "15.04.2025.",
-                    leaseAmount: 2000,
-                  },
-                  {
-                    tenat: "EcoLux Designs",
-                    event: "Ecolux Chic Pop-Up",
-                    by: "Emily Thompson",
-                    message:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed cursus ante dapibus diam. Sed nisi.",
-                    starting: "28.02.2025.",
-                    ending: "15.04.2025.",
-                    leaseAmount: 2000,
-                  },
-                  {
-                    tenat: "EcoLux Designs",
-                    event: "Ecolux Chic Pop-Up",
-                    by: "Emily Thompson",
-                    message:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed cursus ante dapibus diam. Sed nisi.",
-                    starting: "28.02.2025.",
-                    ending: "15.04.2025.",
-                    leaseAmount: 2000,
-                  },
-                  {
-                    tenat: "EcoLux Designs",
-                    event: "Ecolux Chic Pop-Up",
-                    by: "Emily Thompson",
-                    message:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed cursus ante dapibus diam. Sed nisi.",
-                    starting: "28.02.2025.",
-                    ending: "15.04.2025.",
-                    leaseAmount: 2000,
-                  },
-                  {
-                    tenat: "EcoLux Designs",
-                    event: "Ecolux Chic Pop-Up",
-                    by: "Emily Thompson",
-                    message:
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed cursus ante dapibus diam. Sed nisi.",
-                    starting: "28.02.2025.",
-                    ending: "15.04.2025.",
-                    leaseAmount: 2000,
-                  },
-                ],
-              },
+              label: "Tenancy",
+              props: data?.data?.tenantSpaceDetail?.length > 0 ? { tenancy: data?.data?.tenantSpaceDetail } : false,
             },
-            {
-              label: "Reviews",
-              props: null,
-            },
+            // {
+            //   label: "Reviews",
+            //   props: null,
+            // },
           ],
         }
         dispatch(updateSpace([updatedSpace]));

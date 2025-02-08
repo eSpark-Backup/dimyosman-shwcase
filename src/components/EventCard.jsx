@@ -3,11 +3,11 @@ import { Box, Button, Typography, useTheme } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 
 const EventCard = ({ edit, onClick, event, showBtn }) => {
-    const theme = useTheme()
-    const navigate = useNavigate()
+  const theme = useTheme()
+  const navigate = useNavigate()
   return (
     <Box
-      onClick={onClick ? onClick : () => {}}
+      onClick={onClick ? onClick : () => { }}
       sx={{
         width: "100%",
         borderRadius: "5px",
@@ -26,7 +26,7 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
         <img
           style={{ borderRadius: "5px 5px 0 0 " }}
           width="100%"
-          height="100%"
+          height="170px"
           src={event?.slides[0]}
           alt="event-img"
         />
@@ -44,7 +44,7 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
           {event?.category}
         </Typography>
         <Typography textAlign="left" fontWeight={400} fontSize={12}>
-          {event?.tabs[0]?.props?.details?.overview[0]}
+          {event?.tabs[0]?.props?.details?.overview?.length > 636 ? event?.tabs[0]?.props?.details?.overview?.slice(0, 637) + "..." : event?.tabs[0]?.props?.details?.overview}
         </Typography>
         <Typography fontWeight={300} fontSize={12} textAlign="left">
           By: <span style={{ fontWeight: 400 }}>{event?.details?.by}</span>
