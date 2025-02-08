@@ -2,7 +2,7 @@ import { Router } from "express";
 import Joi from "joi";
 import { AuthValidation, UserValidation, validate } from "../../validations";
 import { UserController } from "../../controllers/account";
-import { Events, RSVP, SavedEntity, User } from "../../entity";
+import { Brand, Events, RSVP, SavedEntity, Spaces, User } from "../../entity";
 import { getRepository } from "typeorm";
 import { AppDataSource } from "../../typeorm.config";
 import {
@@ -18,11 +18,17 @@ import { parseJsonFields } from "../../utils";
 const router = Router();
 const userRepository = AppDataSource.getRepository(User);
 const eventRepository = AppDataSource.getRepository(Events);
+const spaceRepository = AppDataSource.getRepository(Spaces);
+const brandRepository = AppDataSource.getRepository(Brand);
+
 const savedEntityRepo = AppDataSource.getRepository(SavedEntity);
+
 const rsvpRepo = AppDataSource.getRepository(RSVP);
 const userController = new UserController(
   userRepository,
   eventRepository,
+  spaceRepository,
+  brandRepository,
   Notification,
   savedEntityRepo,
   rsvpRepo

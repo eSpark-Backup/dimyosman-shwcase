@@ -1,10 +1,12 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import {
   ActionType,
+  Brand,
   Events,
   RSVP,
   SavedEntity,
   SavedEntityType,
+  Spaces,
   User,
 } from "../../entity";
 import { ApiError } from "../../errors";
@@ -16,7 +18,13 @@ import {
   logger,
   verifyToken,
 } from "../../utils";
-import { CLOUD_FOLDERS, EVENT_STATUS, HTTP_STATUS } from "../../constants";
+import {
+  BRAND_STATUS,
+  CLOUD_FOLDERS,
+  EVENT_STATUS,
+  HTTP_STATUS,
+  SPACE_STATUS,
+} from "../../constants";
 import jwt from "jsonwebtoken";
 import { UserForChat } from "../../models";
 
@@ -37,10 +45,11 @@ export class UserController {
   constructor(
     private usersRepo: Repository<User>,
     private eventsRepo: Repository<Events>,
+    private spaceRepo: Repository<Spaces>,
+    private brandRepo: Repository<Brand>,
     private notificationModel: typeof Notification,
     private SavedEntityRepo: Repository<SavedEntity>,
-    private rsvpEventRepo: Repository<RSVP>,
-
+    private rsvpEventRepo: Repository<RSVP>
   ) {}
 
   async verifyTokenAPI(
@@ -239,8 +248,6 @@ export class UserController {
         .readdirSync(path.join(imageFilesPath))
         .filter((file) => file.startsWith("image")); // Filter for image files
 
-    
-
       const imageFileObjects: IFileObject[] = imageFiles.map((file) =>
         commonHelper.createFileObject(path.join(imageFilesPath, file), "image")
       );
@@ -260,9 +267,7 @@ export class UserController {
       const FolderName = `${CLOUD_FOLDERS.USER}/${user.name.trim()}`;
       if (typeof user.coverImages === "string") {
         try {
-          oldCoverImages = JSON.parse(
-            user.coverImages
-          ) as UploadResult[];
+          oldCoverImages = JSON.parse(user.coverImages) as UploadResult[];
         } catch (error) {
           logger.error("Failed to parse coverImages:", error);
           oldCoverImages = [];
@@ -321,7 +326,6 @@ export class UserController {
         }
       }
 
-
       const oldUserImage = user.profileImage;
       const imageUrls = (
         imageFileObjects?.length > 0
@@ -339,11 +343,13 @@ export class UserController {
       }
       user.profileImage = imageUrls[0]?.url;
       user.imageKey = imageUrls[0]?.public_id;
-      user.about =about || user.about;
-      user.coverImages = JSON.stringify(coverUrls) as Object 
+      user.about = about || user.about;
+      user.coverImages = JSON.stringify(coverUrls) as Object;
       await this.usersRepo.save(user);
       const { password: _, ...userProfile } = user;
-      userProfile.coverImages = JSON.parse(userProfile.coverImages as Object as string);
+      userProfile.coverImages = JSON.parse(
+        userProfile.coverImages as Object as string
+      );
 
       const chatUser = await UserForChat.findById(req.user?._id);
       chatUser.avatar = imageUrls[0]?.url;
@@ -481,9 +487,34 @@ export class UserController {
         throw new ApiError("User profile not found", HTTP_STATUS.NOT_FOUND);
       }
 
-      const { password: _, ...userProfile } = user;
-      userProfile.coverImages = JSON.parse(userProfile.coverImages as Object as string);
+      const [getBrandsCount, getEventsCount, getSpacesCount] =
+        await Promise.all([
+          this.brandRepo
+            .createQueryBuilder("brand")
+            .where("brand.status = :status", { status: BRAND_STATUS.PUBLISH })
+            .andWhere("brand.user = :userId", { userId })
+            .getCount(),
+          this.eventsRepo
+            .createQueryBuilder("event")
+            .where("event.status = :status", { status: EVENT_STATUS.PUBLISH })
+            .andWhere("event.user = :userId", { userId })
+            .getCount(),
+          this.spaceRepo
+            .createQueryBuilder("space")
+            .where("space.status = :status", { status: SPACE_STATUS.PUBLISH })
+            .andWhere("space.user = :userId", { userId })
+            .getCount(),
+        ]);
 
+        const { password: _, ...userProfile } = user as User & { brandsCount?: number; eventsCount?: number; spacesCount?: number };
+
+      userProfile.coverImages = JSON.parse(
+        userProfile.coverImages as Object as string
+      );
+      
+      userProfile.brandsCount = getBrandsCount;
+      userProfile.eventsCount = getEventsCount;
+      userProfile.spacesCount = getSpacesCount;
       res
         .status(HTTP_STATUS.OK)
         .json(
@@ -540,14 +571,16 @@ export class UserController {
         .skip(skipNumber)
         .take(takeNumber)
         .getManyAndCount();
-        
 
-        if (entity == "BRAND") {
-          const brandIds = savedEntities.map((entity) => entity.brand?.id).filter(Boolean);
-        
-          if (brandIds.length > 0) {
+      if (entity == "BRAND") {
+        const brandIds = savedEntities
+          .map((entity) => entity.brand?.id)
+          .filter(Boolean);
 
-            const followers = await this.SavedEntityRepo.createQueryBuilder("savedEntity")
+        if (brandIds.length > 0) {
+          const followers = await this.SavedEntityRepo.createQueryBuilder(
+            "savedEntity"
+          )
             .where("savedEntity.brand IN (:...brandIds)", { brandIds })
             .andWhere("savedEntity.actionType = :actionType", {
               actionType: ActionType.FOLLOW,
@@ -557,35 +590,45 @@ export class UserController {
             .addSelect("COUNT(savedEntity.id)", "followerCount")
             .getRawMany();
 
-            const brandFollowerCountMap = new Map();
-            followers.forEach((follower) => {
-              brandFollowerCountMap.set(follower.brandId, parseInt(follower.followerCount, 10));
-            });
+          const brandFollowerCountMap = new Map();
+          followers.forEach((follower) => {
+            brandFollowerCountMap.set(
+              follower.brandId,
+              parseInt(follower.followerCount, 10)
+            );
+          });
 
-            const brandEventsCount = await this.eventsRepo
-              .createQueryBuilder("event")
-              .select("event.brand")
-              .addSelect("COUNT(event.id)", "eventCount")
-              .where("event.brand IN (:...brandIds)", { brandIds })
-              .groupBy("event.brand")
-              .getRawMany();
-        
-            const brandEventCountMap = new Map();
-            brandEventsCount.forEach((eventCount) => {
-              brandEventCountMap.set(eventCount.brand, parseInt(eventCount.eventCount, 10));
-            });
-        
-            savedEntities.forEach((entity) => {
-              if (entity.brand && brandEventCountMap.has(entity.brand.id)) {
-                (entity as any).eventsCount = brandEventCountMap.get(entity.brand.id);
-              }
+          const brandEventsCount = await this.eventsRepo
+            .createQueryBuilder("event")
+            .select("event.brand")
+            .addSelect("COUNT(event.id)", "eventCount")
+            .where("event.brand IN (:...brandIds)", { brandIds })
+            .groupBy("event.brand")
+            .getRawMany();
 
-              if (brandFollowerCountMap.has(entity.brand.id)) {
-                (entity as any).followerCount = brandFollowerCountMap.get(entity.brand.id);
-              }
-            });
-          }
+          const brandEventCountMap = new Map();
+          brandEventsCount.forEach((eventCount) => {
+            brandEventCountMap.set(
+              eventCount.brand,
+              parseInt(eventCount.eventCount, 10)
+            );
+          });
+
+          savedEntities.forEach((entity) => {
+            if (entity.brand && brandEventCountMap.has(entity.brand.id)) {
+              (entity as any).eventsCount = brandEventCountMap.get(
+                entity.brand.id
+              );
+            }
+
+            if (brandFollowerCountMap.has(entity.brand.id)) {
+              (entity as any).followerCount = brandFollowerCountMap.get(
+                entity.brand.id
+              );
+            }
+          });
         }
+      }
 
       res.status(HTTP_STATUS.OK).json(
         handleResponse("Favourites retrieved successfully", {
@@ -680,7 +723,7 @@ export class UserController {
         this.eventsRepo
           .createQueryBuilder("events")
           .where("events.user = :userId", { userId })
-          .andWhere("events.status = :status", { status:EVENT_STATUS.PUBLISH })
+          .andWhere("events.status = :status", { status: EVENT_STATUS.PUBLISH })
           .getMany(),
         this.rsvpEventRepo
           .createQueryBuilder("rsvp")
@@ -778,7 +821,6 @@ export class UserController {
           },
           relations: ["event"],
         });
-
       } else if (entityType === SavedEntityType.SPACE) {
         existingFavourite = await this.SavedEntityRepo.findOne({
           where: {
@@ -805,7 +847,14 @@ export class UserController {
         await this.SavedEntityRepo.remove(existingFavourite);
         res
           .status(HTTP_STATUS.OK)
-          .json(handleResponse(`Removed from Saved ${entityType.charAt(0).toUpperCase() + entityType.slice(1).toLowerCase()}s successfully`));
+          .json(
+            handleResponse(
+              `Removed from Saved ${
+                entityType.charAt(0).toUpperCase() +
+                entityType.slice(1).toLowerCase()
+              }s successfully`
+            )
+          );
         return next();
       }
 
@@ -813,7 +862,7 @@ export class UserController {
         user: { id: userId },
         type: entityType,
         actionType: ActionType.FAVORITE,
-        [entityType.toLowerCase()]: { id: entityId }, 
+        [entityType.toLowerCase()]: { id: entityId },
       });
 
       await this.SavedEntityRepo.save(newFavourite);
@@ -822,7 +871,10 @@ export class UserController {
         .status(HTTP_STATUS.CREATED)
         .json(
           handleResponse(
-            `Added to Saved ${entityType.charAt(0).toUpperCase() + entityType.slice(1).toLowerCase()}s successfully`,
+            `Added to Saved ${
+              entityType.charAt(0).toUpperCase() +
+              entityType.slice(1).toLowerCase()
+            }s successfully`,
             newFavourite
           )
         );
@@ -889,13 +941,16 @@ export class UserController {
       if (existingFavourite) {
         await this.SavedEntityRepo.remove(existingFavourite);
         res
-        .status(HTTP_STATUS.OK)
-        .json(
-          handleResponse(
-            `${entityType.charAt(0).toUpperCase() + entityType.slice(1).toLowerCase()} Unfollowed Successfully`
-          )
-        );
-      
+          .status(HTTP_STATUS.OK)
+          .json(
+            handleResponse(
+              `${
+                entityType.charAt(0).toUpperCase() +
+                entityType.slice(1).toLowerCase()
+              } Unfollowed Successfully`
+            )
+          );
+
         return next();
       }
 
@@ -914,7 +969,10 @@ export class UserController {
         .status(HTTP_STATUS.CREATED)
         .json(
           handleResponse(
-           `${entityType.charAt(0).toUpperCase() + entityType.slice(1).toLowerCase()} Followed Successfully`,
+            `${
+              entityType.charAt(0).toUpperCase() +
+              entityType.slice(1).toLowerCase()
+            } Followed Successfully`,
             newFavourite
           )
         );
