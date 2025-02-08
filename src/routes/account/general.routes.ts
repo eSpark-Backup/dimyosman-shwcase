@@ -24,6 +24,7 @@ import { IFileRequest } from "../../interfaces";
 import { Chat, Message, Notification, UserForChat } from "../../models";
 
 const router = Router();
+
 const spaceRepository = AppDataSource.getRepository(Spaces);
 const userRepository = AppDataSource.getRepository(User);
 const brandRepository = AppDataSource.getRepository(Brand);
@@ -575,6 +576,61 @@ router.post
   (req, res, next) => generalController.getSuggestion(req, res, next)
 );
 
+
+
+/**
+ * @swagger
+ * /general/getUserPublicProfile/{id}:
+ *   get:
+ *     summary: Get authenticated user's profile
+ *     description: This endpoint retrieves the profile details of the authenticated user.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - General
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Id of the User.
+ *         schema:
+ *           type: string
+ *           example: House 13
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   description: User ID.
+ *                 username:
+ *                   type: string
+ *                   description: Username of the user.
+ *                 email:
+ *                   type: string
+ *                   description: Email of the user.
+ *                 fullName:
+ *                   type: string
+ *                   description: Full name of the user.
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                   description: User account creation date.
+ *       404:
+ *         description: User profile not found.
+ *       500:
+ *         description: Server error.
+ */
+router.get
+("/getUserPublicProfile/:id",
+  checkJwt,
+  validateRoles([ROLES.USER]),
+  (req, res, next) => generalController.getPublicUserProfile(req, res, next)
+)
 
 
 
