@@ -25,7 +25,7 @@ import {
   removeActiveNotifications,
   removeNewInquiry,
   useClickOutside,
-  deleteAllCookiesExcept,
+  logoutAuthUtils,
 } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { logout as logoutFunc } from "../store/slices/auth";
@@ -61,8 +61,7 @@ const Header = ({ isLogin }) => {
 
   const handleLogout = () => {
     setCookie("logout", true);
-    logoutAuth({ returnTo: window.location.origin, openUrl: false });
-    deleteAllCookiesExcept(["unreadChatIds", "newNotification", "newInquiry"]);
+    logoutAuthUtils(logoutAuth)
     
     dispatch(logoutFunc());
     dispatch(removeMychat());
