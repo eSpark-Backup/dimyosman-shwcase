@@ -207,6 +207,7 @@ const generalController = new GeneralController(
  *       500:
  *         description: Server error.
  */
+
 router.get(
   "/search/:id?",
   checkJwt,
@@ -580,7 +581,7 @@ router.post
 
 /**
  * @swagger
- * /general/getUserPublicProfile/{id}:
+ * /general/public/profile/{id}:
  *   get:
  *     summary: Get authenticated user's profile
  *     description: This endpoint retrieves the profile details of the authenticated user.
@@ -626,13 +627,144 @@ router.post
  *         description: Server error.
  */
 router.get
-("/getUserPublicProfile/:id",
+("/public/profile/:id",
   checkJwt,
   validateRoles([ROLES.USER]),
   (req, res, next) => generalController.getPublicUserProfile(req, res, next)
 )
 
 
+/**
+ * @swagger
+ * /general/public/entity/profile/{id}:
+ *   get:
+ *     summary: Get a specific space by ID or all spaces for the authenticated user
+ *     description: This endpoint retrieves a specific space by its ID (if provided) or all spaces associated with the authenticated user. Pagination is supported for retrieving multiple spaces.
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - General
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Id of User to Fetch Entities
+ *         schema:
+ *           type: string
+ *           example: 1123123
+ *       - in: query
+ *         name: pageSize
+ *         required: false
+ *         description: Number of items per page (for paginated results).
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         description: Page number to retrieve (for paginated results).
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *       - in: query
+ *         name: entity
+ *         required: false
+ *         description: Name of the Entity.
+ *         schema:
+ *          type: string
+ *          enum:
+ *            - All
+ *            - SPACE
+ *            - EVENT
+ *            - BRAND
+ *     responses:
+ *       200:
+ *         description: space found by ID or all spaces for the authenticated user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 spaces:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       spaceName:
+ *                         type: string
+ *                         description: Name of the space.
+ *                       spaceCategory:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             name:
+ *                               type: string
+ *                               description: Name of the category.
+ *                             description:
+ *                               type: string
+ *                               description: Description of the category.
+ *                         description: Categories of the space.
+ *                       details:
+ *                         type: object
+ *                         description: Details about the space.
+ *                       location:
+ *                         type: object
+ *                         properties:
+ *                           long:
+ *                             type: number
+ *                             description: Longitude of the space's location.
+ *                           lat:
+ *                             type: number
+ *                             description: Latitude of the space's location.
+ *                           additional:
+ *                             type: string
+ *                             description: Additional information about the location.
+ *                       status:
+ *                         type: string
+ *                         enum:
+ *                           - PUBLISH
+ *                           - DRAFT
+ *                           - ARCHIVE
+ *                       coverImages:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             url:
+ *                               type: string
+ *                               description: URL of the cover image.
+ *                             public_id:
+ *                               type: string
+ *                               description: Public ID of the cover image.
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     totalItems:
+ *                       type: integer
+ *                       description: Total number of items.
+ *                     currentPage:
+ *                       type: integer
+ *                       description: Current page number.
+ *                     pageSize:
+ *                       type: integer
+ *                       description: Number of items per page.
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages.
+ *       404:
+ *         description: space not found (if ID is provided) or no spaces found for the user.
+ *       500:
+ *         description: Server error.
+ */
+
+router.get(
+  "/public/entity/profile/:id",
+  checkJwt,
+  validateRoles([ROLES.USER]),
+  setPagination,
+  (req, res, next) => generalController.publicEntityProfile(req, res, next)
+);
 
 
 

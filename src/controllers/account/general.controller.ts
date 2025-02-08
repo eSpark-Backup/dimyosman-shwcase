@@ -10,8 +10,13 @@ import {
   SavedEntity,
   ActionType,
   SavedEntityType,
+  BrandStatus,
 } from "../../entity";
-import { decryptShareableLink, generateShareableLink, getPlaceSuggestions } from "../../utils";
+import {
+  decryptShareableLink,
+  generateShareableLink,
+  getPlaceSuggestions,
+} from "../../utils";
 import { ApiError } from "../../errors";
 import { Brackets, Repository } from "typeorm";
 import {
@@ -363,12 +368,12 @@ export class GeneralController {
           actionType: ActionType.FAVORITE,
         })
         .andWhere("savedEntity.user = :userId", { userId: req.user?.id });
-      let followedEntitiesQuery= this.savedEntity
-      .createQueryBuilder("savedEntity")
-      .where("savedEntity.ActionType = :actionType", {
-        actionType: ActionType.FOLLOW,
-      })
-      .andWhere("savedEntity.user = :userId", { userId: req.user?.id });
+      let followedEntitiesQuery = this.savedEntity
+        .createQueryBuilder("savedEntity")
+        .where("savedEntity.ActionType = :actionType", {
+          actionType: ActionType.FOLLOW,
+        })
+        .andWhere("savedEntity.user = :userId", { userId: req.user?.id });
 
       if (entity === "SPACE") {
         savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect(
@@ -470,30 +475,24 @@ export class GeneralController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    try{
-
+    try {
       const { query } = req.query as { query: string };
       if (!query) {
-         res.status(400).json({ error: "Query input is required" });
+        res.status(400).json({ error: "Query input is required" });
       }
-    
+
       const suggestions = await getPlaceSuggestions(query);
       res
-      .status(200)
-      .json(handleResponse("Location Fetch completed successfully", suggestions));
-
-
-
-    }
-    catch (error) {
+        .status(200)
+        .json(
+          handleResponse("Location Fetch completed successfully", suggestions)
+        );
+    } catch (error) {
       logger.error(
         `GeneralController :: Get Suggestion :: ${(error as Error)?.message}`
       );
       return next(error);
     }
-  
-  
-  
   }
 
   async getCategoriesByType(
@@ -759,7 +758,6 @@ export class GeneralController {
           totalPricing,
         };
       });
-      
 
       const eventsWithType = formattedRsvpEvents.map((event: any) => ({
         ...event,
@@ -798,26 +796,30 @@ export class GeneralController {
       const totalItems = sortedActivity.length;
       const totalPages = Math.ceil(totalItems / takeNumber);
 
-    const [savedEntities,followedEntities] = await Promise.all([
-             this.savedEntity
-               .createQueryBuilder("savedEntity")
-               .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
-               .leftJoinAndSelect("savedEntity.event", "event")
-               .leftJoinAndSelect("savedEntity.space", "space")
-                .leftJoinAndSelect("savedEntity.brand", "brand")
-               .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
-               .getMany(),
-           
-             this.savedEntity
-               .createQueryBuilder("savedEntity")
-               .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FOLLOW })
-               .leftJoinAndSelect("savedEntity.event", "event")
-                .leftJoinAndSelect("savedEntity.space", "space")
-                .leftJoinAndSelect("savedEntity.brand", "brand")
-               .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
-               .getMany(),
-           ]);
-        
+      const [savedEntities, followedEntities] = await Promise.all([
+        this.savedEntity
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FAVORITE,
+          })
+          .leftJoinAndSelect("savedEntity.event", "event")
+          .leftJoinAndSelect("savedEntity.space", "space")
+          .leftJoinAndSelect("savedEntity.brand", "brand")
+          .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+          .getMany(),
+
+        this.savedEntity
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FOLLOW,
+          })
+          .leftJoinAndSelect("savedEntity.event", "event")
+          .leftJoinAndSelect("savedEntity.space", "space")
+          .leftJoinAndSelect("savedEntity.brand", "brand")
+          .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+          .getMany(),
+      ]);
+
       const savedEntityIds = new Set(
         savedEntities
           .map(
@@ -921,7 +923,7 @@ export class GeneralController {
         const space = {
           ...entity,
           isFavourite,
-          type:"space",
+          type: "space",
         };
         res.status(200).json(handleResponse("Space Found Successfully", space));
         return next();
@@ -1039,11 +1041,11 @@ export class GeneralController {
           .json(handleResponse("Event Found Successfully", event[0]));
         return next();
       } else if (type == "brand") {
-        entity = await this.brandRepo.createQueryBuilder
-        ("brand")
-        .where("brand.id = :id", { id })
-        .leftJoinAndSelect("brand.user", "user")
-        .getOne();
+        entity = await this.brandRepo
+          .createQueryBuilder("brand")
+          .where("brand.id = :id", { id })
+          .leftJoinAndSelect("brand.user", "user")
+          .getOne();
         if (!entity) {
           res.status(200).json(handleResponse("Brand not found"));
           return next();
@@ -1053,19 +1055,20 @@ export class GeneralController {
           entity.coverImages = JSON.parse(entity.coverImages);
         }
 
-        const savedEntities= await this.savedEntity.createQueryBuilder("savedEntity")
-        .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
-        .andWhere("savedEntity.type = :type", { type: SavedEntityType.BRAND })
-        .leftJoinAndSelect("savedEntity.brand", "brand")
-        .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
-        .getMany();
+        const savedEntities = await this.savedEntity
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FAVORITE,
+          })
+          .andWhere("savedEntity.type = :type", { type: SavedEntityType.BRAND })
+          .leftJoinAndSelect("savedEntity.brand", "brand")
+          .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
+          .getMany();
 
         const savedEventIds = new Set(
-          savedEntities
-            .map(entity => entity.brand?.id)
-            .filter(Boolean) // Remove undefined/null values
+          savedEntities.map((entity) => entity.brand?.id).filter(Boolean) // Remove undefined/null values
         );
-        
+
         const isFavourite = savedEventIds.has(entity.id);
         const brand = {
           ...entity,
@@ -1092,8 +1095,6 @@ export class GeneralController {
     }
   }
 
-
-
   async getPublicUserProfile(
     req: ICustomRequest,
     res: Response,
@@ -1108,7 +1109,7 @@ export class GeneralController {
       if (!user) {
         throw new ApiError("User profile not found", HTTP_STATUS.NOT_FOUND);
       }
-      if(!user.profile){
+      if (!user.profile) {
         throw new ApiError("User profile is not Public", HTTP_STATUS.NOT_FOUND);
       }
 
@@ -1130,16 +1131,25 @@ export class GeneralController {
             .andWhere("space.user = :userId", { userId })
             .getCount(),
         ]);
-
-        const { password: _, ...userProfile } = user as User & { brandsCount?: number; eventsCount?: number; spacesCount?: number };
+      const shareableLink = generateShareableLink({
+        id: user.id,
+        type: "user",
+      });
+      const { password: _, ...userProfile } = user as User & {
+        shareableLink?: string;
+        brandsCount?: number;
+        eventsCount?: number;
+        spacesCount?: number;
+      };
 
       userProfile.coverImages = JSON.parse(
         userProfile.coverImages as Object as string
       );
-      
+
       userProfile.brandsCount = getBrandsCount;
       userProfile.eventsCount = getEventsCount;
       userProfile.spacesCount = getSpacesCount;
+      userProfile.shareableLink = shareableLink;
       res
         .status(HTTP_STATUS.OK)
         .json(
@@ -1152,4 +1162,378 @@ export class GeneralController {
       return next(error);
     }
   }
+
+     async getAllPublicBrands(
+        req: ICustomRequest,
+        res: Response,
+        next: NextFunction
+      ): Promise<void> {
+        try {
+          const userId = req.params?.id;
+          const findUser= await this.userRepo.createQueryBuilder("user")
+          .where("user.id = :userId", { userId })
+          .getOne()as User;
+          if (!findUser) {
+            throw new ApiError("User not found", HTTP_STATUS.NOT_FOUND);
+          }
+          if (!findUser.profile) {
+            throw new ApiError("User profile is not Public", HTTP_STATUS.NOT_FOUND);
+          }
+          const { page, take, skip } = req?.query;
+          const skipNumber = Number(skip);
+          const takeNumber = Number(take);
+         
+    
+          const [brands, totalItems] = await this.brandRepo
+            .createQueryBuilder("brand")
+            .where("brand.user = :userId", { userId: req.user?.id })
+            .leftJoinAndSelect("brand.user", "user")
+            .andWhere("brand.status = :STATUS", { STATUS: BRAND_STATUS.PUBLISH })
+            .orderBy("brand.createdAt", "DESC")
+            .skip(skipNumber)
+            .take(takeNumber)
+            .getManyAndCount();
+    
+          if (brands.length === 0) {
+            res.status(200).json(handleResponse("No Brands Found"));
+            return next();
+          }
+    
+          brands.forEach((brand) => {
+            if (typeof brand.coverImages === "string") {
+              brand.coverImages = JSON.parse(brand.coverImages);
+            }
+          });
+
+
+          
+    
+       
+    
+          res.status(200).json(
+            handleResponse("User Public Brands Fetched Successfully", {
+              brands,
+              pagination: {
+                totalItems,
+                currentPage: parseInt(page as string, 10),
+                pageSize: takeNumber,
+                totalPages: Math.ceil(totalItems / takeNumber),
+              },
+            })
+          );
+        } catch (error) {
+          next(error);
+        }
+      }
+
+
+
+
+      async publicEntityProfile(
+        req: ICustomRequest,
+        res: Response,
+        next: NextFunction
+      ): Promise<void> {
+        try {
+          const {
+            page = 1,
+            take = 10,
+            entity = "All",
+          } = req.query;
+          const skipNumber = (Number(page) - 1) * Number(take);
+          const takeNumber = Number(take);
+    
+          const userId = req.params?.id;
+          const user = (await this.userRepo
+            .createQueryBuilder("user")
+            .where("user.id = :userId", { userId })
+            .getOne()) as User;
+          if (!user) {
+            throw new ApiError("User profile not found", HTTP_STATUS.NOT_FOUND);
+          }
+          if (!user.profile) {
+            throw new ApiError("User profile is not Public", HTTP_STATUS.NOT_FOUND);
+          }
+
+    
+          // Initialize base queries
+          let spaceQuery = this.spaceRepo
+            .createQueryBuilder("space")
+            .leftJoinAndSelect("space.brand", "brand")
+            .andWhere("space.user = :userId", { userId })
+            .andWhere("space.status = :STATUS", { STATUS: SPACE_STATUS.PUBLISH })
+            .skip(skipNumber)
+            .take(takeNumber);
+    
+          let eventQuery = this.eventsRepo
+            .createQueryBuilder("event")
+            .leftJoinAndSelect("event.brand", "brand")
+            .leftJoinAndSelect("event.space", "space")
+            .leftJoinAndSelect("space.brand", "spaceBrand")
+            .andWhere("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
+            .andWhere("event.user = :userId", { userId })
+            // .addSelect((subQuery) => {
+            //   return subQuery
+            //     .select(
+            //       `COALESCE(
+            //           JSON_OBJECT(
+            //               'id', rsvp.id,
+            //               'attendanceDates', rsvp.attendanceDates,
+            //               'verifyAttendance', rsvp.verifyAttendance,
+            //               'review', rsvp.review,
+            //               'rating', rsvp.rating
+            //           ), '{}')`,
+            //       "event_rsvp"
+            //     )
+            //     .from("RSVP", "rsvp")
+            //     .where("rsvp.event = event.id")
+            //     .andWhere("rsvp.user = :userId", { userId:req.user?.id })
+            //     .limit(1);
+            // }, "event_rsvp")
+            .skip(skipNumber)
+            .take(takeNumber);
+    
+          let brandQuery = this.brandRepo
+            .createQueryBuilder("brand")
+            .andWhere("brand.status = :STATUS", { STATUS: BRAND_STATUS.PUBLISH })
+            .andWhere("brand.user = :userId", { userId })
+            .leftJoinAndSelect("brand.user", "user")
+            .skip(skipNumber)
+            .take(takeNumber);
+    
+     
+    
+ 
+    
+    
+    
+     
+    
+        
+            if (entity === "SPACE") {
+              eventQuery = null;
+              brandQuery = null;
+            } else if (entity === "EVENT") {
+              spaceQuery = null;
+              brandQuery = null;
+            } else if (entity === "BRAND") {
+              spaceQuery = null;
+              eventQuery = null;
+            }
+    
+          const queries = [];
+          if (spaceQuery) queries.push(spaceQuery.getManyAndCount());
+          if (eventQuery) queries.push(eventQuery.getRawAndEntities());
+          if (brandQuery) queries.push(brandQuery.getManyAndCount());
+    
+          const results = await Promise.all(queries);
+    
+          const entityMap: {
+            Space: [Spaces[], number] | null;
+            Event: [Events[], number] | null;
+            Brand: [Brand[], number] | null;
+          } = {
+            Space: null,
+            Event: null,
+            Brand: null,
+          };
+    
+          results.forEach((result, index) => {
+            if (entity === "SPACE") {
+              entityMap.Space = result as [Spaces[], number];
+            } else if (entity === "EVENT") {
+              if (result && "entities" in result && "raw" in result) {
+                const { entities: rsvpEvents, raw } = result;
+    
+                const events = rsvpEvents.map((eventRaw, index) => {
+                  const rawData = raw[index];
+                  const event = eventRaw as any;
+    
+                  // Parse the RSVP data if needed
+                  if (rawData.event_rsvp) {
+                    event.event_rsvp = JSON.parse(rawData.event_rsvp);
+                  }
+    
+                  if (event.brand) {
+                    event.brand = {
+                      ...event.brand,
+                    };
+                  }
+    
+                  return event;
+                });
+    
+                entityMap.Event = [events, raw] as unknown as [Events[], number];
+              }
+            } else if (entity === "BRAND") {
+              entityMap.Brand = result as [Brand[], number];
+            }
+          });
+    
+          const [spaces, spaceCount] = entityMap.Space || [[], 0];
+          const [events, eventCount] = entityMap.Event || [[], 0];
+          const [brands, brandCount] = entityMap.Brand || [[], 0];
+    
+          if (events.length > 0) {
+            events.forEach((event) => {
+              parseCoverImages(event);
+              if ("brand" in event) {
+                parseCoverImages(event.brand);
+              }
+            });
+          }
+          if (spaces && spaces.length > 0) {
+            spaces.forEach((space) => {
+              parseCoverImages(space);
+              if ("brand" in space) {
+                parseCoverImages(space.brand);
+              }
+            });
+          }
+          for (const space of spaces) {
+            const events = await this.eventsRepo
+              .createQueryBuilder("event")
+              .where("event.space = :spaceId", { spaceId: space.id })
+              .getMany();
+    
+            const calendarEvents = events.flatMap((event) => {
+              const eventDates: EventDate[] = Array.isArray(event.eventDate)
+                ? event.eventDate
+                : JSON.parse(event.eventDate as unknown as string);
+    
+              return eventDates.map((dateRange) => ({
+                eventId: event.id,
+                title: event.eventName,
+                start: new Date(dateRange.startDate),
+                end: new Date(dateRange.endDate),
+              }));
+            });
+    
+            (space as any).calendarEvents = calendarEvents;
+          }
+          spaces.map((space) => {
+            const totalPricing = calculatePricing(
+              space.pricing as PricingTerm[],
+              1
+            );
+            return {
+              ...space,
+              totalPricing,
+            };
+          });
+          if (brands.length > 0) {
+            brands.forEach((brand) => {
+              parseCoverImages(brand);
+            });
+          }
+    
+          let saveQuery;
+          let savedEntitiesQuery = this.savedEntity
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FAVORITE,
+            })
+            .andWhere("savedEntity.user = :userId", { userId: req.user?.id });
+          let followedEntitiesQuery = this.savedEntity
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FOLLOW,
+            })
+            .andWhere("savedEntity.user = :userId", { userId: req.user?.id });
+    
+          if (entity === "SPACE") {
+            savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect(
+              "savedEntity.space",
+              "space"
+            );
+            followedEntitiesQuery = followedEntitiesQuery.leftJoinAndSelect(
+              "savedEntity.space",
+              "space"
+            );
+          } else if (entity === "EVENT") {
+            savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect(
+              "savedEntity.event",
+              "event"
+            );
+            followedEntitiesQuery = followedEntitiesQuery.leftJoinAndSelect(
+              "savedEntity.event",
+              "event"
+            );
+          } else if (entity === "BRAND") {
+            savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect(
+              "savedEntity.brand",
+              "brand"
+            );
+            followedEntitiesQuery = followedEntitiesQuery.leftJoinAndSelect(
+              "savedEntity.brand",
+              "brand"
+            );
+          } else {
+            throw new ApiError("Invalid entity type", HTTP_STATUS.BAD_REQUEST);
+          }
+    
+          const savedEntities = await savedEntitiesQuery.getMany();
+          const followedEntities = await followedEntitiesQuery.getMany();
+    
+          const savedEntityIds = new Set(
+            savedEntities
+              .map(
+                (entity) => entity.space?.id || entity.event?.id || entity.brand?.id
+              )
+              .filter(Boolean)
+          );
+          const followedEntityIds = new Set(
+            followedEntities
+              .map(
+                (entity) => entity.space?.id || entity.event?.id || entity.brand?.id
+              )
+              .filter(Boolean)
+          );
+    
+          const updatedSpaces = spaces.map((space) => ({
+            ...space,
+            isFavourite: savedEntityIds.has(space.id),
+            shareableLink: generateShareableLink({ id: space.id, type: "space" }),
+            isFollowed: followedEntityIds.has(space.id),
+          }));
+    
+          const updatedEvents = events.map((event) => ({
+            ...event,
+            isFavourite: savedEntityIds.has(event.id),
+            shareableLink: generateShareableLink({ id: event.id, type: "event" }),
+            isFollowed: followedEntityIds.has(event.id),
+          }));
+    
+          const updatedBrands = brands.map((brand) => ({
+            ...brand,
+            isFavourite: savedEntityIds.has(brand.id),
+            shareableLink: generateShareableLink({ id: brand.id, type: "brand" }),
+            isFollowed: followedEntityIds.has(brand.id),
+          }));
+          const totalResults = spaceCount + updatedEvents.length + brandCount;
+    
+          const response = {
+            spaces: updatedSpaces,
+            events: updatedEvents,
+            brands: updatedBrands,
+            totalResults,
+            pagination: {
+              currentPage: parseInt(page as string, 10),
+              pageSize: takeNumber,
+              totalPages: Math.ceil(totalResults / takeNumber),
+            },
+          };
+    
+          res
+            .status(200)
+            .json(handleResponse("Public Entities fetched successfully", response));
+          return next();
+        } catch (error) {
+          logger.error(
+            `GeneralController :: General Get All For Public :: ${(error as Error)?.message}`
+          );
+          return next(error);
+        }
+      }
+
 }
