@@ -7,6 +7,7 @@ import { brandMain } from '../../../assets';
 import { useGetUserProfileQuery, useUserProfileUpdateMutation } from '../../../services/user';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
 
 
 const EditProfile = () => {
@@ -19,6 +20,8 @@ const EditProfile = () => {
     <img src=${brandMain} style="width:100%" height:auto margin:10px 0px;"/>
     <h2><strong>Leading the Movement Toward Eco-Conscious Fashion</strong></h2><p>Sustainability isn’t just a trend for me—it’s at the core of everything I do. My hope is to inspire others to make more conscious choices in their wardrobes while still enjoying the luxury and elegance that fashion can bring. I love collaborating with like-minded individuals and brands, and I’m always exploring new ways to push the boundaries of what sustainable fashion can achieve.</p>
     `;
+
+    const navigate = useNavigate()
 
     const { data: myProfileData, isLoading: profileLoading, isSuccess: profileSuccess, isError: isProfileError, error: profileError, isFetching } = useGetUserProfileQuery({}, { refetchOnFocus: true, refetchOnMountOrArgChange: true })
 
@@ -41,15 +44,15 @@ const EditProfile = () => {
                 profileStats: [
                     {
                         name: "Brands:",
-                        value: 1234
+                        value: data?.data?.brandsCount
                     },
                     {
                         name: "Events:",
-                        value: 1234
+                        value: data?.data?.eventsCount
                     },
                     {
                         name: "Spaces:",
-                        value: 1234
+                        value: data?.data?.spacesCount
                     },
                     {
                         name: "Member since:",
@@ -117,14 +120,9 @@ const EditProfile = () => {
     };
 
     const HandleProfileFileInputClick = () => {
-        if (profileImageRef.current) {
-            console.log("Opening file input...");
-            profileImageRef.current.click();
-        } else {
-            console.error("profileImageRef is not attached to an input");
-        }
-    };
-    
+        profileImageRef.current.click();
+    }
+
 
     const HandleProfileImageChange = async (event) => {
         const file = event.target.files[0];
@@ -135,6 +133,7 @@ const EditProfile = () => {
             }));
         }
     };
+    
     const profileTabs = [
         {
             label: "About",
@@ -174,6 +173,7 @@ const EditProfile = () => {
     useEffect(() => {
         if (isSuccess) {
             toast.success(data?.message)
+            navigate(`/profile/${location?.pathname.split("/").at(-2)}`)
         }
     }, [isSuccess])
 

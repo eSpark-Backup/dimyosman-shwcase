@@ -70,7 +70,8 @@ const ProfileAboutSection = ({ content }) => {
                         opacity: showShareBox ? 1 : 0,
                         visibility: showShareBox ? 'visible' : 'hidden',
                         transform: showShareBox ? "translateY(0)" : "translateY(10px)",
-                        transition: "opacity 300ms ease-in, transform 300ms ease-in, visibility 0ms 0ms"
+                        transition: "opacity 300ms ease-in, transform 300ms ease-in, visibility 0ms 0ms",
+                        zIndex: 99
                     }}
                     ref={shareBoxRef}
                 >

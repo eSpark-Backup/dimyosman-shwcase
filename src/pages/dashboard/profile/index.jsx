@@ -5,15 +5,49 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useGetUserProfileQuery } from "../../../services/user";
 import dayjs from "dayjs";
+import { useGetAllBrandsQuery } from "../../../services/brands";
+import { useGetAllEventsQuery } from "../../../services/events";
 
 const Profile = () => {
   const [profileData, setProfileData] = useState(profileContent)
   const { events } = useSelector((state) => state.event);
   const { data, isLoading, isSuccess, isError, error, isFetching } = useGetUserProfileQuery({}, { refetchOnFocus: true, refetchOnMountOrArgChange: true })
+  const [brands, setBrands] = useState([])
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [forceRender, setForceRender] = useState(false);
 
+  const { data: brandData, isError: isBrandError, isLoading: isBrandLoading, isSuccess: isBrandSuccess, error: brandError, isFetching: isBrandFetching } =
+    useGetAllBrandsQuery(
+      // { page, pageSize: 7 },
+      {
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true,
+      }
+    );
+
+  const { data: eventData, isError: isEventError, isLoading: isEventLoading, isSuccess: isEventSuccess, error: eventError, isFetching: isEventFetchhing } =
+    useGetAllEventsQuery(
+      {
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true,
+      }
+    );
+
+  useEffect(() => {
+    if (isBrandSuccess) {
+      const brands = brandData?.data?.groupedBrands?.allBrands?.map((item) => ({
+        profileImage: item?.brandImage,
+        brandName: item?.brandName,
+        brandCategory: item?.brandCategory?.map(category => category.name) || [],
+        description: item?.details?.description,
+        id: item?.id,
+        brandImage: item?.coverImages[0]?.url
+      }));
+
+      setBrands(brands)
+    }
+  }, [isBrandSuccess, brandData]);
 
   const [myProfileData, setMyProfileData] = useState({
     cover: [],
@@ -33,15 +67,15 @@ const Profile = () => {
         profileStats: [
           {
             name: "Brands:",
-            value: 1234
+            value: data?.data?.brandsCount
           },
           {
             name: "Events:",
-            value: 1234
+            value: data?.data?.eventsCount
           },
           {
             name: "Spaces:",
-            value: 1234
+            value: data?.data?.spacesCount
           },
           {
             name: "Member since:",
@@ -67,7 +101,7 @@ const Profile = () => {
     },
     {
       label: profileData[0].tabs[1],
-      component: <BrandCard items={profileData[0].brandSection} filter1={"All"} filter2={"Published"} filter3={"Draft"} />
+      component: <BrandCard items={brands} filter1={"All"} filter2={"Published"} filter3={"Draft"} />
     },
     {
       label: profileData[0].tabs[2],

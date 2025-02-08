@@ -163,20 +163,25 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                                             >
                                                 {item?.brandName}
                                             </Typography>
-                                            <Typography
-                                                sx={{
-                                                    color: theme.palette.primary.main,
-                                                    fontWeight: "400",
-                                                    textAlign: "left",
-                                                    fontSize: { xs: "10px", lg: "16px" }
-                                                }}
-                                            >
-                                                {item?.brandCategory}
-                                            </Typography>
+                                            {item?.brandCategory?.map((item, index) => {
+                                                return (
+                                                    <Typography
+                                                        sx={{
+                                                            color: theme.palette.primary.main,
+                                                            fontWeight: "400",
+                                                            textAlign: "left",
+                                                            fontSize: { xs: "10px", lg: "16px" }
+                                                        }}
+                                                        key={index}
+                                                    >
+                                                        {item}
+                                                    </Typography>
+                                                )
+                                            })}
                                         </Box>
                                     </Box>
                                     <Typography sx={{ fontWeight: '400', color: theme.palette.primary.main, textAlign: "left" }}>
-                                        {item?.description}
+                                        {item?.description?.length > 196 ? item?.description?.slice(0, 197) + "..." : item?.description}
                                     </Typography>
                                     <Box
                                         sx={{
@@ -240,6 +245,7 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                                         display: "flex",
                                         alignItems: "center",
                                         justifyContent: "center",
+                                        height: "280px"
                                     }}
                                 >
 

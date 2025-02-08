@@ -6,7 +6,7 @@ export const userApi = api.injectEndpoints({
             query: (profileData) => {
                 console.log(profileData)
                 const formData = new FormData();
-                formData.append("about", JSON.stringify({ about: profileData?.brandTitle }));
+                formData.append("about", JSON.stringify({ about: profileData?.profileAbout }));
                 if (profileData?.profileImage) {
                     formData.append('image', profileData?.profileImage);
                 }

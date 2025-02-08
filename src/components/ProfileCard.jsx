@@ -11,15 +11,16 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
     const location = useLocation()
     const navigate = useNavigate();
     const [showImageModal, setShowImageModal] = useState(false)
-    const [previewImage, setPreviewImage] = useState(imgUrl || userProfileImg || null);
+    const [previewImage, setPreviewImage] = useState(userProfileImg ? userProfileImg : null);
 
     const handleModalClose = () => {
         setShowImageModal(false)
     }
 
     useEffect(() => {
-        setPreviewImage(imgUrl || userProfileImg || null)
-    }, [imgUrl, userProfileImg])
+        setPreviewImage(userProfileImg);
+    }, [userProfileImg]);
+
 
     // const handleImageChange = (event) => {
     //     handleProfileChange(event);
@@ -33,19 +34,19 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
     //     }
     // };
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;  // Prevent errors if no file is selected
-    
-        handleProfileChange(e);  // Ensure it runs only if a file is selected
-    
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setPreviewImage(reader.result);
-        };
-        reader.readAsDataURL(file);
+    const handleImageChange = (event) => {
+        console.log("Hello")
+        handleProfileChange(event);
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setPreviewImage(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
     };
-    
+
     const handleFileChange = (event) => {
         const files = Array.from(event.target.files);
         if (files.length + cover?.length > 3) {
@@ -289,6 +290,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                                                 objectFit: 'cover',
                                                 opacity: 0.5,
                                                 borderRadius: '5px',
+                                                pointerEvents: "none", // ✅ Allows clicks to pass through
                                             }}
                                         />
                                     )}
