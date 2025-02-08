@@ -98,7 +98,7 @@ export const sidebarRoutes = [
     icon: profile,
     hoverIcon: profileHover,
     title: "Profile",
-    link: "/profile/emily",
+    link: null,
   },
   {
     icon: calendar,

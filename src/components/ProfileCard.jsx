@@ -1,37 +1,51 @@
-import { Box, Button, Typography, useTheme } from '@mui/material'
-import React, { useState } from 'react'
+import { Box, Button, CircularProgress, Typography, useTheme } from '@mui/material'
+import React, { useEffect, useState } from 'react'
 import { accountIcon, activeItemIcon, add, brandIcon, eventMain, eventMain2, eventMain3, flag, notActiveIcon, spaceIcon, subtract, uploadIcon, user } from '../assets'
-import { profileStats } from '../constant'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ReusableModal from './Modal'
 import ImageModal from './ImageModal'
+import { LoadingButton } from '@mui/lab'
 
-const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, handleProfileChange, profileImgRef, handleMainImgChange, mainImgRef, coverImg, userProfileImg, userName, imgUrl, editImage, cover, currentIndex, HandleSlideChange, HandleInputCLick, handleRemove }) => {
+const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, handleProfileChange, profileImgRef, handleMainImgChange, mainImgRef, coverImg, userProfileImg, userName, imgUrl, editImage, cover, currentIndex, HandleSlideChange, HandleInputCLick, handleRemove, onClick, loading, profileStats }) => {
     const theme = useTheme()
     const location = useLocation()
     const navigate = useNavigate();
     const [showImageModal, setShowImageModal] = useState(false)
-    const [previewImage, setPreviewImage] = useState(imgUrl ? imgUrl : null);
-    const [coverPreview, setCoverPreview] = useState(coverImg || null);
-
-
+    const [previewImage, setPreviewImage] = useState(imgUrl || userProfileImg || null);
 
     const handleModalClose = () => {
         setShowImageModal(false)
     }
 
-    const handleImageChange = (event) => {
-        handleProfileChange(event);
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setPreviewImage(e.target.result);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
+    useEffect(() => {
+        setPreviewImage(imgUrl || userProfileImg || null)
+    }, [imgUrl, userProfileImg])
 
+    // const handleImageChange = (event) => {
+    //     handleProfileChange(event);
+    //     const file = event.target.files[0];
+    //     if (file) {
+    //         const reader = new FileReader();
+    //         reader.onload = (e) => {
+    //             setPreviewImage(e.target.result);
+    //         };
+    //         reader.readAsDataURL(file);
+    //     }
+    // };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;  // Prevent errors if no file is selected
+    
+        handleProfileChange(e);  // Ensure it runs only if a file is selected
+    
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setPreviewImage(reader.result);
+        };
+        reader.readAsDataURL(file);
+    };
+    
     const handleFileChange = (event) => {
         const files = Array.from(event.target.files);
         if (files.length + cover?.length > 3) {
@@ -46,6 +60,8 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
             mainImgRef.current.value = '';
         }
     };
+
+    const images = cover?.map((item) => (item?.url))
     return (
         <>
             <Box
@@ -183,7 +199,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                     </figure>
 
                 </Button>
-                <Button
+                <LoadingButton
                     sx={{
                         backgroundColor: isEdit ? "rgb(0, 20, 28, 0.9)" : "#4d5b60",
                         height: "31px",
@@ -203,13 +219,23 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                         },
                         zIndex: 8
                     }}
-                    onClick={() => isEdit ? navigate(`/profile/${location?.pathname.split("/").at(-2)}`) : navigate(`/profile/${location?.pathname.split("/").at(-1)}/edit`)}
+                    onClick={() => {
+                        if (isEdit) {
+                            if (onClick) {
+                                onClick();
+                            }
+                        } else {
+                            navigate(`/profile/${location?.pathname.split("/").at(-1)}/edit`);
+                        }
+                    }}
+                    loading={loading}
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
                 >
                     {
                         isEdit ? "Publish" : "Edit"
                     }
 
-                </Button>
+                </LoadingButton>
                 <Box
                     sx={{
                         position: "absolute",
@@ -424,7 +450,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                         },
                     }}
                 >
-                    <ImageModal slides={[eventMain, eventMain2, eventMain3]} />
+                    <ImageModal slides={images} />
                 </Box>
             </ReusableModal>
         </>

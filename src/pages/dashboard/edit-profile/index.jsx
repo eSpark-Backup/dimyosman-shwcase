@@ -1,9 +1,12 @@
-import { Box, Typography, useTheme } from '@mui/material'
+import { Box, LinearProgress, Typography, useTheme } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import { OutlinedTabs, ProfileCard } from "../../../components";
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
 import { brandMain } from '../../../assets';
+import { useGetUserProfileQuery, useUserProfileUpdateMutation } from '../../../services/user';
+import { toast } from 'react-toastify';
+import dayjs from 'dayjs';
 
 
 const EditProfile = () => {
@@ -16,11 +19,50 @@ const EditProfile = () => {
     <img src=${brandMain} style="width:100%" height:auto margin:10px 0px;"/>
     <h2><strong>Leading the Movement Toward Eco-Conscious Fashion</strong></h2><p>Sustainability isn’t just a trend for me—it’s at the core of everything I do. My hope is to inspire others to make more conscious choices in their wardrobes while still enjoying the luxury and elegance that fashion can bring. I love collaborating with like-minded individuals and brands, and I’m always exploring new ways to push the boundaries of what sustainable fashion can achieve.</p>
     `;
-    const [brandTitle, setBrandTitle] = useState(defaultTemplate);
-    const [brandData, setBrandData] = useState({
+
+    const { data: myProfileData, isLoading: profileLoading, isSuccess: profileSuccess, isError: isProfileError, error: profileError, isFetching } = useGetUserProfileQuery({}, { refetchOnFocus: true, refetchOnMountOrArgChange: true })
+
+    const [profileData, setProfileData] = useState({
         cover: [],
+        profileImage: null,
+        profileName: "",
+        profileAbout: "",
+        profileStats: []
+
     });
+
+    useEffect(() => {
+        if (profileSuccess && myProfileData) {
+            setProfileData({
+                cover: myProfileData?.data?.coverImages,
+                profileImage: myProfileData?.data?.profileImage,
+                profileName: myProfileData?.data?.name,
+                profileAbout: myProfileData?.data?.about?.about,
+                profileStats: [
+                    {
+                        name: "Brands:",
+                        value: 1234
+                    },
+                    {
+                        name: "Events:",
+                        value: 1234
+                    },
+                    {
+                        name: "Spaces:",
+                        value: 1234
+                    },
+                    {
+                        name: "Member since:",
+                        value: dayjs(myProfileData?.data?.createdAt).format("MM.YYYY.")
+                    }
+                ]
+            });
+        }
+    }, [profileSuccess, myProfileData]);
+
     const [currentIndex, setCurrentIndex] = useState(0);
+
+    const [profile, { data, isSuccess, isError, error, isLoading }] = useUserProfileUpdateMutation()
 
 
     const handleMainFileInputClick = () => {
@@ -29,24 +71,24 @@ const EditProfile = () => {
 
     const handleMainImageChange = (files) => {
         if (files.length > 0) {
-            if (brandData.cover.length === 0) {
-                setBrandData((prev) => ({ ...prev, cover: files }));
+            if (profileData.cover.length === 0) {
+                setProfileData((prev) => ({ ...prev, cover: files }));
             }
-            if (brandData.cover.length === 1) {
-                const updatedCover = [...brandData.cover];
+            if (profileData.cover.length === 1) {
+                const updatedCover = [...profileData.cover];
                 updatedCover[1] = files[0];
                 files?.length > 1 ? updatedCover[2] = files[1] : null;
-                setBrandData((prev) => ({ ...prev, cover: updatedCover }));
-                const nextIndex = brandData.cover.length;
+                setProfileData((prev) => ({ ...prev, cover: updatedCover }));
+                const nextIndex = profileData.cover.length;
                 if (nextIndex < 3) {
                     setCurrentIndex(nextIndex);
                 }
             }
-            if (brandData.cover.length === 2) {
-                const updatedCover = [...brandData.cover];
+            if (profileData.cover.length === 2) {
+                const updatedCover = [...profileData.cover];
                 updatedCover[2] = files[0];
-                setBrandData((prev) => ({ ...prev, cover: updatedCover }));
-                const nextIndex = brandData.cover.length;
+                setProfileData((prev) => ({ ...prev, cover: updatedCover }));
+                const nextIndex = profileData.cover.length;
                 if (nextIndex < 3) {
                     setCurrentIndex(nextIndex);
                 }
@@ -55,7 +97,7 @@ const EditProfile = () => {
     };
 
     const handleAddImage = () => {
-        const nextIndex = brandData.cover.length;
+        const nextIndex = profileData.cover.length;
         if (nextIndex < 3) {
             setCurrentIndex(nextIndex);
         }
@@ -63,24 +105,35 @@ const EditProfile = () => {
 
 
     const handleRemoveImage = () => {
-        const updatedCover = brandData.cover.filter((_, index) => index !== currentIndex);
-        setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+        const updatedCover = profileData.cover.filter((_, index) => index !== currentIndex);
+        setProfileData((prev) => ({ ...prev, cover: updatedCover }));
         setCurrentIndex((prev) => Math.max(0, prev - 1));
     };
 
     const HandleSlideChange = (index) => {
-        if (index >= 0 && index <= brandData.cover.length) {
+        if (index >= 0 && index <= profileData.cover.length) {
             setCurrentIndex(index);
         }
     };
 
     const HandleProfileFileInputClick = () => {
-        profileImageRef.current.click();
-    }
+        if (profileImageRef.current) {
+            console.log("Opening file input...");
+            profileImageRef.current.click();
+        } else {
+            console.error("profileImageRef is not attached to an input");
+        }
+    };
+    
 
     const HandleProfileImageChange = async (event) => {
-        const file = event.target.files;
-        console.log(file);
+        const file = event.target.files[0];
+        if (file) {
+            setProfileData((prev) => ({
+                ...prev,
+                profileImage: file,
+            }));
+        }
     };
     const profileTabs = [
         {
@@ -107,13 +160,64 @@ const EditProfile = () => {
                     ],
                 },
             });
-            quillRef.current.root.innerHTML = brandTitle || defaultTemplate;
+            quillRef.current.root.innerHTML = profileData?.profileAbout || defaultTemplate;
             quillRef.current.on('text-change', () => {
                 const updatedContent = quillRef.current.root.innerHTML;
-                setBrandTitle(updatedContent);
+                setProfileData((prev) => ({
+                    ...prev,
+                    profileAbout: updatedContent,
+                }));
             });
         }
     }, [isEditorVisible]);
+
+    useEffect(() => {
+        if (isSuccess) {
+            toast.success(data?.message)
+        }
+    }, [isSuccess])
+
+    const HandleEdit = () => {
+        console.log("HandleEdit function triggered"); // Check if function runs
+        console.log("profileData:", profileData); // Check the data before sending
+
+        if (!profileData?.cover || profileData?.cover?.length <= 0) {
+            toast?.error("Please upload cover photo of profile.");
+            return false;
+        }
+
+        if (!profileData?.profileImage) {
+            toast?.error("Please upload profile photo.");
+            return false;
+        }
+
+        if (!profileData?.profileAbout || profileData?.profileAbout.trim() === "") {
+            toast?.error("Profile title can not be empty.");
+            return false;
+        }
+
+        const strippedContent = profileData?.profileAbout?.replace(/<[^>]*>/g, "").trim();
+        if (!strippedContent) {
+            toast?.error("Profile title can not be empty.");
+            return false;
+        }
+
+        profile(profileData)
+            .unwrap()
+            .then((response) => { })
+            .catch((error) => {
+                console.error("Error updating profile", error);
+            });
+    };
+
+    if (profileLoading || isFetching) {
+        return (
+            <Box sx={{ width: "100%" }}>
+                <LinearProgress />
+            </Box>
+        )
+    }
+
     return (
         <Box
             sx={{
@@ -134,14 +238,28 @@ const EditProfile = () => {
                 mainImgRef={mainImageRef}
                 handleMainImgChange={handleMainImageChange}
                 HandleInputCLick={handleMainFileInputClick}
-                cover={brandData?.cover}
-                editImage={brandData.cover[currentIndex] ? URL.createObjectURL(brandData.cover[currentIndex]) : null}
+                cover={profileData?.cover}
+                editImage={
+                    profileData.cover[currentIndex]?.url
+                        ?
+                        profileData.cover[currentIndex]?.url
+                        :
+                        profileData.cover[currentIndex] ?
+                            URL.createObjectURL(profileData.cover[currentIndex])
+                            :
+                            null
+                }
                 handleAdd={handleAddImage}
                 handleRemove={handleRemoveImage}
                 currentIndex={currentIndex}
                 HandleSlideChange={HandleSlideChange}
                 handleProfileChange={HandleProfileImageChange}
                 handleProfileImgClick={HandleProfileFileInputClick}
+                onClick={HandleEdit}
+                loading={isLoading}
+                userName={profileData?.profileName}
+                userProfileImg={profileData?.profileImage}
+                profileStats={profileData?.profileStats}
             />
             <OutlinedTabs tabs={profileTabs} />
             <Box
@@ -181,7 +299,7 @@ const EditProfile = () => {
                             <Typography
                                 variant="body1"
                                 color={theme.palette.primary.main}
-                                dangerouslySetInnerHTML={{ __html: brandTitle }}
+                                dangerouslySetInnerHTML={{ __html: profileData?.profileAbout }}
                             />
                         </Box>
                     }
