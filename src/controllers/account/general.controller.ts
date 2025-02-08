@@ -873,7 +873,53 @@ export class GeneralController {
       const { id, type } = entities[0];
 
       let entity;
-      if (type === "space") {
+      if(type === "user") {
+        const userId=id
+        const user = (await this.userRepo
+          .createQueryBuilder("user")
+          .where("user.id = :userId", { userId })
+          .getOne()) as User;
+        if (!user) {
+          throw new ApiError("User profile not found", HTTP_STATUS.NOT_FOUND);
+        }
+        if (!user.profile) {
+          throw new ApiError("User profile is not Public", HTTP_STATUS.NOT_FOUND);
+        }
+
+        const [getBrandsCount, getEventsCount, getSpacesCount] =
+        await Promise.all([
+          this.brandRepo
+            .createQueryBuilder("brand")
+            .where("brand.status = :status", { status: BRAND_STATUS.PUBLISH })
+            .andWhere("brand.user = :userId", { userId })
+            .getCount(),
+          this.eventsRepo
+            .createQueryBuilder("event")
+            .where("event.status = :status", { status: EVENT_STATUS.PUBLISH })
+            .andWhere("event.user = :userId", { userId })
+            .getCount(),
+          this.spaceRepo
+            .createQueryBuilder("space")
+            .where("space.status = :status", { status: SPACE_STATUS.PUBLISH })
+            .andWhere("space.user = :userId", { userId })
+            .getCount(),
+        ]);
+
+         const { password: _, ...userProfile } = user as User & {
+        brandsCount?: number;
+        eventsCount?: number;
+        spacesCount?: number;
+      };
+      userProfile.coverImages = JSON.parse(
+        userProfile.coverImages as Object as string
+      );
+      userProfile.brandsCount = getBrandsCount;
+      userProfile.eventsCount = getEventsCount;
+      userProfile.spacesCount = getSpacesCount;
+      res.status(200).json(handleResponse("User Found Successfully", userProfile));
+      return next();
+      }
+     else  if (type === "space") {
         entity = await this.spaceRepo
           .createQueryBuilder("space")
           .leftJoinAndSelect("space.brand", "brand")
