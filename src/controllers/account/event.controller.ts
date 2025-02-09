@@ -781,6 +781,32 @@ export class EventController {
           parseCoverImages(rsvp.brand);
           parseCoverImages(rsvp.space);
 
+          const eventDate =
+              rsvp.eventDate &&
+              (rsvp.eventDate as [
+                { startDate: string; endDate: string }
+              ]);
+
+            if (eventDate) {
+              const currentDate = new Date();
+
+              let eventStatus = "Ended";
+              if (currentDate < new Date(eventDate[0].startDate)) {
+                eventStatus = "Upcoming";
+              } else if (
+                currentDate >= new Date(eventDate[0].startDate) &&
+                currentDate <= new Date(eventDate[0].endDate)
+              ) {
+                eventStatus = "Ongoing";
+              }
+
+              return {
+                ...rsvp,
+                rsvpCount: Number(rawData.event_rsvpCount) || 0,
+                eventStatus,
+              };
+            }
+
           return {
             ...rsvp,
 
