@@ -1,9 +1,11 @@
 import { Box, Button, Typography, useTheme } from '@mui/material'
 import React from 'react'
 import { calender, eventBadge, spaceIcon } from '../assets'
+import { useNavigate } from 'react-router-dom'
 
 const SpaceCard = ({ onClick, spaces, showBtn }) => {
     const theme = useTheme()
+    const navigate = useNavigate()
     return (
         <Box
             onClick={onClick ? onClick : () => { }}
@@ -30,7 +32,7 @@ const SpaceCard = ({ onClick, spaces, showBtn }) => {
                 <img
                     style={{ borderRadius: "5px 5px 0 0 " }}
                     width="100%"
-                    height="100%"
+                    height="170px"
                     src={spaces?.spacePic}
                     alt="space-img"
                 />
@@ -66,7 +68,8 @@ const SpaceCard = ({ onClick, spaces, showBtn }) => {
                     {spaces?.spaceAddress}
                 </Typography>
                 <Typography textAlign="left" fontWeight={400} style={{ fontSize: "12px" }}>
-                    {spaces?.spaceDescription}
+                    {/* {spaces?.spaceDescription} */}
+                    {spaces?.spaceDescription?.length > 636 ? spaces?.spaceDescription?.slice(0, 637) + "..." : spaces?.spaceDescription}
                 </Typography>
                 <Typography fontWeight={600} textAlign="left" style={{ fontSize: "12px" }}>
                     Lease from:
@@ -93,6 +96,7 @@ const SpaceCard = ({ onClick, spaces, showBtn }) => {
                             backgroundColor: "rgb(209, 219, 215, 0.4)"
                         }
                     }}
+                    onClick={() => navigate(`/space/${spaces?.id}/edit`)}
                 >
                     {/* <img src={calender} alt='Calender Icon' />
                     Inquire */}

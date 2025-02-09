@@ -24,6 +24,8 @@ const EditProfile = () => {
     const navigate = useNavigate()
 
     const { data: myProfileData, isLoading: profileLoading, isSuccess: profileSuccess, isError: isProfileError, error: profileError, isFetching } = useGetUserProfileQuery({}, { refetchOnFocus: true, refetchOnMountOrArgChange: true })
+    const [currentIndex, setCurrentIndex] = useState(-1);
+
 
     const [profileData, setProfileData] = useState({
         cover: [],
@@ -40,7 +42,7 @@ const EditProfile = () => {
                 cover: myProfileData?.data?.coverImages,
                 profileImage: myProfileData?.data?.profileImage,
                 profileName: myProfileData?.data?.name,
-                profileAbout: myProfileData?.data?.about?.about,
+                profileAbout: myProfileData?.data?.about?.about ? myProfileData?.data?.about?.about : defaultTemplate,
                 profileStats: [
                     {
                         name: "Brands:",
@@ -60,10 +62,11 @@ const EditProfile = () => {
                     }
                 ]
             });
+            if (myProfileData?.data?.coverImages?.length > 0) {
+                setCurrentIndex(0)
+            }
         }
     }, [profileSuccess, myProfileData]);
-
-    const [currentIndex, setCurrentIndex] = useState(0);
 
     const [profile, { data, isSuccess, isError, error, isLoading }] = useUserProfileUpdateMutation()
 
@@ -74,30 +77,25 @@ const EditProfile = () => {
 
     const handleMainImageChange = (files) => {
         if (files.length > 0) {
-            if (profileData.cover.length === 0) {
-                setProfileData((prev) => ({ ...prev, cover: files }));
-            }
-            if (profileData.cover.length === 1) {
-                const updatedCover = [...profileData.cover];
-                updatedCover[1] = files[0];
-                files?.length > 1 ? updatedCover[2] = files[1] : null;
-                setProfileData((prev) => ({ ...prev, cover: updatedCover }));
-                const nextIndex = profileData.cover.length;
-                if (nextIndex < 3) {
-                    setCurrentIndex(nextIndex);
+            setProfileData((prev) => {
+                let coverArray = prev.cover ? [...prev.cover] : []; // Ensure cover is an array
+
+                if (coverArray.length === 0) {
+                    coverArray = [files[0]]; // Assign the first file directly
+                } else if (coverArray.length === 1) {
+                    coverArray[1] = files[0]; // Assign second file
+                    if (files.length > 1) coverArray[2] = files[1]; // Add third file if available
+                } else if (coverArray.length === 2) {
+                    coverArray[2] = files[0]; // Assign third file
                 }
-            }
-            if (profileData.cover.length === 2) {
-                const updatedCover = [...profileData.cover];
-                updatedCover[2] = files[0];
-                setProfileData((prev) => ({ ...prev, cover: updatedCover }));
-                const nextIndex = profileData.cover.length;
-                if (nextIndex < 3) {
-                    setCurrentIndex(nextIndex);
-                }
-            }
+
+                return { ...prev, cover: coverArray };
+            });
+
+            setCurrentIndex((prev) => (prev === -1 ? 0 : prev < 2 ? prev + 1 : prev));
         }
     };
+
 
     const handleAddImage = () => {
         const nextIndex = profileData.cover.length;
@@ -108,10 +106,18 @@ const EditProfile = () => {
 
 
     const handleRemoveImage = () => {
-        const updatedCover = profileData.cover.filter((_, index) => index !== currentIndex);
-        setProfileData((prev) => ({ ...prev, cover: updatedCover }));
-        setCurrentIndex((prev) => Math.max(0, prev - 1));
+        setProfileData((prev) => {
+            const updatedCover = prev.cover.filter((_, index) => index !== currentIndex);
+
+            // Update profile data with new cover array
+            return { ...prev, cover: updatedCover };
+        });
+
+        // Use functional update to ensure latest state is used
+        setCurrentIndex((prev) => (profileData.cover.length > 1 ? Math.max(0, prev - 1) : -1));
     };
+
+
 
     const HandleSlideChange = (index) => {
         if (index >= 0 && index <= profileData.cover.length) {
@@ -133,7 +139,7 @@ const EditProfile = () => {
             }));
         }
     };
-    
+
     const profileTabs = [
         {
             label: "About",
@@ -159,7 +165,7 @@ const EditProfile = () => {
                     ],
                 },
             });
-            quillRef.current.root.innerHTML = profileData?.profileAbout || defaultTemplate;
+            quillRef.current.root.innerHTML = profileData?.profileAbout === undefined || profileData?.profileAbout === "" ? defaultTemplate : profileData?.profileAbout;
             quillRef.current.on('text-change', () => {
                 const updatedContent = quillRef.current.root.innerHTML;
                 setProfileData((prev) => ({
@@ -169,6 +175,10 @@ const EditProfile = () => {
             });
         }
     }, [isEditorVisible]);
+
+    useEffect(() => {
+        console.log(profileData)
+    }, [profileData])
 
     useEffect(() => {
         if (isSuccess) {
@@ -240,14 +250,15 @@ const EditProfile = () => {
                 HandleInputCLick={handleMainFileInputClick}
                 cover={profileData?.cover}
                 editImage={
-                    profileData.cover[currentIndex]?.url
-                        ?
-                        profileData.cover[currentIndex]?.url
-                        :
-                        profileData.cover[currentIndex] ?
-                            URL.createObjectURL(profileData.cover[currentIndex])
-                            :
-                            null
+                    profileData?.cover
+                        ? profileData.cover.length > 0
+                            ? profileData.cover[currentIndex]?.url
+                                ? profileData.cover[currentIndex]?.url
+                                : profileData.cover[currentIndex]
+                                    ? URL.createObjectURL(profileData.cover[currentIndex])
+                                    : []
+                            : []
+                        : []
                 }
                 handleAdd={handleAddImage}
                 handleRemove={handleRemoveImage}
@@ -299,7 +310,7 @@ const EditProfile = () => {
                             <Typography
                                 variant="body1"
                                 color={theme.palette.primary.main}
-                                dangerouslySetInnerHTML={{ __html: profileData?.profileAbout }}
+                                dangerouslySetInnerHTML={{ __html: profileData?.profileAbout === undefined || profileData?.profileAbout === "" ? defaultTemplate : profileData?.profileAbout }}
                             />
                         </Box>
                     }

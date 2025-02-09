@@ -1,15 +1,21 @@
-import { Box, Button, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Button, LinearProgress, Stack, Typography, useTheme } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import EventCard from './EventCard';
 import { addGrey } from '../assets';
 import { useNavigate } from 'react-router-dom';
 
-const ProfileEvents = ({ filter1, filter2, filter3, cardsData }) => {
+const ProfileEvents = ({ filter1, filter2, filter3, cardsData, loading }) => {
     const theme = useTheme();
     const [selectedChoice, setSelectedChoice] = useState(0);
     const navigate = useNavigate()
-
+    if (loading) {
+        return (
+            <Box sx={{ width: "100%" }}>
+                <LinearProgress />
+            </Box>
+        )
+    }
     return (
         <Box
             sx={{
@@ -35,10 +41,10 @@ const ProfileEvents = ({ filter1, filter2, filter3, cardsData }) => {
                         rowGap: "2px"
                     }}
                 >
-                    <Typography  sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "400" }}>Show:</Typography>
-                    <Typography onClick={() => setSelectedChoice(0)}  sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 0 ? "600" : "400", cursor: "pointer" }}>{filter1}</Typography>
-                    <Typography onClick={() => setSelectedChoice(1)}  sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 1 ? "600" : "400", cursor: "pointer" }}>{filter2}</Typography>
-                    <Typography onClick={() => setSelectedChoice(2)}  sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 2 ? "600" : "400", cursor: "pointer" }}>{filter3}</Typography>
+                    <Typography sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "400" }}>Show:</Typography>
+                    <Typography onClick={() => setSelectedChoice(0)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 0 ? "600" : "400", cursor: "pointer" }}>{filter1}</Typography>
+                    <Typography onClick={() => setSelectedChoice(1)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 1 ? "600" : "400", cursor: "pointer" }}>{filter2}</Typography>
+                    <Typography onClick={() => setSelectedChoice(2)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 2 ? "600" : "400", cursor: "pointer" }}>{filter3}</Typography>
                 </Box>
                 <Button
                     sx={{

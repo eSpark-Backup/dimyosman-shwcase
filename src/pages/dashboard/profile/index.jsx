@@ -7,6 +7,7 @@ import { useGetUserProfileQuery } from "../../../services/user";
 import dayjs from "dayjs";
 import { useGetAllBrandsQuery } from "../../../services/brands";
 import { useGetAllEventsQuery } from "../../../services/events";
+import { useGetAllSpaceQuery } from "../../../services/space";
 
 const Profile = () => {
   const [profileData, setProfileData] = useState(profileContent)
@@ -14,6 +15,7 @@ const Profile = () => {
   const { data, isLoading, isSuccess, isError, error, isFetching } = useGetUserProfileQuery({}, { refetchOnFocus: true, refetchOnMountOrArgChange: true })
   const [brands, setBrands] = useState([])
   const [myEvents, setMyEvents] = useState([])
+  const [mySpaces, setMySpaces] = useState([])
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [forceRender, setForceRender] = useState(false);
@@ -36,6 +38,15 @@ const Profile = () => {
       }
     );
 
+  const { data: spaceData, isError: isSpaceError, isLoading: isSpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching, } =
+    useGetAllSpaceQuery(
+      { pageSize: 100, tab: "Group" },
+      {
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true,
+      }
+    );
+
   useEffect(() => {
     if (isBrandSuccess) {
       const brands = brandData?.data?.groupedBrands?.allBrands?.map((item) => ({
@@ -50,6 +61,26 @@ const Profile = () => {
       setBrands(brands)
     }
   }, [isBrandSuccess, brandData]);
+
+  useEffect(() => {
+    if (isSpaceSuccess) {
+      const spaces = spaceData?.data?.groupedSpaces?.allSpaces?.map((item) => {
+        const dayPricing = item?.pricing?.find((priceItem) => priceItem.term === "Day");
+
+        return {
+          spacePic: item?.coverImages?.[0]?.url,
+          spaceName: item?.spaceName,
+          spaceAddress: item?.brand?.brandName,
+          spaceDescription: item?.details?.description,
+          spacePrice: dayPricing ? `$${dayPricing.price}/day` : "N/A",
+          spaceDeadline: dayPricing ? `miniumum lease: ${dayPricing?.minimum} days` : "N/A",
+          id: item?.id
+        };
+      });
+
+      setMySpaces(spaces)
+    }
+  }, [isSpaceSuccess, spaceData]);
 
   useEffect(() => {
     if (isEventSuccess) {
@@ -129,20 +160,56 @@ const Profile = () => {
       label: profileData[0].tabs[0],
       component: <ProfileAboutSection content={myProfileData?.profileAbout} />
     },
-    {
-      label: profileData[0].tabs[1],
-      component: <BrandCard items={brands} filter1={"All"} filter2={"Published"} filter3={"Draft"} />
-    },
-    {
-      label: profileData[0].tabs[2],
-      component: <ProfileEvents filter1={"All"} filter2={"Upcoming"} filter3={"Past"} cardsData={myEvents} />
-    },
-    {
-      label: profileData[0].tabs[3],
-      component: <ProfileSpaces cardsData={profileData[0].spaceSection} filter1={"All"} filter2={"Upcoming"} filter3={"Past"} />
-    },
+    ...(brands?.length > 0
+      ? [
+        {
+          label: profileData[0].tabs[1],
+          component: (
+            <BrandCard
+              items={brands}
+              filter1={"All"}
+              filter2={"Published"}
+              filter3={"Draft"}
+              loading={isBrandLoading || isBrandFetching}
+            />
+          )
+        }
+      ]
+      : []),
+    ...(myEvents?.length > 0
+      ? [
+        {
+          label: profileData[0].tabs[2],
+          component: (
+            <ProfileEvents
+              filter1={"All"}
+              filter2={"Upcoming"}
+              filter3={"Past"}
+              cardsData={myEvents}
+              loading={isEventLoading || isEventFetchhing}
+            />
+          )
+        }
+      ]
+      : []),
+    ...(mySpaces?.length > 0
+      ? [
+        {
+          label: profileData[0].tabs[3],
+          component: (
+            <ProfileSpaces
+              cardsData={mySpaces}
+              filter1={"All"}
+              filter2={"Upcoming"}
+              filter3={"Past"}
+              loading={isSpaceLoading || isSpaceFetching}
+            />
+          )
+        }
+      ]
+      : [])
+  ];
 
-  ]
   if (isLoading || isFetching) {
     return (
       <Box sx={{ width: "100%" }}>
@@ -165,20 +232,20 @@ const Profile = () => {
       <ProfileCard
         userProfileImg={myProfileData?.profile}
         userName={myProfileData?.profileName}
-        editImage={
-          myProfileData.cover[currentIndex]?.url
-            ?
-            myProfileData.cover[currentIndex]?.url
-            :
-            myProfileData.cover[currentIndex] ?
-              URL.createObjectURL(myProfileData.cover[currentIndex])
-              :
-              null
-        }
         cover={myProfileData?.cover}
         HandleSlideChange={HandleSlideChange}
         currentIndex={currentIndex}
         profileStats={myProfileData?.profileStats}
+        {...(myProfileData?.cover?.length > 0
+          ? {
+            editImage:
+              myProfileData?.cover[currentIndex]?.url
+                ? myProfileData?.cover[currentIndex]?.url
+                : myProfileData?.cover[currentIndex]
+                  ? URL.createObjectURL(myProfileData?.cover[currentIndex])
+                  : null,
+          }
+          : {})}
       />
       <OutlinedTabs key={forceRender} tabs={profileTabs} />
     </Box>

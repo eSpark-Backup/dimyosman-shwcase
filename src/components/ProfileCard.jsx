@@ -21,6 +21,10 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
         setPreviewImage(userProfileImg);
     }, [userProfileImg]);
 
+    useEffect(() => {
+        console.log(editImage)
+     }, [editImage])
+
 
     // const handleImageChange = (event) => {
     //     handleProfileChange(event);
