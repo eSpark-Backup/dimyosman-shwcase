@@ -1174,7 +1174,89 @@ export class SpaceController {
             },
           })
         );
-      } else if (tab == "Lease") {
+      } 
+     else  if (tab == "Group") {
+        let [spaces, totalItems] = await this.spaceRepo
+          .createQueryBuilder("space")
+          .leftJoinAndSelect("space.brand", "brand")
+          .where("space.user = :userId", { userId: req.user?.id })
+          .leftJoinAndSelect("space.user", "user")
+          .orderBy("space.createdAt", "DESC")
+          .skip(skipNumber)
+          .take(takeNumber)
+          .getManyAndCount();
+
+        if (spaces.length === 0) {
+          res.status(200).json(handleResponse("No Spaces Found"));
+          return next();
+        }
+
+        spaces.forEach((space) => {
+          if (typeof space.coverImages === "string") {
+            space.coverImages = JSON.parse(space.coverImages);
+          }
+        });
+        for (const space of spaces) {
+          const events = await this.eventsRepo
+            .createQueryBuilder("event")
+            .where("event.space = :spaceId", { spaceId: space.id })
+            .getMany();
+
+          const calendarEvents = events.flatMap((event) => {
+            const eventDates: EventDate[] = Array.isArray(event.eventDate)
+              ? event.eventDate
+              : JSON.parse(event.eventDate as unknown as string);
+
+            return eventDates.map((dateRange) => ({
+              eventId: event.id,
+              title: event.eventName,
+              start: new Date(dateRange.startDate),
+              end: new Date(dateRange.endDate),
+            }));
+          });
+
+          (space as any).calendarEvents = calendarEvents;
+        }
+
+        spaces = spaces.map((space) => {
+          const totalPricing = calculatePricing(
+            space.pricing as PricingTerm[],
+            1
+          );
+          return {
+            ...space,
+            totalPricing,
+          };
+        });
+
+
+    const groupedSpaces={
+               publishedSpaces: spaces.filter(
+                      (events) => events.status === SpaceStatus.PUBLISH
+                    ),
+                    draftSpaces: spaces.filter(
+                      (spaces) => spaces.status === SpaceStatus.DRAFT
+                    ),
+                    archivedSpaces: spaces.filter(
+                      (spaces) => spaces.status === SpaceStatus.ARCHIVE
+                    ),
+                    allSpaces: spaces,
+                    totalItems,
+          }
+
+        res.status(200).json(
+          handleResponse("Events Fetched Successfully", {
+            groupedSpaces,
+            pagination: {
+              totalItems,
+              currentPage: parseInt(page as string, 10),
+              pageSize: takeNumber,
+              totalPages: Math.ceil(totalItems / takeNumber),
+            },
+          })
+        );
+      } 
+      else if (tab == "Lease") {
         let [leaseSpace, totalItems] = await this.leaseSpaceRepo
           .createQueryBuilder("leaseSpace")
           .leftJoinAndSelect("leaseSpace.space", "space")
