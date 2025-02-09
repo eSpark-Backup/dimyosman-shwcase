@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Box, Button, Drawer, Stack, Typography, useTheme } from "@mui/material";
 import FilterListIcon from '@mui/icons-material/FilterList';
+import LoginIcon from '@mui/icons-material/Login';
+import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 import {
   brand,
   brandHover,
@@ -38,6 +40,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 const Header = ({ isLogin }) => {
   const getInquiryCount = getCookie("newInquiry") || 0;
   const getNotificationCount = getCookie("newNotification") || 0;
+  const token = localStorage.getItem("token")
 
   const { count, countInquiry } = useSelector((state) => state.notification);
   const userData = useSelector((state) => state.auth);
@@ -47,13 +50,16 @@ const Header = ({ isLogin }) => {
   const { pathname } = useLocation();
   const addRef = useRef();
   const profileRef = useRef();
+  const guestProfileRef = useRef();
   const notificationRef = useRef();
   const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
   const [openProfilePopup, setOpenProfilePopup] = useState(false);
+  const [openGuestProfilePopup, setOpenGuestProfilePopup] = useState(false);
   const [addPopup, setAddPopup] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   useClickOutside(addRef, () => setAddPopup(false));
   useClickOutside(profileRef, () => setOpenProfilePopup(false));
+  useClickOutside(guestProfileRef, () => setOpenGuestProfilePopup(false));
   useClickOutside(notificationRef, () => setShowNotification(false));
 
   const { logout: logoutAuth } = useAuth0();
@@ -149,6 +155,25 @@ const Header = ({ isLogin }) => {
     },
   ];
 
+  const guestProfilePopuptabs = [
+    {
+      img: LoginIcon,
+      title: "Log in",
+      func: () => {
+        setOpenGuestProfilePopup(false)
+        navigate("/auth?type=login")
+      },
+    },
+    {
+      img: AppRegistrationIcon,
+      title: "Sign up",
+      func: () => {
+        setOpenGuestProfilePopup(false)
+        navigate("/auth?type=register")
+      },
+    },
+  ];
+
   const Popup = ({ title, data, open }) => {
     const [hovered, setHovered] = useState(false);
     return (
@@ -192,18 +217,22 @@ const Header = ({ isLogin }) => {
                 }}
                 direction="row"
                 alignItems="center"
-                justifyContent="space-evenly"
+                justifyContent={token ? "space-evenly" : "start"}
                 gap="12px"
                 key={item.title}
                 onMouseOver={() => setHovered(item.title)}
                 onMouseOut={() => setHovered(false)}
               >
-                <img
-                  width={24}
-                  height={24}
-                  src={active ? item.hoverImg : item.img}
-                  alt="brand"
-                />
+                {token ? (
+                  <img
+                    width={24}
+                    height={24}
+                    src={active ? item.hoverImg : item.img}
+                    alt="brand"
+                  />
+                ) : (
+                  <item.img sx={{ opacity: active ? 1 : 0.4, width: "24px", height: "24px" }} />
+                )}
                 <Typography
                   fontSize={16}
                   fontWeight={400}
@@ -331,14 +360,14 @@ const Header = ({ isLogin }) => {
               )}
             </ul>
           ) : (
-            <ul className="nav-links">
+            <ul className="nav-links" ref={guestProfileRef}>
               <li>News</li>
               <hr className="nav-items-breaker" />
               <li>About</li>
               <hr className="nav-items-breaker" />
               <li>Help</li>
               <Button
-                onClick={() => (isLogin ? setOpenProfilePopup(true) : () => {})}
+                onClick={() => {pathname === "/share" ? setOpenGuestProfilePopup(true) : null} }
                 className="user-btn1"
                 sx={{
                   minWidth: "32px",
@@ -348,9 +377,11 @@ const Header = ({ isLogin }) => {
                     backgroundColor: "rgba(0, 20, 28, 0.8)",
                   },
                 }}
+                
               >
                 <img src={user} alt="User" />
               </Button>
+              <Popup open={openGuestProfilePopup} data={guestProfilePopuptabs} />
             </ul>
           )}
         </nav>
