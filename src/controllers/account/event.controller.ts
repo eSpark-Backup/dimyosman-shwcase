@@ -669,6 +669,7 @@ export class EventController {
           isFollowing: followedEventIds.has(activity.id),
         }));
 
+
         res
           .status(200)
           .json(handleResponse("Event Found Successfully", event[0]));
@@ -728,9 +729,23 @@ export class EventController {
           .where("event.user = :userId", { userId: req.user?.id })
           .getManyAndCount();
 
+          const groupedEvents={
+               publishedEvents: events.filter(
+                      (events) => events.status === EventStatus.PUBLISH
+                    ),
+                    draftEvents: events.filter(
+                      (events) => events.status === EventStatus.DRAFT
+                    ),
+                    archivedEvents: events.filter(
+                      (events) => events.status === EventStatus.ARCHIVE
+                    ),
+                    allEvents: events,
+                    totalItems,
+          }
+
         res.status(200).json(
           handleResponse("Events Fetched Successfully", {
-            events,
+            groupedEvents,
             pagination: {
               totalItems,
               currentPage: parseInt(page as string, 10),
