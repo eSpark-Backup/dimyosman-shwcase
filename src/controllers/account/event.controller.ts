@@ -669,7 +669,6 @@ export class EventController {
           isFollowing: followedEventIds.has(activity.id),
         }));
 
-
         res
           .status(200)
           .json(handleResponse("Event Found Successfully", event[0]));
@@ -729,23 +728,9 @@ export class EventController {
           .where("event.user = :userId", { userId: req.user?.id })
           .getManyAndCount();
 
-          const groupedEvents={
-               publishedEvents: events.filter(
-                      (events) => events.status === EventStatus.PUBLISH
-                    ),
-                    draftEvents: events.filter(
-                      (events) => events.status === EventStatus.DRAFT
-                    ),
-                    archivedEvents: events.filter(
-                      (events) => events.status === EventStatus.ARCHIVE
-                    ),
-                    allEvents: events,
-                    totalItems,
-          }
-
         res.status(200).json(
           handleResponse("Events Fetched Successfully", {
-            groupedEvents,
+            events,
             pagination: {
               totalItems,
               currentPage: parseInt(page as string, 10),
@@ -754,6 +739,86 @@ export class EventController {
             },
           })
         );
+      }
+      if (tab == "Group") {
+        const rawEvents = await this.eventRepo
+          .createQueryBuilder("event")
+          .leftJoinAndSelect("event.brand", "brand")
+          .leftJoinAndSelect("event.space", "space")
+          .leftJoinAndSelect("space.brand", "spaceBrand")
+          .leftJoin(
+            (qb) => {
+              return qb
+                .select("rsvp_sub.event", "eventId")
+                .addSelect("COUNT(rsvp_sub.id)", "rsvpCount")
+                .from("rsvp", "rsvp_sub")
+                .groupBy("rsvp_sub.event");
+            },
+            "rsvpCountSubquery",
+            "rsvpCountSubquery.eventId = event.id"
+          )
+          .addSelect(
+            "COALESCE(rsvpCountSubquery.rsvpCount, 0)",
+            "event_rsvpCount"
+          )
+          .where("event.user = :userId", { userId: req.user?.id })
+          .leftJoinAndSelect("event.user", "user")
+
+          .skip(skipNumber)
+          .take(takeNumber)
+          .orderBy("event.createdAt", "DESC")
+          .getRawAndEntities();
+
+        if (!rawEvents.entities.length) {
+          res.status(200).json(handleResponse("No Events Found"));
+          return next();
+        }
+
+        const { entities: rsvpEvents, raw } = rawEvents;
+        const events = rsvpEvents.map((rsvp, index) => {
+          const rawData = raw[index];
+          parseCoverImages(rsvp);
+          parseCoverImages(rsvp.brand);
+          parseCoverImages(rsvp.space);
+
+          return {
+            ...rsvp,
+
+            rsvpCount: Number(rawData.event_rsvpCount) || 0,
+          };
+        });
+
+        const [, totalItems] = await this.eventRepo
+          .createQueryBuilder("event")
+          .where("event.user = :userId", { userId: req.user?.id })
+          .getManyAndCount();
+
+          const groupedEvents={
+            publishedEvents: events.filter(
+                   (events) => events.status === EventStatus.PUBLISH
+                 ),
+                 draftEvents: events.filter(
+                   (events) => events.status === EventStatus.DRAFT
+                 ),
+                 archivedEvents: events.filter(
+                   (events) => events.status === EventStatus.ARCHIVE
+                 ),
+                 allEvents: events,
+                 totalItems,
+       }
+
+     res.status(200).json(
+       handleResponse("Events Fetched Successfully", {
+         groupedEvents,
+            pagination: {
+              totalItems,
+              currentPage: parseInt(page as string, 10),
+              pageSize: takeNumber,
+              totalPages: Math.ceil(totalItems / takeNumber),
+            },
+          })
+        );
+
       }
       if (tab === "RSVP") {
         try {
