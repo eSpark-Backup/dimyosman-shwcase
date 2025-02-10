@@ -592,14 +592,14 @@ export class UserController {
             })
             .groupBy("savedEntity.brand")
             .select("savedEntity.brand")
-            .addSelect("COUNT(savedEntity.id)", "followerCount")
+            .addSelect("COUNT(savedEntity.id)", "followedCount")
             .getRawMany();
 
           const brandFollowerCountMap = new Map();
           followers.forEach((follower) => {
             brandFollowerCountMap.set(
               follower.brandId,
-              parseInt(follower.followerCount, 10)|| 0
+              parseInt(follower.followedCount, 10)|| 0
             );
           });
 
@@ -621,13 +621,13 @@ export class UserController {
 
           savedEntities.forEach((entity) => {
             if (entity.brand && brandEventCountMap.has(entity.brand.id)) {
-              (entity as any).eventsCount = brandEventCountMap.get(
+              (entity as any).eventCount = brandEventCountMap.get(
                 entity.brand.id
               );
             }
 
             if (brandFollowerCountMap.has(entity.brand.id)) {
-              (entity as any).followerCount = brandFollowerCountMap.get(
+              (entity as any).followedCount = brandFollowerCountMap.get(
                 entity.brand.id
               );
             }
@@ -712,14 +712,14 @@ export class UserController {
               })
               .groupBy("savedEntity.brand")
               .select("savedEntity.brand")
-              .addSelect("COUNT(savedEntity.id)", "followerCount")
+              .addSelect("COUNT(savedEntity.id)", "followedCount")
               .getRawMany();
   
             const brandFollowerCountMap = new Map();
             followers.forEach((follower) => {
               brandFollowerCountMap.set(
                 follower.brandId,
-                parseInt(follower.followerCount, 10) || 0
+                parseInt(follower.followedCount, 10) || 0
               );
             });
   
@@ -741,13 +741,13 @@ export class UserController {
   
             followedEntities.forEach((entity) => {
               if (entity.brand && brandEventCountMap.has(entity.brand.id)) {
-                (entity as any).eventsCount = brandEventCountMap.get(
+                (entity as any).eventCount = brandEventCountMap.get(
                   entity.brand.id
                 );
               }
   
               if (brandFollowerCountMap.has(entity.brand.id)) {
-                (entity as any).followerCount = brandFollowerCountMap.get(
+                (entity as any).followedCount = brandFollowerCountMap.get(
                   entity.brand.id
                 );
               }
