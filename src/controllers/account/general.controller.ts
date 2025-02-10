@@ -1394,6 +1394,13 @@ export class GeneralController {
                 const events = rsvpEvents.map((eventRaw, index) => {
                   const rawData = raw[index];
                   const event = eventRaw as any;
+                  const eventDate =
+                  event.eventDate &&
+                  (event.eventDate as [
+                    { startDate: string; endDate: string }
+                  ]);
+
+
     
                   // Parse the RSVP data if needed
                   if (rawData.event_rsvp) {
@@ -1405,8 +1412,26 @@ export class GeneralController {
                       ...event.brand,
                     };
                   }
+
+                  if (eventDate) {
+                    const currentDate = new Date();
+      
+                    let eventStatus = "Ended";
+                    if (currentDate < new Date(eventDate[0].startDate)) {
+                      eventStatus = "Upcoming";
+                    } else if (
+                      currentDate >= new Date(eventDate[0].startDate) &&
+                      currentDate <= new Date(eventDate[0].endDate)
+                    ) {
+                      eventStatus = "Ongoing";
+                    }
+      
+                    return {
+                      ...event,
+                      eventStatus,
+                    };
+                  }
     
-                  return event;
                 });
     
                 entityMap.Event = [events, raw] as unknown as [Events[], number];
