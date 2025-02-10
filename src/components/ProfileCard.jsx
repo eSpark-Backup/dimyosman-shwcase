@@ -6,7 +6,7 @@ import ReusableModal from './Modal'
 import ImageModal from './ImageModal'
 import { LoadingButton } from '@mui/lab'
 
-const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, handleProfileChange, profileImgRef, handleMainImgChange, mainImgRef, coverImg, userProfileImg, userName, imgUrl, editImage, cover, currentIndex, HandleSlideChange, HandleInputCLick, handleRemove, onClick, loading, profileStats }) => {
+const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, handleProfileChange, profileImgRef, handleMainImgChange, mainImgRef, coverImg, userProfileImg, userName, imgUrl, editImage, cover, HandleSlideChange, HandleInputCLick, handleRemove, onClick, loading, profileStats }) => {
     const theme = useTheme()
     const location = useLocation()
     const navigate = useNavigate();
@@ -53,14 +53,10 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
     };
 
     const handleFileChange = (event) => {
-        const files = Array.from(event.target.files);
-        if (files.length + cover?.length > 3) {
-            toast.error("You can not select more than 3 images. Please first remove the selected image")
-        } else {
+        const files = event.target.files[0];
             if (handleMainImgChange) {
                 handleMainImgChange(files);
             }
-        }
         // Reset the file input value to allow selecting the same file again
         if (mainImgRef && mainImgRef.current) {
             mainImgRef.current.value = '';
@@ -110,39 +106,6 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                         }}
                     />
                 )}
-                {isEdit && <Box
-                    sx={{
-                        position: "absolute",
-                        bottom: "10px",
-                        left: "10px",
-                        display: "flex",
-                        columnGap: "20px",
-                        zIndex: 3,
-                    }}
-                >
-
-                    <img
-                        src={add}
-                        alt="Add Icon"
-                        style={{ cursor: "pointer" }}
-                        onClick={HandleInputCLick}
-                    />
-                    <img
-                        src={subtract}
-                        alt="Remove Icon"
-                        style={{ cursor: "pointer" }}
-                        onClick={handleRemove}
-                    />
-                    {Array.from({ length: cover?.length }).map((_, index) => (
-                        <img
-                            key={index}
-                            src={index === currentIndex ? activeItemIcon : notActiveIcon}
-                            alt={index === currentIndex ? "Active Icon" : "Not Active Icon"}
-                            style={{ cursor: "pointer" }}
-                            onClick={() => HandleSlideChange(index)}
-                        />
-                    ))}
-                </Box>}
                 {
                     isEdit && <Box
                         sx={{
