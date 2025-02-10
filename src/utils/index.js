@@ -317,7 +317,6 @@ export const keysForBrandsSapcesEvents = (object, type) => {
 
     return `${day}.${month}.${year}`;
   };
-  console.log(object)
 
   const coverArray =
     object?.coverImages?.map((imageItem) => imageItem?.url || "") || [];

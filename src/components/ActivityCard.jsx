@@ -239,14 +239,23 @@ const ActivityCard = ({
           </Box>
           <Box
             onClick={
-              activityId
+              // ? () => {
+              //   navigate(`/${activity}/${activityId}`, {
+              //     state: search ? { other: true } : null,
+              //   });
+              //   handleNavigation();
+              // }
+              // : () => { }
+
+              (id && userRole === "brand" && !isDraftedBrandOwner) || (id && userRole === "brand" && isDraftedBrandOwner === user?.id)
                 ? () => {
-                  navigate(`/${activity}/${activityId}`, {
+                  navigate(`/${userRole}/${id}`, {
                     state: search ? { other: true } : null,
                   });
                   handleNavigation();
                 }
                 : () => { }
+
             }
             sx={{
               cursor: activityId ? "pointer" : "default",

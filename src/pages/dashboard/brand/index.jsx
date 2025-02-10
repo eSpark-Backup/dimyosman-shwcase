@@ -151,7 +151,7 @@ const Brand = () => {
   const transformBrandData = (apiData, type) => {
     let newData;
     type === "fav"
-      ? (newData = apiData.map(({ brand, createdAt, eventsCount, followerCount, actionType }, index) => ({
+      ? (newData = apiData.map(({ brand, createdAt, eventCount, followedCount, actionType }, index) => ({
         id: brand?.id,
         type: "brand",
         brandName: brand.brandName || "N/A",
@@ -160,8 +160,8 @@ const Brand = () => {
           brand.brandCategory && brand.brandCategory.length > 0
             ? brand.brandCategory.map((item) => item.name).join(", ")
             : "N/A",
-        events: eventsCount || "-",
-        followers: followerCount || "-",
+        events: eventCount || "0",
+        followers: followedCount || "0",
         status: brand.status || "N/A",
         savedDate: moment(new Date(createdAt)).format("DD.MM.YYYY.") || "-",
         followDate: moment(new Date(createdAt)).format("DD.MM.YYYY.") || "-",
@@ -182,8 +182,8 @@ const Brand = () => {
           brand.brandCategory && brand.brandCategory.length > 0
             ? brand.brandCategory.map((item) => item.name).join(", ")
             : "N/A",
-        events: brand.events || "-",
-        followers: brand.followers || "-",
+        events: brand.eventCount || "0",
+        followers: brand.followedCount || "0",
         status: brand.status || "N/A",
         colHeader1: "Table cell",
         colHeader2: "Table cell",
