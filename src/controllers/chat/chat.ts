@@ -153,7 +153,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
         ? chat.receiverBrand?.id || "unknown_receiver"
         : "unknown";
 
-      if (!isReceiver) {
+      if (!isReceiver ) {
         if (!acc.brands[userRoleKey]) {
           acc.brands[userRoleKey] = {
             brandDetails: isSender
@@ -170,10 +170,12 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
             chats: [],
           };
         }
+        if(isSender || isReceiver){
         acc.brands[userRoleKey].chats.push({
           ...chat,
           isInquiryRole: isSender ? "sender" : "unknown", // Inquiry role only applies for brands
         });
+      }
       }
 
       // Handle spaces
