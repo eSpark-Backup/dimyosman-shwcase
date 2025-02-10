@@ -16,6 +16,12 @@ const ProfileEvents = ({ filter1, filter2, filter3, cardsData, loading }) => {
             </Box>
         )
     }
+
+    const filteredItems = cardsData?.filter((item) => {
+        if (selectedChoice === 1) return item.status === "Upcoming";
+        if (selectedChoice === 2) return item.status === "Ended";
+        return true; // Show all if selectedChoice is 0
+    });
     return (
         <Box
             sx={{
@@ -78,9 +84,9 @@ const ProfileEvents = ({ filter1, filter2, filter3, cardsData, loading }) => {
                 rowGap={4}
                 columnGap={0}
             >
-                {cardsData.map((event, ind) => (
+                {filteredItems?.map((event, ind) => (
                     <Box key={ind} sx={{ width: { xs: "100%", md: "328px" } }}>
-                        <EventCard event={event} showBtn={true} btnText={"Edit"} />
+                        <EventCard event={event} showBtn={true} edit={true} />
                     </Box>
                 ))}
             </Stack>

@@ -14,6 +14,12 @@ const BrandCard = ({ items, filter1, filter2, filter3, loading }) => {
             </Box>
         )
     }
+
+    const filteredItems = items?.filter((item) => {
+        if (selectedChoice === 1) return item.status === "PUBLISH";
+        if (selectedChoice === 2) return item.status === "DRAFT";
+        return true;
+    });
     return (
         <Box sx={{ mt: "50px" }}>
             <Box
@@ -69,7 +75,7 @@ const BrandCard = ({ items, filter1, filter2, filter3, loading }) => {
                 }}
             >
                 {
-                    items?.map((item, index) => {
+                    filteredItems?.map((item, index) => {
                         return (
                             <Box
                                 sx={{

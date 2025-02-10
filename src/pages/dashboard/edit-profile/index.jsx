@@ -46,15 +46,15 @@ const EditProfile = () => {
                 profileStats: [
                     {
                         name: "Brands:",
-                        value: data?.data?.brandsCount
+                        value: myProfileData?.data?.brandsCount
                     },
                     {
                         name: "Events:",
-                        value: data?.data?.eventsCount
+                        value: myProfileData?.data?.eventsCount
                     },
                     {
                         name: "Spaces:",
-                        value: data?.data?.spacesCount
+                        value: myProfileData?.data?.spacesCount
                     },
                     {
                         name: "Member since:",

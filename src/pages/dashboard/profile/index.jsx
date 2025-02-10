@@ -55,7 +55,8 @@ const Profile = () => {
         brandCategory: item?.brandCategory?.map(category => category.name) || [],
         description: item?.details?.description,
         id: item?.id,
-        brandImage: item?.coverImages[0]?.url
+        brandImage: item?.coverImages[0]?.url,
+        status: item?.status
       }));
 
       setBrands(brands)

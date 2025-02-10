@@ -18,12 +18,13 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
     }
 
     useEffect(() => {
+        console.log(userProfileImg)
         setPreviewImage(userProfileImg);
     }, [userProfileImg]);
 
     useEffect(() => {
         console.log(editImage)
-     }, [editImage])
+    }, [editImage])
 
 
     // const handleImageChange = (event) => {
@@ -83,7 +84,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                 }}
                 onClick={() => !isEdit && setShowImageModal(true)}
             >
-                {editImage && (
+                {editImage && !Array.isArray(editImage) && (
                     <img
                         src={editImage}
                         alt="edit"
@@ -294,7 +295,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                                                 objectFit: 'cover',
                                                 opacity: 0.5,
                                                 borderRadius: '5px',
-                                                pointerEvents: "none", // ✅ Allows clicks to pass through
+                                                pointerEvents: "none",
                                             }}
                                         />
                                     )}
@@ -338,7 +339,8 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                                     sx={{
                                         width: "96px",
                                         height: "96px",
-                                        position: "relative"
+                                        position: "relative",
+                                        border: !userProfileImg && "1px dashed rgb(0, 20, 28, 0.4)",
                                     }}
                                 >
                                     <figure
@@ -346,7 +348,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                                         role="img"
 
                                     >
-                                        <img src={userProfileImg} alt="User Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                        {userProfileImg && <img src={userProfileImg} alt="User Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
 
                                     </figure>
                                     <Box
