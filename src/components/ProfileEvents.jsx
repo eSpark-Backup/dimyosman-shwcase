@@ -5,7 +5,7 @@ import EventCard from './EventCard';
 import { addGrey } from '../assets';
 import { useNavigate } from 'react-router-dom';
 
-const ProfileEvents = ({ filter1, filter2, filter3, filter4, filter5, filter6, filter7, cardsData, loading }) => {
+const ProfileEvents = ({ myProfile, filter1, filter2, filter3, filter4, filter5, filter6, filter7, cardsData, loading }) => {
     const theme = useTheme();
     const [selectedChoice, setSelectedChoice] = useState(0);
     const navigate = useNavigate()
@@ -38,7 +38,7 @@ const ProfileEvents = ({ filter1, filter2, filter3, filter4, filter5, filter6, f
             <Box
                 sx={{
                     display: "flex",
-                    justifyContent: "space-between",
+                    justifyContent: myProfile ? "space-between" : "center",
                     flexWrap: "wrap",
                     rowGap: "10px"
                 }}
@@ -53,14 +53,14 @@ const ProfileEvents = ({ filter1, filter2, filter3, filter4, filter5, filter6, f
                 >
                     <Typography sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "400" }}>Show:</Typography>
                     <Typography onClick={() => setSelectedChoice(0)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 0 ? "600" : "400", cursor: "pointer" }}>{filter1}</Typography>
-                    <Typography onClick={() => setSelectedChoice(1)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 1 ? "600" : "400", cursor: "pointer" }}>{filter2}</Typography>
+                    {myProfile && <><Typography onClick={() => setSelectedChoice(1)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 1 ? "600" : "400", cursor: "pointer" }}>{filter2}</Typography>
                     <Typography onClick={() => setSelectedChoice(2)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 2 ? "600" : "400", cursor: "pointer" }}>{filter3}</Typography>
-                    <Typography onClick={() => setSelectedChoice(3)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 3 ? "600" : "400", cursor: "pointer" }}>{filter4}</Typography>
+                    <Typography onClick={() => setSelectedChoice(3)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 3 ? "600" : "400", cursor: "pointer" }}>{filter4}</Typography></>}
                     <Typography onClick={() => setSelectedChoice(4)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 4 ? "600" : "400", cursor: "pointer" }}>{filter5}</Typography>
                     <Typography onClick={() => setSelectedChoice(5)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 5 ? "600" : "400", cursor: "pointer" }}>{filter6}</Typography>
                     <Typography onClick={() => setSelectedChoice(6)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 6 ? "600" : "400", cursor: "pointer" }}>{filter7}</Typography>
                 </Box>
-                <Button
+                {myProfile && <Button
                     sx={{
                         backgroundColor: "rgb(209, 219, 215, 0.4)",
                         height: "31px",
@@ -80,7 +80,7 @@ const ProfileEvents = ({ filter1, filter2, filter3, filter4, filter5, filter6, f
                 >
                     <img src={addGrey} alt="" />
                     Add New
-                </Button>
+                </Button>}
 
             </Box>
             <Stack
@@ -94,7 +94,7 @@ const ProfileEvents = ({ filter1, filter2, filter3, filter4, filter5, filter6, f
             >
                 {filteredItems?.length > 0 ? filteredItems?.map((event, ind) => (
                     <Box key={ind} sx={{ width: { xs: "100%", md: "328px" } }}>
-                        <EventCard event={event} showBtn={true} edit={true} />
+                        <EventCard event={event} showBtn={true} edit={myProfile} />
                     </Box>
                 ))
                 :

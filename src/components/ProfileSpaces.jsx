@@ -4,7 +4,7 @@ import SpaceCard from './SpaceCard';
 import { addGrey } from '../assets';
 import { useNavigate } from 'react-router-dom';
 
-const ProfileSpaces = ({ filter1, filter2, filter3, filter4, cardsData, loading }) => {
+const ProfileSpaces = ({ myProfile, filter1, filter2, filter3, filter4, cardsData, loading }) => {
     const [selectedChoice, setSelectedChoice] = useState(0)
     const theme = useTheme();
     const navigate = useNavigate()
@@ -31,7 +31,7 @@ const ProfileSpaces = ({ filter1, filter2, filter3, filter4, cardsData, loading 
                 mt: "50px"
             }}
         >
-            <Box
+            {myProfile && <Box
                 sx={{
                     display: "flex",
                     justifyContent: "space-between",
@@ -75,7 +75,7 @@ const ProfileSpaces = ({ filter1, filter2, filter3, filter4, cardsData, loading 
                     Add New
                 </Button>
 
-            </Box>
+            </Box>}
             <Stack
                 marginTop={2}
                 direction={{ xs: "column", md: "row" }}
@@ -87,7 +87,7 @@ const ProfileSpaces = ({ filter1, filter2, filter3, filter4, cardsData, loading 
             >
                 {filteredItems?.length > 0 ? filteredItems.map((space, ind) => (
                     <Box key={ind} sx={{ width: { xs: "100%", md: "328px" } }}>
-                        <SpaceCard spaces={space} showBtn={true} />
+                        <SpaceCard myProfile={myProfile} spaces={space} showBtn={true} />
                     </Box>
                 ))
                 :

@@ -8,20 +8,32 @@ import dayjs from "dayjs";
 import { useGetAllBrandsQuery } from "../../../services/brands";
 import { useGetAllEventsQuery } from "../../../services/events";
 import { useGetAllSpaceQuery } from "../../../services/space";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Profile = () => {
+  const { id } = useParams()
+  const navigate = useNavigate();
   const [profileData, setProfileData] = useState(profileContent)
-  const { events } = useSelector((state) => state.event);
-  const { data, isLoading, isSuccess, isError, error, isFetching } = useGetUserProfileQuery({}, { refetchOnFocus: true, refetchOnMountOrArgChange: true })
+  const { user } = useSelector((state) => state.auth);
+  const myProfile = id === user.id;
+  const { data, isLoading, isSuccess, isError, error, isFetching } = useGetUserProfileQuery(myProfile ? null : id, { refetchOnFocus: true, refetchOnMountOrArgChange: true })
   const [brands, setBrands] = useState([])
   const [myEvents, setMyEvents] = useState([])
   const [mySpaces, setMySpaces] = useState([])
+
+  useEffect(() => {
+   if(isError) {
+      toast.error(error?.data?.message);
+      navigate(-1)
+   }
+  }, [isError, error])
 
   const [forceRender, setForceRender] = useState(false);
 
   const { data: brandData, isError: isBrandError, isLoading: isBrandLoading, isSuccess: isBrandSuccess, error: brandError, isFetching: isBrandFetching } =
     useGetAllBrandsQuery(
-      { pageSize: 100 },
+      myProfile ? { pageSize: 100 } : { publicProfile: true, id, entity: "BRAND", pageSize: 100 },
       {
         refetchOnMountOrArgChange: true,
         refetchOnFocus: true,
@@ -30,7 +42,7 @@ const Profile = () => {
 
   const { data: eventData, isError: isEventError, isLoading: isEventLoading, isSuccess: isEventSuccess, error: eventError, isFetching: isEventFetchhing } =
     useGetAllEventsQuery(
-      { pageSize: 100, tab: "Group" },
+      myProfile ? { pageSize: 100, tab: "Group" } : { publicProfile: true, id, entity: "EVENT", pageSize: 100 },
       {
         refetchOnMountOrArgChange: true,
         refetchOnFocus: true,
@@ -39,7 +51,7 @@ const Profile = () => {
 
   const { data: spaceData, isError: isSpaceError, isLoading: isSpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching, } =
     useGetAllSpaceQuery(
-      { pageSize: 100, tab: "Group" },
+      myProfile ? { pageSize: 100, tab: "Group" } : { publicProfile: true, id, entity: "SPACE", pageSize: 100 },
       {
         refetchOnMountOrArgChange: true,
         refetchOnFocus: true,
@@ -48,7 +60,8 @@ const Profile = () => {
 
   useEffect(() => {
     if (isBrandSuccess) {
-      const brands = brandData?.data?.groupedBrands?.allBrands?.map((item) => ({
+      const brandsArr = myProfile ? brandData?.data?.groupedBrands?.allBrands : brandData?.data?.brands
+      const brands = brandsArr?.map((item) => ({
         profileImage: item?.brandImage,
         brandName: item?.brandName,
         brandCategory: item?.brandCategory?.map(category => category.name) || [],
@@ -57,6 +70,8 @@ const Profile = () => {
         brandImage: item?.coverImages[0]?.url,
         status: item?.status,
         shareableLink: item?.shareableLink,
+        isFavourite: item?.isFavourite,
+        isFollowed: item?.isFollowed,
       }));
 
       setBrands(brands)
@@ -65,7 +80,8 @@ const Profile = () => {
 
   useEffect(() => {
     if (isSpaceSuccess) {
-      const spaces = spaceData?.data?.groupedSpaces?.allSpaces?.map((item) => {
+      const spaceArr = myProfile ? spaceData?.data?.groupedSpaces?.allSpaces : spaceData?.data?.spaces
+      const spaces = spaceArr?.map((item) => {
         const dayPricing = item?.pricing?.find((priceItem) => priceItem.term === "Day");
 
         return {
@@ -86,7 +102,8 @@ const Profile = () => {
 
   useEffect(() => {
     if (isEventSuccess) {
-      const eventsData = eventData?.data?.groupedEvents?.allEvents?.map((item) => ({
+      const eventArr = myProfile ? eventData?.data?.groupedEvents?.allEvents : eventData?.data?.events
+      const eventsData = eventArr?.map((item) => ({
         slides: [item?.coverImages?.[0]?.url],
         profileName: item?.eventName,
         category: item?.eventCategory?.map(category => category.name) || [],
@@ -104,9 +121,13 @@ const Profile = () => {
         ],
         details: {
           by: item?.user?.name,
-          starting: dayjs.utc(item?.eventDate?.[0]?.startDate).add(1, "day").startOf("day").local().format("DD.MM.YYYY"),
+          starting: dayjs.utc(item?.eventDate?.[0]?.startDate).startOf("day").local().format("DD.MM.YYYY"),
           RSVP: item?.rsvpCount
-        }
+        },
+        startDate: dayjs.utc(item?.eventDate[0]?.startDate),
+        endDate: dayjs.utc(item?.eventDate[0]?.endDate),
+        rsvpDates: item?.event_rsvp?.attendanceDates?.rsvpDates ? item?.event_rsvp?.attendanceDates?.rsvpDates?.map(item => item.dateTime) : [],
+
       }));
 
       setMyEvents(eventsData)
@@ -165,6 +186,7 @@ const Profile = () => {
           label: profileData[0].tabs[1],
           component: (
             <BrandCard
+              myProfile={myProfile}
               items={brands}
               filter1={"All"}
               filter2={"Published"}
@@ -182,6 +204,7 @@ const Profile = () => {
           label: profileData[0].tabs[2],
           component: (
             <ProfileEvents
+              myProfile={myProfile}
               filter1={"All"}
               filter2={"Published"}
               filter3={"Draft"}
@@ -202,6 +225,7 @@ const Profile = () => {
           label: profileData[0].tabs[3],
           component: (
             <ProfileSpaces
+              myProfile={myProfile}
               cardsData={mySpaces}
               filter1={"All"}
               filter2={"Published"}
@@ -235,6 +259,7 @@ const Profile = () => {
       }}
     >
       <ProfileCard
+        myProfile={myProfile}
         userProfileImg={myProfileData?.profile}
         userName={myProfileData?.profileName}
         cover={myProfileData?.cover}

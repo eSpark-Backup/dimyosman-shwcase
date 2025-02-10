@@ -35,6 +35,7 @@ import { LoadingButton } from "@mui/lab";
 const ActivityCard = ({
   fullItem = {},
   id,
+  publicProfile,
   activityId,
   userName,
   userRole,
@@ -146,9 +147,9 @@ const ActivityCard = ({
         >
           <Box
             onClick={
-              id && userRole === "brand"
+              id
                 ? () => {
-                    navigate(`/${userRole}/${id}`);
+                    userRole === "user" && !publicProfile ? toast.error("User profile is not public") : navigate(`/${userRole === "user" ? "profile" : userRole}/${id}`);
                     handleNavigation();
                   }
                 : () => {}

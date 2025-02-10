@@ -1,10 +1,48 @@
 import { eventBadge } from '../assets'
 import { Box, Button, Typography, useTheme } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
+import RSVPCalendar from './rsvp-calendar'
+import { useRef, useState } from 'react'
+import { useClickOutside } from '../utils'
+import { useAddRsvpDateMutation } from '../services/events'
+import dayjs from 'dayjs'
+import { toast } from 'react-toastify'
 
 const EventCard = ({ edit, onClick, event, showBtn }) => {
   const theme = useTheme()
   const navigate = useNavigate()
+  const [openCalendar, setOpenCalendar] = useState(false);
+  const [addRsvp, { isLoading: rsvpLoading }] = useAddRsvpDateMutation();
+  
+  const [selectedDates, setSelectedDates] = useState(
+    event?.rsvpDates && event?.rsvpDates?.length > 0 ? event?.rsvpDates?.map((date) => dayjs(date).format("YYYY-MM-DD")) : []
+  );
+
+  const handleCancel = () => {
+    setOpenCalendar(false);
+  };
+  
+  const modalRef = useRef();
+  useClickOutside(modalRef, () => handleCancel());
+
+  const handleOk = () => {
+      const newRsvpDates = selectedDates.map(item => {return { dateTime: item }})
+        const objToSend = {
+          id: event?.id,
+          credentials: {
+            attendanceDates: {
+              dateTime: "string",
+              rsvpDates: newRsvpDates,
+            },
+          },
+        };
+        addRsvp(objToSend).then((res) => {
+          if (res?.data?.status) {
+            toast.success(res?.data?.message);
+            setOpenCalendar(false);
+          }
+        });
+    };
   return (
     <Box
       onClick={onClick ? onClick : () => { }}
@@ -71,11 +109,24 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
               backgroundColor: "rgb(209, 219, 215, 0.4)"
             }
           }}
-          onClick={() => navigate(`/event/${event?.id}/edit`)}
+          onClick={edit ? () => navigate(`/event/${event?.id}/edit`) : () => setOpenCalendar(true)}
         >
           {edit ? "Edit" : "RSVP"}
         </Button>
       }
+      {openCalendar && !edit && (
+        <RSVPCalendar
+          loading={rsvpLoading}
+          modalRef={modalRef}
+          selectedDates={selectedDates}
+          setSelectedDates={setSelectedDates}
+          handleCancel={handleCancel}
+          handleOk={handleOk}
+          startDate={event?.startDate}
+          endDate={event?.endDate}
+          isDetails={true}
+        />
+        )}
     </Box>
   )
 }

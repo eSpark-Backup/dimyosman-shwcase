@@ -71,6 +71,7 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
             rsvpDates: item.event_rsvp?.attendanceDates?.rsvpDates ? item.event_rsvp?.attendanceDates?.rsvpDates?.map(item => item.dateTime) : [],
             startDate: item?.type === "event" && item?.eventDate[0]?.startDate || "",
             endDate: item?.type === "event" && item?.eventDate[0]?.endDate || "",
+            publicProfile: item?.user?.profile
           };
         }) || [];
         const mergedData = [...allActivityData, ...updatedData];
@@ -156,6 +157,7 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
         >
           {allActivityData?.map((item, index) => (
             <ActivityCard
+              publicProfile={item?.publicProfile}
               isFollowed={item?.isFollowed}
               isFavourite={item?.isFavourite}
               key={index}
