@@ -288,12 +288,15 @@ export class GeneralController {
         if (entity === "SPACE") {
           eventQuery = null;
           brandQuery = null;
+          eventCountQuery=null;
         } else if (entity === "EVENT") {
           spaceQuery = null;
           brandQuery = null;
         } else if (entity === "BRAND") {
           spaceQuery = null;
           eventQuery = null;
+          eventCountQuery=null;
+
         }
       }
 
