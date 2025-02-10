@@ -37,8 +37,8 @@ export const userApi = api.injectEndpoints({
             },
         }),
         getUserProfile: builder.query({
-            query: () => ({
-                url: `/user/profile`,
+            query: (id) => ({
+                url: id ? `/general/public/profile/${id}` : `/user/profile`,
             }),
         }),
     })

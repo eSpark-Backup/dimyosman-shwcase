@@ -71,7 +71,8 @@ const Activity = () => {
             rsvpDates: item.event_rsvp?.attendanceDates?.rsvpDates ? item.event_rsvp?.attendanceDates?.rsvpDates?.map(item => item.dateTime) : [],
             startDate: item?.type === "event" && item?.eventDate[0]?.startDate || "",
             endDate: item?.type === "event" && item?.eventDate[0]?.endDate || "",
-            isDraftedBrandOwner: (item?.type === "event" || item?.type === "space") && item?.brand?.status === "DRAFT" ? item?.brand?.user?.id : null
+            isDraftedBrandOwner: (item?.type === "event" || item?.type === "space") && item?.brand?.status === "DRAFT" ? item?.brand?.user?.id : null,
+            publicProfile: item?.user?.profile
           };
         }) || [];
         const mergedData = [...allActivityData, ...updatedData];
@@ -157,6 +158,7 @@ const Activity = () => {
         >
           {allActivityData?.map((item, index) => (
             <ActivityCard
+              publicProfile={item?.publicProfile}
               isFollowed={item?.isFollowed}
               isFavourite={item?.isFavourite}
               key={index}

@@ -6,7 +6,7 @@ import ReusableModal from './Modal'
 import ImageModal from './ImageModal'
 import { LoadingButton } from '@mui/lab'
 
-const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, handleProfileChange, profileImgRef, handleMainImgChange, mainImgRef, coverImg, userProfileImg, userName, imgUrl, editImage, cover, HandleSlideChange, HandleInputCLick, handleRemove, onClick, loading, profileStats }) => {
+const ProfileCard = ({ myProfile, userRole = "account", isEdit, handleProfileImgClick, handleProfileChange, profileImgRef, handleMainImgChange, mainImgRef, coverImg, userProfileImg, userName, imgUrl, editImage, cover, HandleSlideChange, HandleInputCLick, handleRemove, onClick, loading, profileStats }) => {
     const theme = useTheme()
     const location = useLocation()
     const navigate = useNavigate();
@@ -168,7 +168,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                     </figure>
 
                 </Button>
-                <LoadingButton
+                {myProfile && <LoadingButton
                     sx={{
                         backgroundColor: isEdit ? "rgb(0, 20, 28, 0.9)" : "#4d5b60",
                         height: "31px",
@@ -204,7 +204,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                         isEdit ? "Publish" : "Edit"
                     }
 
-                </LoadingButton>
+                </LoadingButton>}
                 <Box
                     sx={{
                         position: "absolute",

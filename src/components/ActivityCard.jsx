@@ -36,6 +36,7 @@ import { useSelector } from "react-redux";
 const ActivityCard = ({
   fullItem = {},
   id,
+  publicProfile,
   activityId,
   userName,
   userRole,
