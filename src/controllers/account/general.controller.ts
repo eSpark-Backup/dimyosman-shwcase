@@ -127,6 +127,33 @@ export class GeneralController {
         .skip(skipNumber)
         .take(takeNumber);
 
+        let eventCountQuery =this.eventsRepo
+        .createQueryBuilder("event")
+        .leftJoinAndSelect("event.brand", "brand")
+        .leftJoinAndSelect("event.space", "space")
+        .leftJoinAndSelect("space.brand", "spaceBrand")
+        .andWhere("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
+        .andWhere("event.user != :userId", { userId })
+        .addSelect((subQuery) => {
+          return subQuery
+            .select(
+              `COALESCE(
+                  JSON_OBJECT(
+                      'id', rsvp.id,
+                      'attendanceDates', rsvp.attendanceDates,
+                      'verifyAttendance', rsvp.verifyAttendance,
+                      'review', rsvp.review,
+                      'rating', rsvp.rating
+                  ), '{}')`, // Ensure null values don't break the JSON
+              "event_rsvp"
+            )
+            .from("RSVP", "rsvp")
+            .where("rsvp.event = event.id")
+            .andWhere("rsvp.user = :userId", { userId })
+            .limit(1);
+        }, "event_rsvp")
+  
+
       let brandQuery = this.brandRepo
         .createQueryBuilder("brand")
         .andWhere("brand.status = :STATUS", { STATUS: BRAND_STATUS.PUBLISH })
@@ -231,6 +258,21 @@ export class GeneralController {
             );
           })
         );
+
+        eventCountQuery.andWhere(
+          new Brackets((qb) => {
+            qb.where(
+              `(${earthRadius} * acos(
+                        cos(radians(:lat)) *
+                        cos(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.lat')) * 1)) *
+                        cos(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.long')) * 1) - radians(:long)) +
+                        sin(radians(:lat)) *
+                        sin(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.lat')) * 1))
+                    )) <= :radius`,
+              { lat: newlat, long: newlong, radius: searchRadius }
+            );
+          })
+        );
       }
 
       if (additional) {
@@ -259,6 +301,8 @@ export class GeneralController {
       if (spaceQuery) queries.push(spaceQuery.getManyAndCount());
       if (eventQuery) queries.push(eventQuery.getRawAndEntities());
       if (brandQuery) queries.push(brandQuery.getManyAndCount());
+      if(eventCountQuery) queries.push(eventCountQuery.getRawAndEntities());
+
 
       const results = await Promise.all(queries);
 
@@ -271,6 +315,9 @@ export class GeneralController {
         Event: null,
         Brand: null,
       };
+      const totalEventsCount = results ? results[1] : 0;
+      delete results[1];
+      
 
       results.forEach((result, index) => {
         if (entity === "SPACE") {
@@ -444,7 +491,7 @@ export class GeneralController {
         shareableLink: generateShareableLink({ id: brand.id, type: "brand" }),
         isFollowed: followedEntityIds.has(brand.id),
       }));
-      const totalResults = spaceCount + updatedEvents.length + brandCount;
+      const totalResults = spaceCount + (totalEventsCount && 'entities' in totalEventsCount ? totalEventsCount.entities.length : 0) + brandCount;
 
       const response = {
         spaces: updatedSpaces,
@@ -1433,6 +1480,7 @@ export class GeneralController {
                   }
     
                 });
+                
     
                 entityMap.Event = [events, raw] as unknown as [Events[], number];
               }

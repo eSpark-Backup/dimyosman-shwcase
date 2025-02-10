@@ -715,9 +715,18 @@ export class SpaceController {
       if (typeof coverKeys === "string" && !Array.isArray(coverKeys)) {
         coverKeys = coverKeys.split(",").map((item) => item.trim());
       }
-      const existingSpace = await this.spaceRepo.findOne({ where: { id } });
+      const existingSpace = await this.spaceRepo.createQueryBuilder("space")
+        .where("space.id = :id", { id })
+        .leftJoinAndSelect("space.user", "user")
+        .getOne();
       if (!existingSpace) {
         return next(res.status(404).json({ message: "Space not found" }));
+      }
+      if (existingSpace.user.id != req.user.id) {
+        throw new ApiError(
+          "You are not the owner of this space",
+          HTTP_STATUS.FORBIDDEN
+        );
       }
       if (
         existingSpace.status == SpaceStatus.ARCHIVE &&

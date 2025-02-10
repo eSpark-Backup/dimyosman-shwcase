@@ -208,11 +208,15 @@ export class EventController {
       const existingEvent = await this.eventRepo
         .createQueryBuilder("event")
         .where("event.id = :id", { id })
+        .leftJoinAndSelect("event.user", "user")
         .leftJoinAndSelect("event.leaseSpace", "leaseSpace")
         .leftJoinAndSelect("leaseSpace.space", "space")
         .getOne();
       if (!existingEvent) {
         return next(res.status(404).json({ message: "Event not found" }));
+      }
+      if(existingEvent.user.id !=req.user.id){
+        throw new ApiError("You are not authorized to update this event", HTTP_STATUS.FORBIDDEN);
       }
       if (
         existingEvent.status == EventStatus.ARCHIVE &&

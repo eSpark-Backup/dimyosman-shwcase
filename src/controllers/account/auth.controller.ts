@@ -108,7 +108,7 @@ export class AuthController {
         }
 
         const user = new User();
-        user.name = firstName + " " + lastName;
+        user.name = lastName ? `${firstName} ${lastName}` : firstName;
         user.email = email;
         user.profileImage = profileImage;
         user.loginType = loginType;
