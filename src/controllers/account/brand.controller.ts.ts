@@ -658,7 +658,7 @@ export class BrandController {
         return next();
       }
 
-      const updatedBrands = await Promise.all(
+   const updatedBrands=   await Promise.all(
         brands.map(async (brand) => {
        
           const getEventCount=await this.eventsRepo
@@ -679,9 +679,7 @@ export class BrandController {
             .leftJoinAndSelect("savedEntity.brand", "brand");
       
           const [ getFollowedCount] = await Promise.all([
-            followedEntityQuery
-              .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
-              .getOne(),
+          
             followedEntityQuery.getCount(),
           ]);
       
@@ -695,14 +693,14 @@ export class BrandController {
       );
       
 
-      brands.forEach((brand) => {
+      updatedBrands.forEach((brand) => {
         if (typeof brand.coverImages === "string") {
           brand.coverImages = JSON.parse(brand.coverImages);
         }
       });
 
       const groupedBrands = {
-        publishedBrands: brands
+        publishedBrands: updatedBrands
           .filter((brand) => brand.status === BrandStatus.PUBLISH)
           .map((brand) => ({
             ...brand,
@@ -711,13 +709,13 @@ export class BrandController {
               type: "brand",
             }),
           })),
-        draftBrands: brands.filter(
+        draftBrands: updatedBrands.filter(
           (brand) => brand.status === BrandStatus.DRAFT
         ),
-        archivedBrands: brands.filter(
+        archivedBrands: updatedBrands.filter(
           (brand) => brand.status === BrandStatus.ARCHIVE
         ),
-        allBrands: brands.map((brand) =>
+        allBrands: updatedBrands.map((brand) =>
           brand.status === BrandStatus.PUBLISH
             ? {
                 ...brand,
