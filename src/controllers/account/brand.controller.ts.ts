@@ -655,9 +655,15 @@ export class BrandController {
       });
 
       const groupedBrands = {
-        publishedBrands: brands.filter(
-          (brand) => brand.status === BrandStatus.PUBLISH
-        ),
+        publishedBrands: brands
+        .filter((brand) => brand.status === BrandStatus.PUBLISH)
+        .map((brand) => ({
+          ...brand,
+          shareableLink: generateShareableLink({
+            id: brand.id,
+            type: "brand",
+          }),
+        })),
         draftBrands: brands.filter(
           (brand) => brand.status === BrandStatus.DRAFT
         ),
