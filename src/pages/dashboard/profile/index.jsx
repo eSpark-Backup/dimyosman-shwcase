@@ -1,31 +1,223 @@
-import { Box } from "@mui/material";
+import { Box, LinearProgress } from "@mui/material";
 import { BrandCard, OutlinedTabs, ProfileAboutSection, ProfileCard, ProfileEvents, ProfileSpaces } from "../../../components";
 import { profileContent } from "../../../constant";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { useGetUserProfileQuery } from "../../../services/user";
+import dayjs from "dayjs";
+import { useGetAllBrandsQuery } from "../../../services/brands";
+import { useGetAllEventsQuery } from "../../../services/events";
+import { useGetAllSpaceQuery } from "../../../services/space";
 
 const Profile = () => {
   const [profileData, setProfileData] = useState(profileContent)
   const { events } = useSelector((state) => state.event);
+  const { data, isLoading, isSuccess, isError, error, isFetching } = useGetUserProfileQuery({}, { refetchOnFocus: true, refetchOnMountOrArgChange: true })
+  const [brands, setBrands] = useState([])
+  const [myEvents, setMyEvents] = useState([])
+  const [mySpaces, setMySpaces] = useState([])
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [forceRender, setForceRender] = useState(false);
+
+  const { data: brandData, isError: isBrandError, isLoading: isBrandLoading, isSuccess: isBrandSuccess, error: brandError, isFetching: isBrandFetching } =
+    useGetAllBrandsQuery(
+      { pageSize: 100 },
+      {
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true,
+      }
+    );
+
+  const { data: eventData, isError: isEventError, isLoading: isEventLoading, isSuccess: isEventSuccess, error: eventError, isFetching: isEventFetchhing } =
+    useGetAllEventsQuery(
+      { pageSize: 100, tab: "Group" },
+      {
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true,
+      }
+    );
+
+  const { data: spaceData, isError: isSpaceError, isLoading: isSpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching, } =
+    useGetAllSpaceQuery(
+      { pageSize: 100, tab: "Group" },
+      {
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true,
+      }
+    );
+
+  useEffect(() => {
+    if (isBrandSuccess) {
+      const brands = brandData?.data?.groupedBrands?.allBrands?.map((item) => ({
+        profileImage: item?.brandImage,
+        brandName: item?.brandName,
+        brandCategory: item?.brandCategory?.map(category => category.name) || [],
+        description: item?.details?.description,
+        id: item?.id,
+        brandImage: item?.coverImages[0]?.url,
+        status: item?.status
+      }));
+
+      setBrands(brands)
+    }
+  }, [isBrandSuccess, brandData]);
+
+  useEffect(() => {
+    if (isSpaceSuccess) {
+      const spaces = spaceData?.data?.groupedSpaces?.allSpaces?.map((item) => {
+        const dayPricing = item?.pricing?.find((priceItem) => priceItem.term === "Day");
+
+        return {
+          spacePic: item?.coverImages?.[0]?.url,
+          spaceName: item?.spaceName,
+          spaceAddress: item?.brand?.brandName,
+          spaceDescription: item?.details?.description,
+          spacePrice: dayPricing ? `$${dayPricing.price}/day` : "N/A",
+          spaceDeadline: dayPricing ? `miniumum lease: ${dayPricing?.minimum} days` : "N/A",
+          id: item?.id
+        };
+      });
+
+      setMySpaces(spaces)
+    }
+  }, [isSpaceSuccess, spaceData]);
+
+  useEffect(() => {
+    if (isEventSuccess) {
+      const eventsData = eventData?.data?.groupedEvents?.allEvents?.map((item) => ({
+        slides: [item?.coverImages?.[0]?.url],
+        profileName: item?.eventName,
+        category: item?.eventCategory?.map(category => category.name) || [],
+        id: item?.id,
+        status: item?.eventStatus,
+        tabs: [
+          {
+            props: {
+              details: {
+                overview: item?.details?.description || null
+              }
+            }
+          }
+        ],
+        details: {
+          by: item?.user?.name,
+          starting: dayjs.utc(item?.eventDate?.[0]?.startDate).add(1, "day").startOf("day").local().format("DD.MM.YYYY"),
+          RSVP: item?.rsvpCount
+        }
+      }));
+
+      setMyEvents(eventsData)
+    }
+  }, [isEventSuccess, eventData]);
+
+  const [myProfileData, setMyProfileData] = useState({
+    cover: [],
+    profile: null,
+    profileName: "",
+    profileAbout: "",
+    profileStats: []
+  })
+
+  useEffect(() => {
+    if (isSuccess && data) {
+      setMyProfileData({
+        cover: data?.data?.coverImages,
+        profile: data?.data?.profileImage,
+        profileName: data?.data?.name,
+        profileAbout: data?.data?.about?.about,
+        profileStats: [
+          {
+            name: "Brands:",
+            value: data?.data?.brandsCount
+          },
+          {
+            name: "Events:",
+            value: data?.data?.eventsCount
+          },
+          {
+            name: "Spaces:",
+            value: data?.data?.spacesCount
+          },
+          {
+            name: "Member since:",
+            value: dayjs(data?.data?.createdAt).format("MM.YYYY.")
+          }
+        ]
+      });
+
+      setForceRender((prev) => !prev);
+    }
+  }, [isSuccess, data]);
+
+  const HandleSlideChange = (index) => {
+    if (index >= 0 && index <= brandData.cover.length) {
+      setCurrentIndex(index);
+    }
+  };
+
   const profileTabs = [
     {
       label: profileData[0].tabs[0],
-      component: <ProfileAboutSection content={profileData[0].aboutSection} />
+      component: <ProfileAboutSection content={myProfileData?.profileAbout} />
     },
-    {
-      label: profileData[0].tabs[1],
-      component: <BrandCard items={profileData[0].brandSection} filter1={"All"} filter2={"Published"} filter3={"Draft"} />
-    },
-    {
-      label: profileData[0].tabs[2],
-      component: <ProfileEvents filter1={"All"} filter2={"Upcoming"} filter3={"Past"} cardsData={profileData[0].eventSection} />
-    },
-    {
-      label: profileData[0].tabs[3],
-      component: <ProfileSpaces cardsData={profileData[0].spaceSection} filter1={"All"} filter2={"Upcoming"} filter3={"Past"} />
-    },
+    ...(brands?.length > 0
+      ? [
+        {
+          label: profileData[0].tabs[1],
+          component: (
+            <BrandCard
+              items={brands}
+              filter1={"All"}
+              filter2={"Published"}
+              filter3={"Draft"}
+              loading={isBrandLoading || isBrandFetching}
+            />
+          )
+        }
+      ]
+      : []),
+    ...(myEvents?.length > 0
+      ? [
+        {
+          label: profileData[0].tabs[2],
+          component: (
+            <ProfileEvents
+              filter1={"All"}
+              filter2={"Upcoming"}
+              filter3={"Past"}
+              cardsData={myEvents}
+              loading={isEventLoading || isEventFetchhing}
+            />
+          )
+        }
+      ]
+      : []),
+    ...(mySpaces?.length > 0
+      ? [
+        {
+          label: profileData[0].tabs[3],
+          component: (
+            <ProfileSpaces
+              cardsData={mySpaces}
+              filter1={"All"}
+              filter2={"Upcoming"}
+              filter3={"Past"}
+              loading={isSpaceLoading || isSpaceFetching}
+            />
+          )
+        }
+      ]
+      : [])
+  ];
 
-  ]
+  if (isLoading || isFetching) {
+    return (
+      <Box sx={{ width: "100%" }}>
+        <LinearProgress />
+      </Box>
+    )
+  }
   return (
     <Box
       sx={{
@@ -39,11 +231,24 @@ const Profile = () => {
       }}
     >
       <ProfileCard
-        coverImg={profileData[0].bannerImage}
-        userProfileImg={profileData[0].userImage}
-        userName={profileData[0]?.name}
+        userProfileImg={myProfileData?.profile}
+        userName={myProfileData?.profileName}
+        cover={myProfileData?.cover}
+        HandleSlideChange={HandleSlideChange}
+        currentIndex={currentIndex}
+        profileStats={myProfileData?.profileStats}
+        {...(myProfileData?.cover?.length > 0
+          ? {
+            editImage:
+              myProfileData?.cover[currentIndex]?.url
+                ? myProfileData?.cover[currentIndex]?.url
+                : myProfileData?.cover[currentIndex]
+                  ? URL.createObjectURL(myProfileData?.cover[currentIndex])
+                  : null,
+          }
+          : {})}
       />
-      <OutlinedTabs tabs={profileTabs} />
+      <OutlinedTabs key={forceRender} tabs={profileTabs} />
     </Box>
   );
 };

@@ -1,13 +1,21 @@
-import { Box, Button, Stack, Typography, useTheme } from '@mui/material'
+import { Box, Button, LinearProgress, Stack, Typography, useTheme } from '@mui/material'
 import React, { useState } from 'react'
 import SpaceCard from './SpaceCard';
 import { addGrey } from '../assets';
 import { useNavigate } from 'react-router-dom';
 
-const ProfileSpaces = ({ filter1, filter2, filter3, cardsData }) => {
+const ProfileSpaces = ({ filter1, filter2, filter3, cardsData, loading }) => {
     const [selectedChoice, setSelectedChoice] = useState(0)
     const theme = useTheme();
     const navigate = useNavigate()
+
+    if (loading) {
+        return (
+            <Box sx={{ width: "100%" }}>
+                <LinearProgress />
+            </Box>
+        )
+    }
     return (
         cardsData?.length > 0 && <Box
             sx={{
@@ -54,7 +62,7 @@ const ProfileSpaces = ({ filter1, filter2, filter3, cardsData }) => {
                         },
                         textTransform: "none"
                     }}
-                    onClick={()=>navigate("/new-space")}
+                    onClick={() => navigate("/new-space")}
                 >
                     <img src={addGrey} alt="" />
                     Add New

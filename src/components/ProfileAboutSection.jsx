@@ -14,67 +14,24 @@ const ProfileAboutSection = ({ content }) => {
 
     return (
         <Box sx={{ my: "50px" }}>
-            {
-                content?.map((item, index) => {
-                    return (
-                        <React.Fragment key={index}>
-                            {
-                                item?.type === "heading"
-                                    ?
-                                    <Typography
-                                        variant='h2'
-                                        sx={{
-                                            textAlign: "left",
-                                            color: theme.palette.primary.main,
-                                            fontWeight: "600",
-                                            fontSize: "24px"
-                                        }}
-                                    >
-                                        {item?.content}
-                                    </Typography>
-                                    :
-                                    item?.type === "paragraph"
-                                        ?
-                                        <Typography
-                                            sx={{
-                                                textAlign: "left",
-                                                color: theme.palette.primary.main,
-                                                fontWeight: "400",
-                                            }}
-                                        >
-                                            {item?.content}
-                                        </Typography>
-                                        :
-                                        item?.type === "heading2"
-                                            ?
-                                            <Typography
-                                                variant='h3'
-                                                sx={{
-                                                    textAlign: "left",
-                                                    color: theme.palette.primary.main,
-                                                    fontWeight: "600",
-                                                    fontSize: "20px"
-                                                }}
-                                            >
-                                                {item?.content}
-                                            </Typography>
-                                            :
-                                            item?.type === "breaker"
-                                                ?
-                                                <br />
-                                                :
-                                                <figure
-                                                    style={{ width: "100%", height: "100%" }}
-                                                    role="img"
-
-                                                >
-                                                    <img src={item?.content} style={{ width: "100%", borderRadius: "5px" }} />
-                                                </figure>
-                            }
-                        </React.Fragment>
-                    )
-                })
-            }
+            <Typography
+                fontSize={16}
+                sx={{
+                    textAlign: "left",
+                    marginTop: 2,
+                    fontWeight: 400,
+                    wordBreak: "break-word",
+                    "& ul, & ol": {
+                        paddingLeft: 2,
+                    },
+                    "& img": {
+                        maxWidth: "100%",
+                        height: "auto",
+                        objectFit: "contain",
+                    },
+                }}
+                dangerouslySetInnerHTML={{ __html: content }}
+            />
             <Box sx={{ marginTop: "30px", position: "relative", width: "100%" }}>
                 <Button
                     sx={{
@@ -113,7 +70,8 @@ const ProfileAboutSection = ({ content }) => {
                         opacity: showShareBox ? 1 : 0,
                         visibility: showShareBox ? 'visible' : 'hidden',
                         transform: showShareBox ? "translateY(0)" : "translateY(10px)",
-                        transition: "opacity 300ms ease-in, transform 300ms ease-in, visibility 0ms 0ms"
+                        transition: "opacity 300ms ease-in, transform 300ms ease-in, visibility 0ms 0ms",
+                        zIndex: 99
                     }}
                     ref={shareBoxRef}
                 >
