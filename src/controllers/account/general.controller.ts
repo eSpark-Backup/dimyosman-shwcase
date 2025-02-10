@@ -94,6 +94,8 @@ export class GeneralController {
       let spaceQuery = this.spaceRepo
         .createQueryBuilder("space")
         .leftJoinAndSelect("space.brand", "brand")
+        .leftJoinAndSelect("brand.user", "brandUser")
+
         .andWhere("space.user != :userId", { userId })
         .andWhere("space.status = :STATUS", { STATUS: SPACE_STATUS.PUBLISH })
         .skip(skipNumber)
@@ -102,7 +104,10 @@ export class GeneralController {
       let eventQuery = this.eventsRepo
         .createQueryBuilder("event")
         .leftJoinAndSelect("event.brand", "brand")
+        .leftJoinAndSelect("brand.user", "brandUser")
+
         .leftJoinAndSelect("event.space", "space")
+        .leftJoinAndSelect("space.user", "spaceUser")
         .leftJoinAndSelect("space.brand", "spaceBrand")
         .andWhere("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
         .andWhere("event.user != :userId", { userId })
@@ -670,8 +675,10 @@ export class GeneralController {
       const eventsWithRSVP = await this.eventsRepo
         .createQueryBuilder("event")
         .leftJoinAndSelect("event.brand", "brand")
+        .leftJoinAndSelect("brand.user", "brandUser")
         .leftJoinAndSelect("event.space", "space")
         .leftJoinAndSelect("space.brand", "spaceBrand")
+        .leftJoinAndSelect("space.user", "spaceUser")
         .where("event.user != :userId", { userId: req.user?.id })
         .andWhere("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
         .leftJoinAndSelect("event.user", "user")
@@ -725,6 +732,7 @@ export class GeneralController {
         .where("space.user != :userId", { userId: req.user?.id })
         .andWhere("space.status = :STATUS", { STATUS: SPACE_STATUS.PUBLISH })
         .leftJoinAndSelect("space.user", "user")
+        .leftJoinAndSelect("brand.user","brandUser")
         .orderBy("space.createdAt", "DESC")
         .getManyAndCount();
 
@@ -1366,7 +1374,8 @@ export class GeneralController {
             .leftJoinAndSelect("event.brand", "brand")
             .leftJoinAndSelect("event.space", "space")
             .leftJoinAndSelect("space.brand", "spaceBrand")
-            .andWhere("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
+            .where("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
+            .andWhere("event.user = :userId", { userId })
             .addSelect((subQuery) => {
               return subQuery
                 .select(
@@ -1385,7 +1394,6 @@ export class GeneralController {
                 .andWhere("rsvp.user = :userId", { userId:req.user?.id })
                 .limit(1);
             }, "event_rsvp")
-            .andWhere("event.user = :userId", { userId })
 
             .skip(skipNumber)
             .take(takeNumber);
