@@ -63,7 +63,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 AppDataSource.initialize()
   .then(async () => {
-  await   connectDb(mongoURI);
+    await connectDb(mongoURI);
     console.log("✅ SQL Database connection established successfully");
     app.use(clearUploadsFolder);
     app.use("/api", router);
@@ -85,7 +85,13 @@ AppDataSource.initialize()
         message: ` has joined the chat!`,
       });
 
-      userSocketIDs.set(user._id.toString(), socket.id);
+      const userId = user._id.toString();
+
+      if (!userSocketIDs.has(userId)) {
+        userSocketIDs.set(userId, []);
+      }
+
+      userSocketIDs.get(userId).push(socket.id);
 
       socket.on(NEW_MESSAGE, async ({ chatId, members, message }) => {
         const messageForRealTime = {
@@ -149,7 +155,19 @@ AppDataSource.initialize()
       });
 
       socket.on("disconnect", () => {
-        userSocketIDs.delete(user._id.toString());
+        const userId = user._id.toString();
+        if (userSocketIDs.has(userId)) {
+          const sockets = userSocketIDs
+            .get(userId)
+            .filter((id: string) => id !== socket.id);
+
+          if (sockets.length === 0) {
+            userSocketIDs.delete(userId); 
+          } else {
+            userSocketIDs.set(userId, sockets);
+          }
+        }
+
         onlineUsers.delete(user._id.toString());
         socket.broadcast.emit(ONLINE_USERS, Array.from(onlineUsers));
       });
