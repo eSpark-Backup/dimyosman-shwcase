@@ -701,6 +701,12 @@ export class BrandController {
           //   .getRawAndEntities();
       
           // Fetch Followed Entity and Count in a single query
+          const getEventCount=await this.eventsRepo
+          .createQueryBuilder("event")
+            .leftJoinAndSelect("event.user", "user")
+            .where("event.brand = :brandId", { brandId: brand.id })
+            .getCount()
+
           const followedEntityQuery = this.savedEntity
             .createQueryBuilder("savedEntity")
             .where("savedEntity.ActionType = :actionType", {
@@ -761,6 +767,7 @@ export class BrandController {
       
           return {
             ...brand,
+            eventCount:getEventCount,
             // brandEvents,
             followedCount: getFollowedCount,
           };
