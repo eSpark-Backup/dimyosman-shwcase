@@ -1375,25 +1375,25 @@ export class GeneralController {
             .leftJoinAndSelect("event.space", "space")
             .leftJoinAndSelect("space.brand", "spaceBrand")
             .where("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
-            .andWhere("event.user = :userId", { userId })
-            .addSelect((subQuery) => {
-              return subQuery
-                .select(
-                  `COALESCE(
-                      JSON_OBJECT(
-                          'id', rsvp.id,
-                          'attendanceDates', rsvp.attendanceDates,
-                          'verifyAttendance', rsvp.verifyAttendance,
-                          'review', rsvp.review,
-                          'rating', rsvp.rating
-                      ), '{}')`,
-                  "event_rsvp"
-                )
-                .from("RSVP", "rsvp")
-                .where("rsvp.event = event.id")
-                .andWhere("rsvp.user = :userId", { userId:req.user?.id })
-                .limit(1);
-            }, "event_rsvp")
+            .andWhere("event.user = :userId", { userId }) // Get events created by other users
+            .addSelect(
+              `(SELECT 
+                  COALESCE(JSON_OBJECT(
+                      'id', rsvp.id,
+                      'attendanceDates', rsvp.attendanceDates,
+                      'verifyAttendance', rsvp.verifyAttendance,
+                      'review', rsvp.review,
+                      'rating', rsvp.rating
+                  ), '{}') 
+                FROM rsvp rsvp 
+                WHERE rsvp.event = event.id 
+                AND rsvp.user = :loggedInUserId 
+                LIMIT 1
+              )`,
+              "event_rsvp"
+            )
+            .setParameter("loggedInUserId", req.user?.id) // Get RSVP for logged-in user
+            .setParameter("userId", userId)// Filter events from other users
 
             .skip(skipNumber)
             .take(takeNumber);

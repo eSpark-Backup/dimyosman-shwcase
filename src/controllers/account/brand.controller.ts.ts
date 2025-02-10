@@ -658,49 +658,9 @@ export class BrandController {
         return next();
       }
 
-      await Promise.all(
+      const updatedBrands = await Promise.all(
         brands.map(async (brand) => {
-          // Fetch Events for Brand
-          // const singleEvent = await this.eventsRepo
-          //   .createQueryBuilder("event")
-          //   .leftJoinAndSelect("event.user", "user")
-          //   .leftJoinAndSelect("event.space", "space")
-          //   .leftJoinAndSelect("event.leaseSpace", "leaseSpace")
-          //   .leftJoinAndSelect("space.brand", "spaceBrand")
-          //   .where("event.brand = :brandId", { brandId: brand.id }) // Fixed incorrect alias
-          //   .leftJoin(
-          //     (qb) =>
-          //       qb
-          //         .select("rsvp_sub.event", "eventId")
-          //         .addSelect("COUNT(rsvp_sub.id)", "rsvpCount")
-          //         .from("RSVP", "rsvp_sub")
-          //         .groupBy("rsvp_sub.event"),
-          //     "rsvpCountSubquery",
-          //     "rsvpCountSubquery.eventId = event.id"
-          //   )
-          //   .addSelect("COALESCE(rsvpCountSubquery.rsvpCount, 0)", "event_rsvpCount")
-          //   .addSelect((subQuery) => {
-          //     return subQuery
-          //       .select(
-          //         `COALESCE(
-          //           JSON_OBJECT(
-          //               'id', rsvp.id,
-          //               'attendanceDates', rsvp.attendanceDates,
-          //               'verifyAttendance', rsvp.verifyAttendance,
-          //               'review', rsvp.review,
-          //               'rating', rsvp.rating
-          //           ), '{}')`,
-          //         "event_rsvp"
-          //       )
-          //       .from("RSVP", "rsvp")
-          //       .where("rsvp.event = event.id")
-          //       .andWhere("rsvp.user = :userId", { userId: req.user?.id })
-          //       .orderBy("rsvp.id", "DESC") // Fix: Ensuring latest RSVP
-          //       .limit(1);
-          //   }, "event_rsvp")
-          //   .getRawAndEntities();
-      
-          // Fetch Followed Entity and Count in a single query
+       
           const getEventCount=await this.eventsRepo
           .createQueryBuilder("event")
             .leftJoinAndSelect("event.user", "user")
@@ -725,50 +685,10 @@ export class BrandController {
             followedEntityQuery.getCount(),
           ]);
       
-          // Extract Entities and Raw Data
-          // const { entities: rsvpEvents, raw } = singleEvent;
-          // const brandEvents = rsvpEvents.map((rsvp, index) => {
-          //   const rawData = raw[index];
-          //   parseCoverImages(rsvp);
-          //   parseCoverImages(rsvp.brand);
-          //   parseCoverImages(rsvp.space);
-      
-          //   let event_rsvp = null;
-          //   try {
-          //     event_rsvp = rawData.event_rsvp ? JSON.parse(rawData.event_rsvp) : {};
-          //   } catch (error) {
-          //     event_rsvp = {};
-          //   }
-      
-          //   const eventDate =
-          //     rsvp.eventDate &&
-          //     (rsvp.eventDate as [{ startDate: string; endDate: string }]);
-      
-          //   let eventStatus = "Ended";
-          //   if (eventDate) {
-          //     const currentDate = new Date();
-          //     if (currentDate < new Date(eventDate[0].startDate)) {
-          //       eventStatus = "Upcoming";
-          //     } else if (
-          //       currentDate >= new Date(eventDate[0].startDate) &&
-          //       currentDate <= new Date(eventDate[0].endDate)
-          //     ) {
-          //       eventStatus = "Ongoing";
-          //     }
-          //   }
-      
-          //   return {
-          //     ...rsvp,
-          //     rsvpCount: Number(rawData.event_rsvpCount) || 0,
-          //     event_rsvp,
-          //     eventStatus,
-          //   };
-          // });
       
           return {
             ...brand,
             eventCount:getEventCount,
-            // brandEvents,
             followedCount: getFollowedCount,
           };
         })
