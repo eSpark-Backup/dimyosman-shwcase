@@ -20,8 +20,8 @@ const FullWidthImgInput = ({
 
     const handleFileChange = (event) => {
         const files = Array.from(event.target.files);
-        if(files.length + cover?.length > 3) {
-            toast.error("You can not select more than 3 images. Please first remove the selected image")
+        if(currentIndex === cover.length && files.length + cover?.length > 3) {
+            toast.error("You can not select more than 3 images.")
         } else {
             if (HandleChange) {
                 HandleChange(files);
@@ -133,7 +133,7 @@ const FullWidthImgInput = ({
                     zIndex: 3, // Above the overlay
                 }}
             >
-                {Array.from({ length : cover.length }).map((_, index) => (
+                {[0, 1, 2].map((_, index) => (
                     <img
                         key={index}
                         src={index === currentIndex ? activeItemIcon : notActiveIcon}
@@ -146,7 +146,7 @@ const FullWidthImgInput = ({
                     src={add}
                     alt="Add Icon"
                     style={{ cursor: "pointer" }}
-                    onClick={HandleInputCLick}
+                    onClick={handleAdd}
                 />
                 <img
                     src={subtract}
@@ -182,7 +182,7 @@ const FullWidthImgInput = ({
                     type="file"
                     style={{ display: "none" }}
                     ref={imageRef}
-                    multiple
+                    multiple={cover.length === currentIndex}
                     accept="image/*"
                     onChange={handleFileChange} // Use the updated handler
                 />

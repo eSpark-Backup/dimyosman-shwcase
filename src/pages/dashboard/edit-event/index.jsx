@@ -253,6 +253,11 @@ const EditEvent = () => {
     }
     const handleMainImageChange = (files) => {
         if (files.length > 0) {
+            if (eventData.cover.length !== currentIndex) {
+                const updatedCover = [...eventData.cover];
+                updatedCover[currentIndex] = files[0];
+                setEventData((prev) => ({ ...prev, cover: updatedCover }));
+            }
             if(eventData.cover.length === 0) {
                 setEventData((prev) => ({ ...prev, cover: files }));
             }
@@ -282,6 +287,8 @@ const EditEvent = () => {
         const nextIndex = currentIndex + 1;
         if (nextIndex < eventData.cover.length + 1 && nextIndex <= 2) {
             setCurrentIndex(nextIndex);
+        } else {
+            toast.error("You can not select more that 3 images")
         }
     };
 
