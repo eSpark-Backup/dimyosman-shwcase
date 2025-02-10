@@ -345,7 +345,7 @@ const InputWithMap = ({
               }
               :
               {
-                fontStyle: "italic",
+                fontStyle: "normal",
                 fontSize: "12px",
                 fontWeight: "300",
                 textAlign: "left",
