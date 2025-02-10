@@ -55,16 +55,17 @@ export const brandApi = api.injectEndpoints({
             invalidatesTags: ['brand'],
         }),
         getAllBrands: builder.query({
-            query: ({ id, page, pageSize } = {}) => {
-                const baseUrl = id ? `/brand/${id}` : `/brand`;
+            query: ({ publicProfile, id, entity, page, pageSize } = {}) => {
+                const baseUrl = publicProfile ? `/general/public/entity/profile/${id}` : id ? `/brand/${id}` : `/brand`;
                 const queryParams = new URLSearchParams();
 
                 if (pageSize) queryParams.append('pageSize', pageSize);
                 if (page) queryParams.append('page', page);
+                if (entity) queryParams.append('entity', entity);
 
                 const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
                 return {
-                    url: `${baseUrl}${id ? '' : queryString}`,
+                    url: `${baseUrl}${publicProfile ? queryString : id ? '' : queryString}`,
                     method: 'GET',
                 };
             },
