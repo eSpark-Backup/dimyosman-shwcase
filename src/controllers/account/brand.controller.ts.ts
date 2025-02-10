@@ -310,9 +310,15 @@ export class BrandController {
         coverKeys = coverKeys.split(",").map((item) => item.trim());
       }
 
-      const existingBrand = await this.brandRepo.findOne({ where: { id } });
+      const existingBrand = await this.brandRepo.createQueryBuilder("brand")
+        .where("brand.id = :id", { id })
+        .leftJoinAndSelect("brand.user", "user")
+        .getOne();
       if (!existingBrand) {
         return next(res.status(404).json({ message: "Brand not found" }));
+      }
+      if(existingBrand.user.id !== req.user?.id){
+        throw new ApiError("You are not authorized to update this brand", HTTP_STATUS.UN_AUTHORIZED);
       }
       if (
         existingBrand.status == BrandStatus.ARCHIVE &&

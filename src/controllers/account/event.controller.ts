@@ -216,7 +216,7 @@ export class EventController {
         return next(res.status(404).json({ message: "Event not found" }));
       }
       if(existingEvent.user.id !=req.user.id){
-        throw new ApiError("You are not authorized to update this event", HTTP_STATUS.FORBIDDEN);
+        throw new ApiError("You are not authorized to update this event", HTTP_STATUS.UN_AUTHORIZED);
       }
       if (
         existingEvent.status == EventStatus.ARCHIVE &&

@@ -725,7 +725,7 @@ export class SpaceController {
       if (existingSpace.user.id != req.user.id) {
         throw new ApiError(
           "You are not the owner of this space",
-          HTTP_STATUS.FORBIDDEN
+          HTTP_STATUS.UN_AUTHORIZED
         );
       }
       if (
