@@ -64,11 +64,9 @@ export class SpaceController {
   ): Promise<void> {
     try {
       const userId = req.user.id;
-      let { page, pageSize,check,eventId } = req.query;
+      let { page, pageSize, check, eventId } = req.query;
       const skipNumber = Number(page);
       const takeNumber = Number(pageSize);
-
-   
 
       // Fetching spaces where the user is the space owner
       const [spaces, totalSpaces] = await this.spaceRepo
@@ -93,40 +91,43 @@ export class SpaceController {
 
       // Fetching spaces leased by the user (tenant)
       const queryBuilder = this.leaseSpaceRepo
-      .createQueryBuilder("leaseSpace")
-      .leftJoinAndSelect("leaseSpace.space", "space")
-      .leftJoinAndSelect("leaseSpace.tenant", "tenant")
-      .leftJoinAndSelect("leaseSpace.event", "event")
-      .leftJoinAndSelect("space.brand", "brand")
-      .leftJoinAndSelect("space.user", "user")
-      .select([
-        "leaseSpace.id",
-        "leaseSpace.contractDetails",
-        "leaseSpace.isUsed",
-        "event.id",
-        "leaseSpace.status",
-        "tenant.id",
-        "space.id",
-        "space.spaceName",
-        "space.createdAt",
-        "brand.brandName",
-        "brand.location",
-      ])
-      .andWhere("tenant.id = :userId", { userId })
-      .andWhere("leaseSpace.status = :status", { status: LeaseStatus.ACTIVE });
-    
-    if (check) {
-      queryBuilder.andWhere("leaseSpace.isUsed = :isUsed", { isUsed: false });
+        .createQueryBuilder("leaseSpace")
+        .leftJoinAndSelect("leaseSpace.space", "space")
+        .leftJoinAndSelect("leaseSpace.tenant", "tenant")
+        .leftJoinAndSelect("leaseSpace.event", "event")
+        .leftJoinAndSelect("space.brand", "brand")
+        .leftJoinAndSelect("space.user", "user")
+        .select([
+          "leaseSpace.id",
+          "leaseSpace.contractDetails",
+          "leaseSpace.isUsed",
+          "event.id",
+          "leaseSpace.status",
+          "tenant.id",
+          "space.id",
+          "space.spaceName",
+          "space.createdAt",
+          "brand.brandName",
+          "brand.location",
+        ])
+        .andWhere("tenant.id = :userId", { userId })
+        .andWhere("leaseSpace.status = :status", {
+          status: LeaseStatus.ACTIVE,
+        });
 
-    }else{
-      queryBuilder.andWhere("(leaseSpace.event IS NULL OR leaseSpace.event = :eventId)", { eventId });
+      if (check) {
+        queryBuilder.andWhere("leaseSpace.isUsed = :isUsed", { isUsed: false });
+      } else {
+        queryBuilder.andWhere(
+          "(leaseSpace.event IS NULL OR leaseSpace.event = :eventId)",
+          { eventId }
+        );
+      }
 
-    }
-    
-    const [tenantSpaces, totalTenantSpaces] = await queryBuilder
-      .skip(Number(skipNumber) || 0)
-      .take(Number(takeNumber) || 10)
-      .getManyAndCount();
+      const [tenantSpaces, totalTenantSpaces] = await queryBuilder
+        .skip(Number(skipNumber) || 0)
+        .take(Number(takeNumber) || 10)
+        .getManyAndCount();
 
       if (totalSpaces === 0 && totalTenantSpaces === 0) {
         throw new ApiError("No spaces found", HTTP_STATUS.OK);
@@ -497,7 +498,7 @@ export class SpaceController {
           members,
           name: `Inquiring Brand ${receiverBrand.brandName} For Space ${receiverSpace.spaceName}`,
           receiverBrand: receiverBrand.id,
-          inquiryDetails: { message},
+          inquiryDetails: { message },
           senderBrand: senderBrandId,
           creator: req.user?._id,
           receiverSpace: receiverSpace.id,
@@ -718,8 +719,14 @@ export class SpaceController {
       if (!existingSpace) {
         return next(res.status(404).json({ message: "Space not found" }));
       }
-      if(existingSpace.status==SpaceStatus.ARCHIVE && status==SpaceStatus.PUBLISH){
-        throw new ApiError("You can't publish an archived space, first draft it", HTTP_STATUS.BAD_REQUEST);
+      if (
+        existingSpace.status == SpaceStatus.ARCHIVE &&
+        status == SpaceStatus.PUBLISH
+      ) {
+        throw new ApiError(
+          "You can't publish an archived space, first draft it",
+          HTTP_STATUS.BAD_REQUEST
+        );
       }
       const brand = await this.brandRepo.findOne({ where: { id: brandId } });
       if (!brand) {
@@ -907,59 +914,59 @@ export class SpaceController {
             }
             break;
           case "Week":
-            if (days >= 7 && days <= 29 ) {
+            if (days >= 7 && days <= 29) {
               const weeks = Math.floor(days / 7);
               const additionalDays = days % 7;
-              if(weeks >= minTerm){
-              totalPrice =
-                weeks * termPrice +
-                calculateAdditionalDays(termPrice, 7, additionalDays);
-              termDetails = {
-                term: "Week",
-                price: termPrice,
-                weeks,
-                additionalDays,
-              };
-              break;
+              if (weeks >= minTerm) {
+                totalPrice =
+                  weeks * termPrice +
+                  calculateAdditionalDays(termPrice, 7, additionalDays);
+                termDetails = {
+                  term: "Week",
+                  price: termPrice,
+                  weeks,
+                  additionalDays,
+                };
+                break;
+              }
             }
-          }
             break;
           case "Month":
-            if (days >= 30 && days <= 364 ) {
+            if (days >= 30 && days <= 364) {
               const months = Math.floor(days / 30);
-              if(months >= minTerm){
-              const additionalDays = days % 30;
-              totalPrice =
-                months * termPrice +
-                calculateAdditionalDays(termPrice, 30, additionalDays);
-              termDetails = {
-                term: "Month",
-                price: termPrice,
-                months,
-                additionalDays,
-              };
-              break;
+              if (months >= minTerm) {
+                const additionalDays = days % 30;
+                totalPrice =
+                  months * termPrice +
+                  calculateAdditionalDays(termPrice, 30, additionalDays);
+                termDetails = {
+                  term: "Month",
+                  price: termPrice,
+                  months,
+                  additionalDays,
+                };
+                break;
+              }
             }
-          }
             break;
-            
+
           case "Year":
-            if (days >= 365  ) {
+            if (days >= 365) {
               const years = Math.floor(days / 365);
-              if(years >= minTerm){
-              const additionalDays = days % 365;
-              totalPrice =
-                years * termPrice +
-                calculateAdditionalDays(termPrice, 365, additionalDays);
-              termDetails = {
-                term: "Year",
-                price: termPrice,
-                years,
-                additionalDays,
-              };
-              break;
+              if (years >= minTerm) {
+                const additionalDays = days % 365;
+                totalPrice =
+                  years * termPrice +
+                  calculateAdditionalDays(termPrice, 365, additionalDays);
+                termDetails = {
+                  term: "Year",
+                  price: termPrice,
+                  years,
+                  additionalDays,
+                };
+                break;
+              }
             }
-          }
             break;
           default:
             break;
@@ -971,7 +978,9 @@ export class SpaceController {
       if (totalPrice === 0) {
         res
           .status(400)
-          .json({ error: "Number of days should be greater or equal to minimum." });
+          .json({
+            error: "Number of days should be greater or equal to minimum.",
+          });
         return next();
       }
 
@@ -1035,76 +1044,94 @@ export class SpaceController {
         );
 
         let [tenantSpaceDetail, totalLeasSpace] = await this.leaseSpaceRepo
-        .createQueryBuilder("leaseSpace")
+          .createQueryBuilder("leaseSpace")
 
-        .leftJoinAndSelect("leaseSpace.owner", "owner")
-        .leftJoinAndSelect("leaseSpace.event", "event")
-        .leftJoinAndSelect("leaseSpace.brand", "leaseBrand")
-        .leftJoinAndSelect("leaseSpace.space", "space")
-        .where("owner.id = :userId", { userId: req.user?.id })
-        .andWhere("leaseSpace.space = :spaceId", { spaceId: singleSpace.id })
-        .leftJoinAndSelect("space.brand", "brand")
-        .leftJoinAndSelect("space.user", "user")
-        .orderBy("leaseSpace.createdAt", "DESC")
-        .skip(skipNumber)
-        .take(takeNumber)
-        .getManyAndCount();
+          .leftJoinAndSelect("leaseSpace.owner", "owner")
+          .leftJoinAndSelect("leaseSpace.event", "event")
+          .leftJoinAndSelect("leaseSpace.brand", "leaseBrand")
+          .leftJoinAndSelect("leaseSpace.space", "space")
+          .where("owner.id = :userId", { userId: req.user?.id })
+          .andWhere("leaseSpace.space = :spaceId", { spaceId: singleSpace.id })
+          .leftJoinAndSelect("space.brand", "brand")
+          .leftJoinAndSelect("space.user", "user")
+          .orderBy("leaseSpace.createdAt", "DESC")
+          .skip(skipNumber)
+          .take(takeNumber)
+          .getManyAndCount();
 
-        
-         const [savedEntities,followedEntities] = await Promise.all([
+        const [savedEntities, followedEntities] = await Promise.all([
           this.savedEntity
             .createQueryBuilder("savedEntity")
-            .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FAVORITE })
-            .andWhere("savedEntity.type = :type", { type: SavedEntityType.SPACE })
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FAVORITE,
+            })
+            .andWhere("savedEntity.type = :type", {
+              type: SavedEntityType.SPACE,
+            })
             .leftJoinAndSelect("savedEntity.space", "space")
             .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
-            .andWhere("savedEntity.space = :spaceId", { spaceId: singleSpace.id })
+            .andWhere("savedEntity.space = :spaceId", {
+              spaceId: singleSpace.id,
+            })
             .getOne(),
-        
+
           this.savedEntity
             .createQueryBuilder("savedEntity")
-            .where("savedEntity.ActionType = :actionType", { actionType: ActionType.FOLLOW })
-            .andWhere("savedEntity.type = :type", { type: SavedEntityType.SPACE })
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FOLLOW,
+            })
+            .andWhere("savedEntity.type = :type", {
+              type: SavedEntityType.SPACE,
+            })
             .leftJoinAndSelect("savedEntity.space", "space")
             .andWhere("savedEntity.user = :userId", { userId: req.user?.id })
-            .andWhere("savedEntity.space = :spaceId", { spaceId: singleSpace.id })
+            .andWhere("savedEntity.space = :spaceId", {
+              spaceId: singleSpace.id,
+            })
             .getOne(),
         ]);
 
-        const [getFollowedCount,getLikedCount]= await Promise.all([
+        const [getFollowedCount, getLikedCount] = await Promise.all([
           this.savedEntity
-          .createQueryBuilder("savedEntity")
-          .where("savedEntity.ActionType = :actionType", {
-            actionType: ActionType.FOLLOW,
-          })
-          .andWhere("savedEntity.type = :type", { type: SavedEntityType.SPACE })
-          .leftJoinAndSelect("savedEntity.space", "space")
-          .andWhere("space.id = :spaceId", { spaceId: singleSpace.id })
-          .getCount(),
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FOLLOW,
+            })
+            .andWhere("savedEntity.type = :type", {
+              type: SavedEntityType.SPACE,
+            })
+            .leftJoinAndSelect("savedEntity.space", "space")
+            .andWhere("space.id = :spaceId", { spaceId: singleSpace.id })
+            .getCount(),
           this.savedEntity
-          .createQueryBuilder("savedEntity")
-          .where("savedEntity.ActionType = :actionType", {
-            actionType: ActionType.FAVORITE,
-          })
-          .andWhere("savedEntity.type = :type", { type: SavedEntityType.SPACE })
-          .leftJoinAndSelect("savedEntity.space", "space")
-          .andWhere("space.id = :spaceId", { spaceId: singleSpace.id })
-          .getCount()
-        ])
-                          
-        const isFavourite = savedEntities ? true : false;
-        const isFollowed = followedEntities ? true : false
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FAVORITE,
+            })
+            .andWhere("savedEntity.type = :type", {
+              type: SavedEntityType.SPACE,
+            })
+            .leftJoinAndSelect("savedEntity.space", "space")
+            .andWhere("space.id = :spaceId", { spaceId: singleSpace.id })
+            .getCount(),
+        ]);
 
-              const space = {
-                tenantSpaceDetail,
-                 shareableLink: generateShareableLink({ id: singleSpace.id, type: "space" }),
-                totalLeasSpace,
-                likedCount:getLikedCount,
-                followedCount:getFollowedCount,
-                ...singleSpace,
-                isFavourite,
-                isFollowed,
-              };
+        const isFavourite = savedEntities ? true : false;
+        const isFollowed = followedEntities ? true : false;
+
+        const space = {
+          tenantSpaceDetail,
+          shareableLink: generateShareableLink({
+            id: singleSpace.id,
+            type: "space",
+          }),
+          totalLeasSpace,
+          likedCount: getLikedCount,
+          followedCount: getFollowedCount,
+          ...singleSpace,
+          isFavourite,
+          isFollowed,
+        };
 
         res.status(200).json(handleResponse("Space Found Successfully", space));
         return next();
@@ -1174,8 +1201,7 @@ export class SpaceController {
             },
           })
         );
-      } 
-     else  if (tab == "Group") {
+      } else if (tab == "Group") {
         let [spaces, totalItems] = await this.spaceRepo
           .createQueryBuilder("space")
           .leftJoinAndSelect("space.brand", "brand")
@@ -1229,20 +1255,33 @@ export class SpaceController {
           };
         });
 
-
-    const groupedSpaces={
-               publishedSpaces: spaces.filter(
-                      (events) => events.status === SpaceStatus.PUBLISH
-                    ),
-                    draftSpaces: spaces.filter(
-                      (spaces) => spaces.status === SpaceStatus.DRAFT
-                    ),
-                    archivedSpaces: spaces.filter(
-                      (spaces) => spaces.status === SpaceStatus.ARCHIVE
-                    ),
-                    allSpaces: spaces,
-                    totalItems,
-          }
+        const groupedSpaces = {
+          publishedSpaces: spaces
+            .filter((space) => space.status === SpaceStatus.PUBLISH)
+            .map((space) => ({
+              ...space,
+              shareableLink: generateShareableLink({
+                id: space.id,
+                type: "space",
+              }),
+            })),
+          draftSpaces: spaces.filter(
+            (spaces) => spaces.status === SpaceStatus.DRAFT
+          ),
+          archivedSpaces: spaces.filter(
+            (spaces) => spaces.status === SpaceStatus.ARCHIVE
+          ),
+          allSpaces: spaces
+            .filter((space) => space.status === SpaceStatus.PUBLISH) // Only PUBLISH brands
+            .map((space) => ({
+              ...space,
+              shareableLink: generateShareableLink({
+                id: space.id,
+                type: "space",
+              }),
+            })),
+          totalItems,
+        };
 
         res.status(200).json(
           handleResponse("Events Fetched Successfully", {
@@ -1255,12 +1294,11 @@ export class SpaceController {
             },
           })
         );
-      } 
-      else if (tab == "Lease") {
+      } else if (tab == "Lease") {
         let [leaseSpace, totalItems] = await this.leaseSpaceRepo
           .createQueryBuilder("leaseSpace")
           .leftJoinAndSelect("leaseSpace.space", "space")
-          .leftJoinAndSelect("leaseSpace.brand","leaseSpaceBrand")
+          .leftJoinAndSelect("leaseSpace.brand", "leaseSpaceBrand")
           .leftJoinAndSelect("leaseSpace.owner", "owner")
           .leftJoinAndSelect("leaseSpace.event", "event")
           .leftJoinAndSelect("leaseSpace.tenant", "tenant")

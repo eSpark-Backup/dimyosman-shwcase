@@ -820,16 +820,30 @@ export class EventController {
           .getManyAndCount();
 
           const groupedEvents={
-            publishedEvents: events.filter(
-                   (events) => events.status === EventStatus.PUBLISH
-                 ),
+            publishedEvents: events
+                      .filter((event) => event.status === EventStatus.PUBLISH)
+                      .map((event) => ({
+                        ...event,
+                        shareableLink: generateShareableLink({
+                          id: event.id,
+                          type: "event",
+                        }),
+                      })),
                  draftEvents: events.filter(
                    (events) => events.status === EventStatus.DRAFT
                  ),
                  archivedEvents: events.filter(
                    (events) => events.status === EventStatus.ARCHIVE
                  ),
-                 allEvents: events,
+                 allEvents: events
+                           .filter((event) => event.status === EventStatus.PUBLISH) // Only PUBLISH brands
+                           .map((event) => ({
+                             ...event,
+                             shareableLink: generateShareableLink({
+                               id: event.id,
+                               type: "event",
+                             }),
+                           })),
                  totalItems,
        }
 
