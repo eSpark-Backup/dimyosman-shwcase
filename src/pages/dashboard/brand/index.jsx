@@ -151,7 +151,7 @@ const Brand = () => {
   const transformBrandData = (apiData, type) => {
     let newData;
     type === "fav"
-      ? (newData = apiData.map(({ brand, createdAt, eventsCount, followerCount }, index) => ({
+      ? (newData = apiData.map(({ brand, createdAt, eventsCount, followerCount, actionType }, index) => ({
         id: brand?.id,
         type: "brand",
         brandName: brand.brandName || "N/A",
@@ -164,6 +164,7 @@ const Brand = () => {
         followers: followerCount || "-",
         status: brand.status || "N/A",
         savedDate: moment(new Date(createdAt)).format("DD.MM.YYYY.") || "-",
+        followDate: moment(new Date(createdAt)).format("DD.MM.YYYY.") || "-",
         colHeader1: "Table cell",
         colHeader2: "Table cell",
         colHeader3: "Table cell",

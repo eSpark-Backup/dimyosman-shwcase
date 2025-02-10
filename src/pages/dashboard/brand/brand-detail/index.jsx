@@ -64,7 +64,7 @@ const BrandDetails = () => {
           details: {
             by: data?.data?.user?.name,
             events: data?.data?.totalEventsCount,
-            followes: data?.data?.followedCount,
+            followers: data?.data?.followedCount,
             saved: data?.data?.likedCount,
           },
           rating: 0,

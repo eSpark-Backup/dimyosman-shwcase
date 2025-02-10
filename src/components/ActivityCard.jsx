@@ -31,6 +31,7 @@ import CommentSuccessModal from "./commentSuccessModal.jsx";
 import ShareModal from "./shareModal.jsx";
 import { useFollowMutation } from "../services/follower.js";
 import { LoadingButton } from "@mui/lab";
+import { useSelector } from "react-redux";
 
 const ActivityCard = ({
   fullItem = {},
@@ -60,8 +61,9 @@ const ActivityCard = ({
   startDate,
   endDate,
   rsvpDates,
-  handleAction = () => {},
-  handleNavigation = () => {},
+  handleAction = () => { },
+  handleNavigation = () => { },
+  isDraftedBrandOwner
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -85,24 +87,26 @@ const ActivityCard = ({
   );
 
   const [openCalendar, setOpenCalendar] = useState(false);
+  const { user } = useSelector((state) => state.auth);
+
 
   const handleOk = () => {
-    const newRsvpDates = selectedDates.map(item => {return { dateTime: item }})
-      const objToSend = {
-        id: activityId,
-        credentials: {
-          attendanceDates: {
-            dateTime: "string",
-            rsvpDates: newRsvpDates,
-          },
+    const newRsvpDates = selectedDates.map(item => { return { dateTime: item } })
+    const objToSend = {
+      id: activityId,
+      credentials: {
+        attendanceDates: {
+          dateTime: "string",
+          rsvpDates: newRsvpDates,
         },
-      };
-      addRsvp(objToSend).then((res) => {
-        if (res?.data?.status) {
-          toast.success(res?.data?.message);
-          setOpenCalendar(false);
-        }
-      });
+      },
+    };
+    addRsvp(objToSend).then((res) => {
+      if (res?.data?.status) {
+        toast.success(res?.data?.message);
+        setOpenCalendar(false);
+      }
+    });
   };
 
   const handleCancel = () => {
@@ -146,12 +150,12 @@ const ActivityCard = ({
         >
           <Box
             onClick={
-              id && userRole === "brand"
+              (id && userRole === "brand" && !isDraftedBrandOwner) || (id && userRole === "brand" && isDraftedBrandOwner === user?.id)
                 ? () => {
-                    navigate(`/${userRole}/${id}`);
-                    handleNavigation();
-                  }
-                : () => {}
+                  navigate(`/${userRole}/${id}`);
+                  handleNavigation();
+                }
+                : () => { }
             }
             sx={{
               cursor: "pointer",
@@ -181,7 +185,7 @@ const ActivityCard = ({
                     style={{
                       width: "100%",
                       height: "100%",
-                      objectFit: "cover",                      
+                      objectFit: "cover",
                       borderRadius: "5px",
                     }}
                   />
@@ -203,10 +207,10 @@ const ActivityCard = ({
                   userRole === "event"
                     ? "rgb(148, 185, 134)"
                     : userRole === "brand"
-                    ? "rgb(196, 119, 127)"
-                    : userRole === "space"
-                    ? "rgb(120, 150, 195)"
-                    : theme.palette.primary.main,
+                      ? "rgb(196, 119, 127)"
+                      : userRole === "space"
+                        ? "rgb(120, 150, 195)"
+                        : theme.palette.primary.main,
                 width: "16px",
                 height: "16px",
                 position: "absolute",
@@ -223,10 +227,10 @@ const ActivityCard = ({
                   userRole === "event"
                     ? flag
                     : userRole === "brand"
-                    ? brandIcon
-                    : userRole === "space"
-                    ? spaceIcon
-                    : accountIcon
+                      ? brandIcon
+                      : userRole === "space"
+                        ? spaceIcon
+                        : accountIcon
                 }
                 alt="Icon"
                 style={{ width: "12px", height: "10px" }}
@@ -237,12 +241,12 @@ const ActivityCard = ({
             onClick={
               activityId
                 ? () => {
-                    navigate(`/${activity}/${activityId}`, {
-                      state: search ? { other: true } : null,
-                    });
-                    handleNavigation();
-                  }
-                : () => {}
+                  navigate(`/${activity}/${activityId}`, {
+                    state: search ? { other: true } : null,
+                  });
+                  handleNavigation();
+                }
+                : () => { }
             }
             sx={{
               cursor: activityId ? "pointer" : "default",
@@ -273,8 +277,8 @@ const ActivityCard = ({
               {activity === "event"
                 ? "Event!"
                 : activity === "brand"
-                ? "Brand!"
-                : "Space!"}
+                  ? "Brand!"
+                  : "Space!"}
             </Typography>
           </Box>
         </Box>
@@ -282,12 +286,12 @@ const ActivityCard = ({
           onClick={
             activityId
               ? () => {
-                  navigate(`/${activity}/${activityId}`, {
-                    state: search ? { other: true } : null,
-                  });
-                  handleNavigation();
-                }
-              : () => {}
+                navigate(`/${activity}/${activityId}`, {
+                  state: search ? { other: true } : null,
+                });
+                handleNavigation();
+              }
+              : () => { }
           }
           sx={{
             cursor: "pointer",
@@ -295,8 +299,8 @@ const ActivityCard = ({
               activity === "event"
                 ? "rgba(148, 185, 134, 0.3)"
                 : activity === "brand"
-                ? "rgba(196, 119, 127, 0.2)"
-                : "rgba(120, 150, 195, 0.3)",
+                  ? "rgba(196, 119, 127, 0.2)"
+                  : "rgba(120, 150, 195, 0.3)",
             width: "48px",
             height: "48px",
             borderRadius: "5px",
@@ -310,8 +314,8 @@ const ActivityCard = ({
               activity === "event"
                 ? flag
                 : activity === "brand"
-                ? brandIcon
-                : spaceIcon
+                  ? brandIcon
+                  : spaceIcon
             }
             alt=""
           />
@@ -355,12 +359,12 @@ const ActivityCard = ({
             onClick={
               activityId
                 ? () => {
-                    navigate(`/${activity}/${activityId}`, {
-                      state: search ? { other: true } : null,
-                    });
-                    handleNavigation();
-                  }
-                : () => {}
+                  navigate(`/${activity}/${activityId}`, {
+                    state: search ? { other: true } : null,
+                  });
+                  handleNavigation();
+                }
+                : () => { }
             }
             slides={slides}
           />
@@ -389,12 +393,12 @@ const ActivityCard = ({
             onClick={
               activityId
                 ? () => {
-                    navigate(`/${activity}/${activityId}`, {
-                      state: search ? { other: true } : null,
-                    });
-                    handleNavigation();
-                  }
-                : () => {}
+                  navigate(`/${activity}/${activityId}`, {
+                    state: search ? { other: true } : null,
+                  });
+                  handleNavigation();
+                }
+                : () => { }
             }
             sx={{
               cursor: "pointer",
@@ -414,7 +418,7 @@ const ActivityCard = ({
               <img
                 src={activityImage}
                 alt=""
-                style={{ width: "100%", height: "100%", objectFit: "cover",borderRadius:"5px" }}
+                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "5px" }}
               />
               <Box
                 sx={{
@@ -422,8 +426,8 @@ const ActivityCard = ({
                     activity === "event"
                       ? "rgb(148, 185, 134)"
                       : activity === "brand"
-                      ? "rgb(196, 119, 127)"
-                      : "rgb(120, 150, 195)",
+                        ? "rgb(196, 119, 127)"
+                        : "rgb(120, 150, 195)",
                   width: "16px",
                   height: "16px",
                   position: "absolute",
@@ -440,8 +444,8 @@ const ActivityCard = ({
                     activity === "event"
                       ? flag
                       : activity === "brand"
-                      ? brandIcon
-                      : spaceIcon
+                        ? brandIcon
+                        : spaceIcon
                   }
                   alt="Icon"
                   style={{ width: "12px", height: "10px" }}
@@ -628,10 +632,10 @@ const ActivityCard = ({
                 onClick={
                   activity !== "space" && activityLocationId
                     ? () => {
-                        navigate(`/space/${activityLocationId}`);
-                        handleNavigation();
-                      }
-                    : () => {}
+                      navigate(`/space/${activityLocationId}`);
+                      handleNavigation();
+                    }
+                    : () => { }
                 }
                 style={{
                   cursor:
@@ -787,12 +791,12 @@ const ActivityCard = ({
             onClick={
               activityId
                 ? () => {
-                    navigate(`/${activity}/${activityId}`, {
-                      state: search ? { other: true } : null,
-                    });
-                    handleNavigation();
-                  }
-                : () => {}
+                  navigate(`/${activity}/${activityId}`, {
+                    state: search ? { other: true } : null,
+                  });
+                  handleNavigation();
+                }
+                : () => { }
             }
             sx={{
               backgroundColor: "transparent",
@@ -849,7 +853,7 @@ const ActivityCard = ({
                   }).then((res) => {
                     res?.data?.status &&
                       toast.success(`You ${followPost ? "Unfollowed" : "Followed"} ${activityName}`);
-                      setFollowPost(!followPost);
+                    setFollowPost(!followPost);
                   });
                 }
               } else {
