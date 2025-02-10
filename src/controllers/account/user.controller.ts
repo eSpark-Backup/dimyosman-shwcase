@@ -13,6 +13,7 @@ import { ApiError } from "../../errors";
 import { Repository } from "typeorm";
 import {
   decrypt,
+  generateShareableLink,
   generateToken,
   handleResponse,
   logger,
@@ -505,13 +506,17 @@ export class UserController {
             .andWhere("space.user = :userId", { userId })
             .getCount(),
         ]);
+         const  shareableLink=generateShareableLink({
+                    id: user.id,
+                    type: "user",
+                  })
 
-        const { password: _, ...userProfile } = user as User & { brandsCount?: number; eventsCount?: number; spacesCount?: number };
+        const { password: _, ...userProfile } = user as User & { brandsCount?: number; eventsCount?: number; spacesCount?: number;shareableLink:string };
 
       userProfile.coverImages = JSON.parse(
         userProfile.coverImages as Object as string
       );
-      
+        userProfile.shareableLink=shareableLink
       userProfile.brandsCount = getBrandsCount;
       userProfile.eventsCount = getEventsCount;
       userProfile.spacesCount = getSpacesCount;
