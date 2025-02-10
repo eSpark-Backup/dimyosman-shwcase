@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Stack, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getSmallSidebar, sidebarRoutes } from "../constant";
 import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../store/slices/activity";
 
@@ -14,6 +14,7 @@ const Sidebar = () => {
   const currentPath =
     splittedSubPath.length > 1 ? `/${splittedSubPath[1]}` : splittedSubPath[0];
   const [hovered, setHovered] = useState(false);
+  const { user } = useSelector((state) => state.auth);
 
   return (
     <Stack
@@ -43,14 +44,20 @@ const Sidebar = () => {
             className="sidebar-item"
             id={item.title}
             onClick={() => {
+              if (item.title === "Profile") {
+                navigate(`/profile/${user?.id}`);
+                return;  // <== Stops further execution
+              }
+              
               if (item.title !== "Activity") {
                 localStorage.removeItem("scrollPosition");
                 dispatch(setAllActivityData([]));
                 dispatch(setSpaceData([]));
                 dispatch(setActivityPageNumber(1));
               }
-              
-              localStorage.removeItem("searchScrollPosition"); 
+
+
+              localStorage.removeItem("searchScrollPosition");
               navigate(item.link);
 
             }}

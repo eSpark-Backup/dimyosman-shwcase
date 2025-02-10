@@ -1,12 +1,29 @@
-import { Box, Button, Typography, useTheme } from '@mui/material'
+import { Box, Button, LinearProgress, Typography, useTheme } from '@mui/material'
 import React, { useState } from 'react'
 import { addGrey, brandIcon, brandMain, brandUserImage, comment, eventUserImage, like, share } from '../assets'
 import { useNavigate } from 'react-router-dom'
+import ShareModal from './shareModal'
 
-const BrandCard = ({ items, filter1, filter2, filter3 }) => {
+const BrandCard = ({ items, filter1, filter2, filter3, filter4, loading }) => {
     const theme = useTheme()
     const [selectedChoice, setSelectedChoice] = useState(0);
+    const [showShareBox, setShowShareBox] = useState(false);
+    const [brand, setBrand] = useState({});
     const navigate = useNavigate()
+    if (loading) {
+        return (
+            <Box sx={{ width: "100%" }}>
+                <LinearProgress />
+            </Box>
+        )
+    }
+
+    const filteredItems = items?.filter((item) => {
+        if (selectedChoice === 1) return item.status === "PUBLISH";
+        if (selectedChoice === 2) return item.status === "DRAFT";
+        if (selectedChoice === 3) return item.status === "ARCHIVE";
+        return true;
+    });
     return (
         <Box sx={{ mt: "50px" }}>
             <Box
@@ -29,6 +46,7 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                     <Typography onClick={() => setSelectedChoice(0)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 0 ? "600" : "400", cursor: "pointer", fontSize: "16px" }}>{filter1}</Typography>
                     <Typography onClick={() => setSelectedChoice(1)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 1 ? "600" : "400", cursor: "pointer", fontSize: "16px" }}>{filter2}</Typography>
                     <Typography onClick={() => setSelectedChoice(2)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 2 ? "600" : "400", cursor: "pointer", fontSize: "16px" }}>{filter3}</Typography>
+                    <Typography onClick={() => setSelectedChoice(3)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 3 ? "600" : "400", cursor: "pointer", fontSize: "16px" }}>{filter4}</Typography>
                 </Box>
                 <Button
                     sx={{
@@ -61,8 +79,8 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                     mt: "50px",
                 }}
             >
-                {
-                    items?.map((item, index) => {
+                {filteredItems.length > 0 ?
+                    filteredItems?.map((item, index) => {
                         return (
                             <Box
                                 sx={{
@@ -163,20 +181,25 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                                             >
                                                 {item?.brandName}
                                             </Typography>
-                                            <Typography
-                                                sx={{
-                                                    color: theme.palette.primary.main,
-                                                    fontWeight: "400",
-                                                    textAlign: "left",
-                                                    fontSize: { xs: "10px", lg: "16px" }
-                                                }}
-                                            >
-                                                {item?.brandCategory}
-                                            </Typography>
+                                            {item?.brandCategory?.map((item, index) => {
+                                                return (
+                                                    <Typography
+                                                        sx={{
+                                                            color: theme.palette.primary.main,
+                                                            fontWeight: "400",
+                                                            textAlign: "left",
+                                                            fontSize: { xs: "10px", lg: "16px" }
+                                                        }}
+                                                        key={index}
+                                                    >
+                                                        {item}
+                                                    </Typography>
+                                                )
+                                            })}
                                         </Box>
                                     </Box>
                                     <Typography sx={{ fontWeight: '400', color: theme.palette.primary.main, textAlign: "left" }}>
-                                        {item?.description}
+                                        {item?.description?.length > 196 ? item?.description?.slice(0, 197) + "..." : item?.description}
                                     </Typography>
                                     <Box
                                         sx={{
@@ -194,13 +217,18 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                                             }}
                                         >
 
+                                            {item?.status === "PUBLISH" &&
                                             <figure
+                                                onClick={() => {
+                                                    setBrand(item)
+                                                    setShowShareBox(true)
+                                                }}
                                                 style={{ width: "100%", height: "100%" }}
                                                 role="img"
 
                                             >
                                                 <img src={share} alt="Share Icon" />
-                                            </figure>
+                                            </figure>}
 
                                         </Box>
                                         {/* <Typography
@@ -240,6 +268,7 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                                         display: "flex",
                                         alignItems: "center",
                                         justifyContent: "center",
+                                        height: "280px"
                                     }}
                                 >
 
@@ -263,8 +292,11 @@ const BrandCard = ({ items, filter1, filter2, filter3 }) => {
                             </Box>
                         )
                     })
+                    :
+                    <Typography sx={{width: "100%"}} fontWeight={700} textAlign="center">No Data</Typography>
                 }
             </Box>
+            <ShareModal myProfileData={{ profile: brand?.profileImage, profileName: brand?.brandName }} shareableLink={brand?.shareableLink} open={showShareBox} handleClose={() => setShowShareBox(false)} />
         </Box>
     )
 }
