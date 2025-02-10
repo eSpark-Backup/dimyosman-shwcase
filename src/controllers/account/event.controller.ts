@@ -835,15 +835,17 @@ export class EventController {
                  archivedEvents: events.filter(
                    (events) => events.status === EventStatus.ARCHIVE
                  ),
-                 allEvents: events
-                           .filter((event) => event.status === EventStatus.PUBLISH) // Only PUBLISH brands
-                           .map((event) => ({
-                             ...event,
-                             shareableLink: generateShareableLink({
-                               id: event.id,
-                               type: "event",
-                             }),
-                           })),
+                 allEvents:  events.map((event) =>
+                  event.status === EventStatus.PUBLISH
+                    ? {
+                        ...event,
+                        shareableLink: generateShareableLink({
+                          id: event.id,
+                          type: "event",
+                        }),
+                      }
+                    : event
+                ),
                  totalItems,
        }
 

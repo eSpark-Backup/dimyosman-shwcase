@@ -666,15 +666,18 @@ export class BrandController {
           })),
         draftBrands: brands.filter((brand) => brand.status === BrandStatus.DRAFT),
         archivedBrands: brands.filter((brand) => brand.status === BrandStatus.ARCHIVE),
-        allBrands: brands
-          .filter((brand) => brand.status === BrandStatus.PUBLISH) // Only PUBLISH brands
-          .map((brand) => ({
-            ...brand,
-            shareableLink: generateShareableLink({
-              id: brand.id,
-              type: "brand",
-            }),
-          })),
+        allBrands: brands.map((brand) =>
+          brand.status === BrandStatus.PUBLISH
+            ? {
+                ...brand,
+                shareableLink: generateShareableLink({
+                  id: brand.id,
+                  type: "brand",
+                }),
+              }
+            : brand
+        ),
+          
         totalItems,
       };
       

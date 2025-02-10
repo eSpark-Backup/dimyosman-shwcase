@@ -976,11 +976,9 @@ export class SpaceController {
       }
 
       if (totalPrice === 0) {
-        res
-          .status(400)
-          .json({
-            error: "Number of days should be greater or equal to minimum.",
-          });
+        res.status(400).json({
+          error: "Number of days should be greater or equal to minimum.",
+        });
         return next();
       }
 
@@ -1271,15 +1269,17 @@ export class SpaceController {
           archivedSpaces: spaces.filter(
             (spaces) => spaces.status === SpaceStatus.ARCHIVE
           ),
-          allSpaces: spaces
-            .filter((space) => space.status === SpaceStatus.PUBLISH) // Only PUBLISH brands
-            .map((space) => ({
-              ...space,
-              shareableLink: generateShareableLink({
-                id: space.id,
-                type: "space",
-              }),
-            })),
+          allSpaces: spaces.map((space) =>
+            space.status === SpaceStatus.PUBLISH
+              ? {
+                  ...space,
+                  shareableLink: generateShareableLink({
+                    id: space.id,
+                    type: "space",
+                  }),
+                }
+              : space
+          ),
           totalItems,
         };
 
