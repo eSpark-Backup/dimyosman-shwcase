@@ -7,7 +7,7 @@ import { ROLES } from "../../constants";
 const ChatRouter = Router();
 
 ChatRouter.get("/", (req, res) => {
-  res.json({ message: "Welcome to the Socket API!" });
+  res.json({ message: "Welcome to the Socket API For SHWCASE" });
 });
 
 ChatRouter.use("/user", UserRoutes);
