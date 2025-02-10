@@ -143,10 +143,16 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
   const groupedByUser = transformedChats.reduce(
     (acc: any, chat: any) => {
 
+      if (chat.directChat) {
+        acc.directChats[chat._id] = chat;
+        return acc;
+      }
+      // Determine if the logged-in user is the sender or receiver
       const isSender = chat.senderBrand?.user?.userChatId === req.socketUserId;
       const isReceiver =
         chat.receiverBrand?.user?.userChatId === req.socketUserId;
 
+      // Handle brands
       const userRoleKey = isSender
         ? chat.senderBrand?.id || "unknown_sender"
         : isReceiver
@@ -193,29 +199,11 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
 
         acc.spaces[spaceKey].chats.push(chat);
       }
-
-      if (chat.receiverEvent?.user?.userChatId === req.socketUserId) {
-        const eventKey = chat.receiverEvent?.id || "unknown_event";
-
-        if (!acc.events[eventKey]) {
-          acc.events[eventKey] = {
-            eventDetails: chat.receiverEvent || {
-              id: "unknown_event",
-              eventName: "Unknown Event",
-              eventImage: null,
-            },
-            chats: [],
-          };
-        }
-
-        acc.events[eventKey].chats.push(chat);
-      }
-    
     
 
       return acc;
     },
-    { brands: {}, spaces: {},events:{} }
+    { brands: {}, spaces: {},directChats:{} }
   );
 
   // Format the grouped data for response
@@ -226,7 +214,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
     spaces: Object.values(groupedByUser.spaces).map((group: any) => ({
       ...group,
     })),
-    events:Object.values(groupedByUser.events).map((group: any) => ({
+    directChats:Object.values(groupedByUser.directChats).map((group: any) => ({
       ...group
     }))
   };
