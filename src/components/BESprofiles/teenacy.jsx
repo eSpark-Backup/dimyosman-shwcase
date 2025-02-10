@@ -147,6 +147,7 @@ const Tenancy = ({ tenancy }) => {
           })}
           TopHeading={TopHeading}
           spc={true}
+          detailsPage={true}
           ownerSign={activeTen?.ownerSign}
           tenantSign={activeTen?.tenantSign}
           status={activeTen?.status}
