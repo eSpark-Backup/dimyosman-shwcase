@@ -1367,25 +1367,26 @@ export class GeneralController {
             .leftJoinAndSelect("event.space", "space")
             .leftJoinAndSelect("space.brand", "spaceBrand")
             .andWhere("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
+            .addSelect((subQuery) => {
+              return subQuery
+                .select(
+                  `COALESCE(
+                      JSON_OBJECT(
+                          'id', rsvp.id,
+                          'attendanceDates', rsvp.attendanceDates,
+                          'verifyAttendance', rsvp.verifyAttendance,
+                          'review', rsvp.review,
+                          'rating', rsvp.rating
+                      ), '{}')`,
+                  "event_rsvp"
+                )
+                .from("RSVP", "rsvp")
+                .where("rsvp.event = event.id")
+                .andWhere("rsvp.user = :userId", { userId:req.user?.id })
+                .limit(1);
+            }, "event_rsvp")
             .andWhere("event.user = :userId", { userId })
-            // .addSelect((subQuery) => {
-            //   return subQuery
-            //     .select(
-            //       `COALESCE(
-            //           JSON_OBJECT(
-            //               'id', rsvp.id,
-            //               'attendanceDates', rsvp.attendanceDates,
-            //               'verifyAttendance', rsvp.verifyAttendance,
-            //               'review', rsvp.review,
-            //               'rating', rsvp.rating
-            //           ), '{}')`,
-            //       "event_rsvp"
-            //     )
-            //     .from("RSVP", "rsvp")
-            //     .where("rsvp.event = event.id")
-            //     .andWhere("rsvp.user = :userId", { userId:req.user?.id })
-            //     .limit(1);
-            // }, "event_rsvp")
+
             .skip(skipNumber)
             .take(takeNumber);
     
