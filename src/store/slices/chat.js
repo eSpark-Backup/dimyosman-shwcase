@@ -26,8 +26,14 @@ const slice = createSlice({
         chat.chats.map((c) => c)
       );
 
-      const mergeAll = [...gatherBrands, ...gatherSpaces];
-      const mergeAllChats = [...newChat?.brands, ...newChat?.spaces];
+      const gatherDirectChats = newChat?.directChats?.map((chat) => chat);
+
+      const mergeAll = [...gatherBrands, ...gatherSpaces, ...gatherDirectChats];
+      const mergeAllChats = [
+        ...newChat?.brands,
+        ...newChat?.spaces,
+        ...newChat?.directChats,
+      ];
 
       const gatherAllIds = mergeAll.map((c) => c._id);
 

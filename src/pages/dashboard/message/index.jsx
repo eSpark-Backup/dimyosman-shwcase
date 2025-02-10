@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+
+import { toast } from "react-toastify";
 
 import {
   Box,
@@ -28,6 +31,7 @@ import {
   useGetChatsForContactsQuery,
   useGetAllChatDetailsQuery,
 } from "../../../services/chats.js";
+import { useGetNotificationDataQuery } from "../../../services/notifications.js";
 
 import {
   changeMessageType,
@@ -40,7 +44,10 @@ import {
 } from "../../../store/slices/chat.js";
 import {
   emptyGoToMessage,
+  getNotification,
+  getNotificationCount,
   setFromNotification,
+  setGoToMessage,
 } from "../../../store/slices/notification.js";
 
 import { useSocket } from "../../../context/SocketContext.jsx";
@@ -48,6 +55,7 @@ import { useSocket } from "../../../context/SocketContext.jsx";
 import {
   deleteCookie,
   getCookie,
+  handleNotificationUpdate,
   messageBox,
   removeNewInquiry,
   setCookie,
@@ -90,6 +98,7 @@ const Message = () => {
   );
 
   const dispatch = useDispatch();
+  const { pathname } = useLocation();
 
   const [isNewIdsForChatDetails, setIsNewIdsForChatDetails] = useState([]);
   const [isNewIdsForAllMessages, setIsNewIdsForAllMessages] = useState([]);
@@ -131,6 +140,21 @@ const Message = () => {
     { refetchOnMountOrArgChange: true, refetchOnFocus: true },
     { skip: !myChat?.length }
   );
+
+  const {
+    data: notificationData,
+    isSuccess: notificationSuccess,
+    refetch: notificationRefetch,
+  } = useGetNotificationDataQuery(undefined, { skip: pathname !== "/message" });
+
+  useEffect(() => {
+    if (
+      notificationData?.data &&
+      notificationData?.data?.notifications?.length > 0
+    ) {
+      dispatch(getNotification(notificationData?.data?.notifications));
+    }
+  }, [notificationSuccess, notificationData]);
 
   const [allMessages, setAllMessages] = useState([]);
   const [isTypingUser, setIsTypingUser] = useState(null);
@@ -202,6 +226,49 @@ const Message = () => {
   }, [chatDetailsData, chatDetailsSuccess]);
 
   useEffect(() => {
+    addListener("NEW_NOTIFICATION", (data) => {
+      notificationRefetch().then(() => {
+        handleNotificationUpdate(
+          "newNotification",
+          getNotificationCount,
+          dispatch
+        );
+        const navigateData = {
+          brandName: data.senderBrandName,
+          chatId: data.chatId,
+        };
+
+        toast.info(data?.name, {
+          position: "bottom-right",
+          onClick: () => {
+            dispatch(setGoToMessage(navigateData));
+            dispatch(setFromNotification(false));
+
+            if (pathname !== "/message") {
+              navigate("/message");
+            }
+          },
+        });
+
+        const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
+
+        if (!getUnreadChatIds) {
+          setCookie("unreadChatIds", JSON.stringify([data.chatId]));
+        } else {
+          if (!getUnreadChatIds.includes(data.chatId)) {
+            getUnreadChatIds.push(data.chatId);
+            setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
+          }
+        }
+      });
+    });
+
+    return () => {
+      removeListener("NEW_NOTIFICATION");
+    };
+  }, [addListener, removeListener, emitEvent]);
+
+  useEffect(() => {
     addListener("NEW_MESSAGE", (data) => {
       dispatch(getMessages([...messages, data.message]));
     });
@@ -252,7 +319,7 @@ const Message = () => {
   useEffect(() => {
     if (chatDetails.length > 0 && messages?.length > 0) {
       let message = myChat.map((el) => {
-        return messageBox(el, chatDetails, messages);
+        return messageBox(el, chatDetails, messages, user);
       });
 
       dispatch(getAllMyGroups(message));
@@ -292,17 +359,27 @@ const Message = () => {
   const handleNewInquiry = (selected, initialId = null) => {
     let findParentIndex = -1;
     if (activeTab !== "space") {
-      findParentIndex = allGroups?.findIndex(
-        (msg) =>
-          msg?.parentName ===
-          (gotToMessage?.spaceName || gotToMessage?.brandName)
-      );
+      findParentIndex = allGroups?.findIndex((msg) => {
+        if (msg?.directChat) {
+          return msg?.parentChatId === gotToMessage?.chatId;
+        } else {
+          return (
+            msg?.parentName ===
+            (gotToMessage?.spaceName || gotToMessage?.brandName)
+          );
+        }
+      });
     } else {
-      findParentIndex = allMessages?.findIndex(
-        (msg) =>
-          msg?.parentName ===
-          (gotToMessage?.spaceName || gotToMessage?.brandName)
-      );
+      findParentIndex = allMessages?.findIndex((msg) => {
+        if (msg?.directChat) {
+          return msg?.parentChatId === gotToMessage?.chatId;
+        } else {
+          return (
+            msg?.parentName ===
+            (gotToMessage?.spaceName || gotToMessage?.brandName)
+          );
+        }
+      });
     }
 
     if (findParentIndex !== -1) {
@@ -563,6 +640,8 @@ const Message = () => {
                       setSelectedChatId={setSelectedChatId}
                       emitEvent={emitEvent}
                       onlineUsers={onlineUsers}
+                      initialChatId={initialChatId}
+                      selectedChatId={selectedChatId}
                     />
                   ))
                 : null}

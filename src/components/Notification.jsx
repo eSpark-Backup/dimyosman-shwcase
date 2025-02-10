@@ -48,12 +48,22 @@ const Notification = ({ open, theme, setShowNotification }) => {
       dispatch(emptyGoToMessage());
       dispatch(setFromNotification(false));
 
-      const navigateData = {
-        spaceName: item.metadata.receiverSpaceName,
-        chatId: item.metadata.ChatId,
-      };
+      if (item?.metadata?.receiverSpaceName) {
+        const navigateData = {
+          spaceName: item.metadata.receiverSpaceName,
+          chatId: item.metadata.ChatId,
+        };
 
-      dispatch(setGoToMessage(navigateData));
+        dispatch(setGoToMessage(navigateData));
+      } else {
+        const navigateData = {
+          brandName: item.metadata.senderBrandName,
+          chatId: item.metadata.chatId,
+        };
+
+        dispatch(setGoToMessage(navigateData));
+      }
+
       dispatch(setFromNotification(true));
 
       if (pathname !== "/message") {
@@ -170,11 +180,24 @@ const Notification = ({ open, theme, setShowNotification }) => {
                   ) : (
                     <>
                       <strong style={{ textTransform: "capitalize" }}>
-                        {item?.metadata?.senderBrandUserName}
+                        {item?.metadata?.senderBrandUserName ||
+                          item?.metadata?.senderBrandName}
                       </strong>{" "}
-                      sent a {item.title?.split("For")[0]} for{" "}
+                      sent a{" "}
+                      {item.title
+                        ?.split(/for/i)[0]
+                        .replace("received", "")
+                        .trim()}{" "}
+                      on{" "}
+                      <span style={{ textTransform: "capitalize" }}>
+                        {item?.metadata?.spaceId
+                          ? "Space"
+                          : item?.metadata?.name?.includes("Brand")
+                          ? "Brand"
+                          : "Event"}
+                      </span>{" "}
                       <strong style={{ textTransform: "capitalize" }}>
-                        {item.title?.split("For")[1]}
+                        {item.title?.split(/for/i)[1]}
                       </strong>
                     </>
                   )}

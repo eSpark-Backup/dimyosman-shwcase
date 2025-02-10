@@ -67,7 +67,7 @@ import {
   setGoToMessage,
 } from "../store/slices/notification";
 
-import { getCookie, setCookie } from "../utils";
+import { getCookie, handleNotificationUpdate, setCookie } from "../utils";
 
 // import { setHasPaymentDone, setRedirectTab } from "../store/slices/space";
 
@@ -118,21 +118,15 @@ const SocketProvider = ({ children }) => {
 
       if (
         data.chats &&
-        (data?.chats?.brands?.length > 0 || data?.chats?.spaces?.length > 0)
+        (data?.chats?.brands?.length > 0 ||
+          data?.chats?.spaces?.length > 0 ||
+          data?.chats?.directChats?.length > 0)
       ) {
         dispatch(getMyChat(data.chats));
         dispatch(isUserHasChat(""));
       }
     }
   }, [isSuccess, data]);
-
-  const handleNotificationUpdate = (cookieName, action) => {
-    const currentValue = getCookie(cookieName);
-    const newCount = currentValue ? parseInt(currentValue) + 1 : 1;
-
-    setCookie(cookieName, newCount);
-    dispatch(action(newCount));
-  };
 
   useEffect(() => {
     if (user && !socket.current) {
@@ -160,19 +154,54 @@ const SocketProvider = ({ children }) => {
 
       socket.current.on("NEW_NOTIFICATION", (data) => {
         // console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
+        if (data?.redirect) {
+          if (pathname !== "/space") {
+            notificationRefetch().then(() => {
+              handleNotificationUpdate("newNotification", getNotificationCount, dispatch);
 
-        if (pathname !== "/space") {
-          notificationRefetch().then(() => {
-            handleNotificationUpdate("newNotification", getNotificationCount);
-            let redName = data.redirect;
+              let redName = data.redirect;
 
-            toast.info(data?.name, {
-              position: "bottom-right",
-              onClick: () => {
-                dispatch(setRedirectTab(redName));
-              },
+              toast.info(data?.name, {
+                position: "bottom-right",
+                onClick: () => {
+                  dispatch(setRedirectTab(redName));
+                },
+              });
             });
-          });
+          }
+        } else {
+          if (pathname !== "/message") {
+            notificationRefetch().then(() => {
+              handleNotificationUpdate("newInquiry", getNotificationCount, dispatch);
+              const navigateData = {
+                brandName: data.senderBrandName,
+                chatId: data.chatId,
+              };
+
+              toast.info(data?.name, {
+                position: "bottom-right",
+                onClick: () => {
+                  dispatch(setGoToMessage(navigateData));
+                  dispatch(setFromNotification(true));
+
+                  if (pathname !== "/message") {
+                    navigate("/message");
+                  }
+                },
+              });
+
+              const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
+
+              if (!getUnreadChatIds) {
+                setCookie("unreadChatIds", JSON.stringify([data.chatId]));
+              } else {
+                if (!getUnreadChatIds.includes(data.chatId)) {
+                  getUnreadChatIds.push(data.chatId);
+                  setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
+                }
+              }
+            });
+          }
         }
       });
 
@@ -180,9 +209,9 @@ const SocketProvider = ({ children }) => {
         // console.log("NEW_REQUEST EVENT TRIGGERED.");
 
         notificationRefetch().then(() => {
-          handleNotificationUpdate("newNotification", getNotificationCount);
+          handleNotificationUpdate("newNotification", getNotificationCount, dispatch);
           if (pathname !== "/message") {
-            handleNotificationUpdate("newInquiry", getNotificationCount);
+            handleNotificationUpdate("newInquiry", getNotificationCount, dispatch);
           }
 
           const navigateData = {

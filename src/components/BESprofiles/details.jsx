@@ -51,8 +51,9 @@ const Details = ({ spaceInquire, details, myProfile }) => {
 
   const [openCalendar, setOpenCalendar] = useState(false);
   const [commentModal, setCommentModal] = useState(false);
+  const [commentId, setCommentId] = useState(null);
   const [successModal, setSuccessModal] = useState(false);
-    const [shareModal, setShareModal] = useState(false);
+  const [shareModal, setShareModal] = useState(false);
   
 
   const handleOk = () => {
@@ -384,10 +385,13 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           {myProfile.type !== "space" && !myProfile?.owned && (
             <img
               onClick={() => {
-                if(!token){
-                toast.error("You need to log in first")
+                if (!token) {
+                  toast.error("You need to log in first");
                 } else {
-                  setCommentModal(myProfile?.id)}}
+                  setCommentId(myProfile?.id);
+                  setCommentModal(true);
+                }
+              }
                 }
               style={{ cursor: "pointer", padding: "5px" }}
               width={32}
@@ -656,7 +660,8 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                 if(!token) {
                   toast.error("You need to log in first")
                 } else {
-                  setCommentModal(myProfile?.id)
+                  setCommentId(myProfile?.id);
+                  setCommentModal(true);
                 }
               }}
               style={{ cursor: "pointer", padding: "5px" }}
@@ -707,7 +712,6 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               if(!token){
                 toast.error("You need to log in first")
               } else {
-                console.log(myProfile?.type)
                 if (myProfile?.type === "event") {
                   setOpenCalendar(1);
                 } else if (myProfile?.type === "brand") {
@@ -767,8 +771,12 @@ const Details = ({ spaceInquire, details, myProfile }) => {
       </ReusableModal>
       <CommentModal
         open={commentModal}
-        handleClose={() => setCommentModal(false)}
+        handleClose={() => {
+          setCommentId(null);
+          setCommentModal(false);
+        }}
         handleSuccess={()  => setSuccessModal(true)}
+        commentId={commentId}
       />
       <CommentSuccessModal open={successModal} handleClose={() => setSuccessModal(false)} />
       <ShareModal shareableLink={myProfile?.shareableLink} open={shareModal} handleClose={() => setShareModal(false)} />

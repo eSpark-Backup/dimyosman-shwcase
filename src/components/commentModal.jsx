@@ -19,7 +19,7 @@ import { addEmoji, inquireInputStyles, useClickOutside } from "../utils";
 import { close, smile } from "../assets";
 import { useSendDirectMessageMutation } from "../services/chats";
 
-const CommentModal = ({ open, handleClose, handleSuccess }) => {
+const CommentModal = ({ open, handleClose, handleSuccess, commentId }) => {
   const quillInstance = useRef(null);
 
   const [brandOptions, setBrandOptions] = useState([]);
@@ -36,17 +36,17 @@ const CommentModal = ({ open, handleClose, handleSuccess }) => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
 
-  const [id, setId] = useState(open || "");
+  const [id, setId] = useState(commentId || "");
   const [finalMessage, setFinalMessage] = useState({
     senderBrandId: "",
     message: "",
   });
 
   useEffect(() => {
-    if (open) {
-      setId(open);
+    if (commentId) {
+      setId(commentId);
     }
-  }, [open]);
+  }, [commentId]);
 
   useEffect(() => {
     if (IsBrandSuccess && brandData) {

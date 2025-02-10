@@ -233,7 +233,8 @@ const AllMesaages = ({
 
       {selectedGroup && selectedGroup?.chatGroup ? (
         <Box display="flex" justifyContent="end" mt={1} height="31px">
-          {selectedGroup?.chatGroup?.activity !== "space" ? (
+          {selectedGroup?.chatGroup?.activity !== "space" &&
+          !selectedGroup?.group?.directChat ? (
             <Button
               sx={{
                 padding: "0px 24px",
