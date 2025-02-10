@@ -62,9 +62,6 @@ const EditProfile = () => {
                     }
                 ]
             });
-            if (myProfileData?.data?.coverImages?.length > 0) {
-                setCurrentIndex(0)
-            }
         }
     }, [profileSuccess, myProfileData]);
 
@@ -76,52 +73,12 @@ const EditProfile = () => {
     };
 
     const handleMainImageChange = (files) => {
-        if (files.length > 0) {
+        if (files) {
             setProfileData((prev) => {
-                let coverArray = prev.cover ? [...prev.cover] : []; // Ensure cover is an array
-
-                if (coverArray.length === 0) {
-                    coverArray = [files[0]]; // Assign the first file directly
-                } else if (coverArray.length === 1) {
-                    coverArray[1] = files[0]; // Assign second file
-                    if (files.length > 1) coverArray[2] = files[1]; // Add third file if available
-                } else if (coverArray.length === 2) {
-                    coverArray[2] = files[0]; // Assign third file
-                }
-
+                let coverArray = prev.cover ? [...prev.cover] : [];
+                coverArray = [files];
                 return { ...prev, cover: coverArray };
             });
-
-            setCurrentIndex((prev) => (prev === -1 ? 0 : prev < 2 ? prev + 1 : prev));
-        }
-    };
-
-
-    const handleAddImage = () => {
-        const nextIndex = profileData.cover.length;
-        if (nextIndex < 3) {
-            setCurrentIndex(nextIndex);
-        }
-    };
-
-
-    const handleRemoveImage = () => {
-        setProfileData((prev) => {
-            const updatedCover = prev.cover.filter((_, index) => index !== currentIndex);
-
-            // Update profile data with new cover array
-            return { ...prev, cover: updatedCover };
-        });
-
-        // Use functional update to ensure latest state is used
-        setCurrentIndex((prev) => (profileData.cover.length > 1 ? Math.max(0, prev - 1) : -1));
-    };
-
-
-
-    const HandleSlideChange = (index) => {
-        if (index >= 0 && index <= profileData.cover.length) {
-            setCurrentIndex(index);
         }
     };
 
@@ -250,20 +207,12 @@ const EditProfile = () => {
                 HandleInputCLick={handleMainFileInputClick}
                 cover={profileData?.cover}
                 editImage={
-                    profileData?.cover
-                        ? profileData.cover.length > 0
-                            ? profileData.cover[currentIndex]?.url
-                                ? profileData.cover[currentIndex]?.url
-                                : profileData.cover[currentIndex]
-                                    ? URL.createObjectURL(profileData.cover[currentIndex])
-                                    : []
-                            : []
+                    profileData.cover.length > 0?
+                    profileData?.cover[0]?.url ?
+                    profileData?.cover[0]?.url :
+                    URL.createObjectURL(profileData.cover[0])
                         : []
                 }
-                handleAdd={handleAddImage}
-                handleRemove={handleRemoveImage}
-                currentIndex={currentIndex}
-                HandleSlideChange={HandleSlideChange}
                 handleProfileChange={HandleProfileImageChange}
                 handleProfileImgClick={HandleProfileFileInputClick}
                 onClick={HandleEdit}

@@ -4,7 +4,7 @@ import SpaceCard from './SpaceCard';
 import { addGrey } from '../assets';
 import { useNavigate } from 'react-router-dom';
 
-const ProfileSpaces = ({ filter1, filter2, filter3, cardsData, loading }) => {
+const ProfileSpaces = ({ filter1, filter2, filter3, filter4, cardsData, loading }) => {
     const [selectedChoice, setSelectedChoice] = useState(0)
     const theme = useTheme();
     const navigate = useNavigate()
@@ -16,6 +16,12 @@ const ProfileSpaces = ({ filter1, filter2, filter3, cardsData, loading }) => {
             </Box>
         )
     }
+    const filteredItems = cardsData?.filter((item) => {
+        if (selectedChoice === 1) return item.status === "PUBLISH";
+        if (selectedChoice === 2) return item.status === "DRAFT";
+        if (selectedChoice === 3) return item.status === "ARCHIVE";
+        return true;
+    });
     return (
         cardsData?.length > 0 && <Box
             sx={{
@@ -45,6 +51,7 @@ const ProfileSpaces = ({ filter1, filter2, filter3, cardsData, loading }) => {
                     <Typography onClick={() => setSelectedChoice(0)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 0 ? "600" : "400", cursor: "pointer" }}>{filter1}</Typography>
                     <Typography onClick={() => setSelectedChoice(1)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 1 ? "600" : "400", cursor: "pointer" }}>{filter2}</Typography>
                     <Typography onClick={() => setSelectedChoice(2)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 2 ? "600" : "400", cursor: "pointer" }}>{filter3}</Typography>
+                    <Typography onClick={() => setSelectedChoice(3)} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 3 ? "600" : "400", cursor: "pointer" }}>{filter4}</Typography>
                 </Box>
                 <Button
                     sx={{
@@ -78,11 +85,14 @@ const ProfileSpaces = ({ filter1, filter2, filter3, cardsData, loading }) => {
                 rowGap={4}
                 columnGap={0}
             >
-                {cardsData.map((space, ind) => (
+                {filteredItems?.length > 0 ? filteredItems.map((space, ind) => (
                     <Box key={ind} sx={{ width: { xs: "100%", md: "328px" } }}>
                         <SpaceCard spaces={space} showBtn={true} />
                     </Box>
-                ))}
+                ))
+                :
+                    <Typography sx={{width: "100%"}} fontWeight={700} textAlign="center">No Data</Typography>
+                }
             </Stack>
         </Box>
     )

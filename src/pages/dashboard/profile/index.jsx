@@ -17,7 +17,6 @@ const Profile = () => {
   const [myEvents, setMyEvents] = useState([])
   const [mySpaces, setMySpaces] = useState([])
 
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [forceRender, setForceRender] = useState(false);
 
   const { data: brandData, isError: isBrandError, isLoading: isBrandLoading, isSuccess: isBrandSuccess, error: brandError, isFetching: isBrandFetching } =
@@ -56,7 +55,8 @@ const Profile = () => {
         description: item?.details?.description,
         id: item?.id,
         brandImage: item?.coverImages[0]?.url,
-        status: item?.status
+        status: item?.status,
+        shareableLink: item?.shareableLink,
       }));
 
       setBrands(brands)
@@ -75,7 +75,8 @@ const Profile = () => {
           spaceDescription: item?.details?.description,
           spacePrice: dayPricing ? `$${dayPricing.price}/day` : "N/A",
           spaceDeadline: dayPricing ? `miniumum lease: ${dayPricing?.minimum} days` : "N/A",
-          id: item?.id
+          id: item?.id,
+          status: item?.status
         };
       });
 
@@ -90,7 +91,8 @@ const Profile = () => {
         profileName: item?.eventName,
         category: item?.eventCategory?.map(category => category.name) || [],
         id: item?.id,
-        status: item?.eventStatus,
+        eventStatus: item?.eventStatus,
+        status: item?.status,
         tabs: [
           {
             props: {
@@ -116,7 +118,8 @@ const Profile = () => {
     profile: null,
     profileName: "",
     profileAbout: "",
-    profileStats: []
+    profileStats: [],
+    shareableLink: ""
   })
 
   useEffect(() => {
@@ -126,6 +129,7 @@ const Profile = () => {
         profile: data?.data?.profileImage,
         profileName: data?.data?.name,
         profileAbout: data?.data?.about?.about,
+        shareableLink: data?.data?.shareableLink,
         profileStats: [
           {
             name: "Brands:",
@@ -150,16 +154,10 @@ const Profile = () => {
     }
   }, [isSuccess, data]);
 
-  const HandleSlideChange = (index) => {
-    if (index >= 0 && index <= brandData.cover.length) {
-      setCurrentIndex(index);
-    }
-  };
-
   const profileTabs = [
     {
       label: profileData[0].tabs[0],
-      component: <ProfileAboutSection content={myProfileData?.profileAbout} />
+      component: <ProfileAboutSection myProfileData={myProfileData} content={myProfileData?.profileAbout} />
     },
     ...(brands?.length > 0
       ? [
@@ -171,6 +169,7 @@ const Profile = () => {
               filter1={"All"}
               filter2={"Published"}
               filter3={"Draft"}
+              filter4={"Archive"}
               loading={isBrandLoading || isBrandFetching}
             />
           )
@@ -184,8 +183,12 @@ const Profile = () => {
           component: (
             <ProfileEvents
               filter1={"All"}
-              filter2={"Upcoming"}
-              filter3={"Past"}
+              filter2={"Published"}
+              filter3={"Draft"}
+              filter4={"Archive"}
+              filter5={"Upcoming"}
+              filter6={"Past"}
+              filter7={"Ongoing"}
               cardsData={myEvents}
               loading={isEventLoading || isEventFetchhing}
             />
@@ -201,8 +204,9 @@ const Profile = () => {
             <ProfileSpaces
               cardsData={mySpaces}
               filter1={"All"}
-              filter2={"Upcoming"}
-              filter3={"Past"}
+              filter2={"Published"}
+              filter3={"Draft"}
+              filter4={"Archive"}
               loading={isSpaceLoading || isSpaceFetching}
             />
           )
@@ -234,16 +238,14 @@ const Profile = () => {
         userProfileImg={myProfileData?.profile}
         userName={myProfileData?.profileName}
         cover={myProfileData?.cover}
-        HandleSlideChange={HandleSlideChange}
-        currentIndex={currentIndex}
         profileStats={myProfileData?.profileStats}
         {...(myProfileData?.cover?.length > 0
           ? {
             editImage:
-              myProfileData?.cover[currentIndex]?.url
-                ? myProfileData?.cover[currentIndex]?.url
-                : myProfileData?.cover[currentIndex]
-                  ? URL.createObjectURL(myProfileData?.cover[currentIndex])
+              myProfileData?.cover[0]?.url
+                ? myProfileData?.cover[0]?.url
+                : myProfileData?.cover[0]
+                  ? URL.createObjectURL(myProfileData?.cover[0])
                   : null,
           }
           : {})}
