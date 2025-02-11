@@ -18,7 +18,6 @@ const ProfileCard = ({ myProfile, userRole = "account", isEdit, handleProfileImg
     }
 
     useEffect(() => {
-        console.log(userProfileImg)
         setPreviewImage(userProfileImg);
     }, [userProfileImg]);
 

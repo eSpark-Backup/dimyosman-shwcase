@@ -473,6 +473,14 @@ const SpaceInquireModal = ({
                       : "End Date"}
                   </time>
                 </Box>
+                {pricing?.map((item) => {
+                  return (
+                    <Typography>
+                      {/* Minimum Lease {item?.term}: {item?.minimum} {item?.term} */}
+                      {`Minimum Lease ${item?.term}${Number(item?.minimum) > 1 ? "s" : ""}: ${item?.minimum} ${item?.term}${Number(item?.minimum) > 1 ? "s" : ""}`}
+                    </Typography>
+                  )
+                })}
                 <Box>
                   <Typography textAlign="left" fontWeight={600} fontSize={12}>
                     Selected lease total:
