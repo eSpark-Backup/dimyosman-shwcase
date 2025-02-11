@@ -335,7 +335,8 @@ export const keysForBrandsSapcesEvents = (object, type) => {
     userImage: object?.brand?.brandImage || "",
     userRole: "brand",
     slides: coverArray,
-    isDraftedBrandOwner: object?.brand?.status === "DRAFT" ? object?.brand?.user?.id : null
+    isDraftedBrandOwner: object?.brand?.status === "DRAFT" ? object?.brand?.user?.id : null,
+    brandStatus: object?.brand?.status,
   };
 
   if (type === "space") {

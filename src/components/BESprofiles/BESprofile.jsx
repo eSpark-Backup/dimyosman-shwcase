@@ -69,6 +69,8 @@ const BESProfile = ({ spaceInquire, type, data }) => {
     )
   }
 
+  console.log(myProfile?.by)
+
   return (
     <>
       <Box
