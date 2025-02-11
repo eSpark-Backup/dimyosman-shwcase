@@ -79,12 +79,15 @@ const brandController = new BrandController(
  *                   long:
  *                     type: number
  *                     description: Longitude of the brand's location.
+ *                     required: false
  *                   lat:
  *                     type: number
  *                     description: Latitude of the brand's location.
+ *                     required: false
  *                   additional:
  *                     type: string
  *                     description: Additional information about the location.
+ *                     required: false
  *               status:
  *                 type: string
  *                 enum:

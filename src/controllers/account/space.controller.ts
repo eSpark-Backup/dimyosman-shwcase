@@ -586,9 +586,9 @@ export class SpaceController {
         .filter((file) => file.startsWith("image")); // Filter for image files
 
       if (
-        !coverFiles.length ||
-        (!imageFiles.length && status == SpaceStatus.PUBLISH)
-      ) {
+       ( !coverFiles.length ||
+        !imageFiles.length )&& status == SpaceStatus.PUBLISH)
+      {
         throw new ApiError(
           "Missing required files: 'cover' or 'image'",
           HTTP_STATUS.BAD_REQUEST
