@@ -750,7 +750,7 @@ export class SpaceController {
           HTTP_STATUS.BAD_REQUEST
         );
       }
-      if(status==SpaceStatus.DRAFT){
+      if(status==SpaceStatus.DRAFT || status==SpaceStatus.ARCHIVE){
         const events = await this.eventsRepo
         .createQueryBuilder("event")
         .where("event.space = :spaceId", { spaceId: existingSpace.id })
@@ -767,13 +767,13 @@ export class SpaceController {
           //also add for ongoing 
           if (startDate > currentDate) {
             throw new ApiError(
-              "You can't draft a space with upcoming events",
+              "You can't draft/archive a space with upcoming events",
               HTTP_STATUS.BAD_REQUEST
             );
           }
           if(endDate>currentDate){
             throw new ApiError(
-              "You can't draft a space with ongoing events",
+              "You can't draft/archive a space with ongoing events",
               HTTP_STATUS.BAD_REQUEST
             );
           }

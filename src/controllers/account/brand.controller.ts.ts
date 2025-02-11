@@ -350,6 +350,38 @@ export class BrandController {
           HTTP_STATUS.BAD_REQUEST
         );
       }
+        if(status==BrandStatus.DRAFT || status==BrandStatus.ARCHIVE){
+          const events = await this.eventsRepo
+          .createQueryBuilder("event")
+          .where("event.brand = :brandId", { brandId: existingBrand.id })
+          .getMany();
+          
+      if (events.length > 0) {
+        events.map( (event) => {
+          const eventDate =
+          event.eventDate &&
+          (event.eventDate as [{ startDate: string; endDate: string }]);
+            const startDate = new Date(eventDate[0].startDate);
+            const endDate = new Date(eventDate[0].endDate);
+            const currentDate = new Date();
+          //also add for ongoing 
+          if (startDate > currentDate) {
+            throw new ApiError(
+              "You can't draft/archive a brand with upcoming events",
+              HTTP_STATUS.BAD_REQUEST
+            );
+          }
+          if(endDate>currentDate){
+            throw new ApiError(
+              "You can't draft/archive a brand with ongoing events",
+              HTTP_STATUS.BAD_REQUEST
+            );
+          }
+
+        })
+      }
+
+        }
       let oldCoverImages: UploadResult[] = [];
 
       const FolderName = `${CLOUD_FOLDERS.BRAND}/${brandName.trim()}`;
