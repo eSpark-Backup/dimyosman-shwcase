@@ -40,6 +40,7 @@ import comment from "./comment.svg";
 import share from "./share.svg";
 import brandIcon from "./brand.svg";
 import spaceIcon from "./space.svg";
+import eventIcon from "./event-icon.svg";
 import calender from "./calender.svg";
 import eventUserImage from "./event-user-image.svg";
 import brandUserImage from "./brand-user-image.svg";
@@ -163,6 +164,7 @@ export {
   share,
   brandIcon,
   spaceIcon,
+  eventIcon,
   calender,
   eventUserImage,
   spaceUserImage,

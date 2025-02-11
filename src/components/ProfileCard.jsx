@@ -18,13 +18,8 @@ const ProfileCard = ({ myProfile, userRole = "account", isEdit, handleProfileImg
     }
 
     useEffect(() => {
-        console.log(userProfileImg)
         setPreviewImage(userProfileImg);
     }, [userProfileImg]);
-
-    useEffect(() => {
-        console.log(editImage)
-    }, [editImage])
 
 
     // const handleImageChange = (event) => {
@@ -70,7 +65,7 @@ const ProfileCard = ({ myProfile, userRole = "account", isEdit, handleProfileImg
                 sx={{
                     height: "220px",
                     borderRadius: "5px 5px 0 0",
-                    border: "1px dashed rgba(0, 20, 28, 0.4)",
+                    border: isEdit && "1px dashed rgba(0, 20, 28, 0.4)",
                     backgroundColor: "rgba(209, 219, 215, 0.2)",
                     position: "relative",
                     display: "flex",
@@ -100,7 +95,7 @@ const ProfileCard = ({ myProfile, userRole = "account", isEdit, handleProfileImg
                             left: 0,
                             width: "100%",
                             height: "100%",
-                            backgroundColor: "rgb(185 185 185 / 40%)",
+                            backgroundColor: isEdit && "rgb(185 185 185 / 40%)",
                             borderRadius: "5px 5px 0 0",
                             zIndex: 2,
                         }}

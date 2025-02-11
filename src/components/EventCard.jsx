@@ -1,4 +1,4 @@
-import { eventBadge } from '../assets'
+import { eventIcon } from '../assets'
 import { Box, Button, Typography, useTheme } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import RSVPCalendar from './rsvp-calendar'
@@ -61,16 +61,16 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
       }}
     >
       <figure style={{ width: "100%", height: "100%" }} role="event-image" aria-labelledby="event-image-figcaption">
-        <img
+        {event?.slides[0] && <img
           style={{ borderRadius: "5px 5px 0 0 " }}
           width="100%"
           height="170px"
           src={event?.slides[0]}
           alt="event-img"
-        />
+        />}
         <img
-          style={{ position: "absolute", top: 0, right: 0, zIndex: 2 }}
-          src={eventBadge}
+          style={{ width: "24px", height: "24px", position: "absolute", top: 0, right: 0, zIndex: 2 }}
+          src={eventIcon}
           alt="event-badge"
         />
       </figure>
@@ -89,7 +89,7 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
         </Typography>
         <Typography fontWeight={300} fontSize={24} textAlign="left">
           Starting:{" "}
-          <span style={{ fontWeight: 600 }}>{event?.details?.starting}</span>
+          <span style={{ fontWeight: 600 }}>{(event?.details?.starting && event?.details?.starting !== "Invalid Date") ? event?.details?.starting : "-"}</span>
         </Typography>
         <Typography fontWeight={300} fontSize={12} textAlign="left">
           RSVP: <span style={{ fontWeight: 600 }}>{event?.details?.RSVP}</span>

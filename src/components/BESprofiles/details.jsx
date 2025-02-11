@@ -250,7 +250,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               <Tooltip title={details?.space?.length > 30 ? details?.space : ""}>
                 <Typography
                   textAlign="left"
-                  sx={{ fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
+                  sx={{ fontWeight: 600, fontSize: "16px" }}
                 >
                   {details?.space?.length > 30
                     ? `${details?.space.slice(0, 29)}...`
