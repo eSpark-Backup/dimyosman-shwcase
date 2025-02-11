@@ -48,21 +48,6 @@ export class EventController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const coverFilesPath = path.join(process.cwd(), "uploads");
-      const imageFilesPath = path.join(process.cwd(), "uploads");
-      let coverFiles = fs
-        .readdirSync(coverFilesPath)
-        .filter((file) => file.startsWith("cover")); // Filter for cover files
-      const imageFiles = fs
-        .readdirSync(path.join(imageFilesPath))
-        .filter((file) => file.startsWith("image")); // Filter for image files
-
-      if (!coverFiles.length || !imageFiles.length) {
-        throw new ApiError(
-          "Missing required files: 'cover' or 'image'",
-          HTTP_STATUS.BAD_REQUEST
-        );
-      }
       let {
         eventName,
         eventCategory,
@@ -74,6 +59,22 @@ export class EventController {
         coverOrder,
         leaseId,
       } = req.body;
+      const coverFilesPath = path.join(process.cwd(), "uploads");
+      const imageFilesPath = path.join(process.cwd(), "uploads");
+      let coverFiles = fs
+        .readdirSync(coverFilesPath)
+        .filter((file) => file.startsWith("cover")); // Filter for cover files
+      const imageFiles = fs
+        .readdirSync(path.join(imageFilesPath))
+        .filter((file) => file.startsWith("image")); // Filter for image files
+
+      if ((!coverFiles.length || !imageFiles.length) && status== EventStatus.PUBLISH) {
+        throw new ApiError(
+          "Missing required files: 'cover' or 'image'",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+     
       const checkName = await this.eventRepo.findOne({ where: { eventName } });
 
       if (checkName) {
@@ -117,10 +118,18 @@ export class EventController {
 
       const userId = req.user?.id;
       const user = await this.userRepo.findOne({ where: { id: userId } });
-      const brand = await this.brandRepo.findOne({ where: { id: brandId } });
-      if (!brand) {
+      if(status==EventStatus.PUBLISH && !brandId){
+        throw new ApiError("Brand is required for Publishing an Event", HTTP_STATUS.BAD_REQUEST);
+      }
+      let brand = null;
+      if(brandId){
+       brand = await this.brandRepo.findOne({ where: { id: brandId } });
+      if (!brand ) {
         throw new ApiError("Brand not found", HTTP_STATUS.NOT_FOUND);
       }
+    }else if(!brandId && status == EventStatus.PUBLISH){
+      throw new ApiError("Brand is required for Publishing an Event", HTTP_STATUS.BAD_REQUEST);
+    }
       let space = null;
       if (spaceId) {
         space = await this.spaceRepo.findOne({ where: { id: spaceId } });
@@ -136,17 +145,17 @@ export class EventController {
 
       const newEvent = new Events();
       newEvent.eventName = eventName;
-      newEvent.eventCategory = eventCategory;
-      newEvent.details = details;
+      newEvent.eventCategory = eventCategory|| null;
+      newEvent.details = details|| null;
       newEvent.status = status;
       newEvent.user = user as User;
-      newEvent.brand = brand as Brand;
+      newEvent.brand = brand as Brand || null;
       newEvent.space = (space as Spaces) || null;
       newEvent.leaseSpace = (leaseSpace as LeaseSpace) || null;
       newEvent.eventDate = eventDate;
       newEvent.coverImages = JSON.stringify(coverUrls) as Object;
-      newEvent.eventImage = imageUrls[0].url as string;
-      newEvent.imageKey = imageUrls[0].public_id;
+      newEvent.eventImage = imageUrls[0]?.url as string || null;
+      newEvent.imageKey = imageUrls[0]?.public_id|| null;
       const event = await this.eventRepo.save(newEvent);
       event.coverImages = JSON.parse(event.coverImages as unknown as string);
 
@@ -348,7 +357,7 @@ export class EventController {
             )
           : [{ url: oldEventImage }]
       ) as UploadResult[];
-
+      if(oldCoverImages.length>0){
       for (const oldCoverImage of oldCoverImages) {
         if (coverKeys && coverKeys.length > 0) {
           const coverKeyNumbers = coverKeys
@@ -389,8 +398,9 @@ export class EventController {
           }
         }
       }
+    }
 
-      if (imageFileObjects && oldEventImage !== imageUrls[0]?.url) {
+      if (imageFileObjects && oldEventImage !=null && oldEventImage !== imageUrls[0]?.url) {
         await uploadService.deleteFile(existingEvent.imageKey);
       }
 

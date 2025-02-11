@@ -7,24 +7,24 @@ export class EventValidation {
     eventCategory: Joi.array()
       .items(
         Joi.object({
-          name: Joi.string().required(),
+          name: Joi.string().optional(),
         })
       )
-      .required(),
+      .optional(),
     leaseId: Joi.string().optional(),
-    brandId: Joi.string().required(),
+    brandId: Joi.string().optional(),
     spaceId: Joi.string().optional(),
     eventDate: Joi.array()
       .items(
         Joi.object({
-          startDate: Joi.string().required(),
-          endDate: Joi.string().required(),
+          startDate: Joi.string().optional(),
+          endDate: Joi.string().optional(),
         })
       )
-      .required(),
+      .optional(),
     details: Joi.object({
-      description: Joi.string().required(),
-      htmlContent: Joi.string().required(),
+      description: Joi.string().optional(),
+      htmlContent: Joi.string().optional(),
     }).optional(),
     coverOrder: Joi.alternatives()
       .try(Joi.string(), Joi.array().items(Joi.string()))

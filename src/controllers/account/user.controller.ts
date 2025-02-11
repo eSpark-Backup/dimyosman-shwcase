@@ -506,17 +506,22 @@ export class UserController {
             .andWhere("space.user = :userId", { userId })
             .getCount(),
         ]);
-         const  shareableLink=generateShareableLink({
-                    id: user.id,
-                    type: "user",
-                  })
+      const shareableLink = generateShareableLink({
+        id: user.id,
+        type: "user",
+      });
 
-        const { password: _, ...userProfile } = user as User & { brandsCount?: number; eventsCount?: number; spacesCount?: number;shareableLink:string };
+      const { password: _, ...userProfile } = user as User & {
+        brandsCount?: number;
+        eventsCount?: number;
+        spacesCount?: number;
+        shareableLink: string;
+      };
 
       userProfile.coverImages = JSON.parse(
         userProfile.coverImages as Object as string
       );
-        userProfile.shareableLink=shareableLink
+      userProfile.shareableLink = shareableLink;
       userProfile.brandsCount = getBrandsCount;
       userProfile.eventsCount = getEventsCount;
       userProfile.spacesCount = getSpacesCount;
@@ -599,7 +604,7 @@ export class UserController {
           followers.forEach((follower) => {
             brandFollowerCountMap.set(
               follower.brandId,
-              parseInt(follower.followedCount, 10)|| 0
+              parseInt(follower.followedCount, 10) || 0
             );
           });
 
@@ -615,7 +620,7 @@ export class UserController {
           brandEventsCount.forEach((eventCount) => {
             brandEventCountMap.set(
               eventCount.brand,
-              parseInt(eventCount.eventCount, 10)|| 0
+              parseInt(eventCount.eventCount, 10) || 0
             );
           });
 
@@ -697,63 +702,63 @@ export class UserController {
         .take(takeNumber)
         .getManyAndCount();
 
-        if (entity == "BRAND") {
-          const brandIds = followedEntities
-            .map((entity) => entity.brand?.id)
-            .filter(Boolean);
-  
-          if (brandIds.length > 0) {
-            const followers = await this.SavedEntityRepo.createQueryBuilder(
-              "savedEntity"
-            )
-              .where("savedEntity.brand IN (:...brandIds)", { brandIds })
-              .andWhere("savedEntity.actionType = :actionType", {
-                actionType: ActionType.FOLLOW,
-              })
-              .groupBy("savedEntity.brand")
-              .select("savedEntity.brand")
-              .addSelect("COUNT(savedEntity.id)", "followedCount")
-              .getRawMany();
-  
-            const brandFollowerCountMap = new Map();
-            followers.forEach((follower) => {
-              brandFollowerCountMap.set(
-                follower.brandId,
-                parseInt(follower.followedCount, 10) || 0
+      if (entity == "BRAND") {
+        const brandIds = followedEntities
+          .map((entity) => entity.brand?.id)
+          .filter(Boolean);
+
+        if (brandIds.length > 0) {
+          const followers = await this.SavedEntityRepo.createQueryBuilder(
+            "savedEntity"
+          )
+            .where("savedEntity.brand IN (:...brandIds)", { brandIds })
+            .andWhere("savedEntity.actionType = :actionType", {
+              actionType: ActionType.FOLLOW,
+            })
+            .groupBy("savedEntity.brand")
+            .select("savedEntity.brand")
+            .addSelect("COUNT(savedEntity.id)", "followedCount")
+            .getRawMany();
+
+          const brandFollowerCountMap = new Map();
+          followers.forEach((follower) => {
+            brandFollowerCountMap.set(
+              follower.brandId,
+              parseInt(follower.followedCount, 10) || 0
+            );
+          });
+
+          const brandEventsCount = await this.eventsRepo
+            .createQueryBuilder("event")
+            .select("event.brand")
+            .addSelect("COUNT(event.id)", "eventCount")
+            .where("event.brand IN (:...brandIds)", { brandIds })
+            .groupBy("event.brand")
+            .getRawMany();
+
+          const brandEventCountMap = new Map();
+          brandEventsCount.forEach((eventCount) => {
+            brandEventCountMap.set(
+              eventCount.brand,
+              parseInt(eventCount.eventCount, 10) || 0
+            );
+          });
+
+          followedEntities.forEach((entity) => {
+            if (entity.brand && brandEventCountMap.has(entity.brand.id)) {
+              (entity as any).eventCount = brandEventCountMap.get(
+                entity.brand.id
               );
-            });
-  
-            const brandEventsCount = await this.eventsRepo
-              .createQueryBuilder("event")
-              .select("event.brand")
-              .addSelect("COUNT(event.id)", "eventCount")
-              .where("event.brand IN (:...brandIds)", { brandIds })
-              .groupBy("event.brand")
-              .getRawMany();
-  
-            const brandEventCountMap = new Map();
-            brandEventsCount.forEach((eventCount) => {
-              brandEventCountMap.set(
-                eventCount.brand,
-                parseInt(eventCount.eventCount, 10)|| 0
+            }
+
+            if (brandFollowerCountMap.has(entity.brand.id)) {
+              (entity as any).followedCount = brandFollowerCountMap.get(
+                entity.brand.id
               );
-            });
-  
-            followedEntities.forEach((entity) => {
-              if (entity.brand && brandEventCountMap.has(entity.brand.id)) {
-                (entity as any).eventCount = brandEventCountMap.get(
-                  entity.brand.id
-                );
-              }
-  
-              if (brandFollowerCountMap.has(entity.brand.id)) {
-                (entity as any).followedCount = brandFollowerCountMap.get(
-                  entity.brand.id
-                );
-              }
-            });
-          }
+            }
+          });
         }
+      }
 
       res.status(HTTP_STATUS.OK).json(
         handleResponse(`Followed ${entity} fetched Successfully`, {
@@ -912,10 +917,7 @@ export class UserController {
           .status(HTTP_STATUS.OK)
           .json(
             handleResponse(
-              `Removed from saved ${
- 
-                entityType.toLowerCase()
-              }s successfully`
+              `Removed from saved ${entityType.toLowerCase()}s successfully`
             )
           );
         return next();
@@ -934,9 +936,7 @@ export class UserController {
         .status(HTTP_STATUS.CREATED)
         .json(
           handleResponse(
-            `Added to saved ${
-              entityType.toLowerCase()
-            }s successfully`,
+            `Added to saved ${entityType.toLowerCase()}s successfully`,
             newFavourite
           )
         );

@@ -66,6 +66,7 @@ const eventController = new EventController(
  *                 required: false
  *               eventCategory:
  *                 type: array
+ *                 required: false
  *                 items:
  *                   type: object
  *                   properties:
@@ -75,6 +76,7 @@ const eventController = new EventController(
  *                 description: The category of the event.
  *               eventDate:
  *                 type: array
+ *                 required: false
  *                 items:
  *                   type: object
  *                   properties:
@@ -87,6 +89,7 @@ const eventController = new EventController(
  *                 description: The Amenities and Features of the event.
  *               details:
  *                  type: object
+ *                  required: false
  *                  properties:
  *                    description:
  *                       type: string
@@ -110,6 +113,7 @@ const eventController = new EventController(
  *                 type: string
  *                 format: binary
  *                 description: Additional image of the event.
+ *                 required: false
  *     responses:
  *       201:
  *         description: event created successfully.
