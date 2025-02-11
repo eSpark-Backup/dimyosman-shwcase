@@ -120,7 +120,7 @@ const Profile = () => {
           }
         ],
         details: {
-          by: item?.user?.name,
+          by: item?.brand?.brandName,
           starting: dayjs.utc(item?.eventDate?.[0]?.startDate).startOf("day").local().format("DD.MM.YYYY"),
           RSVP: item?.rsvpCount
         },
