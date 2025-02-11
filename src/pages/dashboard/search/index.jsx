@@ -189,6 +189,7 @@ const Search = () => {
       shareableLink: el?.shareableLink,
       isFavourite: el?.isFavourite,
       id: el?.id,
+      profileId: el?.user?.id,
       brandId: el?.id,
       activity: "brand",
       userName: el?.user?.name,
@@ -198,9 +199,10 @@ const Search = () => {
       activityMaker:
         el?.brandCategory?.map((item) => item.name).join(",") || "",
       content: [el?.details?.description || ""],
-      userRole: "profile",
+      userRole: "user",
       slides: coverArray,
       location: el?.location || [],
+      publicProfile: el?.user?.profile
     };
   };
 
@@ -251,6 +253,7 @@ const Search = () => {
             allData?.map((item, index) => {
               return (
                 <ActivityCard
+                  publicProfile={item?.publicProfile}
                   shareableLink={item?.shareableLink}
                   key={index}
                   fullItem={item}

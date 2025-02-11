@@ -78,7 +78,7 @@ const ProfileCard = ({ myProfile, userRole = "account", isEdit, handleProfileImg
                     alignItems: "center",
                     // overflow: "hidden",
                 }}
-                onClick={() => !isEdit && setShowImageModal(true)}
+                onClick={() => !isEdit && images.length > 0 && setShowImageModal(true)}
             >
                 {editImage && !Array.isArray(editImage) && (
                     <img
@@ -141,7 +141,7 @@ const ProfileCard = ({ myProfile, userRole = "account", isEdit, handleProfileImg
                         />
                     </Box>
                 }
-                <Button
+                <Box
                     sx={{
                         backgroundColor: "rgb(0, 20, 28, 0.2)",
                         height: "48px",
@@ -160,14 +160,13 @@ const ProfileCard = ({ myProfile, userRole = "account", isEdit, handleProfileImg
                     }}
                 >
                     <figure
-                        style={{ width: "100%", height: "100%" }}
                         role="img"
 
                     >
                         <img src={user} alt="User Icon" style={{ width: "31px", height: "32px" }} />
                     </figure>
 
-                </Button>
+                </Box>
                 {myProfile && <LoadingButton
                     sx={{
                         backgroundColor: isEdit ? "rgb(0, 20, 28, 0.9)" : "#4d5b60",
@@ -421,7 +420,7 @@ const ProfileCard = ({ myProfile, userRole = "account", isEdit, handleProfileImg
                         },
                     }}
                 >
-                    <ImageModal slides={images} />
+                    <ImageModal single slides={images} />
                 </Box>
             </ReusableModal>
         </>

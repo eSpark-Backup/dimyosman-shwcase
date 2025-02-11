@@ -7,7 +7,8 @@ import { brandMain } from '../../../assets';
 import { useGetUserProfileQuery, useUserProfileUpdateMutation } from '../../../services/user';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 
 const EditProfile = () => {
@@ -22,8 +23,11 @@ const EditProfile = () => {
     `;
 
     const navigate = useNavigate()
+    const { id } = useParams()
+    const { user } = useSelector((state) => state.auth);
+    const myProfile = id === user.id;
 
-    const { data: myProfileData, isLoading: profileLoading, isSuccess: profileSuccess, isError: isProfileError, error: profileError, isFetching } = useGetUserProfileQuery({}, { refetchOnFocus: true, refetchOnMountOrArgChange: true })
+    const { data: myProfileData, isLoading: profileLoading, isSuccess: profileSuccess, isError: isProfileError, error: profileError, isFetching } = useGetUserProfileQuery(null, { refetchOnFocus: true, refetchOnMountOrArgChange: true })
     const [currentIndex, setCurrentIndex] = useState(-1);
 
 
@@ -39,22 +43,22 @@ const EditProfile = () => {
     useEffect(() => {
         if (profileSuccess && myProfileData) {
             setProfileData({
-                cover: myProfileData?.data?.coverImages,
+                cover: myProfileData?.data?.coverImages || [],
                 profileImage: myProfileData?.data?.profileImage,
                 profileName: myProfileData?.data?.name,
                 profileAbout: myProfileData?.data?.about?.about ? myProfileData?.data?.about?.about : defaultTemplate,
                 profileStats: [
                     {
                         name: "Brands:",
-                        value: myProfileData?.data?.brandsCount
+                        value: myProfileData?.data?.brandsCount || 0
                     },
                     {
                         name: "Events:",
-                        value: myProfileData?.data?.eventsCount
+                        value: myProfileData?.data?.eventsCount || 0
                     },
                     {
                         name: "Spaces:",
-                        value: myProfileData?.data?.spacesCount
+                        value: myProfileData?.data?.spacesCount || 0
                     },
                     {
                         name: "Member since:",
@@ -200,6 +204,7 @@ const EditProfile = () => {
             }}
         >
             <ProfileCard
+                myProfile={myProfile}
                 isEdit={true}
                 profileImgRef={profileImageRef}
                 mainImgRef={mainImageRef}
