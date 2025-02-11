@@ -98,6 +98,7 @@ export class GeneralController {
 
         .andWhere("space.user != :userId", { userId })
         .andWhere("space.status = :STATUS", { STATUS: SPACE_STATUS.PUBLISH })
+        .orderBy("space.createdAt", "DESC")
         .skip(skipNumber)
         .take(takeNumber);
 
@@ -129,6 +130,7 @@ export class GeneralController {
             .andWhere("rsvp.user = :userId", { userId })
             .limit(1);
         }, "event_rsvp")
+        .orderBy("event.createdAt", "DESC")
         .skip(skipNumber)
         .take(takeNumber);
 
@@ -164,6 +166,7 @@ export class GeneralController {
         .andWhere("brand.status = :STATUS", { STATUS: BRAND_STATUS.PUBLISH })
         .andWhere("brand.user != :userId", { userId })
         .leftJoinAndSelect("brand.user", "user")
+        .orderBy("brand.createdAt", "DESC")
         .skip(skipNumber)
         .take(takeNumber);
 
