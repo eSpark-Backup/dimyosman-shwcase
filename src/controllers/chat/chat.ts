@@ -180,7 +180,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
             isInquiryRole: isSender ? "sender" : "unknown", // Inquiry role only applies for brands
           });
         }
-      }else if(isReceiver && !isSender){
+      }else if(isReceiver && !isSender && chat.directChat==true){
         if (!acc.brands[userRoleKey]) {
           acc.brands[userRoleKey] = {
             brandDetails: isReceiver
