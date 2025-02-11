@@ -5,10 +5,11 @@ import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
 import { brandMain } from '../../../assets';
 import { useGetUserProfileQuery, useUserProfileUpdateMutation } from '../../../services/user';
+import { updateUser } from "../../../store/slices/auth";
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 
 const EditProfile = () => {
@@ -22,6 +23,7 @@ const EditProfile = () => {
     <h2><strong>Leading the Movement Toward Eco-Conscious Fashion</strong></h2><p>Sustainability isn’t just a trend for me—it’s at the core of everything I do. My hope is to inspire others to make more conscious choices in their wardrobes while still enjoying the luxury and elegance that fashion can bring. I love collaborating with like-minded individuals and brands, and I’m always exploring new ways to push the boundaries of what sustainable fashion can achieve.</p>
     `;
 
+    const dispatch = useDispatch();
     const navigate = useNavigate()
     const { id } = useParams()
     const { user } = useSelector((state) => state.auth);
@@ -175,7 +177,9 @@ const EditProfile = () => {
 
         profile(profileData)
             .unwrap()
-            .then((response) => { })
+            .then((response) => {
+                dispatch(updateUser(response?.data));
+            })
             .catch((error) => {
                 console.error("Error updating profile", error);
             });
