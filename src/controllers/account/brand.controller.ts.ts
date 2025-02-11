@@ -102,6 +102,7 @@ export class BrandController {
             senderBrandImage: senderBrand.brandImage,
             senderBrandName: senderBrand.brandName,
             chatId: chat.id.toString(),
+            receiverBrandName:receiverBrand.brandName
           },
           type: "info",
         });
@@ -120,6 +121,7 @@ export class BrandController {
           name: `${senderBrand.brandName} sent you a message on Brand ${receiverBrand.brandName}`,
           senderBrandImage: senderBrand.brandImage,
           senderBrandName: senderBrand.brandName,
+          receiverBrandName:receiverBrand.brandName,
           chatId: ChatId,
         });
       } else if (receiverEvent) {
@@ -141,6 +143,7 @@ export class BrandController {
             name: `${senderBrand.brandName} sent you a message on Event ${receiverEvent.eventName}`,
             senderBrandImage: senderBrand.brandImage,
             senderBrandName: senderBrand.brandName,
+            receiverEventName:receiverEvent.eventName,
             chatId: chat.id.toString(),
           },
           type: "info",
@@ -158,6 +161,7 @@ export class BrandController {
           name: `${senderBrand.brandName} sent you a message on Event ${receiverEvent.eventName}`,
           senderBrandImage: senderBrand.brandImage,
           senderBrandName: senderBrand.brandName,
+          receiverEventName:receiverEvent.eventName,
           chatId: ChatId,
         });
       }
