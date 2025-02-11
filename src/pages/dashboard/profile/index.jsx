@@ -146,7 +146,7 @@ const Profile = () => {
   useEffect(() => {
     if (isSuccess && data) {
       setMyProfileData({
-        cover: data?.data?.coverImages,
+        cover: data?.data?.coverImages || [],
         profile: data?.data?.profileImage,
         profileName: data?.data?.name,
         profileAbout: data?.data?.about?.about,
@@ -154,15 +154,15 @@ const Profile = () => {
         profileStats: [
           {
             name: "Brands:",
-            value: data?.data?.brandsCount
+            value: data?.data?.brandsCount || 0
           },
           {
             name: "Events:",
-            value: data?.data?.eventsCount
+            value: data?.data?.eventsCount || 0
           },
           {
             name: "Spaces:",
-            value: data?.data?.spacesCount
+            value: data?.data?.spacesCount || 0
           },
           {
             name: "Member since:",
