@@ -1312,6 +1312,7 @@ export class SpaceController {
             totalPricing,
           }
         }
+        return space
         });
 
         const groupedSpaces = {
