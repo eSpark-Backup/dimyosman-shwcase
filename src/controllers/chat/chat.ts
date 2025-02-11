@@ -153,7 +153,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
         ? chat.receiverBrand?.id || "unknown_receiver"
         : "unknown";
 
-      if (!isReceiver ) {
+      if (!isReceiver && isSender ) {
         if (!acc.brands[userRoleKey]) {
           acc.brands[userRoleKey] = {
             brandDetails: isSender
