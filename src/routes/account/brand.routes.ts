@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { BrandValidation, validate } from "../../validations";
-import { Brand, Events, SavedEntity, User } from "../../entity";
+import { Brand, Events, SavedEntity, Spaces, User } from "../../entity";
 import { AppDataSource } from "../../typeorm.config";
 import { BrandController } from "../../controllers/account";
 import {
@@ -20,6 +20,7 @@ const brandRepository = AppDataSource.getRepository(Brand);
 const userRepository = AppDataSource.getRepository(User);
 const savedEntityRepository=AppDataSource.getRepository(SavedEntity)
 const eventEntityRepository=AppDataSource.getRepository(Events)
+const spaceRepository = AppDataSource.getRepository(Spaces);
 
 const brandController = new BrandController(
   brandRepository,
@@ -27,6 +28,7 @@ const brandController = new BrandController(
   Chat,
   Notification,
   eventEntityRepository,
+  spaceRepository,
   Message,
   savedEntityRepository
 

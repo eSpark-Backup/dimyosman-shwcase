@@ -6,6 +6,8 @@ import {
   Events,
   SavedEntity,
   SavedEntityType,
+  Spaces,
+  SpaceStatus,
   User,
 } from "../../entity";
 import { ApiError } from "../../errors";
@@ -44,7 +46,7 @@ export class BrandController {
     private chatModel: typeof Chat,
     private notificationModel: typeof Notification,
     private eventsRepo: Repository<Events>,
-
+  private spaceRepo: Repository<Spaces>,
     private messageModel: typeof Message,
     private savedEntity: Repository<SavedEntity>
   ) {}
@@ -379,6 +381,17 @@ export class BrandController {
           }
 
         })
+      }
+      const spaces=await this.spaceRepo
+      .createQueryBuilder("space")
+      .where("space.brand = :brandId", { brandId: existingBrand.id })
+      .andWhere("space.status=:status",{status:SpaceStatus.PUBLISH})
+      .getMany();
+      if(spaces.length>0){
+        throw new ApiError(
+          "You can't draft/archive a brand with published spaces",
+          HTTP_STATUS.BAD_REQUEST
+        );
       }
 
         }
