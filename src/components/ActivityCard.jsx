@@ -117,6 +117,8 @@ const ActivityCard = ({
   const modalRef = useRef();
   useClickOutside(modalRef, () => setOpenCalendar(false));
 
+  console.log(publicProfile)
+
   return (
     <Box
       sx={{
@@ -150,14 +152,19 @@ const ActivityCard = ({
           }}
         >
           <Box
-            onClick={
-              (id && userRole === "brand" && !isDraftedBrandOwner) || (id && userRole === "brand" && isDraftedBrandOwner === user?.id)
-                ? () => {
-                  navigate(`/${userRole}/${id}`);
-                  handleNavigation();
-                }
-                : () => { }
-            }
+            onClick={() => {
+              if ((id && userRole === "brand" && !isDraftedBrandOwner) || (id && userRole === "brand" && isDraftedBrandOwner === user?.id)) {
+                navigate(`/${userRole}/${id}`);
+                handleNavigation();
+              }
+              else if ((id && userRole === "user" && publicProfile)) {
+                navigate(`/profile/${id}`);
+                handleNavigation();
+              }
+              else {
+                toast.error("You are not authorized to view this profile.");
+              }
+            }}
             sx={{
               cursor: "pointer",
               width: "64px",
@@ -239,25 +246,19 @@ const ActivityCard = ({
             </Box>
           </Box>
           <Box
-            onClick={
-              // ? () => {
-              //   navigate(`/${activity}/${activityId}`, {
-              //     state: search ? { other: true } : null,
-              //   });
-              //   handleNavigation();
-              // }
-              // : () => { }
-
-              (id && userRole === "brand" && !isDraftedBrandOwner) || (id && userRole === "brand" && isDraftedBrandOwner === user?.id)
-                ? () => {
-                  navigate(`/${userRole}/${id}`, {
-                    state: search ? { other: true } : null,
-                  });
-                  handleNavigation();
-                }
-                : () => { }
-
-            }
+            onClick={() => {
+              if ((id && userRole === "brand" && !isDraftedBrandOwner) || (id && userRole === "brand" && isDraftedBrandOwner === user?.id)) {
+                navigate(`/${userRole}/${id}`);
+                handleNavigation();
+              }
+              else if ((id && userRole === "user" && publicProfile)) {
+                navigate(`/profile/${id}`);
+                handleNavigation();
+              }
+              else {
+                toast.error("You are not authorized to view this profile.");
+              }
+            }}
             sx={{
               cursor: activityId ? "pointer" : "default",
               display: "flex",
