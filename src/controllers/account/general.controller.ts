@@ -1385,6 +1385,21 @@ export class GeneralController {
             .leftJoinAndSelect("space.brand", "spaceBrand")
             .where("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
             .andWhere("event.user = :userId", { userId }) // Get events created by other users
+            .leftJoin(
+              (qb) => {
+                return qb
+                  .select("rsvp_sub.event", "eventId")
+                  .addSelect("COUNT(rsvp_sub.id)", "rsvpCount")
+                  .from("rsvp", "rsvp_sub")
+                  .groupBy("rsvp_sub.event");
+              },
+              "rsvpCountSubquery",
+              "rsvpCountSubquery.eventId = event.id"
+            )
+            .addSelect(
+              "COALESCE(rsvpCountSubquery.rsvpCount, 0)",
+              "event_rsvpCount"
+            )
             .addSelect(
               `(SELECT 
                   COALESCE(JSON_OBJECT(
@@ -1495,8 +1510,10 @@ export class GeneralController {
                     }
       
                     return {
+                      
                       ...event,
                       eventStatus,
+                      rsvpCount: Number(rawData.event_rsvpCount) || 0,
                     };
                   }
     
