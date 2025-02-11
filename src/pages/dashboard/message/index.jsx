@@ -35,7 +35,6 @@ import { useGetNotificationDataQuery } from "../../../services/notifications.js"
 
 import {
   changeMessageType,
-  // filterAllMyGroups,
   getAllMyGroups,
   getChatDetails,
   getMessages,
@@ -103,6 +102,7 @@ const Message = () => {
   const [isNewIdsForChatDetails, setIsNewIdsForChatDetails] = useState([]);
   const [isNewIdsForAllMessages, setIsNewIdsForAllMessages] = useState([]);
   const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(1);
   const [inViewLoader, setInViewLoader] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const pageSize = 10;
@@ -125,7 +125,7 @@ const Message = () => {
     isSuccess,
     isFetching: isFetchingMessage,
   } = useGetChatsForContactsQuery(
-    { chats: isNewIdsForAllMessages },
+    { chats: isNewIdsForAllMessages, page: 1, pageSize },
     {skip: !myChat?.length, refetchOnMountOrArgChange: true, refetchOnFocus: true },
   );
 
@@ -169,7 +169,6 @@ const Message = () => {
   },[])
 
   useEffect(() => {
-    // if (page === 1) {
       if (isSuccess && messageData && messageData?.length) {
         const filteredMessages = messageData
           .map((message) => message?.messages)
@@ -179,6 +178,9 @@ const Message = () => {
           return {
             totalPages: message?.totalPages,
             chat: message?.messages[0]?.chat,
+            currentPage: 1,
+            remainingPages: message?.totalPages,
+            hasMore: message?.totalPages > 1 ? true : false,
           };
         });
 
@@ -203,7 +205,6 @@ const Message = () => {
           dispatch(getTotalPages(filteredMessagesTotalPage));
         }
       }
-    // }
   }, [messageData, isSuccess]);
 
   useEffect(() => {
@@ -395,6 +396,7 @@ const Message = () => {
       setSelectedChatId(allGroups[index]?.chatGroups[0]?.chatId);
     }
 
+    setPage(1)
     setExpanded(index);
 
     const obj = {
@@ -499,11 +501,6 @@ const Message = () => {
         ? allGroups?.filter((group) => group?.parentActivity === type)
         : allGroups;
 
-    // const obj = {
-    //   type,
-    //   filterGroups,
-    // };
-
     if (type !== activeTab) {
       let msgTxt = "";
 
@@ -521,7 +518,6 @@ const Message = () => {
 
       dispatch(changeMessageType(msgTxt));
       setActiveTab(type);
-      // dispatch(filterAllMyGroups(obj));
       setAllMessages(filterGroups);
       setExpanded(0);
     }
@@ -627,10 +623,7 @@ const Message = () => {
                       setSelectedChatId={setSelectedChatId}
                       emitEvent={emitEvent}
                       onlineUsers={onlineUsers}
-                      initialChatId={initialChatId}
-                      selectedChatId={selectedChatId}
                       setPage={setPage}
-                      setHasMore={setHasMore}
                     />
                   ))
                 : null}
@@ -689,12 +682,13 @@ const Message = () => {
                       isTypingUser={isTypingUser}
                       onlineUsers={onlineUsers}
                       setToShare={setToShare}
-                      page={page}
-                      setPage={setPage}
                       inViewLoader={inViewLoader}
                       setInViewLoader={setInViewLoader}
-                      hasMore={hasMore}
-                      setHasMore={setHasMore}
+                      page={page}
+                      setPage={setPage}
+                      totalPageOfMessage={totalPagesOfMessage?.find(
+                        (p) => p?.chat === selectedGroup?.chatGroup?.chatId
+                      )}
                     />
                   ) : null}
                 </>

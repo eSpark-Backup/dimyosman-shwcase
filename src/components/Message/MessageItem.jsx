@@ -30,10 +30,7 @@ const MessageItem = ({
   setSelectedChatId,
   emitEvent,
   onlineUsers,
-  initialChatId,
-  selectedChatId,
-  setPage,
-  setHasMore,
+  setPage
 }) => {
   const isLessThan768 = useMediaQuery("(max-width:768px)");
 
@@ -55,9 +52,8 @@ const MessageItem = ({
   }, [expanded]);
 
   const handleGroup = (el) => {
-    setHasMore(true);
-    setPage(1);
-
+    setPage(1)
+    
     const obj = {
       userId: user.userChatId,
       members: el?.members,

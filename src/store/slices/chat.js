@@ -69,19 +69,6 @@ const slice = createSlice({
     getAllMyGroups: (state, action) => {
       state.allGroups = action.payload;
     },
-    filterAllMyGroups: (state, action) => {
-      const { type, filterGroups } = action.payload;
-
-      state.allGroups = filterGroups;
-
-      if (type === "all") {
-        state.hasMessages = "";
-      } else if (filterGroups?.length > 0) {
-        state.hasMessages = "";
-      } else {
-        state.hasMessages = "No Chats";
-      }
-    },
     changeMessageType: (state, action) => {
       state.hasMessages = action.payload;
     },
@@ -97,7 +84,6 @@ export const {
   isActiveMembers,
   emptyActiveMembers,
   getAllMyGroups,
-  filterAllMyGroups,
   changeMessageType,
   getTotalPages
 } = slice.actions;
