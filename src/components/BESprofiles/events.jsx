@@ -5,8 +5,10 @@ import { addIcon } from "../../assets";
 import { useState } from "react";
 import EventCard from "../EventCard";
 import { profileContent } from "../../constant";
+import { toast } from "react-toastify";
 
 const Events = ({ myProfile, addNewEvent }) => {
+  const token = localStorage.getItem("token")
   const navigate = useNavigate();
   const filterEvents = ["All", "Upcoming", "Past"];
   const [activeFilter, setActiveFilter] = useState("All");
@@ -69,7 +71,14 @@ const Events = ({ myProfile, addNewEvent }) => {
                 </Stack>
               </Stack>
               <Button
-                onClick={addNewEvent}
+                onClick={() => {
+                  if(!token){
+                    toast.error("You need to log in first")
+                  } else {
+                    addNewEvent()
+                  }
+                } 
+              }
                 startIcon={
                   <img
                     style={{
@@ -110,10 +119,10 @@ const Events = ({ myProfile, addNewEvent }) => {
               rowGap={4}
               columnGap={2}
             >
-              {filteredEvents.length === 0 ? (
+              {filteredEvents?.length === 0 ? (
                 <Typography>No {activeFilter} events available</Typography>
               ) : (
-                filteredEvents.map((event, ind) => (
+                filteredEvents?.map((event, ind) => (
                   <Box
                     key={`event-${ind + 1}`}
                     sx={{

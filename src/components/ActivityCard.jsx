@@ -69,6 +69,7 @@ const ActivityCard = ({
   const theme = useTheme();
   const navigate = useNavigate();
   const [commentModal, setCommentModal] = useState(false);
+  const [commentId, setCommentId] = useState(null);
   const [successModal, setSuccessModal] = useState(false);
   const [shareModal, setShareModal] = useState(false);
   const [likePost, setLikePost] = useState(isFavourite);
@@ -769,19 +770,22 @@ const ActivityCard = ({
           />
           {activity !== "space" && (
             <img
-              onClick={() => setCommentModal(activityId)}
+              onClick={() => {
+                setCommentId(activityId);
+                setCommentModal(true);
+              }}
               src={comment}
               alt="Comment Icon"
               style={{ cursor: "pointer" }}
             />
           )}
           <img
-            onClick={
-              () => setShareModal({
+            onClick={() =>
+              setShareModal({
                 id: activityId,
                 profileName: activityName,
                 profileImage: activityImage,
-                profileType: activity
+                profileType: activity,
               })
             }
             src={share}
@@ -873,7 +877,11 @@ const ActivityCard = ({
             {activity === "event" ? (
               "RSVP"
             ) : activity === "brand" ? (
-              followPost ? "Unfollow" : "Follow"
+              followPost ? (
+                "Unfollow"
+              ) : (
+                "Follow"
+              )
             ) : (
               <>
                 <img src={calender} alt="Calender Icon" />
@@ -885,11 +893,22 @@ const ActivityCard = ({
       </Box>
       <CommentModal
         open={commentModal}
-        handleClose={() => setCommentModal(false)}
+        handleClose={() => {
+          setCommentId(null);
+          setCommentModal(false)
+        }}
         handleSuccess={() => setSuccessModal(true)}
+        commentId={commentId}
       />
-      <CommentSuccessModal open={successModal} handleClose={() => setSuccessModal(false)} />
-      <ShareModal shareableLink={shareableLink} open={shareModal} handleClose={() => setShareModal(false)} />
+      <CommentSuccessModal
+        open={successModal}
+        handleClose={() => setSuccessModal(false)}
+      />
+      <ShareModal
+        shareableLink={shareableLink}
+        open={shareModal}
+        handleClose={() => setShareModal(false)}
+      />
     </Box>
   );
 };

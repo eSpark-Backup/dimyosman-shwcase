@@ -53,7 +53,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
     }));
   };
 
-  const filteredProfile = data.find((profile) => profile.id === id);
+  const filteredProfile = data.find((profile) => (profile.id === id) || profile);
   const myProfile = {
     ...filteredProfile,
     tabs: mapTabsToComponents(filteredProfile, filteredProfile?.tabs),
