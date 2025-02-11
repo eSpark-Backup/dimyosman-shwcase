@@ -38,7 +38,8 @@ const EditProfile = () => {
         profileImage: null,
         profileName: "",
         profileAbout: "",
-        profileStats: []
+        profileStats: [],
+        isProfile: false,
 
     });
 

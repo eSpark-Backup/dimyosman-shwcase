@@ -5,7 +5,7 @@ export const eventApi = api.injectEndpoints({
         newEvent: builder.mutation({
             query: (eventData) => {
                 const formData = new FormData();
-                formData.append("brandId", eventData?.brand?.id)
+                if (eventData?.brand?.id) formData.append("brandId", eventData?.brand?.id)
                 if (eventData?.toSendSpace && eventData?.toSendSpace !== "None") formData.append("spaceId", eventData?.toSendSpace)
                 formData.append("eventName", eventData?.eventName)
                 // formData.append("minLeaseDays", "Hello")
@@ -43,7 +43,7 @@ export const eventApi = api.injectEndpoints({
                 // formData.append('location', JSON.stringify(location));
 
 
-                if (eventData?.cover) {
+                if (eventData?.cover && Object.keys(eventData?.cover).length > 0) {
                     const coverOrder = [];
 
                     eventData.cover.forEach((file) => {
@@ -96,10 +96,14 @@ export const eventApi = api.injectEndpoints({
                     ?.map(item => ({ name: item.name }));
 
                 formData.append('eventCategory', JSON.stringify(selectedCategories));
-                const formattedDates = [{
+                const formattedDates = eventData.selectedDate[0] && typeof eventData.selectedDate[0] !== "object" ?
+                 [{
                     startDate: eventData.selectedDate[0],
                     endDate: eventData.selectedDate[1]
-                }];
+                }] : [{
+                    startDate: "string",
+                    endDate: "string"
+                }]
                 formData.append('eventDate', JSON.stringify(formattedDates));
 
                 const details = {
@@ -109,7 +113,7 @@ export const eventApi = api.injectEndpoints({
                 formData.append('details', JSON.stringify(details));
 
 
-                if (eventData?.cover) {
+                if (eventData?.cover && Object.keys(eventData?.cover).length > 0) {
                     const coverKeys = [];
 
                     eventData.cover.forEach((file, index) => {
