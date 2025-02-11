@@ -810,6 +810,7 @@ export class GeneralController {
       }
 
       spaces = spaces.map((space) => {
+        if(space.pricing !=null){
         const totalPricing = calculatePricing(
           space.pricing as PricingTerm[],
           1
@@ -818,6 +819,9 @@ export class GeneralController {
           ...space,
           totalPricing,
         };
+      }
+      return space;
+
       });
 
       const eventsWithType = formattedRsvpEvents.map((event: any) => ({
@@ -1008,10 +1012,12 @@ export class GeneralController {
           }));
         });
         (entity as any).calendarEvents = calendarEvents;
+        if(entity.pricing !=null){
         const totalPricing = calculatePricing(
           entity.pricing as PricingTerm[],
           1
         );
+      }
 
         const savedEntities = await this.savedEntity
           .createQueryBuilder("savedEntity")
@@ -1546,6 +1552,7 @@ export class GeneralController {
             (space as any).calendarEvents = calendarEvents;
           }
           spaces.map((space) => {
+            if(space.pricing !=null){
             const totalPricing = calculatePricing(
               space.pricing as PricingTerm[],
               1
@@ -1554,6 +1561,8 @@ export class GeneralController {
               ...space,
               totalPricing,
             };
+          }
+          return space;
           });
           if (brands.length > 0) {
             brands.forEach((brand) => {
