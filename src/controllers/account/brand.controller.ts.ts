@@ -102,7 +102,7 @@ export class BrandController {
             senderBrandImage: senderBrand.brandImage,
             senderBrandName: senderBrand.brandName,
             chatId: chat.id.toString(),
-            receiverBrandName:receiverBrand.brandName
+            receiverBrandName: receiverBrand.brandName,
           },
           type: "info",
         });
@@ -121,7 +121,7 @@ export class BrandController {
           name: `${senderBrand.brandName} sent you a message on Brand ${receiverBrand.brandName}`,
           senderBrandImage: senderBrand.brandImage,
           senderBrandName: senderBrand.brandName,
-          receiverBrandName:receiverBrand.brandName,
+          receiverBrandName: receiverBrand.brandName,
           chatId: ChatId,
         });
       } else if (receiverEvent) {
@@ -143,7 +143,7 @@ export class BrandController {
             name: `${senderBrand.brandName} sent you a message on Event ${receiverEvent.eventName}`,
             senderBrandImage: senderBrand.brandImage,
             senderBrandName: senderBrand.brandName,
-            receiverEventName:receiverEvent.eventName,
+            receiverEventName: receiverEvent.eventName,
             chatId: chat.id.toString(),
           },
           type: "info",
@@ -161,7 +161,7 @@ export class BrandController {
           name: `${senderBrand.brandName} sent you a message on Event ${receiverEvent.eventName}`,
           senderBrandImage: senderBrand.brandImage,
           senderBrandName: senderBrand.brandName,
-          receiverEventName:receiverEvent.eventName,
+          receiverEventName: receiverEvent.eventName,
           chatId: ChatId,
         });
       }
@@ -180,7 +180,7 @@ export class BrandController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const {
+      let {
         brandName,
         brandCategory,
         details,
@@ -198,8 +198,8 @@ export class BrandController {
         .filter((file) => file.startsWith("image")); // Filter for image files
 
       if (
-        !coverFiles.length ||
-        (!imageFiles.length && status == BrandStatus.PUBLISH)
+        (!coverFiles.length || !imageFiles.length) &&
+        status == BrandStatus.PUBLISH
       ) {
         throw new ApiError(
           "Missing required files: 'cover' or 'image'",
@@ -214,7 +214,10 @@ export class BrandController {
           HTTP_STATUS.BAD_REQUEST
         );
       }
+      coverOrder = coverOrder || [];
       coverFiles = commonHelper.reorderCoverFiles(coverFiles, coverOrder);
+
+
 
       const coverFileObjects: IFileObject[] = coverFiles.map((file) =>
         commonHelper.createFileObject(path.join(coverFilesPath, file), "cover")
