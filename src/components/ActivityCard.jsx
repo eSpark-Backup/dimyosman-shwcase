@@ -117,8 +117,6 @@ const ActivityCard = ({
   const modalRef = useRef();
   useClickOutside(modalRef, () => setOpenCalendar(false));
 
-  console.log(publicProfile)
-
   return (
     <Box
       sx={{
