@@ -912,9 +912,9 @@ export class UserController {
           .status(HTTP_STATUS.OK)
           .json(
             handleResponse(
-              `Removed from Saved ${
-                entityType.charAt(0).toUpperCase() +
-                entityType.slice(1).toLowerCase()
+              `Removed from saved ${
+ 
+                entityType.toLowerCase()
               }s successfully`
             )
           );
@@ -934,9 +934,8 @@ export class UserController {
         .status(HTTP_STATUS.CREATED)
         .json(
           handleResponse(
-            `Added to Saved ${
-              entityType.charAt(0).toUpperCase() +
-              entityType.slice(1).toLowerCase()
+            `Added to saved ${
+              entityType.toLowerCase()
             }s successfully`,
             newFavourite
           )
