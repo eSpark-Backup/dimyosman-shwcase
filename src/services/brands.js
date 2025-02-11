@@ -27,10 +27,10 @@ export const brandApi = api.injectEndpoints({
                     long: brandData?.location?.long,
                     additional: brandData?.mapInstructions
                 };
-                formData.append('location', JSON.stringify(location));
+                if (brandData?.mapInstructions) formData.append('location', JSON.stringify(location));
 
 
-                if (brandData?.cover) {
+                if (brandData?.cover && Object.keys(brandData?.cover).length > 0) {
                     const coverOrder = [];
 
                     brandData.cover.forEach((file) => {
@@ -99,7 +99,7 @@ export const brandApi = api.injectEndpoints({
                 formData.append('location', JSON.stringify(location));
 
 
-                if (brandData?.cover) {
+                if (brandData?.cover && Object.keys(brandData?.cover).length > 0) {
                     const coverKeys = [];
 
                     brandData.cover.forEach((file, index) => {

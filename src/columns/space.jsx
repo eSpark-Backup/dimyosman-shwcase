@@ -83,11 +83,11 @@ const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
             sx={{
               fontSize: "14px",
               fontWeight: item?.brandUrl ? 600 : 400,
-              cursor: "pointer",
+              cursor: item?.brandUrl ? "pointer" : "default",
             }}
-            onClick={() => gotoBrand(item)}
+            onClick={item?.brandUrl ? () => gotoBrand(item) : () => {}}
           >
-            {item?.brand}
+            {item?.brand || "-"}
           </Typography>
         );
       },

@@ -84,11 +84,18 @@ const InputWithMap = ({
   const [priceToShow, setPriceToShow] = useState(defaultPrice);
 
   useEffect(() => {
-    if (!defaultDate || !Array.isArray(defaultDate)) {
+    if (
+      !defaultDate ||
+      !Array.isArray(defaultDate) ||
+      defaultDate.length !== 2 ||
+      isNaN(new Date(defaultDate[0]).getTime()) ||
+      isNaN(new Date(defaultDate[1]).getTime())
+    ) {
       setSelectedDate([null, null]);
-      onDateChange && onDateChange([null, null]); // Ensure onDateChange is called
+      onDateChange && onDateChange([null, null]);
       return;
     }
+
 
     const isValidDefault = isRangeValid(
       defaultDate.map((date) => (date ? new Date(date) : null)),

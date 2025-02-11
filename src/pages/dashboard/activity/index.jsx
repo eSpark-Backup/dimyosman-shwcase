@@ -72,7 +72,8 @@ const Activity = () => {
             startDate: item?.type === "event" && item?.eventDate[0]?.startDate || "",
             endDate: item?.type === "event" && item?.eventDate[0]?.endDate || "",
             isDraftedBrandOwner: (item?.type === "event" || item?.type === "space") && item?.brand?.status === "DRAFT" ? item?.brand?.user?.id : null,
-            publicProfile: item?.user?.profile
+            publicProfile: item?.user?.profile,
+            brandStatus: (item?.type === "event" || item?.type === "space") && item?.brand?.status,
           };
         }) || [];
         const mergedData = [...allActivityData, ...updatedData];
@@ -186,6 +187,7 @@ const Activity = () => {
               rsvpDates={item?.rsvpDates}
               startDate={item?.startDate}
               endDate={item?.endDate}
+              brandStatus={item?.brandStatus}
               handleNavigation={handleNavigation}
               isDraftedBrandOwner={item?.isDraftedBrandOwner}
               handleAction={(fullItem) => {

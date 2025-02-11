@@ -289,6 +289,7 @@ const Search = () => {
                   endDate={item?.endDate}
                   handleNavigation={handleNavigation}
                   isDraftedBrandOwner={item?.isDraftedBrandOwner}
+                  brandStatus={item?.brandStatus}
                   handleAction={(fullItem) => {
                     if (fullItem?.activity === "space") {
                       const detail = spaceData?.find(

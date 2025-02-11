@@ -200,6 +200,7 @@ const ProfileCard = ({ myProfile, userRole = "account", isEdit, handleProfileImg
 
                 </LoadingButton>}
                 <Box
+                    onClick={e => e.stopPropagation()}
                     sx={{
                         position: "absolute",
                         width: { xs: "90%", md: "70%", lg: "50%", xl: "40%" },
