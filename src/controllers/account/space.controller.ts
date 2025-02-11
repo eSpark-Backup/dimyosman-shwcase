@@ -586,9 +586,9 @@ export class SpaceController {
         .filter((file) => file.startsWith("image")); // Filter for image files
 
       if (
-       ( !coverFiles.length ||
-        !imageFiles.length )&& status == SpaceStatus.PUBLISH)
-      {
+        (!coverFiles.length || !imageFiles.length) &&
+        status == SpaceStatus.PUBLISH
+      ) {
         throw new ApiError(
           "Missing required files: 'cover' or 'image'",
           HTTP_STATUS.BAD_REQUEST
@@ -809,49 +809,55 @@ export class SpaceController {
           : [{ url: oldSpaceImage }]
       ) as UploadResult[];
       if (oldCoverImages.length > 0) {
-      for (const oldCoverImage of oldCoverImages) {
-        if (coverKeys && coverKeys.length > 0) {
-          const coverKeyNumbers = coverKeys
-            .map((key: any) => {
-              const splitKey = key.split("+");
-              return {
-                key: splitKey[0],
-                order: parseInt(splitKey[1], 10),
-              };
-            })
-            .filter((keyData: any) => !isNaN(keyData.order)); // Filter out invalid or undefined numbers
+        for (const oldCoverImage of oldCoverImages) {
+          if (coverKeys && coverKeys.length > 0) {
+            const coverKeyNumbers = coverKeys
+              .map((key: any) => {
+                const splitKey = key.split("+");
+                return {
+                  key: splitKey[0],
+                  order: parseInt(splitKey[1], 10),
+                };
+              })
+              .filter((keyData: any) => !isNaN(keyData.order)); // Filter out invalid or undefined numbers
 
-          const matchingKey = coverKeyNumbers.find(
-            (keyData: any) => oldCoverImage.public_id.includes(keyData.key) // Match based on the key part of the public_id
-          );
-
-          if (!matchingKey) {
-            await uploadService.deleteFile(oldCoverImage.public_id);
-          } else {
-            const { order } = matchingKey;
-
-            const validOrder = Math.max(
-              1,
-              Math.min(order, coverUrls.length + 1)
+            const matchingKey = coverKeyNumbers.find(
+              (keyData: any) => oldCoverImage.public_id.includes(keyData.key) // Match based on the key part of the public_id
             );
 
-            if (validOrder === coverUrls.length + 1) {
-              coverUrls.push(oldCoverImage);
+            if (!matchingKey) {
+              await uploadService.deleteFile(oldCoverImage.public_id);
             } else {
-              coverUrls.splice(validOrder - 1, 0, oldCoverImage);
+              const { order } = matchingKey;
+
+              const validOrder = Math.max(
+                1,
+                Math.min(order, coverUrls.length + 1)
+              );
+
+              if (validOrder === coverUrls.length + 1) {
+                coverUrls.push(oldCoverImage);
+              } else {
+                coverUrls.splice(validOrder - 1, 0, oldCoverImage);
+              }
             }
-          }
-        } else {
-          if (
-            !coverUrls.some((url) => url.public_id === oldCoverImage.public_id)
-          ) {
-            await uploadService.deleteFile(oldCoverImage.public_id);
+          } else {
+            if (
+              !coverUrls.some(
+                (url) => url.public_id === oldCoverImage.public_id
+              )
+            ) {
+              await uploadService.deleteFile(oldCoverImage.public_id);
+            }
           }
         }
       }
-    }
 
-      if (imageFileObjects &&   oldSpaceImage != null && oldSpaceImage !== imageUrls[0]?.url) {
+      if (
+        imageFileObjects &&
+        oldSpaceImage != null &&
+        oldSpaceImage !== imageUrls[0]?.url
+      ) {
         await uploadService.deleteFile(existingSpace.imageKey);
       }
 
@@ -904,14 +910,13 @@ export class SpaceController {
     next: NextFunction
   ): Promise<void> {
     const { pricing, days } = req.body;
-
+  
     if (!pricing || !days) {
       res.status(400).json({ error: "Pricing array and days are required." });
       return next();
     }
-
+  
     try {
-      // Helper function to calculate additional days
       const calculateAdditionalDays = (
         termPrice: any,
         divisor: any,
@@ -920,30 +925,37 @@ export class SpaceController {
         const dailyRate = parseFloat(termPrice) / divisor;
         return Math.round(dailyRate * additionalDays * 100) / 100;
       };
-
-      // Sort pricing terms by hierarchy: Day, Week, Month, Year
+  
       const termOrder = { Day: 1, Week: 2, Month: 3, Year: 4 };
       pricing.sort(
         (a: PricingTerm, b: PricingTerm) =>
           termOrder[a.term] - termOrder[b.term]
       );
-
+  
       let totalPrice = 0;
       let termDetails = {};
-
+      let failedTerm = null;
+      let requiredDays = null;
+  
       for (const term of pricing) {
         const { term: termName, price, minimum } = term;
         const termPrice = parseFloat(price);
         const minTerm = parseInt(minimum, 10);
-
+  
         switch (termName) {
           case "Day":
-            if (days <= 6 && days >= minTerm) {
-              totalPrice = termPrice * days;
-              termDetails = { term: "Day", price: termPrice, days };
-              break;
+            if (days <= 6) {
+              if (days >= minTerm) {
+                totalPrice = termPrice * days;
+                termDetails = { term: "Day", price: termPrice, days };
+                break;
+              } else {
+                failedTerm = "Day";
+                requiredDays = minTerm;
+              }
             }
             break;
+  
           case "Week":
             if (days >= 7 && days <= 29) {
               const weeks = Math.floor(days / 7);
@@ -959,14 +971,18 @@ export class SpaceController {
                   additionalDays,
                 };
                 break;
+              } else {
+                failedTerm = "Week";
+                requiredDays = minTerm * 7; // Convert weeks to days
               }
             }
             break;
+  
           case "Month":
             if (days >= 30 && days <= 364) {
               const months = Math.floor(days / 30);
+              const additionalDays = days % 30;
               if (months >= minTerm) {
-                const additionalDays = days % 30;
                 totalPrice =
                   months * termPrice +
                   calculateAdditionalDays(termPrice, 30, additionalDays);
@@ -977,15 +993,18 @@ export class SpaceController {
                   additionalDays,
                 };
                 break;
+              } else {
+                failedTerm = "Month";
+                requiredDays = minTerm * 30; // Convert months to days
               }
             }
             break;
-
+  
           case "Year":
             if (days >= 365) {
               const years = Math.floor(days / 365);
+              const additionalDays = days % 365;
               if (years >= minTerm) {
-                const additionalDays = days % 365;
                 totalPrice =
                   years * termPrice +
                   calculateAdditionalDays(termPrice, 365, additionalDays);
@@ -996,23 +1015,26 @@ export class SpaceController {
                   additionalDays,
                 };
                 break;
+              } else {
+                failedTerm = "Year";
+                requiredDays = minTerm * 365; // Convert years to days
               }
             }
             break;
           default:
             break;
         }
-
-        if (totalPrice > 0) break; // Exit loop once price is calculated
+  
+        if (totalPrice > 0) break;
       }
-
+  
       if (totalPrice === 0) {
         res.status(400).json({
-          error: "Number of days should be greater or equal to minimum.",
+          error: `Number of days (${days}) is below the minimum required for term ${failedTerm}. Required: ${requiredDays} days.`,
         });
         return next();
       }
-
+  
       res.status(200).json({ totalPrice: totalPrice.toFixed(2), termDetails });
       return next();
     } catch (error) {
@@ -1022,6 +1044,7 @@ export class SpaceController {
       return next();
     }
   }
+  
 
   async getAllSpaces(
     req: ICustomRequest,
@@ -1209,6 +1232,7 @@ export class SpaceController {
         }
 
         spaces = spaces.map((space) => {
+          if(space.pricing !=null){
           const totalPricing = calculatePricing(
             space.pricing as PricingTerm[],
             1
@@ -1216,7 +1240,7 @@ export class SpaceController {
           return {
             ...space,
             totalPricing,
-          };
+          }}
         });
 
         res.status(200).json(
@@ -1274,6 +1298,7 @@ export class SpaceController {
         }
 
         spaces = spaces.map((space) => {
+          if(space.pricing !=null){
           const totalPricing = calculatePricing(
             space.pricing as PricingTerm[],
             1
@@ -1281,7 +1306,8 @@ export class SpaceController {
           return {
             ...space,
             totalPricing,
-          };
+          }
+        }
         });
 
         const groupedSpaces = {
