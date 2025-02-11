@@ -88,7 +88,6 @@ const NewEvent = () => {
 
 
     const spaceOptions = [
-        { label: "None", value: "None", item: null },
         ...(spaceData?.data?.availableSpaces?.map((space) => {
             const item = {
                 location: {
