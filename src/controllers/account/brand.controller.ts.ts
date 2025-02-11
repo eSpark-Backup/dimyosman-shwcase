@@ -193,14 +193,16 @@ export class BrandController {
         .readdirSync(path.join(imageFilesPath))
         .filter((file) => file.startsWith("image")); // Filter for image files
 
-      if (!coverFiles.length || !imageFiles.length) {
+      if (
+        !coverFiles.length ||
+        (!imageFiles.length && status == BrandStatus.PUBLISH)
+      ) {
         throw new ApiError(
           "Missing required files: 'cover' or 'image'",
           HTTP_STATUS.BAD_REQUEST
         );
       }
 
-   
       const checkName = await this.brandRepo.findOne({ where: { brandName } });
       if (checkName) {
         throw new ApiError(
@@ -234,14 +236,14 @@ export class BrandController {
 
       const newBrand = new Brand();
       newBrand.brandName = brandName;
-      newBrand.brandCategory = brandCategory;
-      newBrand.details = details;
-      newBrand.location = location;
+      newBrand.brandCategory = brandCategory || null;
+      newBrand.details = details || null;
+      newBrand.location = location || null;
       newBrand.status = status;
       newBrand.user = user as User;
-      newBrand.coverImages = JSON.stringify(coverUrls) as Object;
-      newBrand.brandImage = imageUrls[0].url as any;
-      newBrand.imageKey = imageUrls[0].public_id;
+      newBrand.coverImages = (JSON.stringify(coverUrls) as Object) || null;
+      newBrand.brandImage = (imageUrls[0]?.url as any) || null;
+      newBrand.imageKey = imageUrls[0]?.public_id;
       await this.brandRepo.save(newBrand);
 
       const uploadsPath = path.join(process.cwd(), "uploads");
@@ -377,48 +379,56 @@ export class BrandController {
           : [{ url: oldBrandImage }]
       ) as UploadResult[];
 
-      for (const oldCoverImage of oldCoverImages) {
-        if (coverKeys && coverKeys.length > 0) {
-          const coverKeyNumbers = coverKeys
-            .map((key: any) => {
-              const splitKey = key.split("+");
-              return {
-                key: splitKey[0],
-                order: parseInt(splitKey[1], 10),
-              };
-            })
-            .filter((keyData: any) => !isNaN(keyData.order)); // Filter out invalid or undefined numbers
+      if (oldCoverImages.length > 0) {
+        for (const oldCoverImage of oldCoverImages) {
+          if (coverKeys && coverKeys.length > 0) {
+            const coverKeyNumbers = coverKeys
+              .map((key: any) => {
+                const splitKey = key.split("+");
+                return {
+                  key: splitKey[0],
+                  order: parseInt(splitKey[1], 10),
+                };
+              })
+              .filter((keyData: any) => !isNaN(keyData.order)); // Filter out invalid or undefined numbers
 
-          const matchingKey = coverKeyNumbers.find(
-            (keyData: any) => oldCoverImage.public_id.includes(keyData.key) // Match based on the key part of the public_id
-          );
-
-          if (!matchingKey) {
-            await uploadService.deleteFile(oldCoverImage.public_id);
-          } else {
-            const { order } = matchingKey;
-
-            const validOrder = Math.max(
-              1,
-              Math.min(order, coverUrls.length + 1)
+            const matchingKey = coverKeyNumbers.find(
+              (keyData: any) => oldCoverImage.public_id.includes(keyData.key) // Match based on the key part of the public_id
             );
 
-            if (validOrder === coverUrls.length + 1) {
-              coverUrls.push(oldCoverImage);
+            if (!matchingKey) {
+              await uploadService.deleteFile(oldCoverImage.public_id);
             } else {
-              coverUrls.splice(validOrder - 1, 0, oldCoverImage);
+              const { order } = matchingKey;
+
+              const validOrder = Math.max(
+                1,
+                Math.min(order, coverUrls.length + 1)
+              );
+
+              if (validOrder === coverUrls.length + 1) {
+                coverUrls.push(oldCoverImage);
+              } else {
+                coverUrls.splice(validOrder - 1, 0, oldCoverImage);
+              }
             }
-          }
-        } else {
-          if (
-            !coverUrls.some((url) => url.public_id === oldCoverImage.public_id)
-          ) {
-            await uploadService.deleteFile(oldCoverImage.public_id);
+          } else {
+            if (
+              !coverUrls.some(
+                (url) => url.public_id === oldCoverImage.public_id
+              )
+            ) {
+              await uploadService.deleteFile(oldCoverImage.public_id);
+            }
           }
         }
       }
 
-      if (imageFileObjects && oldBrandImage !== imageUrls[0]?.url) {
+      if (
+        imageFileObjects &&
+        oldBrandImage != null &&
+        oldBrandImage !== imageUrls[0]?.url
+      ) {
         await uploadService.deleteFile(existingBrand.imageKey);
       }
 
@@ -659,14 +669,13 @@ export class BrandController {
         return next();
       }
 
-   const updatedBrands=   await Promise.all(
+      const updatedBrands = await Promise.all(
         brands.map(async (brand) => {
-       
-          const getEventCount=await this.eventsRepo
-          .createQueryBuilder("event")
+          const getEventCount = await this.eventsRepo
+            .createQueryBuilder("event")
             .leftJoinAndSelect("event.user", "user")
             .where("event.brand = :brandId", { brandId: brand.id })
-            .getCount()
+            .getCount();
 
           const followedEntityQuery = this.savedEntity
             .createQueryBuilder("savedEntity")
@@ -678,21 +687,18 @@ export class BrandController {
             })
             .andWhere("brand.id = :brandId", { brandId: brand.id })
             .leftJoinAndSelect("savedEntity.brand", "brand");
-      
-          const [ getFollowedCount] = await Promise.all([
-          
+
+          const [getFollowedCount] = await Promise.all([
             followedEntityQuery.getCount(),
           ]);
-      
-      
+
           return {
             ...brand,
-            eventCount:getEventCount,
+            eventCount: getEventCount,
             followedCount: getFollowedCount,
           };
         })
       );
-      
 
       updatedBrands.forEach((brand) => {
         if (typeof brand.coverImages === "string") {
