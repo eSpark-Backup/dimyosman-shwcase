@@ -750,6 +750,39 @@ export class SpaceController {
           HTTP_STATUS.BAD_REQUEST
         );
       }
+      if(status==SpaceStatus.DRAFT){
+        const events = await this.eventsRepo
+        .createQueryBuilder("event")
+        .where("event.space = :spaceId", { spaceId: existingSpace.id })
+        .getMany();
+
+      if (events.length > 0) {
+        events.map( (event) => {
+          const eventDate =
+          event.eventDate &&
+          (event.eventDate as [{ startDate: string; endDate: string }]);
+            const startDate = new Date(eventDate[0].startDate);
+            const endDate = new Date(eventDate[0].endDate);
+            const currentDate = new Date();
+          //also add for ongoing 
+          if (startDate > currentDate) {
+            throw new ApiError(
+              "You can't draft a space with upcoming events",
+              HTTP_STATUS.BAD_REQUEST
+            );
+          }
+          if(endDate>currentDate){
+            throw new ApiError(
+              "You can't draft a space with ongoing events",
+              HTTP_STATUS.BAD_REQUEST
+            );
+          }
+
+        })
+      }
+
+
+      }
       let brand = null;
       if (brandId) {
         brand = await this.brandRepo.findOne({ where: { id: brandId } });
