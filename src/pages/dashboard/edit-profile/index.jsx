@@ -39,8 +39,6 @@ const EditProfile = () => {
         profileName: "",
         profileAbout: "",
         profileStats: [],
-        isProfile: false,
-
     });
 
     useEffect(() => {
