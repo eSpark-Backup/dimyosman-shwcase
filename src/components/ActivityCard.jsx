@@ -64,7 +64,8 @@ const ActivityCard = ({
   rsvpDates,
   handleAction = () => { },
   handleNavigation = () => { },
-  isDraftedBrandOwner
+  isDraftedBrandOwner,
+  brandStatus
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -152,7 +153,7 @@ const ActivityCard = ({
         >
           <Box
             onClick={() => {
-              if ((id && userRole === "brand" && !isDraftedBrandOwner) || (id && userRole === "brand" && isDraftedBrandOwner === user?.id)) {
+              if ((id && userRole === "brand" && !isDraftedBrandOwner && brandStatus !== "ARCHIVE") || (id && userRole === "brand" && isDraftedBrandOwner === user?.id && brandStatus !== "ARCHIVE")) {
                 navigate(`/${userRole}/${id}`);
                 handleNavigation();
               } else if (id && userRole === "user" && publicProfile) {
@@ -160,11 +161,11 @@ const ActivityCard = ({
                 handleNavigation();
               } else {
                 if (userRole === "brand") {
-                  toast.error("This Brand Is Drafted. You Can Not View This Brand.");
+                  toast.error(`This Brand Is ${brandStatus}${brandStatus === "ARCHIVE" ? "D" : "ED"}. You Can Not View This Brand.`);
                 } else {
                   toast.error("You are not authorized to view this profile.");
                 }
-              }              
+              }
             }}
             sx={{
               cursor: "pointer",
@@ -248,7 +249,7 @@ const ActivityCard = ({
           </Box>
           <Box
             onClick={() => {
-              if ((id && userRole === "brand" && !isDraftedBrandOwner) || (id && userRole === "brand" && isDraftedBrandOwner === user?.id)) {
+              if ((id && userRole === "brand" && !isDraftedBrandOwner && brandStatus !== "ARCHIVE") || (id && userRole === "brand" && isDraftedBrandOwner === user?.id && brandStatus !== "ARCHIVE")) {
                 navigate(`/${userRole}/${id}`);
                 handleNavigation();
               } else if (id && userRole === "user" && publicProfile) {
@@ -256,11 +257,11 @@ const ActivityCard = ({
                 handleNavigation();
               } else {
                 if (userRole === "brand") {
-                  toast.error("This Brand Is Drafted. You Can Not View This Brand.");
+                  toast.error(`This Brand Is ${brandStatus}${brandStatus === "ARCHIVE" ? "D" : "ED"}. You Can Not View This Brand.`);
                 } else {
                   toast.error("You are not authorized to view this profile.");
                 }
-              }              
+              }
             }}
             sx={{
               cursor: activityId ? "pointer" : "default",
