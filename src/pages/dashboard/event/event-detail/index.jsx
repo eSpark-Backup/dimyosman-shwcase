@@ -30,7 +30,7 @@ const EventDetails = () => {
           shareableLink: data?.data?.shareableLink,
           isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
-          by: data?.data?.brand?.id,
+          by: data?.data?.brand?.status === "PUBLISH" && data?.data?.brand?.id,
           type: "event",
           owned: user?.id === data?.data?.user?.id,
           slides: data?.data?.coverImages,
@@ -57,9 +57,9 @@ const EventDetails = () => {
                   startingDate: moment.utc(data?.data?.eventDate[0]?.startDate).add(1, 'day').format("DD.MM.YYYY"),
                   endingDate: moment.utc(data?.data?.eventDate[0]?.endDate).add(1, 'day').format("DD.MM.YYYY"),
                   rsvpDates: data?.data?.event_rsvp?.attendanceDates?.rsvpDates
-                    ? data?.data?.event_rsvp?.attendanceDates?.rsvpDates.map(item => 
-                        moment.utc(item.dateTime).add(1, 'day').format()
-                      )
+                    ? data?.data?.event_rsvp?.attendanceDates?.rsvpDates.map(item =>
+                      moment.utc(item.dateTime).add(1, 'day').format()
+                    )
                     : [],
                   startDate: moment.utc(data?.data?.eventDate[0]?.startDate).add(1, 'day').format(),
                   endDate: moment.utc(data?.data?.eventDate[0]?.endDate).add(1, 'day').format(),

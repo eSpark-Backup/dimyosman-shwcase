@@ -239,10 +239,10 @@ const Space = () => {
             ? "Pending Sign"
             : space?.status === "VerifyAndPay" ||
               space?.status === "PendingforApproval"
-            ? "Pending Pay"
-            : space?.status === "Active"
-            ? "Leasing"
-            : "Lease Ended",
+              ? "Pending Pay"
+              : space?.status === "Active"
+                ? "Leasing"
+                : "Lease Ended",
         price: space?.pricing[0]?.price,
         term: "Daily",
         status: space?.status,
@@ -254,12 +254,12 @@ const Space = () => {
           space?.status === "SubmitForSignature"
             ? "Sign"
             : space?.status === "VerifyAndPay"
-            ? "Verify Pay 0/2"
-            : space?.status === "PendingforApproval"
-            ? "Verify Pay 1/2"
-            : space?.status === "Active"
-            ? "Details"
-            : "Review",
+              ? "Verify Pay 0/2"
+              : space?.status === "PendingforApproval"
+                ? "Verify Pay 1/2"
+                : space?.status === "Active"
+                  ? "Details"
+                  : "Review",
       };
     });
   };
@@ -277,10 +277,10 @@ const Space = () => {
             ? "Pending Sign"
             : space?.status === "VerifyAndPay" ||
               space?.status === "PendingforApproval"
-            ? "Pending Pay"
-            : space?.status === "Active"
-            ? "Leasing"
-            : "Lease Ended",
+              ? "Pending Pay"
+              : space?.status === "Active"
+                ? "Leasing"
+                : "Lease Ended",
         price: space?.contractDetails?.leaseInfo?.leaseTotal,
         term: "Daily",
         event: space?.event?.eventName || "-",
@@ -291,18 +291,19 @@ const Space = () => {
           space?.status === "SubmitForSignature"
             ? "Sign"
             : space?.status === "VerifyAndPay"
-            ? "Verify Pay 0/2"
-            : space?.status === "PendingforApproval"
-            ? "Verify Pay 1/2"
-            : space?.status === "Active"
-            ? "Details"
-            : "Review",
+              ? "Verify Pay 0/2"
+              : space?.status === "PendingforApproval"
+                ? "Verify Pay 1/2"
+                : space?.status === "Active"
+                  ? "Details"
+                  : "Review",
       };
     });
   };
 
   const transformTenantSpaceData = (apiData) => {
     return apiData.map((space, index) => {
+      console.log(space)
       return {
         id: space?.id,
         spaceId: space?.space?.id,
@@ -320,22 +321,23 @@ const Space = () => {
             ? "Pending Sign"
             : space?.status === "VerifyAndPay" ||
               space?.status === "PendingforApproval"
-            ? "Pending Pay"
-            : space?.status === "Active"
-            ? "Leasing"
-            : "Lease Ended",
-        eventUrl: space?.event?.eventName ? `/event/${space?.event?.id}` : "-",
-        brandUrl: `/brand/${space?.brand?.id}`,
+              ? "Pending Pay"
+              : space?.status === "Active"
+                ? "Leasing"
+                : "Lease Ended",
+        // eventUrl: space?.event?.eventName ? `/event/${space?.event?.id}` : "-",
+        eventUrl: space?.event?.eventName && space?.event?.status === "PUBLSIH" ? `/event/${space?.event?.id}` : "-",
+        brandUrl: space?.brand?.status === "PUBLISH" ? `/brand/${space?.brand?.id}` : "-",
         action:
           space?.status === "SubmitForSignature"
             ? "Message"
             : space?.status === "VerifyAndPay"
-            ? "Verify 0/2"
-            : space?.status === "PendingforApproval"
-            ? "Verify 1/2"
-            : space?.status === "Active"
-            ? "Details"
-            : "Review",
+              ? "Verify 0/2"
+              : space?.status === "PendingforApproval"
+                ? "Verify 1/2"
+                : space?.status === "Active"
+                  ? "Details"
+                  : "Review",
         spaceStatus: space?.status,
         tenant: true,
       };
