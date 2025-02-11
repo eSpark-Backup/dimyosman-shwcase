@@ -473,10 +473,9 @@ const SpaceInquireModal = ({
                       : "End Date"}
                   </time>
                 </Box>
-                {pricing?.map((item) => {
+                {pricing?.map((item,index) => {
                   return (
-                    <Typography>
-                      {/* Minimum Lease {item?.term}: {item?.minimum} {item?.term} */}
+                    <Typography key={index}>
                       {`Minimum Lease ${item?.term}${Number(item?.minimum) > 1 ? "s" : ""}: ${item?.minimum} ${item?.term}${Number(item?.minimum) > 1 ? "s" : ""}`}
                     </Typography>
                   )
