@@ -1239,10 +1239,12 @@ export class SpaceController {
             space.pricing as PricingTerm[],
             1
           );
+
           return {
             ...space,
             totalPricing,
           }}
+          return space;
         });
 
         res.status(200).json(
