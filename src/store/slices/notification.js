@@ -38,7 +38,7 @@ const slice = createSlice({
         };
       } else {
         state.gotToMessage = {
-          spaceName: payload?.spaceName,
+          pName: payload?.pName,
           chatId: payload?.chatId,
         };
       }

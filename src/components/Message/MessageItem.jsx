@@ -31,7 +31,9 @@ const MessageItem = ({
   emitEvent,
   onlineUsers,
   initialChatId,
-  selectedChatId
+  selectedChatId,
+  setPage,
+  setHasMore,
 }) => {
   const isLessThan768 = useMediaQuery("(max-width:768px)");
 
@@ -53,6 +55,9 @@ const MessageItem = ({
   }, [expanded]);
 
   const handleGroup = (el) => {
+    setHasMore(true);
+    setPage(1);
+
     const obj = {
       userId: user.userChatId,
       members: el?.members,
@@ -100,23 +105,8 @@ const MessageItem = ({
           marginBottom: 0,
         },
       }}
-      expanded={
-        message?.directChat
-          ? false
-          : message?.chatGroups?.length
-          ? expanded
-          : false
-      }
+      expanded={message?.chatGroups?.length ? expanded : false}
       onChange={message?.chatGroups?.length ? onChange : null}
-      onClick={
-        message?.directChat
-          ? () => {
-              dispatch(emptyGoToMessage());
-              dispatch(setFromNotification(false));
-              handleGroup(message?.chatGroups[0]);
-            }
-          : null
-      }
     >
       <AccordionSummary
         sx={{
@@ -126,11 +116,6 @@ const MessageItem = ({
           alignItems: "center",
           margin: "0px !important",
           position: "relative",
-          bgcolor: message?.directChat
-            ? message?.parentChatId === (selectedChatId || initialChatId)
-              ? "rgba(209, 219, 215, 0.6)"
-              : "transparent"
-            : "transparent",
 
           "& .MuiAccordionSummary-content": {
             alignItems: "center",
@@ -204,192 +189,185 @@ const MessageItem = ({
           : null}
       </AccordionSummary>
 
-      {message?.directChat === false && (
-        <AccordionDetails
-          ref={detailsRef}
-          sx={{
-            padding: 1,
-            display: "flex",
-            flexDirection: "column",
-            gap: 1,
-            maxHeight: "300px",
-            overflowY: "auto",
-          }}
-        >
-          {message?.chatGroups?.length
-            ? message.chatGroups.map((el, i) => {
-                messageRefs.current[el.chatId] =
-                  messageRefs.current[el.chatId] || React.createRef();
+      <AccordionDetails
+        ref={detailsRef}
+        sx={{
+          padding: 1,
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+          maxHeight: "300px",
+          overflowY: "auto",
+        }}
+      >
+        {message?.chatGroups?.length
+          ? message.chatGroups.map((el, i) => {
+              messageRefs.current[el.chatId] =
+                messageRefs.current[el.chatId] || React.createRef();
 
-                return (
+              return (
+                <Box
+                  key={i}
+                  ref={messageRefs.current[el.chatId]}
+                  sx={{
+                    display: "flex",
+                    alignItems: el?.creator ? "center" : "unset",
+                    padding: 1,
+                    bgcolor: isLessThan768
+                      ? "transparent"
+                      : selectedGroup?.chatGroup?.chatId === el?.chatId
+                      ? "rgba(209, 219, 215, 0.6)"
+                      : "#ffffff",
+                    cursor: "pointer",
+                    position: "relative",
+                    borderRadius: "3px",
+                    borderBottom:
+                      isLessThan768 && i !== message.chatGroups.length - 1
+                        ? "1px solid rgba(209, 219, 215, 0.6)"
+                        : "none",
+                  }}
+                  onClick={() => {
+                    dispatch(emptyGoToMessage());
+                    dispatch(setFromNotification(false));
+                    handleGroup(el);
+                  }}
+                >
                   <Box
-                    key={i}
-                    ref={messageRefs.current[el.chatId]}
                     sx={{
-                      display: "flex",
-                      alignItems: el?.creator ? "center" : "unset",
-                      padding: 1,
-                      bgcolor: isLessThan768
-                        ? "transparent"
-                        : selectedGroup?.chatGroup?.chatId === el?.chatId
-                        ? "rgba(209, 219, 215, 0.6)"
-                        : "#ffffff",
-                      cursor: "pointer",
+                      width: "48px",
+                      height: "48px",
+                      marginRight: 2,
+                      borderRadius: "5px",
                       position: "relative",
-                      borderRadius: "3px",
-                      borderBottom:
-                        isLessThan768 && i !== message.chatGroups.length - 1
-                          ? "1px solid rgba(209, 219, 215, 0.6)"
-                          : "none",
-                    }}
-                    onClick={() => {
-                      dispatch(emptyGoToMessage());
-                      dispatch(setFromNotification(false));
-                      handleGroup(el);
                     }}
                   >
-                    <Box
-                      sx={{
-                        width: "48px",
-                        height: "48px",
-                        marginRight: 2,
-                        borderRadius: "5px",
-                        position: "relative",
-                      }}
-                    >
-                      {el?.receiverSpace?.spaceImage ||
-                      el?.senderBrand?.brandImage ? (
-                        <Box sx={{ position: "relative", height: "100%" }}>
-                          <img
-                            src={
-                              el?.isInquiryRole === "sender"
-                                ? el?.receiverSpace?.spaceImage
-                                : el?.senderBrand?.brandImage
-                            }
-                            alt="Message Icon"
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              borderRadius: "5px",
-                              border: "1px solid rgba(209, 219, 215, 0.4)",
-                            }}
-                          />
-                          {onlineUsers?.length
-                            ? el.members?.some((member) =>
-                                onlineUsers?.includes(member)
-                              ) && (
-                                <Box
-                                  sx={{
-                                    width: "10px",
-                                    height: "10px",
-                                    borderRadius: "50%",
-                                    backgroundColor: "#00FF00",
-                                    position: "absolute",
-                                    top: "-4px",
-                                    right: "-3px",
-                                  }}
-                                />
-                              )
-                            : null}
-                        </Box>
-                      ) : (
-                        <Box
-                          sx={{
+                    {el?.childImage ? (
+                      <Box sx={{ position: "relative", height: "100%" }}>
+                        <img
+                          src={el?.childImage}
+                          alt="Message Icon"
+                          style={{
                             width: "100%",
                             height: "100%",
-                            bgcolor: "rgba(0, 28, 20, 0.4)",
+                            objectFit: "cover",
                             borderRadius: "5px",
+                            border: "1px solid rgba(209, 219, 215, 0.4)",
                           }}
                         />
-                      )}
-
-                      <ActivityType type={el.activity} theme={theme} />
-                    </Box>
-
-                    <Box
-                      sx={{
-                        flex: 1,
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Typography
-                        variant="h2"
-                        sx={{
-                          fontWeight: 600,
-                          lineHeight: "22px",
-                          fontSize: "16px",
-                          textAlign: "left",
-                        }}
-                      >
-                        {el?.childName}
-                      </Typography>
-
-                      {el?.creator && (
-                        <Typography
-                          sx={{
-                            fontWeight: 300,
-                            fontSize: "12px",
-                            lineHeight: "17px",
-                            display: "flex",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <span>{el.creator}</span>
-                        </Typography>
-                      )}
-
+                        {onlineUsers?.length
+                          ? el.members?.some((member) =>
+                              onlineUsers?.includes(member)
+                            ) && (
+                              <Box
+                                sx={{
+                                  width: "10px",
+                                  height: "10px",
+                                  borderRadius: "50%",
+                                  backgroundColor: "#00FF00",
+                                  position: "absolute",
+                                  top: "-4px",
+                                  right: "-3px",
+                                }}
+                              />
+                            )
+                          : null}
+                      </Box>
+                    ) : (
                       <Box
                         sx={{
+                          width: "100%",
+                          height: "100%",
+                          bgcolor: "rgba(0, 28, 20, 0.4)",
+                          borderRadius: "5px",
+                        }}
+                      />
+                    )}
+
+                    <ActivityType type={el.activity} theme={theme} />
+                  </Box>
+
+                  <Box
+                    sx={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Typography
+                      variant="h2"
+                      sx={{
+                        fontWeight: 600,
+                        lineHeight: "22px",
+                        fontSize: "16px",
+                        textAlign: "left",
+                      }}
+                    >
+                      {el?.childName}
+                    </Typography>
+
+                    {el?.creator && (
+                      <Typography
+                        sx={{
+                          fontWeight: 300,
+                          fontSize: "12px",
+                          lineHeight: "17px",
                           display: "flex",
                           justifyContent: "space-between",
                         }}
                       >
-                        <Typography
-                          sx={{
-                            fontWeight: 300,
-                            fontSize: "10px",
-                            lineHeight: "14px",
-                          }}
-                        >
-                          {el?.date}
-                        </Typography>
+                        <span>{el.creator}</span>
+                      </Typography>
+                    )}
 
-                        <Typography
-                          sx={{
-                            fontWeight: 300,
-                            fontSize: "10px",
-                            lineHeight: "14px",
-                          }}
-                        >
-                          {el?.time}
-                        </Typography>
-                      </Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontWeight: 300,
+                          fontSize: "10px",
+                          lineHeight: "14px",
+                        }}
+                      >
+                        {el?.date}
+                      </Typography>
+
+                      <Typography
+                        sx={{
+                          fontWeight: 300,
+                          fontSize: "10px",
+                          lineHeight: "14px",
+                        }}
+                      >
+                        {el?.time}
+                      </Typography>
                     </Box>
-
-                    {getUnreadChatIds?.length
-                      ? getUnreadChatIds?.includes(el.chatId) && (
-                          <Box
-                            sx={{
-                              width: "10px",
-                              height: "10px",
-                              borderRadius: "50%",
-                              backgroundColor: theme.palette.error.danger,
-                              position: "absolute",
-                              top: "-4px",
-                              right: "-3px",
-                            }}
-                          />
-                        )
-                      : null}
                   </Box>
-                );
-              })
-            : null}
-        </AccordionDetails>
-      )}
+
+                  {getUnreadChatIds?.length
+                    ? getUnreadChatIds?.includes(el.chatId) && (
+                        <Box
+                          sx={{
+                            width: "10px",
+                            height: "10px",
+                            borderRadius: "50%",
+                            backgroundColor: theme.palette.error.danger,
+                            position: "absolute",
+                            top: "-4px",
+                            right: "-3px",
+                          }}
+                        />
+                      )
+                    : null}
+                </Box>
+              );
+            })
+          : null}
+      </AccordionDetails>
     </Accordion>
   );
 };

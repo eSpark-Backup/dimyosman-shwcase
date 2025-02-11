@@ -393,42 +393,19 @@ export const removeNewInquiry = (dispatch) => {
   deleteCookie("newInquiry");
 };
 
-export const messageBox = (parentObj, chatDetails, allMessages, user) => {
+export const messageBox = (parentObj, chatDetails, allMessages) => {
   const getParentObject = () => {
     const isSpacesChats = parentObj?.spaceDetails;
+    const isEventsChats = parentObj?.eventDetails;
 
-    const details = isSpacesChats
-      ? parentObj?.spaceDetails
-      : parentObj?.brandDetails;
-
-    return {
-      parentId: details?.id,
-      parentActivity: isSpacesChats ? "space" : "brand",
-      parentName: details?.brandName || details?.spaceName,
-      parentImage: details?.brandImage || details?.spaceImage,
-      ownerDetails: details?.user,
-    };
-  };
-
-  const getDirectParentObject = () => {
-    const isRecieverBrand = parentObj?.receiverBrand;
-    const isOwner = user?.userChatId === parentObj?.creator
-
-    const details = isOwner
-      ? parentObj?.receiverBrand || parentObj?.receiverEvent
-      : parentObj?.senderBrand;
+    const details = isSpacesChats ? parentObj?.spaceDetails : isEventsChats ? parentObj?.eventDetails : parentObj?.brandDetails;
 
     return {
       parentId: details?.id,
-      parentActivity: isOwner ? (isRecieverBrand ? "brand" : "event") : "brand",
-      parentName: isOwner
-        ? details?.brandName || details?.eventName
-        : details.brandName,
-      parentImage: isOwner
-        ? details?.brandImage || details?.eventImage
-        : details.brandImage,
+      parentActivity: isSpacesChats ? "space" : isEventsChats ? "event" : "brand",
+      parentName: details?.brandName || details?.spaceName || details?.eventName,
+      parentImage: details?.brandImage || details?.spaceImage || details?.eventImage,
       ownerDetails: details?.user,
-      parentChatId: parentObj?._id,
     };
   };
 
@@ -445,162 +422,103 @@ export const messageBox = (parentObj, chatDetails, allMessages, user) => {
 
   const parentObject = getParentObject();
 
-  if (!parentObj?.directChat) {
-    return {
-      ...parentObject,
-      directChat: false,
-      read: false,
-      spaces: 1234,
-      followers: 234566,
-      saved: "789k",
-      reviews: 12345,
-      leases: 12345,
-      rating: 5,
-      chatGroups: parentObj?.chats
-        ?.map((item) => {
-          const matchingItem = getMatchingChatDetails(item._id);
-          const currentChatMessages = getMessagesForChat(item._id);
+  return {
+    ...parentObject,
+    read: false,
+    spaces: 1234,
+    followers: 234566,
+    saved: "789k",
+    reviews: 12345,
+    leases: 12345,
+    rating: 5,
+    chatGroups: parentObj?.chats
+      ?.map((item) => {
+        const matchingItem = getMatchingChatDetails(item._id);
+        const currentChatMessages = getMessagesForChat(item._id);
 
-          const isSpacesChats = parentObj?.spaceDetails;
+        const isSpacesChats = parentObj?.spaceDetails;
+        const isEventsChats = parentObj?.eventDetails;
 
-          const childName = isSpacesChats
+        const childName =
+          isSpacesChats ||
+          isEventsChats ||
+          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
             ? item?.senderBrand?.brandName
-            : item?.receiverSpace?.spaceName;
-          const childImage = isSpacesChats
+            : item?.receiverSpace?.spaceName ||
+              item?.receiverEvent?.eventName ||
+              item?.receiverBrand?.brandName;
+
+        const childImage =
+          isSpacesChats ||
+          isEventsChats ||
+          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
             ? item?.senderBrand?.brandImage
-            : item?.receiverSpace?.spaceImage;
-          const creator = isSpacesChats
+            : item?.receiverSpace?.spaceImage ||
+              item?.receiverEvent?.eventImage ||
+              item?.receiverBrand?.brandImage;
+
+        const creator =
+          isSpacesChats ||
+          isEventsChats ||
+          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
             ? item?.senderBrand?.user?.name
             : item?.receiverBrand?.user?.name;
-          const receiverbrandName = isSpacesChats
-            ? item?.receiverBrand?.brandName
-            : "";
-          const activity = isSpacesChats ? "brand" : "space";
 
-          return {
-            ...item,
-            id: item?._id,
-            chatId: matchingItem?._id,
-            members: matchingItem?.members,
-            inquiryDetails: item?.inquiryDetails ? item?.inquiryDetails : null,
-            childName,
-            childImage,
-            receiverbrandName,
-            creator,
-            chatName: matchingItem?.name,
-            activity,
-            read: false,
-            date: matchingItem?.createdAt
-              ? formatDate(matchingItem?.createdAt)
-              : "",
-            time: matchingItem?.createdAt
-              ? formatTime(matchingItem?.createdAt)
-              : "",
-            fulldate: matchingItem?.createdAt,
-            isActive: false,
-            messages: currentChatMessages.map((messageItem) => {
-              return {
-                ...messageItem,
-                id: messageItem?._id,
-                childName,
-                childImage,
-                activity: "brand",
-                creator: parentObj?.name,
-                date: formatDate(messageItem?.createdAt),
-                time: formatTime(messageItem?.createdAt),
-              };
-            }),
-          };
-        })
-        .sort((a, b) => new Date(b.fulldate) - new Date(a.fulldate)),
-    };
-  } else {
-    const parentObject = getDirectParentObject()
-    const matchingItem = getMatchingChatDetails(parentObj._id);
-    const currentChatMessages = getMessagesForChat(parentObj._id);
+        const receiverbrandName = isSpacesChats
+          ? item?.receiverBrand?.brandName
+          : isEventsChats
+          ? item?.receiverEvent?.brand?.brandName
+          : "";
 
-    const isRecieverBrand = parentObj?.receiverBrand;
-    const isOwner = user?.userChatId === parentObj?.creator
+        const activity =
+          isSpacesChats ||
+          isEventsChats ||
+          item?.isInquiryRole === "receiver" ||
+          (item?.isInquiryRole === "sender" &&
+            !item?.receiverEvent &&
+            !item?.receiverSpace)
+            ? "brand"
+            : item?.receiverEvent?.eventName
+            ? "event"
+            : "space";
 
-    const childName = parentObject?.parentName;
-    const childImage = parentObject.parentImage;
-    const creator = parentObject?.ownerDetails?.name;
-    const activity = isOwner ? (isRecieverBrand ? "brand" : "event") : "brand";
-
-      return {
-        ...parentObject,
-        directChat: true,
-        read: false,
-        spaces: 1234,
-        followers: 234566,
-        saved: "789k",
-        reviews: 12345,
-        leases: 12345,
-        rating: 5,
-        chatGroups: [
-          {
-            _id: matchingItem?._id,
-            id: matchingItem?._id,
-            chatId: matchingItem?._id,
-            members: matchingItem?.members,
-            inquiryDetails: null,
-            childName,
-            childImage,
-            receiverbrandName: isOwner
-              ? parentObj?.senderBrand?.brandName
-              : parentObj?.receiverBrand?.brandName ||
-                parentObj?.receiverEvent?.eventName,
-            senderBrand: {
-              user: {
-                name: parentObj?.senderBrand?.user?.name,
-                userChatId: parentObj?.senderBrand?.user?.userChatId,
-              },
-              brandName: parentObj?.senderBrand?.brandName,
-              brandImage: parentObj?.senderBrand?.brandImage,
-            },
-            receiverBrand: {
-              brandName:
-                parentObj?.receiverBrand?.brandName ||
-                parentObj?.receiverEvent?.eventName,
-              brandImage:
-                parentObj?.receiverBrand?.brandImage ||
-                parentObj?.receiverEvent?.eventImage,
-            },
-            creator,
-            creatorDetails: parentObject?.ownerDetails,
-            chatName: matchingItem?.name,
-            activity,
-            read: false,
-            date: matchingItem?.createdAt
-              ? formatDate(matchingItem?.createdAt)
-              : "",
-            time: matchingItem?.createdAt
-              ? formatTime(matchingItem?.createdAt)
-              : "",
-            fulldate: matchingItem?.createdAt,
-            isActive: false,
-            messages: currentChatMessages.map((messageItem) => {
-              return {
-                ...messageItem,
-                id: messageItem?._id,
-                childName,
-                childImage,
-                activity:
-                  messageItem?.sender?.name ===
-                  parentObj?.senderBrand?.user?.name
-                    ? "brand"
-                    : parentObj?.receiverBrand
-                    ? "brand"
-                    : "event",
-                creator: creator,
-                date: formatDate(messageItem?.createdAt),
-                time: formatTime(messageItem?.createdAt),
-              };
-            }),
-          },
-        ],
-      };
-  }
+        return {
+          ...item,
+          id: item?._id,
+          chatId: matchingItem?._id,
+          members: matchingItem?.members,
+          inquiryDetails: item?.inquiryDetails ? item?.inquiryDetails : null,
+          childName,
+          childImage,
+          receiverbrandName,
+          creator,
+          chatName: matchingItem?.name,
+          activity,
+          read: false,
+          date: matchingItem?.createdAt
+            ? formatDate(matchingItem?.createdAt)
+            : "",
+          time: matchingItem?.createdAt
+            ? formatTime(matchingItem?.createdAt)
+            : "",
+          fulldate: matchingItem?.createdAt,
+          isActive: false,
+          messages: currentChatMessages.map((messageItem) => {
+            return {
+              ...messageItem,
+              id: messageItem?._id,
+              childName,
+              childImage,
+              activity: "brand",
+              creator: parentObj?.name,
+              date: formatDate(messageItem?.createdAt),
+              time: formatTime(messageItem?.createdAt),
+            };
+          }),
+        };
+      })
+      .sort((a, b) => new Date(b.fulldate) - new Date(a.fulldate)),
+  };
 };
 
 export const handleNotificationUpdate = (cookieName, action, dispatch) => {

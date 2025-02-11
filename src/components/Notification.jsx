@@ -50,14 +50,21 @@ const Notification = ({ open, theme, setShowNotification }) => {
 
       if (item?.metadata?.receiverSpaceName) {
         const navigateData = {
-          spaceName: item.metadata.receiverSpaceName,
+          pName: item.metadata.receiverSpaceName,
           chatId: item.metadata.ChatId,
+        };
+
+        dispatch(setGoToMessage(navigateData));
+      } else if(item?.metadata?.receiverBrandName){
+        const navigateData = {
+          pName: item.metadata.receiverBrandName,
+          chatId: item.metadata.chatId,
         };
 
         dispatch(setGoToMessage(navigateData));
       } else {
         const navigateData = {
-          brandName: item.metadata.senderBrandName,
+          pName: item.metadata.receiverEventName,
           chatId: item.metadata.chatId,
         };
 

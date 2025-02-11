@@ -1,11 +1,12 @@
 import { Fragment, useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { toast } from "react-toastify";
 
 import {
   Box,
   Button,
+  // CircularProgress,
   Stack,
   Typography,
   useMediaQuery,
@@ -25,6 +26,10 @@ import AfterSignature from "../../../../components/AfterSignature";
 import ManageInquiry from "../../../../components/ManageInquiry";
 
 import { addEmoji, convertToSameKeys } from "../../../../utils";
+
+// import { useGetSingleChatQuery } from "../../../../services/chats";
+
+// import { getMessages } from "../../../../store/slices/chat";
 
 const TopHeading = ({ name, size, my = 0 }) => {
   return (
@@ -68,6 +73,12 @@ const AllMesaages = ({
   isTypingUser,
   onlineUsers,
   setToShare,
+  // page,
+  // setPage,
+  // inViewLoader,
+  // setInViewLoader,
+  // hasMore,
+  // setHasMore
 }) => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
@@ -75,12 +86,51 @@ const AllMesaages = ({
 
   const theme = useTheme();
 
+  // const {
+  //   data: messageData,
+  //   isSuccess,
+  //   isFetching,
+  // } = useGetSingleChatQuery(
+  //   { id: selectedGroup?.chatGroup?.chatId, page, pageSize: 10 },
+  //   {
+  //     skip: page === 1 || !selectedGroup?.chatGroup?.chatId,
+  //     refetchOnMountOrArgChange: true,
+  //     refetchOnFocus: true,
+  //   }
+  // );
+
   const quillInstance = useRef(null);
   const messagesContainerRef = useRef(null);
   const pickerRef = useRef(null);
   const buttonRef = useRef(null);
+  // const observerRef = useRef(null);
 
   const { user } = useSelector((state) => state.auth);
+  // const { totalPagesOfMessage, messages } = useSelector((state) => state.chat);
+
+  // const dispatch = useDispatch()
+
+  // const [totalPage, setTotalPage] = useState(1)
+
+  // useEffect(() => {
+  //   if (totalPagesOfMessage?.length) {
+  //     const findTotal = totalPagesOfMessage?.find(
+  //       (p) => p?.chat === selectedGroup?.chatGroup?.chatId
+  //     );
+
+  //     setTotalPage(findTotal?.totalPages);
+  //   }
+  // }, [totalPagesOfMessage, selectedGroup?.chatGroup?.chatId]);
+
+  // useEffect(() => {
+  //   if (isSuccess && messageData && messageData?.messages?.length ) {
+  //     if(messageData?.messages?.length){
+  //       dispatch(getMessages([...messageData?.messages, ...messages]));
+  //       setHasMore(messageData?.totalPages > page)
+  //       setInViewLoader(false);
+  //     }
+  //   }
+  // }, [isSuccess, messageData?.messages?.length, page, totalPage]);
 
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
@@ -90,6 +140,33 @@ const AllMesaages = ({
       });
     }
   };
+
+  // useEffect(() => {
+  //   if (!hasMore || isFetching || page === totalPage) return;
+
+  //   setInViewLoader(true);
+
+  //   const observer = new IntersectionObserver(
+  //     (entries) => {
+  //       if (entries[0].isIntersecting) {
+  //         if (!isFetching) {
+  //           setPage((prevState) => prevState + 1);
+  //         }
+  //       }
+  //     },
+  //     { threshold: 0.5 }
+  //   );
+
+  //   if (observerRef.current) {
+  //     observer.observe(observerRef.current);
+  //   }
+
+  //   return () => {
+  //     if (observerRef.current) {
+  //       observer.unobserve(observerRef.current);
+  //     }
+  //   };
+  // }, [hasMore, isFetching, selectedGroup?.chatGroup?.messages?.length, totalPage]);
 
   useEffect(() => {
     scrollToBottom();
@@ -233,8 +310,7 @@ const AllMesaages = ({
 
       {selectedGroup && selectedGroup?.chatGroup ? (
         <Box display="flex" justifyContent="end" mt={1} height="31px">
-          {selectedGroup?.chatGroup?.activity !== "space" &&
-          !selectedGroup?.group?.directChat ? (
+          {selectedGroup?.group?.parentActivity === "space" ? (
             <Button
               sx={{
                 padding: "0px 24px",
@@ -305,6 +381,8 @@ const AllMesaages = ({
                             selectedGroup?.chatGroup?.senderBrand?.user?.name
                               ? selectedGroup?.chatGroup?.senderBrand?.brandName
                               : selectedGroup?.chatGroup?.receiverBrand
+                                  ?.brandName ||
+                                selectedGroup?.chatGroup?.receiverEvent?.brand
                                   ?.brandName,
                           brandImage:
                             message?.sender?.name ===
@@ -312,6 +390,8 @@ const AllMesaages = ({
                               ? selectedGroup?.chatGroup?.senderBrand
                                   ?.brandImage
                               : selectedGroup?.chatGroup?.receiverBrand
+                                  ?.brandImage ||
+                                selectedGroup?.chatGroup?.receiverEvent?.brand
                                   ?.brandImage,
                         }}
                       />
@@ -319,6 +399,27 @@ const AllMesaages = ({
                   </Fragment>
                 );
               })}
+            {/* {selectedGroup?.chatGroup?.messages?.length > 0 &&
+              hasMore &&
+              totalPage > 1 && (
+                <div
+                  ref={observerRef}
+                  style={{
+                    minHeight: 10,
+                    textAlign: "center",
+                    marginBottom: "16px",
+                  }}
+                >
+                  {inViewLoader && (
+                    <CircularProgress
+                      sx={{
+                        width: "30px !important",
+                        height: "30px !important",
+                      }}
+                    />
+                  )}
+                </div>
+              )} */}
           </Box>
 
           {isTypingUser?.userId === user?.id &&

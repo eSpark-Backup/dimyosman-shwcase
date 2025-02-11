@@ -111,7 +111,8 @@ const SocketProvider = ({ children }) => {
         data.chats &&
         (Array.isArray(data.chats) ||
           (data?.chats?.brands?.length === 0 &&
-            data?.chats?.spaces?.length === 0))
+            data?.chats?.spaces?.length === 0 &&
+            data?.chats?.events?.length === 0))
       ) {
         dispatch(isUserHasChat("empty"));
       }
@@ -120,7 +121,7 @@ const SocketProvider = ({ children }) => {
         data.chats &&
         (data?.chats?.brands?.length > 0 ||
           data?.chats?.spaces?.length > 0 ||
-          data?.chats?.directChats?.length > 0)
+          data?.chats?.events?.length > 0)
       ) {
         dispatch(getMyChat(data.chats));
         dispatch(isUserHasChat(""));
@@ -209,20 +210,45 @@ const SocketProvider = ({ children }) => {
         // console.log("NEW_REQUEST EVENT TRIGGERED.");
 
         notificationRefetch().then(() => {
-          handleNotificationUpdate("newNotification", getNotificationCount, dispatch);
+          handleNotificationUpdate(
+            "newNotification",
+            getNotificationCount,
+            dispatch
+          );
           if (pathname !== "/message") {
-            handleNotificationUpdate("newInquiry", getNotificationCount, dispatch);
+            handleNotificationUpdate(
+              "newInquiry",
+              getNotificationCount,
+              dispatch
+            );
           }
 
-          const navigateData = {
-            spaceName: data.receiverSpaceName,
-            chatId: data.chatId,
+          const navigateBrandData = {
+            pName: data?.receiverBrandName,
+            chatId: data?.chatId,
+          };
+
+          const navigateSpaceData = {
+            pName: data?.receiverSpaceName,
+            chatId: data?.chatId,
+          };
+          
+          const navigateEventData = {
+            pName: data?.receiverEventName,
+            chatId: data?.chatId,
           };
 
           toast.info(data?.name, {
             position: "bottom-right",
             onClick: () => {
-              dispatch(setGoToMessage(navigateData));
+              if (data?.receiverBrandName) {
+                dispatch(setGoToMessage(navigateBrandData));
+              } else if (data?.receiverSpaceName) {
+                dispatch(setGoToMessage(navigateSpaceData));
+              } else {
+                dispatch(setGoToMessage(navigateEventData));
+              }
+
               dispatch(setFromNotification(true));
 
               if (pathname !== "/message") {
