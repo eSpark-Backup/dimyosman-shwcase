@@ -155,14 +155,16 @@ const ActivityCard = ({
               if ((id && userRole === "brand" && !isDraftedBrandOwner) || (id && userRole === "brand" && isDraftedBrandOwner === user?.id)) {
                 navigate(`/${userRole}/${id}`);
                 handleNavigation();
-              }
-              else if ((id && userRole === "user" && publicProfile)) {
+              } else if (id && userRole === "user" && publicProfile) {
                 navigate(`/profile/${id}`);
                 handleNavigation();
-              }
-              else {
-                toast.error("You are not authorized to view this profile.");
-              }
+              } else {
+                if (userRole === "brand") {
+                  toast.error("This Brand Is Drafted. You Can Not View This Brand.");
+                } else {
+                  toast.error("You are not authorized to view this profile.");
+                }
+              }              
             }}
             sx={{
               cursor: "pointer",
@@ -249,14 +251,16 @@ const ActivityCard = ({
               if ((id && userRole === "brand" && !isDraftedBrandOwner) || (id && userRole === "brand" && isDraftedBrandOwner === user?.id)) {
                 navigate(`/${userRole}/${id}`);
                 handleNavigation();
-              }
-              else if ((id && userRole === "user" && publicProfile)) {
+              } else if (id && userRole === "user" && publicProfile) {
                 navigate(`/profile/${id}`);
                 handleNavigation();
-              }
-              else {
-                toast.error("You are not authorized to view this profile.");
-              }
+              } else {
+                if (userRole === "brand") {
+                  toast.error("This Brand Is Drafted. You Can Not View This Brand.");
+                } else {
+                  toast.error("You are not authorized to view this profile.");
+                }
+              }              
             }}
             sx={{
               cursor: activityId ? "pointer" : "default",
