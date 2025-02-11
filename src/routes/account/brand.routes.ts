@@ -54,6 +54,7 @@ const brandController = new BrandController(
  *                 description: Name of the brand.
  *               brandCategory:
  *                 type: array
+ *                 required: false
  *                 items:
  *                   type: object
  *                   properties:
@@ -63,6 +64,7 @@ const brandController = new BrandController(
  *                 description: The category of the brand.
  *               details:
  *                  type: object
+ *                  required: false
  *                  properties:
  *                    description:
  *                       type: string
@@ -72,6 +74,7 @@ const brandController = new BrandController(
  *                       description: HTML content related to the brand (e.g., description with HTML tags)
  *               location:
  *                 type: object
+ *                 required: false
  *                 properties:
  *                   long:
  *                     type: number
@@ -90,17 +93,20 @@ const brandController = new BrandController(
  *                   - ARCHIVE
  *               coverOrder:
  *                  type: array
+ *                  required: false
  *                  items:
  *                    type: string
  *                  description: Array specifying the order of cover filenames.
  *               cover:
  *                 type: array
+ *                 required: false
  *                 items:
  *                   type: string
  *                   format: binary
  *                 description: Array of cover images for the brand.
  *               image:
  *                 type: string
+ *                 required: false
  *                 format: binary
  *                 description: Additional image of the brand.
  *     responses:

@@ -565,22 +565,6 @@ export class SpaceController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const coverFilesPath = path.join(process.cwd(), "uploads");
-      const imageFilesPath = path.join(process.cwd(), "uploads");
-      const coverFiles = fs
-        .readdirSync(coverFilesPath)
-        .filter((file) => file.startsWith("cover")); // Filter for cover files
-      const imageFiles = fs
-        .readdirSync(path.join(imageFilesPath))
-        .filter((file) => file.startsWith("image")); // Filter for image files
-
-      if (!coverFiles.length || !imageFiles.length) {
-        throw new ApiError(
-          "Missing required files: 'cover' or 'image'",
-          HTTP_STATUS.BAD_REQUEST
-        );
-      }
-
       const {
         spaceName,
         spaceCategory,
@@ -591,6 +575,26 @@ export class SpaceController {
         amenity,
         pricing,
       } = req.body;
+
+      const coverFilesPath = path.join(process.cwd(), "uploads");
+      const imageFilesPath = path.join(process.cwd(), "uploads");
+      const coverFiles = fs
+        .readdirSync(coverFilesPath)
+        .filter((file) => file.startsWith("cover")); // Filter for cover files
+      const imageFiles = fs
+        .readdirSync(path.join(imageFilesPath))
+        .filter((file) => file.startsWith("image")); // Filter for image files
+
+      if (
+        !coverFiles.length ||
+        (!imageFiles.length && status == SpaceStatus.PUBLISH)
+      ) {
+        throw new ApiError(
+          "Missing required files: 'cover' or 'image'",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+
       const checkName = await this.spaceRepo.findOne({ where: { spaceName } });
       if (checkName) {
         throw new ApiError(
@@ -619,24 +623,32 @@ export class SpaceController {
       )) as UploadResult[];
       const userId = req.user?.id;
       const user = await this.userRepo.findOne({ where: { id: userId } });
-      const brand = await this.brandRepo.findOne({ where: { id: brandId } });
-      if (!brand) {
-        throw new ApiError("Brand not found", HTTP_STATUS.NOT_FOUND);
+      let brand = null;
+      if (brandId) {
+        brand = await this.brandRepo.findOne({ where: { id: brandId } });
+        if (!brand) {
+          throw new ApiError("Brand not found", HTTP_STATUS.NOT_FOUND);
+        }
+      } else if (!brandId && status == SpaceStatus.PUBLISH) {
+        throw new ApiError(
+          "Brand is required for Publishing a Space",
+          HTTP_STATUS.BAD_REQUEST
+        );
       }
 
       const newSpace = new Spaces();
       newSpace.spaceName = spaceName;
-      newSpace.spaceCategory = spaceCategory;
-      newSpace.details = details;
+      newSpace.spaceCategory = spaceCategory || null;
+      newSpace.details = details || null;
       // newSpace.location = location;
-      newSpace.status = status;
-      newSpace.pricing = pricing;
+      newSpace.status = status || null;
+      newSpace.pricing = pricing || null;
       newSpace.user = user as User;
-      newSpace.brand = brand as Brand;
-      newSpace.amenity = amenity;
+      newSpace.brand = (brand as Brand) || null;
+      newSpace.amenity = amenity || null;
       newSpace.coverImages = JSON.stringify(coverUrls) as Object;
-      newSpace.spaceImage = imageUrls[0].url as string;
-      newSpace.imageKey = imageUrls[0].public_id;
+      newSpace.spaceImage = (imageUrls[0]?.url as string) || null;
+      newSpace.imageKey = imageUrls[0]?.public_id || null;
       const space = await this.spaceRepo.save(newSpace);
       space.coverImages = JSON.parse(space.coverImages as unknown as string);
       const uploadsPath = path.join(process.cwd(), "uploads");
@@ -715,7 +727,8 @@ export class SpaceController {
       if (typeof coverKeys === "string" && !Array.isArray(coverKeys)) {
         coverKeys = coverKeys.split(",").map((item) => item.trim());
       }
-      const existingSpace = await this.spaceRepo.createQueryBuilder("space")
+      const existingSpace = await this.spaceRepo
+        .createQueryBuilder("space")
         .where("space.id = :id", { id })
         .leftJoinAndSelect("space.user", "user")
         .getOne();
@@ -737,9 +750,17 @@ export class SpaceController {
           HTTP_STATUS.BAD_REQUEST
         );
       }
-      const brand = await this.brandRepo.findOne({ where: { id: brandId } });
-      if (!brand) {
-        throw new ApiError("Brand not found", HTTP_STATUS.NOT_FOUND);
+      let brand = null;
+      if (brandId) {
+        brand = await this.brandRepo.findOne({ where: { id: brandId } });
+        if (!brand) {
+          throw new ApiError("Brand not found", HTTP_STATUS.NOT_FOUND);
+        }
+      } else if (!brandId && status == SpaceStatus.PUBLISH) {
+        throw new ApiError(
+          "Brand is required for Publishing an Event",
+          HTTP_STATUS.BAD_REQUEST
+        );
       }
       if (spaceName) {
         const checkName = await this.spaceRepo.findOne({
@@ -787,7 +808,7 @@ export class SpaceController {
             )
           : [{ url: oldSpaceImage }]
       ) as UploadResult[];
-
+      if (oldCoverImages.length > 0) {
       for (const oldCoverImage of oldCoverImages) {
         if (coverKeys && coverKeys.length > 0) {
           const coverKeyNumbers = coverKeys
@@ -828,8 +849,9 @@ export class SpaceController {
           }
         }
       }
+    }
 
-      if (imageFileObjects && oldSpaceImage !== imageUrls[0]?.url) {
+      if (imageFileObjects &&   oldSpaceImage != null && oldSpaceImage !== imageUrls[0]?.url) {
         await uploadService.deleteFile(existingSpace.imageKey);
       }
 
@@ -843,8 +865,8 @@ export class SpaceController {
       existingSpace.pricing = pricing || existingSpace.pricing;
       existingSpace.brand = brand || existingSpace.brand;
       existingSpace.coverImages = JSON.stringify(coverUrls) as Object;
-      existingSpace.spaceImage = imageUrls[0].url;
-      existingSpace.imageKey = imageUrls[0].public_id;
+      existingSpace.spaceImage = imageUrls[0]?.url;
+      existingSpace.imageKey = imageUrls[0]?.public_id;
 
       await this.spaceRepo.update(id, existingSpace);
       const uploadsPath = path.join(process.cwd(), "uploads");

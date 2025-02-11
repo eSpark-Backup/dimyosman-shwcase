@@ -62,6 +62,7 @@ export class EventValidation {
       .try(Joi.string(), Joi.array().items(Joi.string()))
       .optional(),
     spaceId: Joi.string().optional(),
+    brandId: Joi.string().optional(),
     status: Joi.string()
       .valid(...Object.values(EVENT_STATUS))
       .optional(),

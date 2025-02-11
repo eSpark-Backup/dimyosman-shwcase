@@ -7,28 +7,28 @@ export class SpaceValidation {
     spaceCategory: Joi.array()
       .items(
         Joi.object({
-          name: Joi.string().required(),
+          name: Joi.string().optional(),
         })
       )
-      .required(),
-    brandId: Joi.string().required(),
+      .optional(),
+    brandId: Joi.string().optional(),
     amenity: Joi.array()
       .items(
         Joi.object({
-          name: Joi.string().required(),
-          iconUrl: Joi.string().required(),
+          name: Joi.string().optional(),
+          iconUrl: Joi.string().optional(),
         })
       )
-      .required(),
+      .optional(),
     details: Joi.object({
-      description: Joi.string().required(),
-      htmlContent: Joi.string().required(),
+      description: Joi.string().optional(),
+      htmlContent: Joi.string().optional(),
     }).optional(),
     pricing: Joi.array().items(
       Joi.object({
-        term: Joi.string().required(),
-        price: Joi.string().required(),
-        minimum: Joi.string().required(),
+        term: Joi.string().optional(),
+        price: Joi.string().optional(),
+        minimum: Joi.string().optional(),
       })
     ),
     // location: Joi.object({

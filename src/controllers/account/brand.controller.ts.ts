@@ -176,6 +176,14 @@ export class BrandController {
     next: NextFunction
   ): Promise<void> {
     try {
+      const {
+        brandName,
+        brandCategory,
+        details,
+        location,
+        status,
+        coverOrder,
+      } = req.body;
       const coverFilesPath = path.join(process.cwd(), "uploads");
       const imageFilesPath = path.join(process.cwd(), "uploads");
       let coverFiles = fs
@@ -192,14 +200,7 @@ export class BrandController {
         );
       }
 
-      const {
-        brandName,
-        brandCategory,
-        details,
-        location,
-        status,
-        coverOrder,
-      } = req.body;
+   
       const checkName = await this.brandRepo.findOne({ where: { brandName } });
       if (checkName) {
         throw new ApiError(

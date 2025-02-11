@@ -68,13 +68,16 @@ export class EventController {
         .readdirSync(path.join(imageFilesPath))
         .filter((file) => file.startsWith("image")); // Filter for image files
 
-      if ((!coverFiles.length || !imageFiles.length) && status== EventStatus.PUBLISH) {
+      if (
+        (!coverFiles.length || !imageFiles.length) &&
+        status == EventStatus.PUBLISH
+      ) {
         throw new ApiError(
           "Missing required files: 'cover' or 'image'",
           HTTP_STATUS.BAD_REQUEST
         );
       }
-     
+
       const checkName = await this.eventRepo.findOne({ where: { eventName } });
 
       if (checkName) {
@@ -118,18 +121,24 @@ export class EventController {
 
       const userId = req.user?.id;
       const user = await this.userRepo.findOne({ where: { id: userId } });
-      if(status==EventStatus.PUBLISH && !brandId){
-        throw new ApiError("Brand is required for Publishing an Event", HTTP_STATUS.BAD_REQUEST);
+      if (status == EventStatus.PUBLISH && !brandId) {
+        throw new ApiError(
+          "Brand is required for Publishing an Event",
+          HTTP_STATUS.BAD_REQUEST
+        );
       }
       let brand = null;
-      if(brandId){
-       brand = await this.brandRepo.findOne({ where: { id: brandId } });
-      if (!brand ) {
-        throw new ApiError("Brand not found", HTTP_STATUS.NOT_FOUND);
+      if (brandId) {
+        brand = await this.brandRepo.findOne({ where: { id: brandId } });
+        if (!brand) {
+          throw new ApiError("Brand not found", HTTP_STATUS.NOT_FOUND);
+        }
+      } else if (!brandId && status == EventStatus.PUBLISH) {
+        throw new ApiError(
+          "Brand is required for Publishing an Event",
+          HTTP_STATUS.BAD_REQUEST
+        );
       }
-    }else if(!brandId && status == EventStatus.PUBLISH){
-      throw new ApiError("Brand is required for Publishing an Event", HTTP_STATUS.BAD_REQUEST);
-    }
       let space = null;
       if (spaceId) {
         space = await this.spaceRepo.findOne({ where: { id: spaceId } });
@@ -145,17 +154,17 @@ export class EventController {
 
       const newEvent = new Events();
       newEvent.eventName = eventName;
-      newEvent.eventCategory = eventCategory|| null;
-      newEvent.details = details|| null;
+      newEvent.eventCategory = eventCategory || null;
+      newEvent.details = details || null;
       newEvent.status = status;
       newEvent.user = user as User;
-      newEvent.brand = brand as Brand || null;
+      newEvent.brand = (brand as Brand) || null;
       newEvent.space = (space as Spaces) || null;
       newEvent.leaseSpace = (leaseSpace as LeaseSpace) || null;
       newEvent.eventDate = eventDate;
       newEvent.coverImages = JSON.stringify(coverUrls) as Object;
-      newEvent.eventImage = imageUrls[0]?.url as string || null;
-      newEvent.imageKey = imageUrls[0]?.public_id|| null;
+      newEvent.eventImage = (imageUrls[0]?.url as string) || null;
+      newEvent.imageKey = imageUrls[0]?.public_id || null;
       const event = await this.eventRepo.save(newEvent);
       event.coverImages = JSON.parse(event.coverImages as unknown as string);
 
@@ -210,6 +219,7 @@ export class EventController {
         details,
         status,
         spaceId,
+        brandId,
         eventDate,
         coverKeys,
         leaseId,
@@ -224,8 +234,11 @@ export class EventController {
       if (!existingEvent) {
         return next(res.status(404).json({ message: "Event not found" }));
       }
-      if(existingEvent.user.id !=req.user.id){
-        throw new ApiError("You are not authorized to update this event", HTTP_STATUS.UN_AUTHORIZED);
+      if (existingEvent.user.id != req.user.id) {
+        throw new ApiError(
+          "You are not authorized to update this event",
+          HTTP_STATUS.UN_AUTHORIZED
+        );
       }
       if (
         existingEvent.status == EventStatus.ARCHIVE &&
@@ -243,10 +256,28 @@ export class EventController {
         if (!space && status == EventStatus.PUBLISH && spaceId) {
           throw new ApiError("Space not found", HTTP_STATUS.NOT_FOUND);
         }
-      }else if(!spaceId && status == EventStatus.PUBLISH){
-        throw new ApiError("Space is required for Publishing an Event", HTTP_STATUS.BAD_REQUEST);
-      }else if(!spaceId && (status == EventStatus.DRAFT || status == EventStatus.ARCHIVE)){
+      } else if (!spaceId && status == EventStatus.PUBLISH) {
+        throw new ApiError(
+          "Space is required for Publishing an Event",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      } else if (
+        !spaceId &&
+        (status == EventStatus.DRAFT || status == EventStatus.ARCHIVE)
+      ) {
         existingEvent.space = null;
+      }
+      let brand = null;
+      if (brandId) {
+        brand = await this.brandRepo.findOne({ where: { id: brandId } });
+        if (!brand) {
+          throw new ApiError("Brand not found", HTTP_STATUS.NOT_FOUND);
+        }
+      } else if (!brandId && status == EventStatus.PUBLISH) {
+        throw new ApiError(
+          "Brand is required for Publishing an Event",
+          HTTP_STATUS.BAD_REQUEST
+        );
       }
 
       const coverFilesPath = path.join(process.cwd(), "uploads");
@@ -357,50 +388,56 @@ export class EventController {
             )
           : [{ url: oldEventImage }]
       ) as UploadResult[];
-      if(oldCoverImages.length>0){
-      for (const oldCoverImage of oldCoverImages) {
-        if (coverKeys && coverKeys.length > 0) {
-          const coverKeyNumbers = coverKeys
-            .map((key: any) => {
-              const splitKey = key.split("+");
-              return {
-                key: splitKey[0],
-                order: parseInt(splitKey[1], 10),
-              };
-            })
-            .filter((keyData: any) => !isNaN(keyData.order)); // Filter out invalid or undefined numbers
+      if (oldCoverImages.length > 0) {
+        for (const oldCoverImage of oldCoverImages) {
+          if (coverKeys && coverKeys.length > 0) {
+            const coverKeyNumbers = coverKeys
+              .map((key: any) => {
+                const splitKey = key.split("+");
+                return {
+                  key: splitKey[0],
+                  order: parseInt(splitKey[1], 10),
+                };
+              })
+              .filter((keyData: any) => !isNaN(keyData.order)); // Filter out invalid or undefined numbers
 
-          const matchingKey = coverKeyNumbers.find(
-            (keyData: any) => oldCoverImage.public_id.includes(keyData.key) // Match based on the key part of the public_id
-          );
-
-          if (!matchingKey) {
-            await uploadService.deleteFile(oldCoverImage.public_id);
-          } else {
-            const { order } = matchingKey;
-
-            const validOrder = Math.max(
-              1,
-              Math.min(order, coverUrls.length + 1)
+            const matchingKey = coverKeyNumbers.find(
+              (keyData: any) => oldCoverImage.public_id.includes(keyData.key) // Match based on the key part of the public_id
             );
 
-            if (validOrder === coverUrls.length + 1) {
-              coverUrls.push(oldCoverImage);
+            if (!matchingKey) {
+              await uploadService.deleteFile(oldCoverImage.public_id);
             } else {
-              coverUrls.splice(validOrder - 1, 0, oldCoverImage);
+              const { order } = matchingKey;
+
+              const validOrder = Math.max(
+                1,
+                Math.min(order, coverUrls.length + 1)
+              );
+
+              if (validOrder === coverUrls.length + 1) {
+                coverUrls.push(oldCoverImage);
+              } else {
+                coverUrls.splice(validOrder - 1, 0, oldCoverImage);
+              }
             }
-          }
-        } else {
-          if (
-            !coverUrls.some((url) => url.public_id === oldCoverImage.public_id)
-          ) {
-            await uploadService.deleteFile(oldCoverImage.public_id);
+          } else {
+            if (
+              !coverUrls.some(
+                (url) => url.public_id === oldCoverImage.public_id
+              )
+            ) {
+              await uploadService.deleteFile(oldCoverImage.public_id);
+            }
           }
         }
       }
-    }
 
-      if (imageFileObjects && oldEventImage !=null && oldEventImage !== imageUrls[0]?.url) {
+      if (
+        imageFileObjects &&
+        oldEventImage != null &&
+        oldEventImage !== imageUrls[0]?.url
+      ) {
         await uploadService.deleteFile(existingEvent.imageKey);
       }
 
@@ -409,11 +446,12 @@ export class EventController {
         eventCategory || existingEvent.eventCategory;
       existingEvent.details = details || existingEvent.details;
       existingEvent.eventDate = eventDate || existingEvent.eventDate;
+      existingEvent.brand=brand || existingEvent.brand;
       existingEvent.space = space || existingEvent.space;
       existingEvent.status = status || existingEvent.status;
       existingEvent.coverImages = JSON.stringify(coverUrls) as Object;
-      existingEvent.eventImage = imageUrls[0].url;
-      existingEvent.imageKey = imageUrls[0].public_id;
+      existingEvent.eventImage = imageUrls[0]?.url;
+      existingEvent.imageKey = imageUrls[0]?.public_id;
 
       await this.eventRepo.update(id, existingEvent);
       const uploadsPath = path.join(process.cwd(), "uploads");
@@ -796,30 +834,28 @@ export class EventController {
           parseCoverImages(rsvp.space);
 
           const eventDate =
-              rsvp.eventDate &&
-              (rsvp.eventDate as [
-                { startDate: string; endDate: string }
-              ]);
+            rsvp.eventDate &&
+            (rsvp.eventDate as [{ startDate: string; endDate: string }]);
 
-            if (eventDate) {
-              const currentDate = new Date();
+          if (eventDate) {
+            const currentDate = new Date();
 
-              let eventStatus = "Ended";
-              if (currentDate < new Date(eventDate[0].startDate)) {
-                eventStatus = "Upcoming";
-              } else if (
-                currentDate >= new Date(eventDate[0].startDate) &&
-                currentDate <= new Date(eventDate[0].endDate)
-              ) {
-                eventStatus = "Ongoing";
-              }
-
-              return {
-                ...rsvp,
-                rsvpCount: Number(rawData.event_rsvpCount) || 0,
-                eventStatus,
-              };
+            let eventStatus = "Ended";
+            if (currentDate < new Date(eventDate[0].startDate)) {
+              eventStatus = "Upcoming";
+            } else if (
+              currentDate >= new Date(eventDate[0].startDate) &&
+              currentDate <= new Date(eventDate[0].endDate)
+            ) {
+              eventStatus = "Ongoing";
             }
+
+            return {
+              ...rsvp,
+              rsvpCount: Number(rawData.event_rsvpCount) || 0,
+              eventStatus,
+            };
+          }
 
           return {
             ...rsvp,
@@ -833,39 +869,39 @@ export class EventController {
           .where("event.user = :userId", { userId: req.user?.id })
           .getManyAndCount();
 
-          const groupedEvents={
-            publishedEvents: events
-                      .filter((event) => event.status === EventStatus.PUBLISH)
-                      .map((event) => ({
-                        ...event,
-                        shareableLink: generateShareableLink({
-                          id: event.id,
-                          type: "event",
-                        }),
-                      })),
-                 draftEvents: events.filter(
-                   (events) => events.status === EventStatus.DRAFT
-                 ),
-                 archivedEvents: events.filter(
-                   (events) => events.status === EventStatus.ARCHIVE
-                 ),
-                 allEvents:  events.map((event) =>
-                  event.status === EventStatus.PUBLISH
-                    ? {
-                        ...event,
-                        shareableLink: generateShareableLink({
-                          id: event.id,
-                          type: "event",
-                        }),
-                      }
-                    : event
-                ),
-                 totalItems,
-       }
+        const groupedEvents = {
+          publishedEvents: events
+            .filter((event) => event.status === EventStatus.PUBLISH)
+            .map((event) => ({
+              ...event,
+              shareableLink: generateShareableLink({
+                id: event.id,
+                type: "event",
+              }),
+            })),
+          draftEvents: events.filter(
+            (events) => events.status === EventStatus.DRAFT
+          ),
+          archivedEvents: events.filter(
+            (events) => events.status === EventStatus.ARCHIVE
+          ),
+          allEvents: events.map((event) =>
+            event.status === EventStatus.PUBLISH
+              ? {
+                  ...event,
+                  shareableLink: generateShareableLink({
+                    id: event.id,
+                    type: "event",
+                  }),
+                }
+              : event
+          ),
+          totalItems,
+        };
 
-     res.status(200).json(
-       handleResponse("Events Fetched Successfully", {
-         groupedEvents,
+        res.status(200).json(
+          handleResponse("Events Fetched Successfully", {
+            groupedEvents,
             pagination: {
               totalItems,
               currentPage: parseInt(page as string, 10),
@@ -874,7 +910,6 @@ export class EventController {
             },
           })
         );
-
       }
       if (tab === "RSVP") {
         try {

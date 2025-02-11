@@ -7,17 +7,17 @@ export class BrandValidation {
     brandCategory: Joi.array()
       .items(
         Joi.object({
-          name: Joi.string().required(),
+          name: Joi.string().optional(),
         })
       )
-      .required(),
+      .optional(),
     details: Joi.object({
       description: Joi.string().optional(),
       htmlContent: Joi.string().optional(),
     }).optional(),
     location: Joi.object({
-      long: Joi.number().required(),
-      lat: Joi.number().required(),
+      long: Joi.number().optional(),
+      lat: Joi.number().optional(),
       additional: Joi.string().optional(),
     }).optional(),
     coverOrder: Joi.alternatives()
