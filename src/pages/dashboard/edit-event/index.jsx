@@ -486,8 +486,15 @@ const EditEvent = () => {
     };
 
     const handleSubmit = async (status) => {
-        if (!validateEventData()) {
-            return;
+        if (status === "PUBLISH") {
+            if (!validateEventData()) {
+                return;
+            }
+        } else {
+            if (!eventData?.eventName || eventData?.eventName.trim() === "") {
+                toast?.error("Event name can not be empty.");
+                return;
+            }
         }
         setLoadingButton(status);
         try {

@@ -181,7 +181,7 @@ const Brand = () => {
         brandCategory:
           brand.brandCategory && brand.brandCategory.length > 0
             ? brand.brandCategory.map((item) => item.name).join(", ")
-            : "N/A",
+            : "-",
         events: brand.eventCount || "0",
         followers: brand.followedCount || "0",
         status: brand.status || "N/A",

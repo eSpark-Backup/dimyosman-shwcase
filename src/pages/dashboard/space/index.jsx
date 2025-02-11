@@ -220,7 +220,7 @@ const Space = () => {
         price: dayFilter?.length > 0 ? "$" + dayFilter[0]?.price : "-",
         term: dayFilter?.length > 0 ? dayFilter[0]?.term : "-",
         brand: space?.brand?.brandName,
-        brandUrl: `/brand/${space?.brand?.id}`,
+        brandUrl: space?.brand?.id ? `/brand/${space?.brand?.id}` : null,
         action: "Edit",
       };
     });

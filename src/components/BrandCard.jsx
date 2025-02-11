@@ -237,10 +237,11 @@ const BrandCard = ({
                         sx={{
                           borderRadius: "5px",
                           border: "1px solid rgb(209, 219, 215, 0.4)",
+                          background: "rgb(209, 219, 215, 0.4)",
                           height: "62px",
                         }}
                       >
-                        <figure
+                        {item?.profileImage && <figure
                           style={{ width: "100%", height: "100%" }}
                           role="img"
                         >
@@ -253,7 +254,7 @@ const BrandCard = ({
                               objectFit: "cover",
                             }}
                           />
-                        </figure>
+                        </figure>}
                       </Box>
                       <Box
                         sx={{
@@ -485,9 +486,10 @@ const BrandCard = ({
                     alignItems: "center",
                     justifyContent: "center",
                     height: "280px",
+                    background: "rgb(209, 219, 215, 0.4)",
                   }}
                 >
-                  <figure style={{ width: "100%", height: "100%" }} role="img">
+                  {item?.brandImage && <figure style={{ width: "100%", height: "100%" }} role="img">
                     <img
                       src={item?.brandImage}
                       alt="Image"
@@ -497,7 +499,7 @@ const BrandCard = ({
                         objectFit: "cover",
                       }}
                     />
-                  </figure>
+                  </figure>}
                 </Box>
               </Box>
             );

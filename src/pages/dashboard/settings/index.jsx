@@ -182,6 +182,7 @@ const Settings = () => {
       if (image) {
         const formdata = new FormData();
         formdata.append("image", image);
+        formdata.append("isProfile", true);
         changeProfileImage(formdata).then((res) => {
           if (res?.error) {
             toast.error(res?.error?.data?.message || "something went wrong");
