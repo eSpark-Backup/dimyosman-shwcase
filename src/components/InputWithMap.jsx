@@ -185,11 +185,13 @@ const InputWithMap = ({
     if (activity === "event") {
       if (eventData.space !== selectedValue) {
         updateEventData("space", selectedValue);
-        updateEventData("location", updatedLocation);
-        updateEventData("mapInstructions", selectedSpaceData[0]?.item?.location?.additional);
-        updateEventData("streetAddress", address);
-        updateEventData("leaseId", selectedSpaceData[0]?.item?.location?.lease);
-        updateEventData("toSendSpace", selectedSpaceData[0]?.item?.location?.tenantSpaceId ? selectedSpaceData[0]?.item?.location?.tenantSpaceId : selectedValue);
+        if (selectedValue !== "None") {
+          updateEventData("location", updatedLocation);
+          updateEventData("mapInstructions", selectedSpaceData[0]?.item?.location?.additional);
+          updateEventData("streetAddress", address);
+          updateEventData("leaseId", selectedSpaceData[0]?.item?.location?.lease);
+          updateEventData("toSendSpace", selectedSpaceData[0]?.item?.location?.tenantSpaceId ? selectedSpaceData[0]?.item?.location?.tenantSpaceId : selectedValue);
+        }
       }
     }
     else if (activity === "space") {
@@ -331,7 +333,7 @@ const InputWithMap = ({
         {(activity === "brand" && !edit) &&
           <Typography fontSize={14} fontWeight={300} sx={{ fontStyle: "italic" }}>Click on the map to select Address.</Typography>
         }
-        <figure role="img" aria-labelledby="profile-map" onClick={(activity === 'event' && selectedValue !== "") || (activity === 'space' && selectedValue !== "") || activity === 'brand' ? handleClick : undefined} style={{ cursor: activity === 'space' || selectedValue !== "" ? 'pointer' : 'default' }}>
+        <figure role="img" aria-labelledby="profile-map" onClick={(activity === 'event' && selectedValue !== "" && selectedValue !== "None") || (activity === 'space' && selectedValue !== "") || activity === 'brand' ? handleClick : undefined} style={{ cursor: activity === 'space' || selectedValue !== "" && selectedValue !== "None" ? 'pointer' : 'default' }}>
           <img width="100%" height="auto" src={miniMap} alt="map" />
           <figcaption
             style={activity === "brand" && !edit ?
@@ -345,7 +347,7 @@ const InputWithMap = ({
               }
               :
               {
-                fontStyle: "italic",
+                fontStyle: "normal",
                 fontSize: "12px",
                 fontWeight: "300",
                 textAlign: "left",
@@ -369,7 +371,7 @@ const InputWithMap = ({
             </Typography>
 
             <Box
-              onClick={() => (activity === "event" && selectedValue !== "") ? setOpenDatePicker(!openDatePicker) : HandlePriceModal?.()}
+              onClick={() => (activity === "event" && selectedValue !== "" && selectedValue !== "None") ? setOpenDatePicker(!openDatePicker) : HandlePriceModal?.()}
               sx={{
                 width: "100%",
                 border: "1px dashed rgba(0, 20, 28, 0.4)",
@@ -379,7 +381,7 @@ const InputWithMap = ({
                 backgroundColor: "rgba(209, 219, 215, 0.2)",
                 p: "10px",
                 flexDirection: "column",
-                cursor: (activity === "event" && selectedValue === "") ? "not-allowed" : "pointer",
+                cursor: (activity === "event" && selectedValue === "" || selectedValue === "None") ? "not-allowed" : "pointer",
               }}
               ref={containerRef}
             >

@@ -64,19 +64,20 @@ export const spaceApi = api.injectEndpoints({
       },
     }),
     getAllSpace: builder.query({
-      query: ({ id, page, pageSize, tab } = {}) => {
-        const baseUrl = id ? `/space/${id}` : "/space";
+      query: ({ publicProfile, entity, id, page, pageSize, tab } = {}) => {
+        const baseUrl = publicProfile ? `/general/public/entity/profile/${id}` : id ? `/space/${id}` : "/space";
         const queryParams = new URLSearchParams();
 
         if (pageSize) queryParams.append("pageSize", pageSize);
         if (page) queryParams.append("page", page);
         if (tab) queryParams.append("tab", tab);
+        if (entity) queryParams.append('entity', entity);
 
         const queryString = queryParams.toString()
           ? `?${queryParams.toString()}`
           : "";
         return {
-          url: `${baseUrl}${id ? "" : queryString}`,
+          url: `${baseUrl}${publicProfile ? queryString : id ? "" : queryString}`,
           method: "GET",
         };
       },

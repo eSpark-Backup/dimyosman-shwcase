@@ -30,7 +30,7 @@ const EventDetails = () => {
           shareableLink: data?.data?.shareableLink,
           isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
-          by: 1,
+          by: data?.data?.brand?.id,
           type: "event",
           owned: user?.id === data?.data?.user?.id,
           slides: data?.data?.coverImages,

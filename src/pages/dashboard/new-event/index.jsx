@@ -88,6 +88,7 @@ const NewEvent = () => {
 
 
     const spaceOptions = [
+        { label: "None", value: "None", item: null },
         ...(spaceData?.data?.availableSpaces?.map((space) => {
             const item = {
                 location: {
@@ -218,6 +219,11 @@ const NewEvent = () => {
     };
     const handleMainImageChange = (files) => {
         if (files.length > 0) {
+            if (eventData.cover.length !== currentIndex) {
+                const updatedCover = [...eventData.cover];
+                updatedCover[currentIndex] = files[0];
+                setEventData((prev) => ({ ...prev, cover: updatedCover }));
+            }
             if(eventData.cover.length === 0) {
                 setEventData((prev) => ({ ...prev, cover: files }));
             }
@@ -260,6 +266,8 @@ const NewEvent = () => {
         const nextIndex = eventData.cover.length;
         if (nextIndex < 3) {
             setCurrentIndex(nextIndex);
+        } else {
+            toast.error("You can not select more that 3 images")
         }
     };
 
@@ -344,7 +352,7 @@ const NewEvent = () => {
         }
     };
 
-    const validateEventData = () => {
+    const validateEventData = (status) => {
         if (!eventData?.cover || eventData?.cover?.length <= 0) {
             toast?.error("Please upload cover photo of brand");
             return false;
@@ -388,12 +396,12 @@ const NewEvent = () => {
         }
 
 
-        if (!eventData?.space || eventData?.space?.trim() === "") {
+        if (status === "PUBLISH" && (!eventData?.space || eventData?.space?.trim() === "")) {
             toast?.error("Please select space");
             return false;
         }
 
-        if (!eventData?.selectedDate || eventData?.selectedDate?.includes(null)) {
+        if (status === "PUBLISH" && (!eventData?.selectedDate || eventData?.selectedDate?.includes(null))) {
             toast?.error("Please select date");
             return false;
         }
@@ -417,7 +425,7 @@ const NewEvent = () => {
     }, [IsEventPostError])
 
     const handleSubmit = async (status) => {
-        if (!validateEventData()) {
+        if (!validateEventData(status)) {
             return;
         }
         setLoadingButton(status);

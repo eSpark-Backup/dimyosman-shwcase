@@ -248,7 +248,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                           myProfile?.by && key === "by"
                             ? () => {
                                 navigate(
-                                  `/${type === "brand" ? "profile" : "brand"}/${
+                                  `/${type === "brand" || type === "space" ? "profile" : "brand"}/${
                                     myProfile?.by
                                   }`
                                 );

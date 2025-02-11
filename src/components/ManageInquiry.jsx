@@ -129,6 +129,7 @@ const parsedFormat = (date) => {
 
 const ManageInquiry = ({
   handleModalClose,
+  detailsPage,
   details,
   setAfterSignature,
   TopHeading,
@@ -824,7 +825,7 @@ const ManageInquiry = ({
           sx={{ width: "100%", marginBottom: "10px", columnGap: 1 }}
         >
           <CheckBox
-            checked={spc && status === "Active" ? true : checked}
+            checked={(spc && status === "Active") || detailsPage ? true : checked}
             onChange={handleChange}
           />
           <Typography
@@ -904,7 +905,7 @@ const ManageInquiry = ({
 
           <Box sx={{ textAlign: "left" }}>
             <Heading name="Tenant Signature" mb="10px" />
-            {!spc ? (
+            {!spc || (detailsPage && !tenantSign) ? (
               <Box
                 sx={{
                   width: { xs: "100%", lg: "200px", xl: "278px" },
@@ -984,7 +985,7 @@ const ManageInquiry = ({
           </Box>
         </Stack>
 
-        {status && status === "Active" ? null : (
+        {(status && status === "Active") || detailsPage ? null : (
           <Box display="flex" justifyContent="end" mt={2}>
             <LoadingButton
               sx={{

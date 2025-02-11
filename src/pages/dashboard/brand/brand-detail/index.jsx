@@ -61,10 +61,11 @@ const BrandDetails = () => {
           profilePic: data?.data?.brandImage,
           profileName: data?.data?.brandName,
           category: data?.data?.brandCategory,
+          by: data?.data?.user?.profile && data?.data?.user?.id,
           details: {
             by: data?.data?.user?.name,
             events: data?.data?.totalEventsCount,
-            followes: data?.data?.followedCount,
+            followers: data?.data?.followedCount,
             saved: data?.data?.likedCount,
           },
           rating: 0,

@@ -139,6 +139,11 @@ const EditSpace = () => {
     // Functions
     const handleMainImageChange = (files) => {
         if (files.length > 0) {
+            if (spaceData.cover.length !== currentIndex) {
+                const updatedCover = [...spaceData.cover];
+                updatedCover[currentIndex] = files[0];
+                setSpaceData((prev) => ({ ...prev, cover: updatedCover }));
+            }
             if(spaceData.cover.length === 0) {
                 setSpaceData((prev) => ({ ...prev, cover: files }));
             }
@@ -192,6 +197,8 @@ const EditSpace = () => {
         const nextIndex = currentIndex + 1;
         if (nextIndex < spaceData.cover.length + 1 && nextIndex <= 2) {
             setCurrentIndex(nextIndex);
+        } else {
+            toast.error("You can not select more that 3 images")
         }
     };
 

@@ -6,7 +6,7 @@ export const eventApi = api.injectEndpoints({
             query: (eventData) => {
                 const formData = new FormData();
                 formData.append("brandId", eventData?.brand?.id)
-                formData.append("spaceId", eventData?.toSendSpace)
+                if (eventData?.toSendSpace && eventData?.toSendSpace !== "None") formData.append("spaceId", eventData?.toSendSpace)
                 formData.append("eventName", eventData?.eventName)
                 // formData.append("minLeaseDays", "Hello")
 
@@ -17,10 +17,14 @@ export const eventApi = api.injectEndpoints({
                 formData.append('eventCategory', JSON.stringify(selectedCategories));
 
 
-                const formattedDates = [{
+                const formattedDates = eventData.selectedDate[0] ?
+                 [{
                     startDate: eventData.selectedDate[0],
                     endDate: eventData.selectedDate[1]
-                }];
+                }] : [{
+                    startDate: "string",
+                    endDate: "string"
+                }]
                 formData.append('eventDate', JSON.stringify(formattedDates));
 
 
@@ -66,17 +70,18 @@ export const eventApi = api.injectEndpoints({
             },
         }),
         getAllEvents: builder.query({
-            query: ({ id, page, pageSize, tab } = {}) => {
-                const baseUrl = id ? `/event/${id}` : '/event';
+            query: ({ publicProfile, entity, id, page, pageSize, tab } = {}) => {
+                const baseUrl = publicProfile ? `/general/public/entity/profile/${id}` : id ? `/event/${id}` : '/event';
                 const queryParams = new URLSearchParams();
 
                 if (pageSize) queryParams.append('pageSize', pageSize);
                 if (page) queryParams.append('page', page);
                 if (tab) queryParams.append("tab", tab);
+                if (entity) queryParams.append('entity', entity);
 
                 const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
                 return {
-                    url: `${baseUrl}${id ? '' : queryString}`,
+                    url: `${baseUrl}${publicProfile ? queryString : id ? '' : queryString}`,
                     method: 'GET',
                 };
             },

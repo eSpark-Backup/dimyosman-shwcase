@@ -153,6 +153,11 @@ const NewBrand = () => {
 
     const handleMainImageChange = (files) => {
         if (files.length > 0) {
+            if (brandData.cover.length !== currentIndex) {
+                const updatedCover = [...brandData.cover];
+                updatedCover[currentIndex] = files[0];
+                setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+            }
             if(brandData.cover.length === 0) {
                 setBrandData((prev) => ({ ...prev, cover: files }));
             }
@@ -200,6 +205,8 @@ const NewBrand = () => {
         const nextIndex = brandData.cover.length;
         if (nextIndex < 3) {
             setCurrentIndex(nextIndex);
+        } else {
+            toast.error("You can not select more that 3 images")
         }
     };
 
