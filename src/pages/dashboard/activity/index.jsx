@@ -14,9 +14,9 @@ import { useGetActivityDataQuery } from "../../../services/activity";
 import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../../../store/slices/activity";
 
 const Activity = () => {
-const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
-const { allActivityData, activitySpaceData, page } = useSelector((state) => state.activity);
+  const { allActivityData, activitySpaceData, page } = useSelector((state) => state.activity);
 
   const [total, setTotal] = useState(0);
 
@@ -33,7 +33,7 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
     if (isSuccess) {
       if (!data?.data && page === 1) {
         dispatch(setAllActivityData([]));
-        setHasFetchedData(true); 
+        setHasFetchedData(true);
         return;
       }
       if (data?.data) {
@@ -45,7 +45,7 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
           })) || [];
           const coverArray = item?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
           const category = item?.type === "brand" ? item?.brandCategory : item?.type === "event" ? item?.eventCategory : item?.spaceCategory
-        
+
           return {
             shareableLink: item?.shareableLink,
             profileId: item?.type === "brand" ? item?.user?.id : item?.brand?.id,
@@ -71,6 +71,7 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
             rsvpDates: item.event_rsvp?.attendanceDates?.rsvpDates ? item.event_rsvp?.attendanceDates?.rsvpDates?.map(item => item.dateTime) : [],
             startDate: item?.type === "event" && item?.eventDate[0]?.startDate || "",
             endDate: item?.type === "event" && item?.eventDate[0]?.endDate || "",
+            isDraftedBrandOwner: (item?.type === "event" || item?.type === "space") && item?.brand?.status === "DRAFT" ? item?.brand?.user?.id : null,
             publicProfile: item?.user?.profile
           };
         }) || [];
@@ -80,7 +81,7 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
           (item, index, self) =>
             index === self.findIndex((t) => t?.id === item?.id)
         );
-  
+
         const uniqueData = Array.from(
           new Map(mergedData.map((item) => [item.id, item])).values()
         );
@@ -88,7 +89,7 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
         dispatch(setSpaceData(mergedSapcesData))
         setTotal(data?.data?.pagination?.totalItems);
       }
-      setHasFetchedData(true); 
+      setHasFetchedData(true);
     }
   }, [isSuccess, data, page]);
 
@@ -97,7 +98,7 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
     const scrollPosition = localStorage.getItem("scrollPosition");
     if (scrollContainerRef.current && scrollPosition) {
       scrollContainerRef.current.scrollTop = parseInt(scrollPosition, 10);
-      localStorage.removeItem("scrollPosition"); 
+      localStorage.removeItem("scrollPosition");
     }
   }, []);
 
@@ -186,6 +187,7 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
               startDate={item?.startDate}
               endDate={item?.endDate}
               handleNavigation={handleNavigation}
+              isDraftedBrandOwner={item?.isDraftedBrandOwner}
               handleAction={(fullItem) => {
                 if (fullItem.activity === "space") {
                   const detail = activitySpaceData?.find(
