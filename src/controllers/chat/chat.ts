@@ -98,19 +98,24 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
           : null;
 
         const populateReceiverEvent = receiverEvent
-        ? await eventRepository.createQueryBuilder("event")
-            .where("event.id = :id", { id: receiverEvent })
-            .leftJoinAndSelect("event.user", "user")
-            .select([
-              "event.id",
-              "event.eventName",
-              "event.eventImage",
-              "user.id",
-              "user.name",
-              "user.userChatId",
-            ])
-            .getOne()
-            : null;
+          ? await eventRepository
+              .createQueryBuilder("event")
+              .where("event.id = :id", { id: receiverEvent })
+              .leftJoinAndSelect("event.user", "user")
+              .leftJoinAndSelect("event.brand", "brand")
+              .select([
+                "event.id",
+                "event.eventName",
+                "event.eventImage",
+                "brand.id",
+                "brand.brandName",
+                "brand.brandImage",
+                "user.id",
+                "user.name",
+                "user.userChatId",
+              ])
+              .getOne()
+          : null;
 
         return {
           _id,
@@ -142,7 +147,6 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
 
   const groupedByUser = transformedChats.reduce(
     (acc: any, chat: any) => {
-
       const isSender = chat.senderBrand?.user?.userChatId === req.socketUserId;
       const isReceiver =
         chat.receiverBrand?.user?.userChatId === req.socketUserId;
@@ -153,7 +157,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
         ? chat.receiverBrand?.id || "unknown_receiver"
         : "unknown";
 
-      if (!isReceiver && isSender ) {
+      if (!isReceiver && isSender) {
         if (!acc.brands[userRoleKey]) {
           acc.brands[userRoleKey] = {
             brandDetails: isSender
@@ -170,12 +174,35 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
             chats: [],
           };
         }
-        if(isSender || isReceiver){
-        acc.brands[userRoleKey].chats.push({
-          ...chat,
-          isInquiryRole: isSender ? "sender" : "unknown", // Inquiry role only applies for brands
-        });
-      }
+        if (isSender || isReceiver) {
+          acc.brands[userRoleKey].chats.push({
+            ...chat,
+            isInquiryRole: isSender ? "sender" : "unknown", // Inquiry role only applies for brands
+          });
+        }
+      }else if(isReceiver && !isSender){
+        if (!acc.brands[userRoleKey]) {
+          acc.brands[userRoleKey] = {
+            brandDetails: isReceiver
+              ? chat.receiverBrand || {
+                  id: "unknown_receiver",
+                  brandName: "Unknown Receiver Brand",
+                  brandImage: null,
+                }
+              : {
+                  id: "unknown",
+                  brandName: "Unknown Brand",
+                  brandImage: null,
+                },
+            chats: [],
+          };
+        }
+        if (isSender || isReceiver) {
+          acc.brands[userRoleKey].chats.push({
+            ...chat,
+            isInquiryRole: isReceiver ? "receiver" : "unknown", // Inquiry role only applies for brands
+          });
+        }
       }
 
       // Handle spaces
@@ -212,12 +239,10 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
 
         acc.events[eventKey].chats.push(chat);
       }
-    
-    
 
       return acc;
     },
-    { brands: {}, spaces: {},events:{} }
+    { brands: {}, spaces: {}, events: {} }
   );
 
   // Format the grouped data for response
@@ -228,9 +253,9 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
     spaces: Object.values(groupedByUser.spaces).map((group: any) => ({
       ...group,
     })),
-    events:Object.values(groupedByUser.events).map((group: any) => ({
-      ...group
-    }))
+    events: Object.values(groupedByUser.events).map((group: any) => ({
+      ...group,
+    })),
   };
 
   res.status(200).json({
