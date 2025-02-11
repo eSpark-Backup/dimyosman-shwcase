@@ -256,8 +256,9 @@ export class UserController {
         commonHelper.createFileObject(path.join(coverFilesPath, file), "cover")
       );
 
-      let { coverKeys, about } = req.body;
+      let { coverKeys, about,isProfile } = req.body;
 
+      
       if (Array.isArray(coverKeys)) {
         coverKeys = coverKeys.filter((key) => typeof key === "string");
       }
@@ -277,7 +278,11 @@ export class UserController {
         oldCoverImages = [];
       }
 
-      const coverUrls = (
+      let coverUrls ;
+      if(isProfile=="false")
+      {
+
+      coverUrls = (
         coverFileObjects?.length > 0
           ? await uploadService.uploadMultipleFiles(
               coverFileObjects,
@@ -285,6 +290,7 @@ export class UserController {
             )
           : []
       ) as UploadResult[];
+
 
       for (const oldCoverImage of oldCoverImages) {
         if (coverKeys && coverKeys.length > 0) {
@@ -326,6 +332,7 @@ export class UserController {
           }
         }
       }
+    }
 
       const oldUserImage = user.profileImage;
       const imageUrls = (
@@ -345,7 +352,9 @@ export class UserController {
       user.profileImage = imageUrls[0]?.url;
       user.imageKey = imageUrls[0]?.public_id;
       user.about = about || user.about;
+      if(isProfile=="false"){
       user.coverImages = JSON.stringify(coverUrls) as Object;
+      }
       await this.usersRepo.save(user);
       const { password: _, ...userProfile } = user;
       userProfile.coverImages = JSON.parse(

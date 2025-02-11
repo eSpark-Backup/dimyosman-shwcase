@@ -404,6 +404,8 @@ router.put(
  *               about:
  *                 type: object
  *                 description: Details about the User.
+ *               isProfile:
+ *                 type: boolean
  *               image:
  *                 type: string
  *                 format: binary

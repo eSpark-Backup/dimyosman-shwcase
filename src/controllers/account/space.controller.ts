@@ -1090,10 +1090,12 @@ export class SpaceController {
           }));
         });
         (singleSpace as any).calendarEvents = calendarEvents;
+          if(singleSpace.pricing !=null){
         const totalPricing = calculatePricing(
           singleSpace.pricing as PricingTerm[],
           1
         );
+      }
 
         let [tenantSpaceDetail, totalLeasSpace] = await this.leaseSpaceRepo
           .createQueryBuilder("leaseSpace")
