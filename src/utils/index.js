@@ -87,7 +87,7 @@ export const deleteAllCookiesExcept = (exceptions = []) => {
 
 export const logoutAuthUtils = (logoutAuth) => {
   logoutAuth({ returnTo: window.location.origin, openUrl: false });
-  deleteAllCookiesExcept(["unreadChatIds", "newNotification", "newInquiry"]);
+  deleteAllCookiesExcept(["unreadChatIds", "newNotification", "newInquiry", "unreadTypes"]);
 }
 
 // FOR PICKER
@@ -287,7 +287,7 @@ export const spacesAction = (
     case "Message":
       const navDetails = tenantSpace?.find((tenant) => tenant.id === item.id);
       const navigateData = {
-        spaceName: navDetails?.space?.spaceName,
+        pName: navDetails?.space?.spaceName,
         chatId: navDetails.chatId,
       };
       dispatch(setGoToMessage(navigateData));
@@ -411,11 +411,11 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
   };
 
   const getMatchingChatDetails = (chatId) => {
-    return chatDetails?.find((item) => item._id === chatId) || {};
+    return chatDetails?.find((item) => item?._id === chatId) || {};
   };
 
   const getMessagesForChat = (chatId) => {
-    return allMessages.filter((message) => message.chat === chatId);
+    return allMessages?.filter((message) => message?.chat === chatId);
   };
 
   const formatDate = (date) => format(new Date(date), "MM/dd/yy");
@@ -426,19 +426,41 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
   return {
     ...parentObject,
     read: false,
-    spaces: 1234,
-    followers: 234566,
-    saved: "789k",
     reviews: 12345,
     leases: 12345,
     rating: 5,
     chatGroups: parentObj?.chats
       ?.map((item) => {
-        const matchingItem = getMatchingChatDetails(item._id);
-        const currentChatMessages = getMessagesForChat(item._id);
+        const matchingItem = getMatchingChatDetails(item?._id);
+        const currentChatMessages = getMessagesForChat(item?._id);
 
         const isSpacesChats = parentObj?.spaceDetails;
         const isEventsChats = parentObj?.eventDetails;
+        
+        const spaces =
+          isSpacesChats ||
+          isEventsChats ||
+          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
+            ? matchingItem?.senderBrand?.spaceCount
+            : matchingItem?.receiverBrand?.spaceCount;
+
+        const followers =
+          isSpacesChats ||
+          isEventsChats ||
+          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
+            ? matchingItem?.senderBrand?.followedCount
+            : matchingItem?.receiverSpace?.followedCount ||
+              matchingItem?.receiverEvent?.followedCount ||
+              matchingItem?.receiverBrand?.followedCount;
+
+        const saved =
+          isSpacesChats ||
+          isEventsChats ||
+          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
+            ? matchingItem?.senderBrand?.likedCount
+            : matchingItem?.receiverSpace?.likedCount ||
+              matchingItem?.receiverEvent?.likedCount ||
+              matchingItem?.receiverBrand?.likedCount;
 
         const childName =
           isSpacesChats ||
@@ -494,6 +516,9 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
           receiverbrandName,
           creator,
           chatName: matchingItem?.name,
+          spaces: spaces || 0,
+          followers:followers|| 0,
+          saved: saved|| 0,
           activity,
           read: false,
           date: matchingItem?.createdAt

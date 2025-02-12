@@ -30,6 +30,7 @@ import {
 import {
   useGetChatsForContactsQuery,
   useGetAllChatDetailsQuery,
+  useGetMyChatsQuery,
 } from "../../../services/chats.js";
 import { useGetNotificationDataQuery } from "../../../services/notifications.js";
 
@@ -38,8 +39,10 @@ import {
   getAllMyGroups,
   getChatDetails,
   getMessages,
+  getMyChat,
   getTotalPages,
   isActiveMembers,
+  isUserHasChat,
 } from "../../../store/slices/chat.js";
 import {
   emptyGoToMessage,
@@ -96,27 +99,63 @@ const Message = () => {
     (state) => state.notification
   );
 
+  const {
+    data: myChatData,
+    isSuccess: myChatSuccess,
+    refetch,
+  } = useGetMyChatsQuery(undefined);
+
+  useEffect(() => {
+    if (myChat?.length === 0) {
+      refetch();
+    }
+  }, [myChat]);
+
+  useEffect(() => {
+    if (myChat?.length === 0) {
+      if (myChatSuccess && myChatData) {
+        if (
+          myChatData.chats &&
+          (Array.isArray(myChatData.chats) ||
+            (myChatData?.chats?.brands?.length === 0 &&
+              myChatData?.chats?.spaces?.length === 0 &&
+              myChatData?.chats?.events?.length === 0))
+        ) {
+          dispatch(isUserHasChat("empty"));
+        }
+
+        if (
+          myChatData.chats &&
+          (myChatData?.chats?.brands?.length > 0 ||
+            myChatData?.chats?.spaces?.length > 0 ||
+            myChatData?.chats?.events?.length > 0)
+        ) {
+          dispatch(getMyChat(myChatData.chats));
+          dispatch(isUserHasChat(""));
+        }
+      }
+    }
+  }, [myChatSuccess, myChatData, myChat]);
+
   const dispatch = useDispatch();
   const { pathname } = useLocation();
 
   const [isNewIdsForChatDetails, setIsNewIdsForChatDetails] = useState([]);
   const [isNewIdsForAllMessages, setIsNewIdsForAllMessages] = useState([]);
   const [page, setPage] = useState(1);
-  const [totalPage, setTotalPage] = useState(1);
   const [inViewLoader, setInViewLoader] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   const pageSize = 10;
 
   const filterNewIds = (allIds, existingIds) =>
-    allIds?.filter((id) => !existingIds.includes(id));
+    allIds?.filter((id) => !existingIds?.includes(id));
 
   useEffect(() => {
-    const existingDetailsIds = chatDetails.map((item) => item._id);
+    const existingDetailsIds = chatDetails?.map((item) => item?._id);
     setIsNewIdsForChatDetails(filterNewIds(allChatIds, existingDetailsIds));
   }, [myChat, chatDetails, allChatIds]);
 
   useEffect(() => {
-    const existingMessagesIds = messages.map((item) => item.chat);
+    const existingMessagesIds = messages?.map((item) => item?.chat);
     setIsNewIdsForAllMessages(filterNewIds(allChatIds, existingMessagesIds));
   }, [myChat, messages, allChatIds]);
 
@@ -171,10 +210,10 @@ const Message = () => {
   useEffect(() => {
       if (isSuccess && messageData && messageData?.length) {
         const filteredMessages = messageData
-          .map((message) => message?.messages)
-          .flat();
+          ?.map((message) => message?.messages)
+          ?.flat();
 
-        const filteredMessagesTotalPage = messageData.map((message) => {
+        const filteredMessagesTotalPage = messageData?.map((message) => {
           return {
             totalPages: message?.totalPages,
             chat: message?.messages[0]?.chat,
@@ -185,19 +224,19 @@ const Message = () => {
         });
 
         // Get existing message IDs from the current state
-        const existingMessageIds = messages.map((message) => message.chat);
-        const existingPageIds = totalPagesOfMessage.map(
-          (message) => message.chat
+        const existingMessageIds = messages?.map((message) => message?.chat);
+        const existingPageIds = totalPagesOfMessage?.map(
+          (message) => message?.chat
         );
         // Filter new messages that are not already in the current state
-        const newMessages = filteredMessages.filter(
-          (message) => !existingMessageIds.includes(message.chat)
+        const newMessages = filteredMessages?.filter(
+          (message) => !existingMessageIds?.includes(message?.chat)
         );
-        const newTotalPage = filteredMessagesTotalPage.filter(
-          (message) => !existingPageIds.includes(message.chat)
+        const newTotalPage = filteredMessagesTotalPage?.filter(
+          (message) => !existingPageIds?.includes(message?.chat)
         );
         // Dispatch only new messages to add them to the state
-        if (newMessages.length > 0) {
+        if (newMessages?.length > 0) {
           dispatch(getMessages([...messages, ...newMessages]));
           dispatch(getTotalPages([...totalPagesOfMessage, ...newTotalPage]));
         } else {
@@ -211,10 +250,10 @@ const Message = () => {
     if (chatDetailsSuccess && chatDetailsData && chatDetailsData?.length) {
       const filteredChat = chatDetailsData?.map((chat) => chat?.chat);
       // Get existing chat IDs from the current state
-      const existingChatIds = chatDetails.map((chat) => chat._id);
+      const existingChatIds = chatDetails?.map((chat) => chat?._id);
       // Filter new chats that are not already in the current state
-      const newChats = filteredChat.filter(
-        (chat) => !existingChatIds.includes(chat._id)
+      const newChats = filteredChat?.filter(
+        (chat) => !existingChatIds?.includes(chat?._id)
       );
       // Dispatch only new chats to add them to the state
       if (newChats.length > 0) {
@@ -233,15 +272,26 @@ const Message = () => {
           getNotificationCount,
           dispatch
         );
-        const navigateData = {
-          brandName: data.senderBrandName,
-          chatId: data.chatId,
+
+        const navigateBrandData = {
+          pName: data?.receiverBrandName,
+          chatId: data?.chatId,
+        };
+
+        const navigateEventData = {
+          pName: data?.receiverEventName,
+          chatId: data?.chatId,
         };
 
         toast.info(data?.name, {
           position: "bottom-right",
           onClick: () => {
-            dispatch(setGoToMessage(navigateData));
+            if (data?.receiverBrandName) {
+              dispatch(setGoToMessage(navigateBrandData));
+            } else {
+              dispatch(setGoToMessage(navigateEventData));
+            }
+
             dispatch(setFromNotification(false));
 
             if (pathname !== "/message") {
@@ -317,8 +367,8 @@ const Message = () => {
   }, [addListener, removeListener, emitEvent]);
 
   useEffect(() => {
-    if (chatDetails.length > 0 && messages?.length > 0) {
-      let message = myChat.map((el) => {
+    if (chatDetails?.length > 0 && messages?.length > 0) {
+      let message = myChat?.map((el) => {
         return messageBox(el, chatDetails, messages);
       });
 
@@ -470,6 +520,7 @@ const Message = () => {
             setSelectedGroup(selected);
           }
         }
+
         unreadChat(selected?.chatGroup?.id);
         setInitialChatId(null);
 
@@ -515,6 +566,9 @@ const Message = () => {
         setSelectedGroup(commonSelectedChatGroup(filterGroups, 0));
         setSelectedChatId(filterGroups[0]?.chatGroups[0]?.chatId);
       }
+
+      unreadChat(filterGroups[0]?.chatGroups[0]?.chatId);
+      setSelectedChatId(filterGroups[0]?.chatGroups[0]?.chatId)
 
       dispatch(changeMessageType(msgTxt));
       setActiveTab(type);
@@ -575,9 +629,8 @@ const Message = () => {
             sx={{
               display: "flex",
               margin: "0 auto 16px auto",
-              justifyContent: "flex-start",
+              justifyContent: "center",
               overflowX: "auto",
-              maxWidth: "302px",
               gap: 2,
             }}
           >
@@ -589,6 +642,8 @@ const Message = () => {
                 onClick={filterChats}
                 allGroups={allGroups}
                 activeTab={activeTab}
+                allMessages={allMessages}
+                selectedGroup={selectedGroup}
               />
             ))}
           </Box>

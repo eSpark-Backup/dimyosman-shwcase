@@ -161,9 +161,10 @@ const SharedPage = () => {
   return (
     <Box
       sx={{
+        marginTop: "80px !important",
         overflowY: "auto",
         maxHeight: "calc(100vh - 80px)",
-        padding: { xs: "0px", sm: "0 0 0 105px" },
+        padding: { xs: "0px", sm: "0px 0 0 105px" },
         margin: "0px auto",
         "::-webkit-scrollbar": { display: "none" },
         maxWidth: {

@@ -43,6 +43,7 @@ const BrandCard = ({
   const [brand, setBrand] = useState({});
   const [brandId, setBrandId] = useState(null);
   const [commentModal, setCommentModal] = useState(false);
+  const [commentId, setCommentId] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const navigate = useNavigate();
   const filteredItems = items?.filter((item) => {
@@ -395,11 +396,13 @@ const BrandCard = ({
 
                       {!myProfile && (
                         <figure
-                          onClick={() => setCommentModal(item?.id)}
+                          onClick={() => {
+                            setCommentId(item?.id); 
+                            setCommentModal(true)}}
                           style={{ width: "100%", height: "100%" }}
                           role="img"
                         >
-                          <img src={comment} alt="Share Icon" />
+                          <img src={comment} alt="Share Icon" style={{ cursor: "pointer" }} />
                         </figure>
                       )}
                       {item?.status === "PUBLISH" && (
@@ -411,7 +414,7 @@ const BrandCard = ({
                           style={{ width: "100%", height: "100%" }}
                           role="img"
                         >
-                          <img src={share} alt="Share Icon" />
+                          <img src={share} alt="Share Icon" style={{ cursor: "pointer" }} />
                         </figure>
                       )}
                     </Box>
@@ -516,8 +519,12 @@ const BrandCard = ({
       </Box>
       <CommentModal
         open={commentModal}
-        handleClose={() => setCommentModal(false)}
+        handleClose={() => {
+          setCommentId(null);
+          setCommentModal(false)
+        }}
         handleSuccess={() => setSuccessModal(true)}
+        commentId={commentId}
       />
       <CommentSuccessModal
         open={successModal}

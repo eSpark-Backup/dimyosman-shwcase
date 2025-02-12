@@ -73,6 +73,7 @@ const ActivityCard = ({
   const [commentId, setCommentId] = useState(null);
   const [successModal, setSuccessModal] = useState(false);
   const [shareModal, setShareModal] = useState(false);
+  const [shareModalDetails, setShareModalDetails] = useState(false);
   const [likePost, setLikePost] = useState(isFavourite);
   const [followPost, setFollowPost] = useState(isFollowed);
   useEffect(() => {
@@ -785,14 +786,15 @@ const ActivityCard = ({
             />
           )}
           <img
-            onClick={() =>
-              setShareModal({
+            onClick={() => {
+              setShareModalDetails({
                 id: activityId,
                 profileName: activityName,
                 profileImage: activityImage,
                 profileType: activity,
-              })
-            }
+              });
+              setShareModal(true);
+            }}
             src={share}
             alt="Share Icon"
             style={{ cursor: "pointer" }}
@@ -900,7 +902,7 @@ const ActivityCard = ({
         open={commentModal}
         handleClose={() => {
           setCommentId(null);
-          setCommentModal(false)
+          setCommentModal(false);
         }}
         handleSuccess={() => setSuccessModal(true)}
         commentId={commentId}
@@ -913,6 +915,7 @@ const ActivityCard = ({
         shareableLink={shareableLink}
         open={shareModal}
         handleClose={() => setShareModal(false)}
+        shareModalDetails={shareModalDetails}
       />
     </Box>
   );

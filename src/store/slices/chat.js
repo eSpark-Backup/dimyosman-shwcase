@@ -7,6 +7,7 @@ const initialState = {
   hasChats: "",
   activeMembers: [],
   allChatIds: [],
+  unreadTypes: [],
   allGroups: [],
   hasMessages: "",
   totalPagesOfMessage: [],
@@ -54,8 +55,9 @@ const slice = createSlice({
       state.myChat = [];
       state.chatDetails = [];
       state.messages = [];
-      state.totalPagesOfMessage = [];
       state.allChatIds = [];
+      state.allGroups = [];
+      state.totalPagesOfMessage = [];
     },
     isUserHasChat(state, action) {
       state.hasChats = action.payload;
@@ -72,6 +74,9 @@ const slice = createSlice({
     changeMessageType: (state, action) => {
       state.hasMessages = action.payload;
     },
+    getUnreadTypesSlice(state, action) {
+      state.unreadTypes = action.payload;
+    },
   },
 });
 
@@ -85,7 +90,8 @@ export const {
   emptyActiveMembers,
   getAllMyGroups,
   changeMessageType,
-  getTotalPages
+  getTotalPages,
+  getUnreadTypesSlice
 } = slice.actions;
 
 export default slice.reducer;

@@ -2,7 +2,7 @@ import { toast } from "react-toastify";
 import { Box, Modal, Stack, Typography } from "@mui/material";
 import { brandBadge, close, copyIcon, eventBadge, spaceBadge } from "../assets";
 
-const ShareModal = ({ myProfileData, open, handleClose, shareableLink }) => {
+const ShareModal = ({ myProfileData, open, handleClose, shareableLink, shareModalDetails }) => {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(shareableLink);
@@ -58,8 +58,8 @@ const ShareModal = ({ myProfileData, open, handleClose, shareableLink }) => {
                 }}
               >
                 <img
-                  style={{ width: "100%", height: "100%" }}
-                  src={myProfileData ? myProfileData?.profile : open?.profileImage}
+                  style={{ width: "100%", height: "100%", borderRadius: "5px", }}
+                  src={myProfileData ? myProfileData?.profile : shareModalDetails?.profileImage}
                   alt="profile"
                 />
                 <img
@@ -72,9 +72,9 @@ const ShareModal = ({ myProfileData, open, handleClose, shareableLink }) => {
                     zIndex: 99,
                   }}
                   src={
-                    open?.profileType === "space"
+                    shareModalDetails?.profileType === "space"
                       ? spaceBadge
-                      : open?.profileType === "event"
+                      : shareModalDetails?.profileType === "event"
                       ? eventBadge
                       : brandBadge
                   }
@@ -89,7 +89,7 @@ const ShareModal = ({ myProfileData, open, handleClose, shareableLink }) => {
                   fontSize={24}
                   variant="h2"
                 >
-                  {myProfileData ? myProfileData?.profileName : open?.profileName}
+                  {myProfileData ? myProfileData?.profileName : shareModalDetails?.profileName}
                 </Typography>
               </Box>
             </Stack>
