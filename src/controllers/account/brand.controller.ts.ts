@@ -11,7 +11,7 @@ import {
   User,
 } from "../../entity";
 import { ApiError } from "../../errors";
-import { Repository } from "typeorm";
+import { Brackets, Repository } from "typeorm";
 import {
   emitEvent,
   generateShareableLink,
@@ -46,7 +46,7 @@ export class BrandController {
     private chatModel: typeof Chat,
     private notificationModel: typeof Notification,
     private eventsRepo: Repository<Events>,
-  private spaceRepo: Repository<Spaces>,
+    private spaceRepo: Repository<Spaces>,
     private messageModel: typeof Message,
     private savedEntity: Repository<SavedEntity>
   ) {}
@@ -182,14 +182,8 @@ export class BrandController {
     next: NextFunction
   ): Promise<void> {
     try {
-      let {
-        brandName,
-        brandCategory,
-        details,
-        location,
-        status,
-        coverOrder,
-      } = req.body;
+      let { brandName, brandCategory, details, location, status, coverOrder } =
+        req.body;
       const coverFilesPath = path.join(process.cwd(), "uploads");
       const imageFilesPath = path.join(process.cwd(), "uploads");
       let coverFiles = fs
@@ -218,8 +212,6 @@ export class BrandController {
       }
       coverOrder = coverOrder || [];
       coverFiles = commonHelper.reorderCoverFiles(coverFiles, coverOrder);
-
-
 
       const coverFileObjects: IFileObject[] = coverFiles.map((file) =>
         commonHelper.createFileObject(path.join(coverFilesPath, file), "cover")
@@ -352,49 +344,47 @@ export class BrandController {
           HTTP_STATUS.BAD_REQUEST
         );
       }
-        if(status==BrandStatus.DRAFT || status==BrandStatus.ARCHIVE){
-          const events = await this.eventsRepo
+      if (status == BrandStatus.DRAFT || status == BrandStatus.ARCHIVE) {
+        const events = await this.eventsRepo
           .createQueryBuilder("event")
           .where("event.brand = :brandId", { brandId: existingBrand.id })
           .getMany();
-          
-      if (events.length > 0) {
-        events.map( (event) => {
-          const eventDate =
-          event.eventDate &&
-          (event.eventDate as [{ startDate: string; endDate: string }]);
+
+        if (events.length > 0) {
+          events.map((event) => {
+            const eventDate =
+              event.eventDate &&
+              (event.eventDate as [{ startDate: string; endDate: string }]);
             const startDate = new Date(eventDate[0].startDate);
             const endDate = new Date(eventDate[0].endDate);
             const currentDate = new Date();
-          //also add for ongoing 
-          if (startDate > currentDate) {
-            throw new ApiError(
-              "You can't draft/archive a brand with upcoming events",
-              HTTP_STATUS.BAD_REQUEST
-            );
-          }
-          if(endDate>currentDate){
-            throw new ApiError(
-              "You can't draft/archive a brand with ongoing events",
-              HTTP_STATUS.BAD_REQUEST
-            );
-          }
-
-        })
-      }
-      const spaces=await this.spaceRepo
-      .createQueryBuilder("space")
-      .where("space.brand = :brandId", { brandId: existingBrand.id })
-      .andWhere("space.status=:status",{status:SpaceStatus.PUBLISH})
-      .getMany();
-      if(spaces.length>0){
-        throw new ApiError(
-          "You can't draft/archive a brand with published spaces",
-          HTTP_STATUS.BAD_REQUEST
-        );
-      }
-
+            //also add for ongoing
+            if (startDate > currentDate) {
+              throw new ApiError(
+                "You can't draft/archive a brand with upcoming events",
+                HTTP_STATUS.BAD_REQUEST
+              );
+            }
+            if (endDate > currentDate) {
+              throw new ApiError(
+                "You can't draft/archive a brand with ongoing events",
+                HTTP_STATUS.BAD_REQUEST
+              );
+            }
+          });
         }
+        const spaces = await this.spaceRepo
+          .createQueryBuilder("space")
+          .where("space.brand = :brandId", { brandId: existingBrand.id })
+          .andWhere("space.status=:status", { status: SpaceStatus.PUBLISH })
+          .getMany();
+        if (spaces.length > 0) {
+          throw new ApiError(
+            "You can't draft/archive a brand with published spaces",
+            HTTP_STATUS.BAD_REQUEST
+          );
+        }
+      }
       let oldCoverImages: UploadResult[] = [];
 
       const FolderName = `${CLOUD_FOLDERS.BRAND}/${brandName.trim()}`;
@@ -547,23 +537,39 @@ export class BrandController {
           res.status(200).json(handleResponse("Brand not found"));
           return next();
         }
-        let brandSpaces=await this.spaceRepo.createQueryBuilder
-        ("space")
-        .where("space.brand = :brandId", { brandId: singleBrand.id })
-        .getMany();
-        if(brandSpaces.length>0){
+        let brandSpaces = await this.spaceRepo
+          .createQueryBuilder("space")
+          .where("space.brand = :brandId", { brandId: singleBrand.id })
+          .andWhere(
+            new Brackets((qb) => {
+              qb.where("space.user = :userId", {
+                userId: req.user?.id,
+              }).orWhere("space.status = :status", {
+                status: BRAND_STATUS.PUBLISH,
+              });
+            })
+          )
+          .getMany();
+
+        if (brandSpaces.length > 0) {
           brandSpaces = brandSpaces.map((space) => {
             if (typeof space.coverImages === "string") {
               space.coverImages = JSON.parse(space.coverImages);
             }
             return space;
-          })
+          });
         }
-        const groupedSpaces={
-          publishedSpaces: brandSpaces.filter((space) => space.status === SpaceStatus.PUBLISH),
-          draftSpaces: brandSpaces.filter((space) => space.status === SpaceStatus.DRAFT),
-          archivedSpaces:brandSpaces.filter((space) => space.status === SpaceStatus.ARCHIVE),
-        }
+        const groupedSpaces = {
+          publishedSpaces: brandSpaces.filter(
+            (space) => space.status === SpaceStatus.PUBLISH
+          ),
+          draftSpaces: brandSpaces.filter(
+            (space) => space.status === SpaceStatus.DRAFT
+          ),
+          archivedSpaces: brandSpaces.filter(
+            (space) => space.status === SpaceStatus.ARCHIVE
+          ),
+        };
 
         if (typeof singleBrand.coverImages === "string") {
           singleBrand.coverImages = JSON.parse(singleBrand.coverImages);
@@ -704,8 +710,6 @@ export class BrandController {
 
         const isFavourite = savedEntities ? true : false;
         const isFollowed = followedEntities ? true : false;
-
-
 
         const brand = {
           groupedSpaces,
