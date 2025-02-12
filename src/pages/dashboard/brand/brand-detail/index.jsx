@@ -106,11 +106,11 @@ const BrandDetails = () => {
             },
             {
               label: "Events",
-              props: eventData?.length > 0 ? { eventData } : false
+              props: eventData?.length > 0 ? { eventData, isMyProfile: data?.data?.user?.id === user?.id } : false
             },
             {
               label: "Spaces",
-              props: brandSpaces?.length > 0 ? { brandSpaces } : false
+              props: brandSpaces?.length > 0 ? { brandSpaces, isMyProfile: data?.data?.user?.id === user?.id } : false
             },
             {
               label: "Stats",

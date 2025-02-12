@@ -5,7 +5,7 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 import SpaceCard from "../SpaceCard";
 import { addIcon } from "../../assets";
 
-const Spaces = ({ brandSpaces }) => {
+const Spaces = ({ brandSpaces, isMyProfile }) => {
   const token = localStorage.getItem("token")
     const navigate = useNavigate();
     const filterEvents = ["All", "Publish", "Draft", "Archive"];
@@ -29,7 +29,7 @@ const Spaces = ({ brandSpaces }) => {
           </>
           :
           <>
-            <Stack
+            {isMyProfile && <Stack
               sx={{ marginRight: { xs: "0px", md: "48px" } }}
               direction={{ xs: "column", md: "row" }}
               alignItems="center"
@@ -104,7 +104,7 @@ const Spaces = ({ brandSpaces }) => {
               >
                 Add New
               </Button>
-            </Stack>
+            </Stack>}
             <Stack
               component="section"
               marginTop={2}

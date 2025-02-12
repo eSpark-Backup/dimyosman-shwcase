@@ -5,10 +5,10 @@ import { useState } from "react";
 import EventCard from "../EventCard";
 import { toast } from "react-toastify";
 
-const Events = ({ myProfile, addNewEvent }) => {
+const Events = ({ myProfile, addNewEvent, isMyProfile }) => {
   const token = localStorage.getItem("token")
   const navigate = useNavigate();
-  const filterEvents = ["All", "Publish", "Draft", "Archive", "Upcoming", "Past", "Ongoing"];
+  const filterEvents = isMyProfile ? ["All", "Publish", "Draft", "Archive", "Upcoming", "Past", "Ongoing"] : ["All", "Upcoming", "Past", "Ongoing"];
   const [activeFilter, setActiveFilter] = useState("All");
 
   const filteredEvents = myProfile?.tabs[1]?.props?.eventData?.filter(event => {
@@ -70,7 +70,7 @@ const Events = ({ myProfile, addNewEvent }) => {
                   })}
                 </Stack>
               </Stack>
-              <Button
+              {isMyProfile && <Button
                 onClick={() => {
                   if(!token){
                     toast.error("You need to log in first")
@@ -107,7 +107,7 @@ const Events = ({ myProfile, addNewEvent }) => {
                 }}
               >
                 Add New
-              </Button>
+              </Button>}
             </Stack>
             <Stack
               component="section"
