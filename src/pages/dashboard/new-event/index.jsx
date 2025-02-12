@@ -78,7 +78,7 @@ const NewEvent = () => {
     // console.log(brandData?.data?.groupedBrands)
 
     const options = [
-        ...(brandData?.data?.groupedBrands?.draftBrands || []),
+        // ...(brandData?.data?.groupedBrands?.draftBrands || []),
         ...(brandData?.data?.groupedBrands?.publishedBrands || [])
     ].map((brand) => ({
         label: brand.brandName,
