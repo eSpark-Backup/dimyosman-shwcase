@@ -4,8 +4,10 @@ import { calender, eventBadge, spaceIcon } from "../assets";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import SpaceInquireModal from "./SpaceInquireModal";
+import { toast } from "react-toastify";
 
 const SpaceCard = ({ myProfile, onClick, spaces, showBtn }) => {
+  const token = window.localStorage.getItem("token");
   const theme = useTheme();
   const navigate = useNavigate();
   const { activitySpaceData } = useSelector((state) => state.activity);
@@ -131,6 +133,7 @@ const SpaceCard = ({ myProfile, onClick, spaces, showBtn }) => {
             },
           }}
           onClick={
+            token ?
             myProfile
               ? () => navigate(`/space/${spaces?.id}/edit`)
               : () => {
@@ -139,7 +142,7 @@ const SpaceCard = ({ myProfile, onClick, spaces, showBtn }) => {
                   );
                   setInquiredDetail(detail);
                   setOpenInquiryModal(true);
-                }
+                } : () => toast.error("You need to login first")
           }
         >
           {myProfile ? (
