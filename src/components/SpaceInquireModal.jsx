@@ -125,7 +125,7 @@ const SpaceInquireModal = ({
   }, [bookedDates]);
 
   const isDateInRanges = (date, ranges) => {
-    return ranges.some((range) => date >= range.start && date <= range.end);
+    return ranges?.some((range) => date >= range.start && date <= range.end);
   };
 
   const isRangeValid = (range, ranges) => {
