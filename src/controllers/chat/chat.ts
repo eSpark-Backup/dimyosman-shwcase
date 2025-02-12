@@ -348,17 +348,17 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
       chat,
     });
   } else {
-    let chat = await Chat.findById(chatId);
-    let chatDetails;
+    let chatDetails = await Chat.findById(chatId);
+    let chat;
     const brandRepository = AppDataSource.getRepository(Brand);
     const spaceRepository = AppDataSource.getRepository(Spaces);
     const eventRepository = AppDataSource.getRepository(Events);
     const savedEntityRepository = AppDataSource.getRepository(SavedEntity);
-    if (!chat) return next(new ErrorHandler("chat not found", 404));
-    if(chat.senderBrand){
+    if (!chatDetails) return next(new ErrorHandler("chat not found", 404));
+    if(chatDetails.senderBrand){
       const singleBrand = await brandRepository
         .createQueryBuilder("brand")
-        .where("brand.id = :id", { id: chat.senderBrand })
+        .where("brand.id = :id", { id: chatDetails.senderBrand })
         .leftJoinAndSelect("brand.user", "user")
         .select([
           "brand.id",
@@ -396,7 +396,7 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
           .where("space.brand = :brandId", { brandId: singleBrand.id })
           .getCount()
       ]);
-      chatDetails={...chat._doc,
+      chat={...chatDetails._doc,
         senderBrand:{
           ...singleBrand,
           followedCount:getSenderBrandFollowedCount,
@@ -404,10 +404,10 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
           spaceCount:getSpaceCount
     }
   }}
-    if (chat.receiverBrand) {
+    if (chatDetails.receiverBrand) {
       const singleBrand = await brandRepository
         .createQueryBuilder("brand")
-        .where("brand.id = :id", { id: chat.receiverBrand })
+        .where("brand.id = :id", { id: chatDetails.receiverBrand })
         .leftJoinAndSelect("brand.user", "user")
         .select([
           "brand.id",
@@ -446,8 +446,8 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
           .where("space.brand = :brandId", { brandId: singleBrand.id })
           .getCount()
       ]);
-     chatDetails={
-      ...chatDetails,
+      chat={
+      ...chat,
       receiverBrand:{
         ...singleBrand,
         followedCount:getReceiverBrandFollowedCount,
@@ -456,10 +456,10 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
       }
      }
     }
-    if (chat.receiverSpace) {
+    if (chatDetails.receiverSpace) {
       const singleSpace = await spaceRepository
         .createQueryBuilder("space")
-        .where("space.id = :id", { id: chat.receiverSpace })
+        .where("space.id = :id", { id: chatDetails.receiverSpace })
         .leftJoinAndSelect("space.user", "user")
         .select([
           "space.id",
@@ -494,8 +494,8 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
           .andWhere("space.id = :spaceId", { spaceId: singleSpace.id })
           .getCount(),
       ]);
-      chatDetails={
-        ...chatDetails,
+      chat={
+        ...chat,
         receiverSpace:{
           ...singleSpace,
           followedCount:getReceiverSpaceFollowedCount,
@@ -503,10 +503,10 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
         }
        }
     }
-    if (chat.receiverEvent) {
+    if (chatDetails.receiverEvent) {
       const singleEvent = await eventRepository
         .createQueryBuilder("event")
-        .where("event.id = :id", { id: chat.receiverEvent })
+        .where("event.id = :id", { id: chatDetails.receiverEvent })
         .leftJoinAndSelect("event.user", "user")
         .leftJoinAndSelect("event.brand", "brand")
         .select([
@@ -545,8 +545,8 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
           .andWhere("event.id = :eventId", { eventId: singleEvent.id })
           .getCount(),
       ]);
-      chatDetails={
-        ...chatDetails,
+      chat={
+        ...chat,
         receiverEvent:{
           ...singleEvent,
           followedCount:getReceiverEventFollowedCount,
@@ -556,7 +556,7 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
     }
     return res.status(200).json({
       success: true,
-      chatDetails,
+      chat,
     });
   }
 });
