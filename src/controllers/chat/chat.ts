@@ -1,4 +1,4 @@
-import { Brand, Events, Spaces } from "../../entity";
+import { ActionType, Brand, Events, SavedEntity, SavedEntityType, Spaces } from "../../entity";
 import {
   ALERT,
   NEW_MESSAGE,
@@ -180,7 +180,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
             isInquiryRole: isSender ? "sender" : "unknown", // Inquiry role only applies for brands
           });
         }
-      }else if(isReceiver && !isSender && chat.directChat==true){
+      } else if (isReceiver && !isSender && chat.directChat == true) {
         if (!acc.brands[userRoleKey]) {
           acc.brands[userRoleKey] = {
             brandDetails: isReceiver
@@ -348,13 +348,215 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
       chat,
     });
   } else {
-    const chat = await Chat.findById(chatId);
-
+    let chat = await Chat.findById(chatId);
+    let chatDetails;
+    const brandRepository = AppDataSource.getRepository(Brand);
+    const spaceRepository = AppDataSource.getRepository(Spaces);
+    const eventRepository = AppDataSource.getRepository(Events);
+    const savedEntityRepository = AppDataSource.getRepository(SavedEntity);
     if (!chat) return next(new ErrorHandler("chat not found", 404));
+    if(chat.senderBrand){
+      const singleBrand = await brandRepository
+        .createQueryBuilder("brand")
+        .where("brand.id = :id", { id: chat.senderBrand })
+        .leftJoinAndSelect("brand.user", "user")
+        .select([
+          "brand.id",
+          "brand.brandName",
+          "brand.brandImage",
+          "user.id",
+          "user.name",
+          "user.userChatId",
+        ])
+        .getOne();
+      const [getSenderBrandFollowedCount, getSenderBrandLikedCount,getSpaceCount] = await Promise.all([
+        savedEntityRepository
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FOLLOW,
+          })
+          .andWhere("savedEntity.type = :type", {
+            type: SavedEntityType.BRAND,
+          })
+          .leftJoinAndSelect("savedEntity.brand", "brand")
+          .andWhere("brand.id = :brandId", { brandId: singleBrand.id })
+          .getCount(),
+          savedEntityRepository
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FAVORITE,
+          })
+          .andWhere("savedEntity.type = :type", {
+            type: SavedEntityType.BRAND,
+          })
+          .leftJoinAndSelect("savedEntity.brand", "brand")
+          .andWhere("brand.id = :brandId", { brandId: singleBrand.id })
+          .getCount(),
+          spaceRepository.createQueryBuilder("space")
+          .where("space.brand = :brandId", { brandId: singleBrand.id })
+          .getCount()
+      ]);
+      chatDetails={...chat._doc,
+        senderBrand:{
+          ...singleBrand,
+          followedCount:getSenderBrandFollowedCount,
+          likedCount:getSenderBrandLikedCount,
+          spaceCount:getSpaceCount
+    }
+  }}
+    if (chat.receiverBrand) {
+      const singleBrand = await brandRepository
+        .createQueryBuilder("brand")
+        .where("brand.id = :id", { id: chat.receiverBrand })
+        .leftJoinAndSelect("brand.user", "user")
+        .select([
+          "brand.id",
+          "brand.brandName",
+          "brand.brandImage",
+          "user.id",
+          "user.name",
+          "user.userChatId",
+        ])
+        .getOne();
+      const [getReceiverBrandFollowedCount, getReceiverBrandLikedCount,getSpaceCount] = await Promise.all([
+        savedEntityRepository
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FOLLOW,
+          })
+          .andWhere("savedEntity.type = :type", {
+            type: SavedEntityType.BRAND,
+          })
+          .leftJoinAndSelect("savedEntity.brand", "brand")
+          .andWhere("brand.id = :brandId", { brandId: singleBrand.id })
+          .getCount(),
+          savedEntityRepository
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FAVORITE,
+          })
+          .andWhere("savedEntity.type = :type", {
+            type: SavedEntityType.BRAND,
+          })
+          .leftJoinAndSelect("savedEntity.brand", "brand")
+          .andWhere("brand.id = :brandId", { brandId: singleBrand.id })
+          .getCount(),
 
+          spaceRepository.createQueryBuilder("space")
+          .where("space.brand = :brandId", { brandId: singleBrand.id })
+          .getCount()
+      ]);
+     chatDetails={
+      ...chatDetails,
+      receiverBrand:{
+        ...singleBrand,
+        followedCount:getReceiverBrandFollowedCount,
+        likedCount:getReceiverBrandLikedCount,
+        spaceCount:getSpaceCount
+      }
+     }
+    }
+    if (chat.receiverSpace) {
+      const singleSpace = await spaceRepository
+        .createQueryBuilder("space")
+        .where("space.id = :id", { id: chat.receiverSpace })
+        .leftJoinAndSelect("space.user", "user")
+        .select([
+          "space.id",
+          "space.spaceName",
+          "space.spaceImage",
+          "user.id",
+          "user.name",
+          "user.userChatId",
+        ])
+        .getOne();
+      const [getReceiverSpaceFollowedCount, getReceiverSpaceLikedCount] = await Promise.all([
+        savedEntityRepository
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FOLLOW,
+          })
+          .andWhere("savedEntity.type = :type", {
+            type: SavedEntityType.SPACE,
+          })
+          .leftJoinAndSelect("savedEntity.space", "space")
+          .andWhere("space.id = :spaceId", { spaceId: singleSpace.id })
+          .getCount(),
+          savedEntityRepository
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FAVORITE,
+          })
+          .andWhere("savedEntity.type = :type", {
+            type: SavedEntityType.SPACE,
+          })
+          .leftJoinAndSelect("savedEntity.space", "space")
+          .andWhere("space.id = :spaceId", { spaceId: singleSpace.id })
+          .getCount(),
+      ]);
+      chatDetails={
+        ...chatDetails,
+        receiverSpace:{
+          ...singleSpace,
+          followedCount:getReceiverSpaceFollowedCount,
+          likedCount:getReceiverSpaceLikedCount
+        }
+       }
+    }
+    if (chat.receiverEvent) {
+      const singleEvent = await eventRepository
+        .createQueryBuilder("event")
+        .where("event.id = :id", { id: chat.receiverEvent })
+        .leftJoinAndSelect("event.user", "user")
+        .leftJoinAndSelect("event.brand", "brand")
+        .select([
+          "event.id",
+          "event.eventName",
+          "event.eventImage",
+          "brand.id",
+          "brand.brandName",
+          "brand.brandImage",
+          "user.id",
+          "user.name",
+          "user.userChatId",
+        ])
+        .getOne();
+      const [getReceiverEventFollowedCount, getReceiverEventLikedCount] = await Promise.all([
+        savedEntityRepository
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FOLLOW,
+          })
+          .andWhere("savedEntity.type = :type", {
+            type: SavedEntityType.EVENT,
+          })
+          .leftJoinAndSelect("savedEntity.event", "event")
+          .andWhere("event.id = :eventId", { eventId: singleEvent.id })
+          .getCount(),
+          savedEntityRepository
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FAVORITE,
+          })
+          .andWhere("savedEntity.type = :type", {
+            type: SavedEntityType.EVENT,
+          })
+          .leftJoinAndSelect("savedEntity.event", "event")
+          .andWhere("event.id = :eventId", { eventId: singleEvent.id })
+          .getCount(),
+      ]);
+      chatDetails={
+        ...chatDetails,
+        receiverEvent:{
+          ...singleEvent,
+          followedCount:getReceiverEventFollowedCount,
+          likedCount:getReceiverEventLikedCount
+        }
+       }
+    }
     return res.status(200).json({
       success: true,
-      chat,
+      chatDetails,
     });
   }
 });
