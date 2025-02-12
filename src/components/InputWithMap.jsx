@@ -8,13 +8,14 @@ import 'react-calendar/dist/Calendar.css';
 import { fetchAddressFromCoordinates, formatDate } from '../utils';
 import CheckBox from './CheckBox';
 import { useClickOutside } from '../utils';
-import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider, pickersLayoutClasses, StaticDatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import { DateRangePicker } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
 import Dropdown from './Dropdown';
 import { toast } from 'react-toastify';
+import { StaticDateRangePicker } from '@mui/x-date-pickers-pro';
 
 const InputWithMap = ({
   edit,
@@ -51,6 +52,8 @@ const InputWithMap = ({
     );
   };
 
+  const [tempDate, setTempDate] = useState([null, null]);
+
   const isRangeValid = (range, ranges) => {
     if (!range || range.length < 2 || !range[0] || !range[1]) return false;
     const [startDate, endDate] = range;
@@ -72,15 +75,13 @@ const InputWithMap = ({
   const [selectedDate, setSelectedDate] = useState(() => {
     if (!defaultDate || !Array.isArray(defaultDate)) return [null, null];
 
-    const isValidDefault = isRangeValid(
-      defaultDate?.map((date) => (date ? new Date(date) : null)),
-      bookedRanges
-    );
+    const parsedDates = defaultDate.map(date => date ? dayjs(date) : null);
+    const isValidDefault = isRangeValid(parsedDates, bookedRanges);
 
-    return isValidDefault
-      ? defaultDate?.map((date) => (date ? new Date(date) : null))
-      : [null, null];
+    return isValidDefault ? parsedDates : [null, null];
   });
+
+  useEffect(() => { setTempDate(selectedDate) }, [selectedDate])
   const [priceToShow, setPriceToShow] = useState(defaultPrice);
 
   useEffect(() => {
@@ -88,34 +89,25 @@ const InputWithMap = ({
       !defaultDate ||
       !Array.isArray(defaultDate) ||
       defaultDate.length !== 2 ||
-      isNaN(new Date(defaultDate[0]).getTime()) ||
-      isNaN(new Date(defaultDate[1]).getTime())
+      !dayjs(defaultDate[0]).isValid() ||
+      !dayjs(defaultDate[1]).isValid()
     ) {
       setSelectedDate([null, null]);
       onDateChange && onDateChange([null, null]);
       return;
     }
 
+    const parsedDates = defaultDate.map(date => (date ? dayjs(date) : null));
+    const isValidDefault = isRangeValid(parsedDates, bookedRanges);
 
-    const isValidDefault = isRangeValid(
-      defaultDate.map((date) => (date ? new Date(date) : null)),
-      bookedRanges
-    );
-
-    setSelectedDate((prev) => {
-      const newDate = isValidDefault
-        ? defaultDate.map((date) => (date ? new Date(date) : null))
-        : [null, null];
-
+    setSelectedDate(prev => {
+      const newDate = isValidDefault ? parsedDates : [null, null];
       return JSON.stringify(prev) !== JSON.stringify(newDate) ? newDate : prev;
     });
 
-    onDateChange(
-      isValidDefault
-        ? defaultDate.map((date) => (date ? new Date(date) : null))
-        : [null, null]
-    );
+    onDateChange(isValidDefault ? parsedDates : [null, null]);
   }, [defaultDate, bookedRanges]);
+
 
 
 
@@ -216,25 +208,28 @@ const InputWithMap = ({
   };
 
 
-
-
-
   const handleDateChange = (newValue) => {
-    if (newValue === null || !newValue.length) {
-      setSelectedDate([null, null]);
-      onDateChange([null, null]);
+    setTempDate(newValue);
+  };
+
+  const handleOk = () => {
+    if (!tempDate || tempDate.length !== 2 || !tempDate[0] || !tempDate[1]) {
+      toast.error("Please select a valid date range.");
       return;
     }
 
-    if (isRangeValid(newValue, bookedRanges)) {
-      setSelectedDate(newValue);
-      onDateChange(newValue);
+    setOpenDatePicker(false);
+
+    const convertedRange = tempDate.map(date => dayjs(date)); // Ensure Day.js format
+
+    if (isRangeValid(convertedRange, bookedRanges)) {
+      setSelectedDate(convertedRange);
+      onDateChange(convertedRange);
     } else {
       toast.error("Selected range includes disabled dates. Please choose a valid range.");
-      setSelectedDate([null, null]);
-      onDateChange([null, null]);
     }
   };
+
 
   useClickOutside(datePickerRef, () => setOpenDatePicker(false));
   useClickOutside(containerRef, () => setOpenDatePicker(false));
@@ -424,17 +419,46 @@ const InputWithMap = ({
                 }}
               >
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DateRangePicker
+                  {/* <DateRangePicker
                     value={selectedDate}
                     style={datePickerStyle}
-                    // onChange={(newValue) => {
-                    //   setSelectedDate(newValue);
-                    //   onDateChange(newValue);
-                    // }}
                     onChange={handleDateChange}
                     shouldDisableDate={(date) => isDateInRanges(date, bookedRanges)}
                     appearance="default"
                     showOneCalendar
+                  /> */}
+                  <StaticDateRangePicker
+                    defaultValue={selectedDate}
+                    onChange={handleDateChange}
+                    onAccept={handleOk}
+                    shouldDisableDate={(date) =>
+                      isDateInRanges(date, bookedRanges)
+                    }
+                    disableHighlightToday={true}
+                    sx={{
+                      ".MuiPickersToolbar-root": {
+                        display: "none"
+                      },
+                      button: {
+                        fontSize: "12px",
+                        fontWeight: 500,
+                        color: "#00141C",
+                        background: "transparent",
+                        "&:hover": {
+                          color: "#00141C",
+                          background: "transparent",
+                        },
+                      },
+                      ".MuiDialogActions-root > button:last-child": {
+                        fontWeight: 700,
+                      },
+                      ".MuiDateRangeCalendar-root > div:first-child": {
+                        display: "none"
+                      },
+                      [`.${pickersLayoutClasses.contentWrapper}`]: {
+                        alignItems: 'center',
+                      },
+                    }}
                   />
                 </LocalizationProvider>
               </Box>

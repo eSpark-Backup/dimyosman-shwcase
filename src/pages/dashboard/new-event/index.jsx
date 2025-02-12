@@ -75,8 +75,6 @@ const NewEvent = () => {
     const editorRef = useRef(null);
     const quillRef = useRef(null);
 
-    // console.log(brandData?.data?.groupedBrands)
-
     const options = [
         // ...(brandData?.data?.groupedBrands?.draftBrands || []),
         ...(brandData?.data?.groupedBrands?.publishedBrands || [])
@@ -223,10 +221,10 @@ const NewEvent = () => {
                 updatedCover[currentIndex] = files[0];
                 setEventData((prev) => ({ ...prev, cover: updatedCover }));
             }
-            if(eventData.cover.length === 0) {
+            if (eventData.cover.length === 0) {
                 setEventData((prev) => ({ ...prev, cover: files }));
             }
-            if(eventData.cover.length === 1) {
+            if (eventData.cover.length === 1) {
                 const updatedCover = [...eventData.cover];
                 updatedCover[1] = files[0];
                 files?.length > 1 ? updatedCover[2] = files[1] : null;
@@ -236,7 +234,7 @@ const NewEvent = () => {
                     setCurrentIndex(nextIndex);
                 }
             }
-            if(eventData.cover.length === 2) {
+            if (eventData.cover.length === 2) {
                 const updatedCover = [...eventData.cover];
                 updatedCover[2] = files[0];
                 setEventData((prev) => ({ ...prev, cover: updatedCover }));

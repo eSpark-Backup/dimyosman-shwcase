@@ -300,6 +300,7 @@ const Search = () => {
                   brandStatus={item?.brandStatus}
                   isDraftedSpaceOwner={item?.isDraftedSpaceOwner}
                   spaceStatus={item?.spaceStatus}
+                  isFollowed={item?.isFollowed}
                   handleAction={(fullItem) => {
                     if (fullItem?.activity === "space") {
                       const detail = spaceData?.find(

@@ -35,6 +35,7 @@ const BrandCard = ({
   filter4,
   loading,
 }) => {
+  const token = window.localStorage.getItem("token");
   const theme = useTheme();
   const [selectedChoice, setSelectedChoice] = useState(0);
   const [showShareBox, setShowShareBox] = useState(false);
@@ -356,21 +357,25 @@ const BrandCard = ({
                         >
                           <img
                             onClick={() => {
-                              if (!isLoading) {
-                                setBrandId(item?.id);
-                                likeFunc({
-                                  entityId: item?.id,
-                                  entityType: "BRAND",
-                                }).then((res) => {
-                                  res?.data?.status &&
-                                    handleLikeUpdate(item?.id);
-                                  toast.success(
-                                    res?.data?.message
-                                      .replace("Entity", "Post")
-                                      .replace(" successfully", "")
-                                  );
-                                  setBrandId(null);
-                                });
+                              if (!token) {
+                                toast.error("You need to login first");
+                              } else {
+                                if (!isLoading) {
+                                  setBrandId(item?.id);
+                                  likeFunc({
+                                    entityId: item?.id,
+                                    entityType: "BRAND",
+                                  }).then((res) => {
+                                    res?.data?.status &&
+                                      handleLikeUpdate(item?.id);
+                                    toast.success(
+                                      res?.data?.message
+                                        .replace("Entity", "Post")
+                                        .replace(" successfully", "")
+                                    );
+                                    setBrandId(null);
+                                  });
+                                }
                               }
                             }}
                             style={{
@@ -397,8 +402,13 @@ const BrandCard = ({
                       {!myProfile && (
                         <figure
                           onClick={() => {
-                            setCommentId(item?.id); 
-                            setCommentModal(true)}}
+                            if (token) {
+                              setCommentId(item?.id);
+                              setCommentModal(true)
+                            } else {
+                              toast.error("You need to login first")
+                            }
+                          }}
                           style={{ width: "100%", height: "100%" }}
                           role="img"
                         >
@@ -408,8 +418,12 @@ const BrandCard = ({
                       {item?.status === "PUBLISH" && (
                         <figure
                           onClick={() => {
-                            setBrand(item);
-                            setShowShareBox(true);
+                            if (token) {
+                              setBrand(item);
+                              setShowShareBox(true);
+                            } else {
+                              toast.error("You need to login first");
+                            }
                           }}
                           style={{ width: "100%", height: "100%" }}
                           role="img"
@@ -420,7 +434,7 @@ const BrandCard = ({
                     </Box>
                     {!myProfile && (
                       <Typography
-                        onClick={() => navigate(`/brand/${item?.id}`)}
+                        onClick={() => token ? navigate(`/brand/${item?.id}`) : toast.error("You need to login first")}
                         sx={{
                           cursor: "pointer",
                           color: theme.palette.primary.main,
@@ -452,6 +466,7 @@ const BrandCard = ({
                         },
                       }}
                       onClick={
+                        token ?
                         myProfile
                           ? () => navigate(`/brand/${item?.id}/edit`)
                           : !followLoading
@@ -471,7 +486,7 @@ const BrandCard = ({
                                 setBrandId(null);
                               });
                             }
-                          : () => {}
+                          : () => {} : () => toast.error("You need to login first")
                       }
                     >
                       {myProfile

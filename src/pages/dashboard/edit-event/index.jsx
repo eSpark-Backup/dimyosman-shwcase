@@ -102,7 +102,6 @@ const EditEvent = () => {
                     eventCategories: mergedCategories,
                 }));
                 const selectedSpace = spaceData?.data?.tenantSpaces?.filter((item) => item?.id === data?.data?.leaseSpace?.id)
-                console.log(selectedSpace)
                 setEventData((prevState) => ({
                     ...prevState,
                     eventCategories: mergedCategories,

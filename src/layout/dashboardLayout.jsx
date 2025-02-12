@@ -5,8 +5,12 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./sidebar";
 import { getFullSidebar, getSmallSidebar, sidebarRoutes } from "../constant";
 import { useClickOutside } from "../utils";
+import { useDispatch, useSelector } from "react-redux";
+import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../store/slices/activity";
 
 const DashboardLayout = ({ isTokenChecking }) => {
+  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const token = window.localStorage.getItem("token");
   const { pathname } = useLocation();
@@ -30,7 +34,7 @@ const DashboardLayout = ({ isTokenChecking }) => {
   const currentPath =
     splittedSubPath.length > 1 ? `/${splittedSubPath[1]}` : splittedSubPath[0];
 
-  const activeIcon = sidebarRoutes.find((item) => item?.link === currentPath);
+  const activeIcon = sidebarRoutes.find((item) => (!item?.link && item.title === "Profile") || (item?.link === currentPath));
 
   if (loading || isTokenChecking) {
     return <SplashScreen />;
@@ -132,12 +136,26 @@ const DashboardLayout = ({ isTokenChecking }) => {
             }}
           >
             {sidebarRoutes.map((item) => {
-              const activetab = item?.link === currentPath;
+              const activetab = (!item?.link && item.title === "Profile") || (item?.link === currentPath);
               return (
                 <Stack
                   onClick={() => {
-                    setActive(false);
+                    if (item.title === "Profile") {
+                      navigate(`/profile/${user?.id}`);
+                      setActive(false);
+                      return;
+                    }
+
+                    if (item.title !== "Activity") {
+                      localStorage.removeItem("scrollPosition");
+                      dispatch(setAllActivityData([]));
+                      dispatch(setSpaceData([]));
+                      dispatch(setActivityPageNumber(1));
+                    }
+
+                    localStorage.removeItem("searchScrollPosition");
                     navigate(item.link);
+                    setActive(false);
                   }}
                   direction="row"
                   justifyContent="flex-start"

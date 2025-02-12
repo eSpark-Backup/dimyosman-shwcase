@@ -14,15 +14,20 @@ import { fetchedBrandData } from "./brand";
 import { fetchedSpaceData } from "./space";
 import { fetchedEventData } from "./event";
 import SpaceInquireModal from "../../components/SpaceInquireModal";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import dayjs from "dayjs";
+import SharedProfile from "./profile";
 
 const baseUrl = window.location.origin;
 const token = window.localStorage.getItem("token");
 
 const SharedPage = () => {
+  const navigate = useNavigate();
   const query = useQuery();
   const data2 = encodeURIComponent(query.get("data"));
 
-  const { data, isSuccess, isFetching, isLoading } = useGetSharableLinkQuery({
+  const { data, isSuccess, isFetching, isLoading, isError, error } = useGetSharableLinkQuery({
     data: data2,
   });
 
@@ -30,6 +35,7 @@ const SharedPage = () => {
     brand: null,
     space: null,
     event: null,
+    user: null,
   });
   const [open, setOpen] = useState(false);
   const [id, setId] = useState(null);
@@ -70,7 +76,7 @@ const SharedPage = () => {
   useEffect(() => {
     if (token) {
       if(isSuccess) {
-        const url = `${baseUrl}/${data?.data?.type}/${data?.data?.id}`;
+        const url = `${baseUrl}/${data?.data?.role === "user" ? "profile" : data?.data?.type}/${data?.data?.id}`;
         window.location.href = url;
       }
     } else {
@@ -142,18 +148,53 @@ const SharedPage = () => {
               ...prevStates,
               space: updatedSpace,
             }));
+          } else if (data?.data?.role === "user") {
+            setSharedData((prevStates) => ({
+              ...prevStates,
+              user: {
+                id: data?.data?.id,
+                cover: data?.data?.coverImages || [],
+                profile: data?.data?.profileImage,
+                profileName: data?.data?.name,
+                profileAbout: data?.data?.about?.about,
+                shareableLink: data?.data?.shareableLink,
+                profileStats: [
+                  {
+                    name: "Brands:",
+                    value: data?.data?.brandsCount || 0,
+                  },
+                  {
+                    name: "Events:",
+                    value: data?.data?.eventsCount || 0,
+                  },
+                  {
+                    name: "Spaces:",
+                    value: data?.data?.spacesCount || 0,
+                  },
+                  {
+                    name: "Member since:",
+                    value: dayjs(data?.data?.createdAt).format("MM.YYYY."),
+                  },
+                ],
+              },
+            }));
           }
         }
       };
 
       singleEventData();
     }
-  }, [isSuccess, data]);
+    if (error?.status === 404) {
+      toast.error("You are not authorized to view this profile.");
+      navigate("/auth?type=login");
+    }
+  }, [isSuccess, data, isError, error]);
+
 
   if (
     isFetching ||
     isLoading ||
-    !(sharedData?.brand || sharedData?.space || sharedData?.event)
+    !(sharedData?.brand || sharedData?.space || sharedData?.event || sharedData?.user)
   ) {
     return <SplashScreen />;
   }
@@ -162,9 +203,9 @@ const SharedPage = () => {
     <Box
       sx={{
         marginTop: "80px !important",
+        marginTop: "80px !important",
         overflowY: "auto",
         maxHeight: "calc(100vh - 80px)",
-        padding: { xs: "0px", sm: "0px 0 0 105px" },
         margin: "0px auto",
         "::-webkit-scrollbar": { display: "none" },
         maxWidth: {
@@ -175,10 +216,14 @@ const SharedPage = () => {
         },
       }}
     >
-      <BESProfile
-        type={data?.data?.type}
-        data={[sharedData[data?.data?.type]]}
-      />
+      {data?.data?.role === "user" ? (
+        <SharedProfile user={sharedData?.user} />
+      ) : (
+        <BESProfile
+          type={data?.data?.type}
+          data={[sharedData[data?.data?.type]]}
+        />
+      )}
     </Box>
   );
 };
