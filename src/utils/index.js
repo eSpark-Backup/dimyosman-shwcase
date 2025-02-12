@@ -335,7 +335,8 @@ export const keysForBrandsSapcesEvents = (object, type) => {
     userImage: object?.brand?.brandImage || "",
     userRole: "brand",
     slides: coverArray,
-    isDraftedBrandOwner: object?.brand?.status === "DRAFT" ? object?.brand?.user?.id : null
+    isDraftedBrandOwner: object?.brand?.status === "DRAFT" ? object?.brand?.user?.id : null,
+    brandStatus: object?.brand?.status,
   };
 
   if (type === "space") {
@@ -396,16 +397,15 @@ export const removeNewInquiry = (dispatch) => {
 export const messageBox = (parentObj, chatDetails, allMessages) => {
   const getParentObject = () => {
     const isSpacesChats = parentObj?.spaceDetails;
+    const isEventsChats = parentObj?.eventDetails;
 
-    const details = isSpacesChats
-      ? parentObj?.spaceDetails
-      : parentObj?.brandDetails;
+    const details = isSpacesChats ? parentObj?.spaceDetails : isEventsChats ? parentObj?.eventDetails : parentObj?.brandDetails;
 
     return {
       parentId: details?.id,
-      parentActivity: isSpacesChats ? "space" : "brand",
-      parentName: details?.brandName || details?.spaceName,
-      parentImage: details?.brandImage || details?.spaceImage,
+      parentActivity: isSpacesChats ? "space" : isEventsChats ? "event" : "brand",
+      parentName: details?.brandName || details?.spaceName || details?.eventName,
+      parentImage: details?.brandImage || details?.spaceImage || details?.eventImage,
       ownerDetails: details?.user,
     };
   };
@@ -438,20 +438,50 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
         const currentChatMessages = getMessagesForChat(item._id);
 
         const isSpacesChats = parentObj?.spaceDetails;
+        const isEventsChats = parentObj?.eventDetails;
 
-        const childName = isSpacesChats
-          ? item?.senderBrand?.brandName
-          : item?.receiverSpace?.spaceName;
-        const childImage = isSpacesChats
-          ? item?.senderBrand?.brandImage
-          : item?.receiverSpace?.spaceImage;
-        const creator = isSpacesChats
-          ? item?.senderBrand?.user?.name
-          : item?.receiverBrand?.user?.name;
+        const childName =
+          isSpacesChats ||
+          isEventsChats ||
+          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
+            ? item?.senderBrand?.brandName
+            : item?.receiverSpace?.spaceName ||
+              item?.receiverEvent?.eventName ||
+              item?.receiverBrand?.brandName;
+
+        const childImage =
+          isSpacesChats ||
+          isEventsChats ||
+          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
+            ? item?.senderBrand?.brandImage
+            : item?.receiverSpace?.spaceImage ||
+              item?.receiverEvent?.eventImage ||
+              item?.receiverBrand?.brandImage;
+
+        const creator =
+          isSpacesChats ||
+          isEventsChats ||
+          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
+            ? item?.senderBrand?.user?.name
+            : item?.receiverBrand?.user?.name;
+
         const receiverbrandName = isSpacesChats
           ? item?.receiverBrand?.brandName
+          : isEventsChats
+          ? item?.receiverEvent?.brand?.brandName
           : "";
-        const activity = isSpacesChats ? "brand" : "space";
+
+        const activity =
+          isSpacesChats ||
+          isEventsChats ||
+          item?.isInquiryRole === "receiver" ||
+          (item?.isInquiryRole === "sender" &&
+            !item?.receiverEvent &&
+            !item?.receiverSpace)
+            ? "brand"
+            : item?.receiverEvent?.eventName
+            ? "event"
+            : "space";
 
         return {
           ...item,
@@ -492,6 +522,13 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
   };
 };
 
+export const handleNotificationUpdate = (cookieName, action, dispatch) => {
+  const currentValue = getCookie(cookieName);
+  const newCount = currentValue ? parseInt(currentValue) + 1 : 1;
+
+  setCookie(cookieName, newCount);
+  dispatch(action(newCount));
+};
 
 export const fetchAddressFromCoordinates = async (lat, lng) => {
   try {

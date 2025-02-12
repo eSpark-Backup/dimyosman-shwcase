@@ -25,9 +25,16 @@ const slice = createSlice({
       const gatherSpaces = newChat?.spaces?.flatMap((chat) =>
         chat.chats.map((c) => c)
       );
+      const gatherEvents = newChat?.events?.flatMap((chat) =>
+        chat.chats.map((c) => c)
+      );
 
-      const mergeAll = [...gatherBrands, ...gatherSpaces];
-      const mergeAllChats = [...newChat?.brands, ...newChat?.spaces];
+      const mergeAll = [...gatherBrands, ...gatherSpaces, ...gatherEvents];
+      const mergeAllChats = [
+        ...newChat?.brands,
+        ...newChat?.spaces,
+        ...newChat?.events,
+      ];
 
       const gatherAllIds = mergeAll.map((c) => c._id);
 

@@ -24,12 +24,11 @@ import {
   ForgotPassword,
   ResetPassword,
 } from "./pages";
+import SharedPage from './pages/sharedUrl';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useVerifyTokenQuery } from './services/auth';
-import { useSelector } from 'react-redux';
 import Search from './pages/dashboard/search';
-import SharedPage from './layout/sharePage';
 import { useAuth0 } from '@auth0/auth0-react';
 import { logoutAuthUtils } from './utils';
 

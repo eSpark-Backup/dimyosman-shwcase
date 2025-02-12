@@ -64,11 +64,13 @@ const ActivityCard = ({
   rsvpDates,
   handleAction = () => { },
   handleNavigation = () => { },
-  isDraftedBrandOwner
+  isDraftedBrandOwner,
+  brandStatus
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const [commentModal, setCommentModal] = useState(false);
+  const [commentId, setCommentId] = useState(null);
   const [successModal, setSuccessModal] = useState(false);
   const [shareModal, setShareModal] = useState(false);
   const [likePost, setLikePost] = useState(isFavourite);
@@ -151,11 +153,10 @@ const ActivityCard = ({
         >
           <Box
             onClick={() => {
-              if ((id && userRole === "brand" && !isDraftedBrandOwner) || (id && userRole === "brand" && isDraftedBrandOwner === user?.id)) {
+              if ((id && userRole === "brand" && !isDraftedBrandOwner && brandStatus !== "ARCHIVE") || (id && userRole === "brand" && isDraftedBrandOwner === user?.id && brandStatus !== "ARCHIVE")) {
                 navigate(`/${userRole}/${id}`);
                 handleNavigation();
-              }
-              else if ((id && userRole === "user" && publicProfile)) {
+              } else if (id && userRole === "user" && publicProfile) {
                 navigate(`/profile/${id}`);
                 handleNavigation();
               } else {
@@ -248,16 +249,18 @@ const ActivityCard = ({
           </Box>
           <Box
             onClick={() => {
-              if ((id && userRole === "brand" && !isDraftedBrandOwner) || (id && userRole === "brand" && isDraftedBrandOwner === user?.id)) {
+              if ((id && userRole === "brand" && !isDraftedBrandOwner && brandStatus !== "ARCHIVE") || (id && userRole === "brand" && isDraftedBrandOwner === user?.id && brandStatus !== "ARCHIVE")) {
                 navigate(`/${userRole}/${id}`);
                 handleNavigation();
-              }
-              else if ((id && userRole === "user" && publicProfile)) {
+              } else if (id && userRole === "user" && publicProfile) {
                 navigate(`/profile/${id}`);
                 handleNavigation();
-              }
-              else {
-                toast.error("You are not authorized to view this profile.");
+              } else {
+                if (userRole === "brand") {
+                  toast.error(`This Brand Is ${brandStatus}${brandStatus === "ARCHIVE" ? "D" : "ED"}. You Can Not View This Brand.`);
+                } else {
+                  toast.error("You are not authorized to view this profile.");
+                }
               }
             }}
             sx={{
@@ -775,19 +778,22 @@ const ActivityCard = ({
           />
           {activity !== "space" && (
             <img
-              onClick={() => setCommentModal(activityId)}
+              onClick={() => {
+                setCommentId(activityId);
+                setCommentModal(true);
+              }}
               src={comment}
               alt="Comment Icon"
               style={{ cursor: "pointer" }}
             />
           )}
           <img
-            onClick={
-              () => setShareModal({
+            onClick={() =>
+              setShareModal({
                 id: activityId,
                 profileName: activityName,
                 profileImage: activityImage,
-                profileType: activity
+                profileType: activity,
               })
             }
             src={share}
@@ -879,7 +885,11 @@ const ActivityCard = ({
             {activity === "event" ? (
               "RSVP"
             ) : activity === "brand" ? (
-              followPost ? "Unfollow" : "Follow"
+              followPost ? (
+                "Unfollow"
+              ) : (
+                "Follow"
+              )
             ) : (
               <>
                 <img src={calender} alt="Calender Icon" />
@@ -891,11 +901,22 @@ const ActivityCard = ({
       </Box>
       <CommentModal
         open={commentModal}
-        handleClose={() => setCommentModal(false)}
+        handleClose={() => {
+          setCommentId(null);
+          setCommentModal(false)
+        }}
         handleSuccess={() => setSuccessModal(true)}
+        commentId={commentId}
       />
-      <CommentSuccessModal open={successModal} handleClose={() => setSuccessModal(false)} />
-      <ShareModal shareableLink={shareableLink} open={shareModal} handleClose={() => setShareModal(false)} />
+      <CommentSuccessModal
+        open={successModal}
+        handleClose={() => setSuccessModal(false)}
+      />
+      <ShareModal
+        shareableLink={shareableLink}
+        open={shareModal}
+        handleClose={() => setShareModal(false)}
+      />
     </Box>
   );
 };

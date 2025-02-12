@@ -105,8 +105,15 @@ const NewBrand = () => {
     const [loadingButton, setLoadingButton] = useState(null);
 
     const handleSubmit = async (status) => {
-        if (!validateBrandData()) {
-            return;
+        if (status === "PUBLISH") {
+            if (!validateBrandData()) {
+                return;
+            }
+        } else {
+            if (!brandData?.brandName || brandData?.brandName.trim() === "") {
+                toast?.error("Brand name can not be empty.");
+                return;
+            }
         }
         setLoadingButton(status);
         try {

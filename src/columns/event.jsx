@@ -75,11 +75,11 @@ const myEventsColumns = (gotoDetail, handleAction, gotoBrand, gotoSpace) => {
             sx={{
               fontSize: "14px",
               fontWeight: item?.brandUrl ? 600 : 400,
-              cursor: "pointer",
+              cursor: item?.brandUrl ? "pointer" : "default",
             }}
-            onClick={() => gotoBrand(item)}
+            onClick={item?.brandUrl ? () => gotoBrand(item) : () => {}}
           >
-            {item?.brand}
+            {item?.brand || "-"}
           </Typography>
         );
       },
@@ -97,9 +97,9 @@ const myEventsColumns = (gotoDetail, handleAction, gotoBrand, gotoSpace) => {
             sx={{
               fontSize: "14px",
               fontWeight: item?.spaceUrl ? 600 : 400,
-              cursor: "pointer",
+              cursor: item?.hostedIn !== "-" ?"pointer":"text",
             }}
-            onClick={() => gotoSpace(item)}
+            onClick={item?.hostedIn !== "-" ? () => gotoSpace(item) : undefined}
           >
             {item?.hostedIn}
           </Typography>

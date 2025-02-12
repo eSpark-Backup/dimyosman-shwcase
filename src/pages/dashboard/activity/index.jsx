@@ -255,6 +255,7 @@ const Activity = () => {
               rsvpDates={item?.rsvpDates}
               startDate={item?.startDate}
               endDate={item?.endDate}
+              brandStatus={item?.brandStatus}
               handleNavigation={handleNavigation}
               isDraftedBrandOwner={item?.isDraftedBrandOwner}
               handleAction={(fullItem) => {

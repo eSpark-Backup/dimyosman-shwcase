@@ -220,7 +220,7 @@ const Space = () => {
         price: dayFilter?.length > 0 ? "$" + dayFilter[0]?.price : "-",
         term: dayFilter?.length > 0 ? dayFilter[0]?.term : "-",
         brand: space?.brand?.brandName,
-        brandUrl: `/brand/${space?.brand?.id}`,
+        brandUrl: space?.brand?.id ? `/brand/${space?.brand?.id}` : null,
         action: "Edit",
       };
     });
@@ -254,12 +254,12 @@ const Space = () => {
           space?.status === "SubmitForSignature"
             ? "Sign"
             : space?.status === "VerifyAndPay"
-            ? "Verify Pay 0/2"
-            : space?.status === "PendingforApproval"
-            ? "Verify Pay 1/2"
-            : space?.status === "Active"
-            ? "Details"
-            : "Review",
+              ? "Verify Pay 0/2"
+              : space?.status === "PendingforApproval"
+                ? "Verify Pay 1/2"
+                : space?.status === "Active"
+                  ? "Details"
+                  : "Review",
       };
     });
   };
@@ -277,10 +277,10 @@ const Space = () => {
             ? "Pending Sign"
             : space?.status === "VerifyAndPay" ||
               space?.status === "PendingforApproval"
-            ? "Pending Pay"
-            : space?.status === "Active"
-            ? "Leasing"
-            : "Lease Ended",
+              ? "Pending Pay"
+              : space?.status === "Active"
+                ? "Leasing"
+                : "Lease Ended",
         price: space?.contractDetails?.leaseInfo?.leaseTotal,
         term: "Daily",
         event: space?.event?.eventName || "-",
@@ -291,18 +291,19 @@ const Space = () => {
           space?.status === "SubmitForSignature"
             ? "Sign"
             : space?.status === "VerifyAndPay"
-            ? "Verify Pay 0/2"
-            : space?.status === "PendingforApproval"
-            ? "Verify Pay 1/2"
-            : space?.status === "Active"
-            ? "Details"
-            : "Review",
+              ? "Verify Pay 0/2"
+              : space?.status === "PendingforApproval"
+                ? "Verify Pay 1/2"
+                : space?.status === "Active"
+                  ? "Details"
+                  : "Review",
       };
     });
   };
 
   const transformTenantSpaceData = (apiData) => {
     return apiData.map((space, index) => {
+      console.log(space)
       return {
         id: space?.id,
         spaceId: space?.space?.id,
@@ -331,12 +332,12 @@ const Space = () => {
           space?.status === "SubmitForSignature"
             ? "Message"
             : space?.status === "VerifyAndPay"
-            ? "Verify 0/2"
-            : space?.status === "PendingforApproval"
-            ? "Verify 1/2"
-            : space?.status === "Active"
-            ? "Details"
-            : "Review",
+              ? "Verify 0/2"
+              : space?.status === "PendingforApproval"
+                ? "Verify 1/2"
+                : space?.status === "Active"
+                  ? "Details"
+                  : "Review",
         spaceStatus: space?.status,
         tenant: true,
       };
@@ -376,11 +377,13 @@ const Space = () => {
 
     if (tabsForApi[activeTab] !== "Saved") {
       if (isSuccess) {
-        if (data?.data?.spaces?.length) {
+        if (tabsForApi[activeTab] === "Space") {
           setMySpaceData(transformSpaceData(data?.data?.spaces || []));
-        } else if (data?.data?.leaseSpace?.length) {
+        }
+        if (tabsForApi[activeTab] === "Lease") {
           setMySpaceData(transformLeaseSpaceData(data?.data?.leaseSpace || []));
-        } else {
+        }
+        if (tabsForApi[activeTab] === "Tenant") {
           setMySpaceData(
             transformTenantSpaceData(data?.data?.tenantSpace || [])
           );
@@ -408,6 +411,7 @@ const Space = () => {
     page,
     data,
     data2,
+    activeTab,
   ]);
 
   const handlePageChange = (newPage) => {

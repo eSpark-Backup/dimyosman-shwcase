@@ -403,8 +403,15 @@ const EditSpace = () => {
     };
 
     const handleSubmit = async (status) => {
-        if (!validateSpaceData()) {
-            return;
+        if (status === "PUBLISH") {
+            if (!validateSpaceData()) {
+                return;
+            }
+        } else {
+            if (!spaceData?.spaceName || spaceData?.spaceName.trim() === "") {
+                toast?.error("Space name can not be empty.");
+                return;
+            }
         }
         setLoadingButton(status);
         try {

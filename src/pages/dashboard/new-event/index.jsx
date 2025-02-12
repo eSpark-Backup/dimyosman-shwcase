@@ -78,7 +78,7 @@ const NewEvent = () => {
     // console.log(brandData?.data?.groupedBrands)
 
     const options = [
-        ...(brandData?.data?.groupedBrands?.draftBrands || []),
+        // ...(brandData?.data?.groupedBrands?.draftBrands || []),
         ...(brandData?.data?.groupedBrands?.publishedBrands || [])
     ].map((brand) => ({
         label: brand.brandName,
@@ -88,7 +88,6 @@ const NewEvent = () => {
 
 
     const spaceOptions = [
-        { label: "None", value: "None", item: null },
         ...(spaceData?.data?.availableSpaces?.map((space) => {
             const item = {
                 location: {
@@ -352,7 +351,7 @@ const NewEvent = () => {
         }
     };
 
-    const validateEventData = (status) => {
+    const validateEventData = () => {
         if (!eventData?.cover || eventData?.cover?.length <= 0) {
             toast?.error("Please upload cover photo of brand");
             return false;
@@ -364,7 +363,7 @@ const NewEvent = () => {
         }
 
         if (!eventData?.eventName || eventData?.eventName.trim() === "") {
-            toast?.error("Brand name can not be empty.");
+            toast?.error("Event name can not be empty.");
             return false;
         }
 
@@ -375,18 +374,18 @@ const NewEvent = () => {
         }
 
         if (!eventData?.eventOverview || eventData?.eventOverview.trim() === "") {
-            toast?.error("Brand overview can not be empty.");
+            toast?.error("Event overview can not be empty.");
             return false;
         }
 
         if (!eventData?.eventTitle || eventData?.eventTitle.trim() === "") {
-            toast?.error("Brand title can not be empty.");
+            toast?.error("Event title can not be empty.");
             return false;
         }
 
         const strippedContent = eventData?.eventTitle?.replace(/<[^>]*>/g, "").trim();
         if (!strippedContent) {
-            toast?.error("Brand title can not be empty.");
+            toast?.error("Event title can not be empty.");
             return false;
         }
 
@@ -396,12 +395,12 @@ const NewEvent = () => {
         }
 
 
-        if (status === "PUBLISH" && (!eventData?.space || eventData?.space?.trim() === "")) {
+        if (!eventData?.space || eventData?.space?.trim() === "") {
             toast?.error("Please select space");
             return false;
         }
 
-        if (status === "PUBLISH" && (!eventData?.selectedDate || eventData?.selectedDate?.includes(null))) {
+        if (!eventData?.selectedDate || eventData?.selectedDate?.includes(null)) {
             toast?.error("Please select date");
             return false;
         }
@@ -425,8 +424,15 @@ const NewEvent = () => {
     }, [IsEventPostError])
 
     const handleSubmit = async (status) => {
-        if (!validateEventData(status)) {
-            return;
+        if (status === "PUBLISH") {
+            if (!validateEventData()) {
+                return;
+            }
+        } else {
+            if (!eventData?.eventName || eventData?.eventName.trim() === "") {
+                toast?.error("Event name can not be empty.");
+                return;
+            }
         }
         setLoadingButton(status);
         try {

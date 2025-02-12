@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+
+import { toast } from "react-toastify";
 
 import {
   Box,
@@ -28,6 +31,7 @@ import {
   useGetChatsForContactsQuery,
   useGetAllChatDetailsQuery,
 } from "../../../services/chats.js";
+import { useGetNotificationDataQuery } from "../../../services/notifications.js";
 
 import {
   changeMessageType,
@@ -40,7 +44,10 @@ import {
 } from "../../../store/slices/chat.js";
 import {
   emptyGoToMessage,
+  getNotification,
+  getNotificationCount,
   setFromNotification,
+  setGoToMessage,
 } from "../../../store/slices/notification.js";
 
 import { useSocket } from "../../../context/SocketContext.jsx";
@@ -48,6 +55,7 @@ import { useSocket } from "../../../context/SocketContext.jsx";
 import {
   deleteCookie,
   getCookie,
+  handleNotificationUpdate,
   messageBox,
   removeNewInquiry,
   setCookie,
@@ -90,6 +98,7 @@ const Message = () => {
   );
 
   const dispatch = useDispatch();
+  const { pathname } = useLocation();
 
   const [isNewIdsForChatDetails, setIsNewIdsForChatDetails] = useState([]);
   const [isNewIdsForAllMessages, setIsNewIdsForAllMessages] = useState([]);
@@ -115,11 +124,9 @@ const Message = () => {
     data: messageData,
     isSuccess,
     isFetching: isFetchingMessage,
-    refetch: refetchMessages,
   } = useGetChatsForContactsQuery(
     { chats: isNewIdsForAllMessages },
-    { refetchOnMountOrArgChange: true, refetchOnFocus: true },
-    { skip: !myChat?.length }
+    {skip: !myChat?.length, refetchOnMountOrArgChange: true, refetchOnFocus: true },
   );
 
   const {
@@ -128,9 +135,23 @@ const Message = () => {
     isFetching,
   } = useGetAllChatDetailsQuery(
     { chats: isNewIdsForChatDetails },
-    { refetchOnMountOrArgChange: true, refetchOnFocus: true },
-    { skip: !myChat?.length }
+    {skip: !myChat?.length, refetchOnMountOrArgChange: true, refetchOnFocus: true },
   );
+
+  const {
+    data: notificationData,
+    isSuccess: notificationSuccess,
+    refetch: notificationRefetch,
+  } = useGetNotificationDataQuery(undefined, { skip: pathname !== "/message" });
+
+  useEffect(() => {
+    if (
+      notificationData?.data &&
+      notificationData?.data?.notifications?.length > 0
+    ) {
+      dispatch(getNotification(notificationData?.data?.notifications));
+    }
+  }, [notificationSuccess, notificationData]);
 
   const [allMessages, setAllMessages] = useState([]);
   const [isTypingUser, setIsTypingUser] = useState(null);
@@ -148,39 +169,41 @@ const Message = () => {
   },[])
 
   useEffect(() => {
-    if (isSuccess && messageData && messageData?.length) {
-      const filteredMessages = messageData
-        .map((message) => message?.messages)
-        .flat();
+    // if (page === 1) {
+      if (isSuccess && messageData && messageData?.length) {
+        const filteredMessages = messageData
+          .map((message) => message?.messages)
+          .flat();
 
-      const filteredMessagesTotalPage = messageData.map((message) => {
-        return {
-          totalPages: message?.totalPages,
-          chat: message?.messages[0]?.chat,
-        };
-      });
+        const filteredMessagesTotalPage = messageData.map((message) => {
+          return {
+            totalPages: message?.totalPages,
+            chat: message?.messages[0]?.chat,
+          };
+        });
 
-      // Get existing message IDs from the current state
-      const existingMessageIds = messages.map((message) => message.chat);
-      const existingPageIds = totalPagesOfMessage.map(
-        (message) => message.chat
-      );
-      // Filter new messages that are not already in the current state
-      const newMessages = filteredMessages.filter(
-        (message) => !existingMessageIds.includes(message.chat)
-      );
-      const newTotalPage = filteredMessagesTotalPage.filter(
-        (message) => !existingPageIds.includes(message.chat)
-      );
-      // Dispatch only new messages to add them to the state
-      if (newMessages.length > 0) {
-        dispatch(getMessages([...messages, ...newMessages]));
-        dispatch(getTotalPages([...totalPagesOfMessage, ...newTotalPage]));
-      } else {
-        dispatch(getMessages(filteredMessages));
-        dispatch(getTotalPages(filteredMessagesTotalPage));
+        // Get existing message IDs from the current state
+        const existingMessageIds = messages.map((message) => message.chat);
+        const existingPageIds = totalPagesOfMessage.map(
+          (message) => message.chat
+        );
+        // Filter new messages that are not already in the current state
+        const newMessages = filteredMessages.filter(
+          (message) => !existingMessageIds.includes(message.chat)
+        );
+        const newTotalPage = filteredMessagesTotalPage.filter(
+          (message) => !existingPageIds.includes(message.chat)
+        );
+        // Dispatch only new messages to add them to the state
+        if (newMessages.length > 0) {
+          dispatch(getMessages([...messages, ...newMessages]));
+          dispatch(getTotalPages([...totalPagesOfMessage, ...newTotalPage]));
+        } else {
+          dispatch(getMessages(filteredMessages));
+          dispatch(getTotalPages(filteredMessagesTotalPage));
+        }
       }
-    }
+    // }
   }, [messageData, isSuccess]);
 
   useEffect(() => {
@@ -200,6 +223,49 @@ const Message = () => {
       }
     }
   }, [chatDetailsData, chatDetailsSuccess]);
+
+  useEffect(() => {
+    addListener("NEW_NOTIFICATION", (data) => {
+      notificationRefetch().then(() => {
+        handleNotificationUpdate(
+          "newNotification",
+          getNotificationCount,
+          dispatch
+        );
+        const navigateData = {
+          brandName: data.senderBrandName,
+          chatId: data.chatId,
+        };
+
+        toast.info(data?.name, {
+          position: "bottom-right",
+          onClick: () => {
+            dispatch(setGoToMessage(navigateData));
+            dispatch(setFromNotification(false));
+
+            if (pathname !== "/message") {
+              navigate("/message");
+            }
+          },
+        });
+
+        const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
+
+        if (!getUnreadChatIds) {
+          setCookie("unreadChatIds", JSON.stringify([data.chatId]));
+        } else {
+          if (!getUnreadChatIds.includes(data.chatId)) {
+            getUnreadChatIds.push(data.chatId);
+            setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
+          }
+        }
+      });
+    });
+
+    return () => {
+      removeListener("NEW_NOTIFICATION");
+    };
+  }, [addListener, removeListener, emitEvent]);
 
   useEffect(() => {
     addListener("NEW_MESSAGE", (data) => {
@@ -294,14 +360,12 @@ const Message = () => {
     if (activeTab !== "space") {
       findParentIndex = allGroups?.findIndex(
         (msg) =>
-          msg?.parentName ===
-          (gotToMessage?.spaceName || gotToMessage?.brandName)
+          msg?.parentName === (gotToMessage?.pName || gotToMessage?.brandName)
       );
     } else {
       findParentIndex = allMessages?.findIndex(
         (msg) =>
-          msg?.parentName ===
-          (gotToMessage?.spaceName || gotToMessage?.brandName)
+          msg?.parentName === (gotToMessage?.pName || gotToMessage?.brandName)
       );
     }
 
@@ -563,6 +627,10 @@ const Message = () => {
                       setSelectedChatId={setSelectedChatId}
                       emitEvent={emitEvent}
                       onlineUsers={onlineUsers}
+                      initialChatId={initialChatId}
+                      selectedChatId={selectedChatId}
+                      setPage={setPage}
+                      setHasMore={setHasMore}
                     />
                   ))
                 : null}
@@ -623,7 +691,6 @@ const Message = () => {
                       setToShare={setToShare}
                       page={page}
                       setPage={setPage}
-                      refetchMessages={refetchMessages}
                       inViewLoader={inViewLoader}
                       setInViewLoader={setInViewLoader}
                       hasMore={hasMore}

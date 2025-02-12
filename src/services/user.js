@@ -11,6 +11,8 @@ export const userApi = api.injectEndpoints({
                     formData.append('image', profileData?.profileImage);
                 }
 
+                formData.append('isProfile', false);
+
                 if (profileData?.cover) {
                     const coverKeys = [];
 

@@ -29,7 +29,7 @@ const SpaceCard = ({ myProfile, onClick, spaces, showBtn }) => {
         cursor: onClick ? "pointer" : "default",
       }}
     >
-      <figure style={{ width: "100%", height: "100%" }} role="img">
+      {spaces?.spacePic && <figure style={{ width: "100%", height: "100%" }} role="img">
         <img
           style={{ borderRadius: "5px 5px 0 0 " }}
           width="100%"
@@ -37,7 +37,7 @@ const SpaceCard = ({ myProfile, onClick, spaces, showBtn }) => {
           src={spaces?.spacePic}
           alt="space-img"
         />
-      </figure>
+      </figure>}
       <Box
         sx={{
           background: "rgb(120, 150, 195)",

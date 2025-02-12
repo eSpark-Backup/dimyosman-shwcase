@@ -28,15 +28,15 @@ const Details = ({ spaceInquire, details, myProfile }) => {
   const { spaces } = useSelector((state) => state?.space);
   // const { spaces } = useSelector((state) => state?.event);
   const location = useLocation();
-  const pathname = location.pathname;
-  const activity = `/${pathname.split("/")[1]}`;
+  const activity = myProfile?.type;
+  const token = localStorage.getItem('token');
 
-  if (activity === "/brand") {
-    details = brands[0]?.tabs[0]?.props?.details;
-  } else if (activity === "/event") {
-    details = events[0]?.tabs[0]?.props?.details;
-  } else if (activity === "/space") {
-    details = spaces[0]?.tabs[0]?.props?.details;
+  if (activity === "brand") {
+    details = brands[0]?.tabs[0]?.props?.details || details;
+  } else if (activity === "event") {
+    details = events[0]?.tabs[0]?.props?.details || details;
+  } else if (activity === "space") {
+    details = spaces[0]?.tabs[0]?.props?.details || details;
   } else {
     details = null; // Default case if `activity` doesn't match any
   }
@@ -51,9 +51,10 @@ const Details = ({ spaceInquire, details, myProfile }) => {
 
   const [openCalendar, setOpenCalendar] = useState(false);
   const [commentModal, setCommentModal] = useState(false);
+  const [commentId, setCommentId] = useState(null);
   const [successModal, setSuccessModal] = useState(false);
-    const [shareModal, setShareModal] = useState(false);
-  
+  const [shareModal, setShareModal] = useState(false);
+
 
   const handleOk = () => {
     const newRsvpDates = selectedDates.map((item) => {
@@ -82,6 +83,8 @@ const Details = ({ spaceInquire, details, myProfile }) => {
 
   const modalRef = useRef();
   useClickOutside(modalRef, () => setOpenCalendar(false));
+
+  console.log(details)
 
   return (
     <Box>
@@ -279,7 +282,13 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               height: "auto",
             }}
           >
-            <figure style={{ width: "100%", height: "100%", cursor: "pointer" }} role="img" aria-labelledby="profile-map" onClick={() => setMapModal(true)}>
+            <figure style={{ width: "100%", height: "100%", cursor: details?.mapLocation?.lat && details?.mapLocation?.long && "pointer" }} role="img" aria-labelledby="profile-map"
+              onClick={() => {
+                if (details?.mapLocation?.lat && details?.mapLocation?.long) {
+                  setMapModal(true);
+                }
+              }}
+            >
               <img width="100%" height="100%" src={miniMap} alt="map" />
               <figcaption
                 style={{
@@ -292,7 +301,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   fontFamily: `"Segoe UI", "sans-serif"`,
                 }}
               >
-                {details.location}
+                {details?.location}
               </figcaption>
             </figure>
           </Box>
@@ -333,7 +342,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             </>
           )}
         </Box>
-      </Stack>
+      </Stack >
       <Stack
         direction="row"
         justifyContent="space-between"
@@ -358,19 +367,23 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             width={32}
             height={32}
             onClick={() => {
-              if (!isLoading) {
-                likeFunc({
-                  entityId: myProfile?.id,
-                  entityType: myProfile?.type?.toLocaleUpperCase(),
-                }).then((res) => {
-                  res?.data?.status &&
-                    toast.success(
-                      res?.data?.message
-                        .replace("Entity", "Post")
-                        .replace(" successfully", "")
-                    );
-                  setLikePost(!likePost);
-                });
+              if (!token) {
+                toast.error("You need to log in first")
+              } else {
+                if (!isLoading) {
+                  likeFunc({
+                    entityId: myProfile?.id,
+                    entityType: myProfile?.type?.toLocaleUpperCase(),
+                  }).then((res) => {
+                    res?.data?.status &&
+                      toast.success(
+                        res?.data?.message
+                          .replace("Entity", "Post")
+                          .replace(" successfully", "")
+                      );
+                    setLikePost(!likePost);
+                  });
+                }
               }
             }}
             src={likePost ? liked : like}
@@ -379,7 +392,15 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           />
           {myProfile.type !== "space" && !myProfile?.owned && (
             <img
-              onClick={() => setCommentModal(myProfile?.id)}
+              onClick={() => {
+                if (!token) {
+                  toast.error("You need to log in first");
+                } else {
+                  setCommentId(myProfile?.id);
+                  setCommentModal(true);
+                }
+              }
+              }
               style={{ cursor: "pointer", padding: "5px" }}
               width={32}
               height={32}
@@ -387,21 +408,25 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               alt="like"
             />
           )}
-          <img
-            onClick={
-              () => setShareModal({
-                id: myProfile?.id,
-                profileName: myProfile?.profileName,
-                profileImage: myProfile?.profilePic,
-                profileType: myProfile?.type
-              })
-            }
+          {details?.status === "PUBLISH" && <img
+            onClick={() => {
+              if (!token) {
+                toast.error("You need to log in first")
+              } else {
+                setShareModal({
+                  id: myProfile?.id,
+                  profileName: myProfile?.profileName,
+                  profileImage: myProfile?.profilePic,
+                  profileType: myProfile?.type
+                })
+              }
+            }}
             style={{ cursor: "pointer", padding: "5px" }}
             width={32}
             height={32}
             src={share}
             alt="share"
-          />
+          />}
         </Stack>
         {openCalendar === 2 && myProfile?.type === "event" && (
           <RSVPCalendar
@@ -421,25 +446,28 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             loading={followLoading}
             disabled={followLoading}
             onClick={() => {
-              if (myProfile?.type === "event") {
-                setOpenCalendar(2);
-              } else if (myProfile?.type === "brand") {
-                if (!followLoading) {
-                  follow({
-                    entityId: myProfile?.id,
-                    entityType: "BRAND",
-                  }).then((res) => {
-                    res?.data?.status &&
-                      toast.success(
-                        `You ${followPost ? "Unfollowed" : "Followed"} ${
-                          myProfile?.profileName
-                        }`
-                      );
-                    setFollowPost(!followPost);
-                  });
-                }
+              if (!token) {
+                toast.error("You need to log in first")
               } else {
-                spaceInquire ? spaceInquire(myProfile?.id) : () => { };
+                if (myProfile?.type === "event") {
+                  setOpenCalendar(2);
+                } else if (myProfile?.type === "brand") {
+                  if (!followLoading) {
+                    follow({
+                      entityId: myProfile?.id,
+                      entityType: "BRAND",
+                    }).then((res) => {
+                      res?.data?.status &&
+                        toast.success(
+                          `You ${followPost ? "Unfollowed" : "Followed"} ${myProfile?.profileName
+                          }`
+                        );
+                      setFollowPost(!followPost);
+                    });
+                  }
+                } else {
+                  spaceInquire ? spaceInquire(myProfile?.id) : () => { };
+                }
               }
             }}
             sx={{
@@ -474,33 +502,34 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           </LoadingButton>
         )}
       </Stack>
-      {details?.expectedPoint && (
-        <Box>
-          <Typography variant="h2" sx={{ fontSize: "24px", textAlign: "left", fontWeight: 600 }}>
-            {details?.expectedPoint?.title}
-          </Typography>
-          {details?.expectedPoint?.points?.map((point) => (
-            <Typography
-              key={point}
-              fontSize={16}
-              sx={{
-                textAlign: "left",
-                marginTop: 2,
-                fontWeight: 400,
-                wordBreak: "break-word",
-                "& ul, & ol": {
-                  paddingLeft: 2,
-                },
-                "& img": {
-                  maxWidth: "100%",
-                  height: "auto",
-                  objectFit: "contain",
-                },
-              }}
-              dangerouslySetInnerHTML={{ __html: point }}
-            />
-          ))}
-          {/* <ul style={{ marginLeft: "16px" }}>
+      {
+        details?.expectedPoint && (
+          <Box>
+            <Typography variant="h2" sx={{ fontSize: "24px", textAlign: "left", fontWeight: 600 }}>
+              {details?.expectedPoint?.title}
+            </Typography>
+            {details?.expectedPoint?.points?.map((point) => (
+              <Typography
+                key={point}
+                fontSize={16}
+                sx={{
+                  textAlign: "left",
+                  marginTop: 2,
+                  fontWeight: 400,
+                  wordBreak: "break-word",
+                  "& ul, & ol": {
+                    paddingLeft: 2,
+                  },
+                  "& img": {
+                    maxWidth: "100%",
+                    height: "auto",
+                    objectFit: "contain",
+                  },
+                }}
+                dangerouslySetInnerHTML={{ __html: point }}
+              />
+            ))}
+            {/* <ul style={{ marginLeft: "16px" }}>
             {details?.expectedPoint?.ulPoints?.map((point) => {
               const newPoints = point.split(":");
               return (
@@ -531,61 +560,68 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               );
             })}
           </ul> */}
-        </Box>
-      )}
-      {details?.otherPoints && (
-        <Box component="article">
-          <Typography
-            variant="h3"
-            sx={{ fontSize: "20px", textAlign: "left", fontWeight: 600 }}
-          >
-            {details?.otherPoints?.title}
-          </Typography>
-          {details?.otherPoints?.points?.map((point) => (
+          </Box>
+        )
+      }
+      {
+        details?.otherPoints && (
+          <Box component="article">
             <Typography
-              key={point}
-              fontSize={16}
-              sx={{ textAlign: "left", marginTop: 1, fontWeight: 400 }}
+              variant="h3"
+              sx={{ fontSize: "20px", textAlign: "left", fontWeight: 600 }}
             >
-              {point}
+              {details?.otherPoints?.title}
             </Typography>
-          ))}
-        </Box>
-      )}
-      {details?.overviewImage && (
-        <figure style={{ width: "100%", height: "100%" }} role="overview-image" aria-labelledby="overview-image-figcaption">
-          <img
-            style={{
-              borderRadius: "5px",
-              margin: "16px 0",
-              width: "100%",
-              height: "300px",
-              objectFit: "cover",
-            }}
-            src={details?.overviewImage}
-            alt="overview-image"
-          />
-        </figure>
-      )}
-      {details?.otherPoints2 && (
-        <Box component="article">
-          <Typography
-            variant="h3"
-            sx={{ fontSize: "20px", textAlign: "left", fontWeight: 600 }}
-          >
-            {details?.otherPoints2?.title}
-          </Typography>
-          {details?.otherPoints2?.points?.map((point) => (
+            {details?.otherPoints?.points?.map((point) => (
+              <Typography
+                key={point}
+                fontSize={16}
+                sx={{ textAlign: "left", marginTop: 1, fontWeight: 400 }}
+              >
+                {point}
+              </Typography>
+            ))}
+          </Box>
+        )
+      }
+      {
+        details?.overviewImage && (
+          <figure style={{ width: "100%", height: "100%" }} role="overview-image" aria-labelledby="overview-image-figcaption">
+            <img
+              style={{
+                borderRadius: "5px",
+                margin: "16px 0",
+                width: "100%",
+                height: "300px",
+                objectFit: "cover",
+              }}
+              src={details?.overviewImage}
+              alt="overview-image"
+            />
+          </figure>
+        )
+      }
+      {
+        details?.otherPoints2 && (
+          <Box component="article">
             <Typography
-              key={point}
-              fontSize={16}
-              sx={{ textAlign: "left", marginTop: 1, fontWeight: 400 }}
+              variant="h3"
+              sx={{ fontSize: "20px", textAlign: "left", fontWeight: 600 }}
             >
-              {point}
+              {details?.otherPoints2?.title}
             </Typography>
-          ))}
-        </Box>
-      )}
+            {details?.otherPoints2?.points?.map((point) => (
+              <Typography
+                key={point}
+                fontSize={16}
+                sx={{ textAlign: "left", marginTop: 1, fontWeight: 400 }}
+              >
+                {point}
+              </Typography>
+            ))}
+          </Box>
+        )
+      }
       <Stack
         direction="row"
         justifyContent="space-between"
@@ -610,19 +646,23 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             width={32}
             height={32}
             onClick={() => {
-              if (!isLoading) {
-                likeFunc({
-                  entityId: myProfile?.id,
-                  entityType: myProfile?.type?.toLocaleUpperCase(),
-                }).then((res) => {
-                  res?.data?.status &&
-                    toast.success(
-                      res?.data?.message
-                        .replace("Entity", "Post")
-                        .replace(" successfully", "")
-                    );
-                  setLikePost(!likePost);
-                });
+              if (!token) {
+                toast.error("You need to log in first")
+              } else {
+                if (!isLoading) {
+                  likeFunc({
+                    entityId: myProfile?.id,
+                    entityType: myProfile?.type?.toLocaleUpperCase(),
+                  }).then((res) => {
+                    res?.data?.status &&
+                      toast.success(
+                        res?.data?.message
+                          .replace("Entity", "Post")
+                          .replace(" successfully", "")
+                      );
+                    setLikePost(!likePost);
+                  });
+                }
               }
             }}
             src={likePost ? liked : like}
@@ -631,7 +671,14 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           />
           {myProfile.type !== "space" && !myProfile?.owned && (
             <img
-              onClick={() => setCommentModal(myProfile?.id)}
+              onClick={() => {
+                if (!token) {
+                  toast.error("You need to log in first")
+                } else {
+                  setCommentId(myProfile?.id);
+                  setCommentModal(true);
+                }
+              }}
               style={{ cursor: "pointer", padding: "5px" }}
               width={32}
               height={32}
@@ -639,21 +686,25 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               alt="like"
             />
           )}
-          <img
-            onClick={() =>
-              setShareModal({
-                id: myProfile?.id,
-                profileName: myProfile?.profileName,
-                profileImage: myProfile?.profilePic,
-                profileType: myProfile?.type,
-              })
-            }
+          {details?.status === "PUBLISH" && <img
+            onClick={() => {
+              if (!token) {
+                toast.error("You need to log in first")
+              } else {
+                setShareModal({
+                  id: myProfile?.id,
+                  profileName: myProfile?.profileName,
+                  profileImage: myProfile?.profilePic,
+                  profileType: myProfile?.type,
+                })
+              }
+            }}
             style={{ cursor: "pointer", padding: "5px" }}
             width={32}
             height={32}
             src={share}
             alt="share"
-          />
+          />}
         </Stack>
         {openCalendar === 1 && myProfile?.type === "event" && (
           <RSVPCalendar
@@ -673,25 +724,28 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             loading={followLoading}
             disabled={followLoading}
             onClick={() => {
-              if (myProfile?.type === "event") {
-                setOpenCalendar(1);
-              } else if (myProfile?.type === "brand") {
-                if (!followLoading) {
-                  follow({
-                    entityId: myProfile?.id,
-                    entityType: "BRAND",
-                  }).then((res) => {
-                    res?.data?.status &&
-                      toast.success(
-                        `You ${followPost ? "Unfollowed" : "Followed"} ${
-                          myProfile?.profileName
-                        }`
-                      );
-                    setFollowPost(!followPost);
-                  });
-                }
+              if (!token) {
+                toast.error("You need to log in first")
               } else {
-                spaceInquire ? spaceInquire(myProfile?.id) : () => { };
+                if (myProfile?.type === "event") {
+                  setOpenCalendar(1);
+                } else if (myProfile?.type === "brand") {
+                  if (!followLoading) {
+                    follow({
+                      entityId: myProfile?.id,
+                      entityType: "BRAND",
+                    }).then((res) => {
+                      res?.data?.status &&
+                        toast.success(
+                          `You ${followPost ? "Unfollowed" : "Followed"} ${myProfile?.profileName
+                          }`
+                        );
+                      setFollowPost(!followPost);
+                    });
+                  }
+                } else {
+                  spaceInquire ? spaceInquire(myProfile?.id) : () => { };
+                }
               }
             }}
             sx={{
@@ -731,12 +785,16 @@ const Details = ({ spaceInquire, details, myProfile }) => {
       </ReusableModal>
       <CommentModal
         open={commentModal}
-        handleClose={() => setCommentModal(false)}
-        handleSuccess={()  => setSuccessModal(true)}
+        handleClose={() => {
+          setCommentId(null);
+          setCommentModal(false);
+        }}
+        handleSuccess={() => setSuccessModal(true)}
+        commentId={commentId}
       />
       <CommentSuccessModal open={successModal} handleClose={() => setSuccessModal(false)} />
       <ShareModal shareableLink={myProfile?.shareableLink} open={shareModal} handleClose={() => setShareModal(false)} />
-    </Box>
+    </Box >
   );
 };
 

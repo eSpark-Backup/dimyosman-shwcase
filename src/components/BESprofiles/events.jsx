@@ -1,21 +1,23 @@
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { addIcon } from "../../assets";
 import { useState } from "react";
 import EventCard from "../EventCard";
-import { profileContent } from "../../constant";
+import { toast } from "react-toastify";
 
-const Events = ({ myProfile, addNewEvent }) => {
+const Events = ({ myProfile, addNewEvent, isMyProfile }) => {
+  const token = localStorage.getItem("token")
   const navigate = useNavigate();
-  const filterEvents = ["All", "Upcoming", "Past"];
+  const filterEvents = isMyProfile ? ["All", "Publish", "Draft", "Archive", "Upcoming", "Past", "Ongoing"] : ["All", "Upcoming", "Past", "Ongoing"];
   const [activeFilter, setActiveFilter] = useState("All");
-  const { events } = useSelector((state) => state?.event);
-  const myEvents = events.filter((event) => event.owned && event.by === myProfile.id);
 
   const filteredEvents = myProfile?.tabs[1]?.props?.eventData?.filter(event => {
-    if (activeFilter === "Upcoming") return event?.status === "Upcoming";
-    if (activeFilter === "Past") return event?.status === "Ended";
+    if (activeFilter === "Publish") return event?.status === "PUBLISH";
+    if (activeFilter === "Draft") return event?.status === "DRAFT";
+    if (activeFilter === "Archive") return event?.status === "ARCHIVE";
+    if (activeFilter === "Upcoming") return event?.eventStatus === "Upcoming";
+    if (activeFilter === "Past") return event?.eventStatus === "Ended";
+    if (activeFilter === "Ongoing") return event?.eventStatus === "Ongoing";
     return true; // If activeFilter is "All", show all events
   });
 
@@ -68,8 +70,15 @@ const Events = ({ myProfile, addNewEvent }) => {
                   })}
                 </Stack>
               </Stack>
-              <Button
-                onClick={addNewEvent}
+              {isMyProfile && <Button
+                onClick={() => {
+                  if(!token){
+                    toast.error("You need to log in first")
+                  } else {
+                    addNewEvent()
+                  }
+                } 
+              }
                 startIcon={
                   <img
                     style={{
@@ -98,7 +107,7 @@ const Events = ({ myProfile, addNewEvent }) => {
                 }}
               >
                 Add New
-              </Button>
+              </Button>}
             </Stack>
             <Stack
               component="section"
@@ -110,10 +119,10 @@ const Events = ({ myProfile, addNewEvent }) => {
               rowGap={4}
               columnGap={2}
             >
-              {filteredEvents.length === 0 ? (
-                <Typography>No {activeFilter} events available</Typography>
+              {filteredEvents?.length === 0 ? (
+                <Typography sx={{ width: "100%", textAlign: "center", fontWeight: 600 }}>No {activeFilter} events available</Typography>
               ) : (
-                filteredEvents.map((event, ind) => (
+                filteredEvents?.map((event, ind) => (
                   <Box
                     key={`event-${ind + 1}`}
                     sx={{
