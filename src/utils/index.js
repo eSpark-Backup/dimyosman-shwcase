@@ -307,7 +307,7 @@ export const spacesAction = (
   }
 };
 
-export const keysForBrandsSapcesEvents = (object, type) => {
+export const keysForBrandsSapcesEvents = async (object, type, address) => {
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
 
@@ -327,19 +327,28 @@ export const keysForBrandsSapcesEvents = (object, type) => {
     isFavourite: object?.isFavourite,
     id: object?.id,
     activity: type,
-    userName: object?.brand?.brandName || "",
-    activityMaker: object?.brand?.brandName || "",
     content: [object?.details?.description || ""],
-    activityLocation: object?.brand?.brandName || "",
-    activityAddress: "123 Williamsburg Ave, Brooklyn, NY 11211",
+    activityLocation:
+      type === "event"
+        ? object?.space?.spaceName
+        : object?.brand?.brandName || "",
     userImage: object?.brand?.brandImage || "",
     userRole: "brand",
+    activityLocationId: type === "event" ? object?.space?.id : "",
+    activityLocation2: type === "event" ? object?.brand?.brandName : "",
     slides: coverArray,
-    isDraftedBrandOwner: object?.brand?.status === "DRAFT" ? object?.brand?.user?.id : null,
+    isDraftedBrandOwner:
+      object?.brand?.status === "DRAFT" ? object?.brand?.user?.id : null,
     brandStatus: object?.brand?.status,
+    isFollowed: object?.isFollowed,
+    publicProfile: object?.user?.profile,
   };
 
   if (type === "space") {
+    address = await fetchAddressFromCoordinates(
+      object?.brand?.location?.lat,
+      object?.brand?.location?.long
+    );
 
     const filterPrice =
       object?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") ||
@@ -351,10 +360,14 @@ export const keysForBrandsSapcesEvents = (object, type) => {
         description: amenityItem?.name || "",
       })) || [];
 
+      const category = object?.spaceCategory;
+
     return {
       ...coverObject,
       spaceId: object?.id || "",
       activityName: object?.spaceName || "",
+      activityAddress: address || "",
+      activityMaker: category[0]?.name || "",
       value: filterPrice[0]?.price ? `$${filterPrice[0]?.price}/day` : "N/A",
       deadline: filterPrice[0]?.minimum
         ? `minimum lease: ${filterPrice[0]?.minimum} days`
@@ -362,24 +375,47 @@ export const keysForBrandsSapcesEvents = (object, type) => {
       features: spaceFeatures,
       activityImage: object?.spaceImage || "",
       location: object?.brand?.location || [],
+      userName: object?.brand?.brandName || "",
+      isDraftedSpaceOwner: null,
     };
   } else if (type === "event") {
+    address = await fetchAddressFromCoordinates(
+      object?.space?.brand?.location?.lat,
+      object?.space?.brand?.location?.long
+    );
+    const category = object?.eventCategory;
 
     return {
       ...coverObject,
-      rsvpDates: object.event_rsvp?.attendanceDates?.rsvpDates ? object.event_rsvp?.attendanceDates?.rsvpDates?.map(item => item.dateTime) : [],
+      rsvpDates: object.event_rsvp?.attendanceDates?.rsvpDates
+        ? object.event_rsvp?.attendanceDates?.rsvpDates?.map(
+            (item) => item.dateTime
+          )
+        : [],
       startDate: object?.eventDate[0]?.startDate || "",
       endDate: object?.eventDate[0]?.endDate || "",
       eventId: object?.id || "",
       activityName: object?.eventName || "",
       activityImage: object?.eventImage || "",
+      activityAddress: address || "",
+      activityMaker: category[0]?.name || "",
       value: object?.eventDate[0]?.startDate
-        ? moment.utc(new Date(object?.eventDate[0]?.startDate)).add(1, 'day').format("DD.MM.YYYY")
+        ? moment
+            .utc(new Date(object?.eventDate[0]?.startDate))
+            .add(1, "day")
+            .format("DD.MM.YYYY")
         : "N/A",
       deadline: object?.eventDate[0]?.endDate
-        ? moment.utc(new Date(object?.eventDate[0]?.endDate)).add(1, 'day').format("DD.MM.YYYY")
+        ? moment
+            .utc(new Date(object?.eventDate[0]?.endDate))
+            .add(1, "day")
+            .format("DD.MM.YYYY")
         : "N/A",
       location: object?.space?.brand?.location || [],
+      userName: object?.brand?.brandName,
+      isDraftedSpaceOwner:
+        object?.space?.status === "DRAFT" ? object?.space?.user?.id : null,
+      spaceStatus: object?.space?.status,
     };
   }
 };

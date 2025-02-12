@@ -76,68 +76,95 @@ const Activity = () => {
 
             return {
               shareableLink: item?.shareableLink,
-              profileId: item?.type === "brand" ? item?.user?.id : item?.brand?.id,
+              profileId:
+                item?.type === "brand" ? item?.user?.id : item?.brand?.id,
               activity: item?.type,
               id: item?.id || "",
               userName:
                 item?.type === "event"
                   ? item?.brand?.brandName
                   : item?.type === "brand"
-                    ? item?.user?.name
-                    : item?.brand?.brandName || "",
+                  ? item?.user?.name
+                  : item?.brand?.brandName || "",
               activityName:
                 item?.type === "event"
                   ? item?.eventName
                   : item?.type === "brand"
-                    ? item?.brandName
-                    : item?.spaceName || "",
+                  ? item?.brandName
+                  : item?.spaceName || "",
               activityMaker: category[0]?.name || "",
               content: [item?.details?.description || ""],
               activityLocation:
-                item?.type === "event" ? item?.space?.spaceName : item?.brand?.brandName || "",
+                item?.type === "event"
+                  ? item?.space?.spaceName
+                  : item?.brand?.brandName || "",
               activityLocationId: item?.type === "event" ? item?.space?.id : "",
-              activityLocation2: item?.type === "event" ? item?.brand?.brandName : "",
+              activityLocation2:
+                item?.type === "event" ? item?.brand?.brandName : "",
               activityAddress: address || "",
               value:
                 item?.type === "event"
-                  ? moment.utc(new Date(item?.eventDate[0]?.startDate)).add(1, "day").format("DD.MM.YYYY.")
+                  ? moment
+                      .utc(new Date(item?.eventDate[0]?.startDate))
+                      .add(1, "day")
+                      .format("DD.MM.YYYY.")
                   : filterPrice[0]?.price
-                    ? `$${filterPrice[0]?.price}/day`
-                    : "N/A",
+                  ? `$${filterPrice[0]?.price}/day`
+                  : "N/A",
               deadline:
                 item?.type === "event"
-                  ? moment.utc(new Date(item?.eventDate[0]?.endDate)).add(1, "day").format("DD.MM.YYYY.")
+                  ? moment
+                      .utc(new Date(item?.eventDate[0]?.endDate))
+                      .add(1, "day")
+                      .format("DD.MM.YYYY.")
                   : filterPrice[0]?.minimum
-                    ? `minimum lease: ${filterPrice[0]?.minimum} days`
-                    : "N/A",
+                  ? `minimum lease: ${filterPrice[0]?.minimum} days`
+                  : "N/A",
               userImage:
                 item?.type === "event"
                   ? item?.brand?.brandImage
                   : item?.type === "brand"
-                    ? item?.user?.profileImage
-                    : item?.brand?.brandImage || "",
+                  ? item?.user?.profileImage
+                  : item?.brand?.brandImage || "",
               activityImage:
                 item?.type === "event"
                   ? item?.eventImage
                   : item?.type === "brand"
-                    ? item?.brandImage
-                    : item?.spaceImage || "",
+                  ? item?.brandImage
+                  : item?.spaceImage || "",
               features: spaceFeatures,
-              userRole: item?.type === "brand" ? "user" : item?.type === "space" ? "brand" : "brand",
+              userRole:
+                item?.type === "brand"
+                  ? "user"
+                  : item?.type === "space"
+                  ? "brand"
+                  : "brand",
               slides: coverArray,
               isFavourite: item?.isFavourite,
               isFollowed: item?.isFollowed,
               rsvpDates: item.event_rsvp?.attendanceDates?.rsvpDates
-                ? item.event_rsvp?.attendanceDates?.rsvpDates?.map((item) => item.dateTime)
+                ? item.event_rsvp?.attendanceDates?.rsvpDates?.map(
+                    (item) => item.dateTime
+                  )
                 : [],
-              startDate: item?.type === "event" && item?.eventDate[0]?.startDate || "",
-              endDate: item?.type === "event" && item?.eventDate[0]?.endDate || "",
+              startDate:
+                (item?.type === "event" && item?.eventDate[0]?.startDate) || "",
+              endDate:
+                (item?.type === "event" && item?.eventDate[0]?.endDate) || "",
               isDraftedBrandOwner:
-                (item?.type === "event" || item?.type === "space") && item?.brand?.status === "DRAFT"
+                (item?.type === "event" || item?.type === "space") &&
+                item?.brand?.status === "DRAFT"
                   ? item?.brand?.user?.id
                   : null,
               publicProfile: item?.user?.profile,
-              brandStatus: (item?.type === "event" || item?.type === "space") && item?.brand?.status,
+              brandStatus:
+                (item?.type === "event" || item?.type === "space") &&
+                item?.brand?.status,
+              isDraftedSpaceOwner:
+                item?.type === "event" && item?.space?.status === "DRAFT"
+                  ? item?.space?.user?.id
+                  : null,
+              spaceStatus: item?.type === "event" ? item?.space?.status : null,
             };
           }) || []
         );
@@ -258,6 +285,8 @@ const Activity = () => {
               brandStatus={item?.brandStatus}
               handleNavigation={handleNavigation}
               isDraftedBrandOwner={item?.isDraftedBrandOwner}
+              isDraftedSpaceOwner={item?.isDraftedSpaceOwner}
+              spaceStatus={item?.spaceStatus}
               handleAction={(fullItem) => {
                 if (fullItem.activity === "space") {
                   const detail = activitySpaceData?.find(

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -10,6 +10,9 @@ import {
   IconButton,
   InputAdornment,
   LinearProgress,
+  List,
+  ListItem,
+  ListItemText,
   Typography,
   useMediaQuery,
 } from "@mui/material";
@@ -33,7 +36,10 @@ import {
 
 import { useDebounce } from "../helper/useDebounce";
 
-import { useGetGeneralCategoriesQuery } from "../services/general";
+import {
+  useGetGeneralCategoriesQuery,
+  useGetGeneralLocationQuery,
+} from "../services/general";
 
 import {
   emptyAllLocations,
@@ -48,6 +54,7 @@ import {
   setRadius,
   setSkip,
   setSpaceSearchData,
+  setIsTyping,
 } from "../store/slices/search";
 
 const icons = [
@@ -78,11 +85,15 @@ const icons = [
   },
 ];
 
+const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
 const Filters = ({
   setOpenFilterDrawer = null,
   setHasMore = null,
   setLoadingStart = null,
   loadingStart = false,
+  allData = [],
+  searchedData = [],
 }) => {
   const isLessThan1281 = useMediaQuery("(max-width:1281px)");
 
@@ -95,30 +106,37 @@ const Filters = ({
     allFilterCategories,
     allCategoriesNotSearch,
     allLocations,
+    isTyping,
   } = useSelector((state) => state.search);
+
+  const mapRef = useRef(null);
 
   const [radiusInput, setRadiusInput] = useState(parameters.radius);
   const [debouncedRadius, resetDebouncedRadius] = useDebounce(radiusInput, 500);
-  const [hasSet, setHasSet] = useState(false);
-  const [loc, setLoc] = useState({});
+
+  const [suggestions, setSuggestions] = useState([]);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [value, setValue] = useState(parameters?.locaion);
+  const [map, setMap] = useState(null);
+
+  const { data: getLocationData, error } = useGetGeneralLocationQuery(
+    { query: value },
+    {
+      skip: !value || value.length < 3 || isSelecting,
+    }
+  );
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
+    const handleClickOutside = (event) => {
+      if (mapRef.current && !mapRef.current.contains(event.target)) {
+        setSuggestions([]);
+      }
+    };
 
-          setLoc({ lat: latitude, long: longitude });
-          setHasSet(true);
-        },
-        (error) => {
-          setHasSet(false);
-        }
-      );
-    } else {
-      setHasSet(false);
-    }
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
   }, []);
 
   useEffect(() => {
@@ -126,13 +144,15 @@ const Filters = ({
       resetDebouncedRadius();
       dispatch(emptyFilters());
       setRadiusInput("");
-      dispatch(setLocation({ lat: "", long: "" }));
+      dispatch(setLocation({ lat: "", long: "", location: "" }));
+      setValue("");
       dispatch(emptyAllLocations());
       dispatch(setPageNumber(1));
       dispatch(setSkip(true));
       dispatch(setRadius(""));
       dispatch(setAllSearchData([]));
       dispatch(setSpaceSearchData([]));
+      dispatch(setIsTyping(false));
     }
 
     if (pathname === "/search" && !isLessThan1281) {
@@ -141,17 +161,12 @@ const Filters = ({
   }, [pathname, isLessThan1281]);
 
   const [searchCategory, setSearchCategory] = useState("");
-  const [address, setAddress] = useState("");
 
   useEffect(() => {
     if (pathname === "/search" && debouncedRadius !== parameters.radius) {
       dispatch(setPageNumber(1));
       setHasMore?.(true);
       setLoadingStart?.(false);
-
-      if (hasSet) {
-        dispatch(setLocation(loc));
-      }
 
       dispatch(setRadius(debouncedRadius));
       dispatch(setSkip(false));
@@ -235,7 +250,7 @@ const Filters = ({
     });
 
     dispatch(setAllFilterCategories(updatedCategories));
-    
+
     dispatch(setRadius(""));
     dispatch(setPageNumber(1));
     setHasMore?.(true);
@@ -254,9 +269,19 @@ const Filters = ({
   };
 
   const handleSearch = (e) => {
-    const query = e.target.value;
-    console.log(query);
+    dispatch(setIsTyping(false));
+
+    setIsSelecting(false);
+    setValue(e.target.value);
   };
+
+  useEffect(() => {
+    if (getLocationData?.status && getLocationData?.data && !isTyping) {
+      setSuggestions(getLocationData.data);
+    } else {
+      setSuggestions([]);
+    }
+  }, [getLocationData, isTyping]);
 
   const handleCategoryChange = (id) => {
     if (parameters?.entity?.length === 0) {
@@ -295,6 +320,48 @@ const Filters = ({
     }
     setOpenFilterDrawer?.(false);
   };
+
+  const handleSelectPlace = (place) => {
+    setValue(place.description);
+    setSuggestions([]);
+    setIsSelecting(true);
+    dispatch(setIsTyping(true));
+
+    // Fetch details for selected place
+    fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?place_id=${place.placeId}&key=${apiKey}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.results[0]) {
+          const { lat, lng } = data.results[0].geometry.location;
+          const formattedAddress = data.results[0].formatted_address;
+
+          dispatch(setLocation({ long: lng, lat, locaion: formattedAddress }));
+
+          if (radiusInput?.length === 0) {
+            dispatch(setRadius(10));
+          }
+
+          dispatch(setSkip(false));
+          dispatch(setAllSearchData([]));
+          dispatch(setSpaceSearchData([]));
+          setOpenFilterDrawer?.(false);
+        }
+        setSuggestions([]);
+      })
+      .catch((error) =>
+        console.error("Error fetching location details:", error)
+      );
+  };
+
+  useEffect(() => {
+    if (pathname === "/search") {
+      if (isTyping && allData?.length === 0 && map && parameters?.lat) {
+        map.panTo({ lat: parameters?.lat, lng: parameters?.long });
+      }
+    }
+  }, [allData, isTyping, map, parameters, pathname]);
 
   const inputStyles = {
     border: "1px solid rgba(209, 219, 215, 0.5)",
@@ -407,14 +474,18 @@ const Filters = ({
           </Typography>
           <Input
             sx={inputStyles}
-            // value={parameters.locaion}
-            // onInputChange={(e) =>
-            //   dispatch(setLocation({ locaion: e.target.value }))
-            // }
-            value={address}
-            onInputChange={(e) => setAddress(e.target.value)}
+            value={value}
+            readOnly={parameters?.entity?.length === 0 ? true : false}
+            onClick={() => {
+              if (parameters?.entity?.length === 0) {
+                toast.error("Filter is not selected");
+                return;
+              }
+            }}
+            onInputChange={handleSearch}
             type="text"
             placeholder="Type Address..."
+            autoComplete="off"
             endAdornment={
               <InputAdornment position="end">
                 <IconButton>
@@ -423,6 +494,34 @@ const Filters = ({
               </InputAdornment>
             }
           />
+
+          {/* Suggestions List */}
+          {suggestions.length > 0 && (
+            <Box
+              sx={{
+                maxHeight: 200,
+                overflowY: "auto",
+                position: "absolute",
+                zIndex: 1,
+                width: "100%",
+                backgroundColor: "white",
+                border: "1px solid #ddd",
+              }}
+            >
+              <List>
+                {suggestions.map((suggestion, index) => (
+                  <ListItem
+                    component={"button"}
+                    key={index}
+                    onClick={() => handleSelectPlace(suggestion)}
+                    sx={{ cursor: "pointer", backgroundColor: "white" }}
+                  >
+                    <ListItemText primary={suggestion.description} />
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
+          )}
         </Grid>
 
         <Grid item xs={12} sm={4} pl={1}>
@@ -440,7 +539,11 @@ const Filters = ({
             sx={inputStyles}
             value={radiusInput}
             readOnly={
-              parameters?.entity?.length === 0 ? true : !loc?.lat ? true : false
+              parameters?.entity?.length === 0
+                ? true
+                : !parameters?.lat
+                ? true
+                : false
             }
             onClick={() => {
               if (parameters?.entity?.length === 0) {
@@ -448,8 +551,8 @@ const Filters = ({
                 return;
               }
 
-              if (!loc?.lat) {
-                toast.error("You need to allow location");
+              if (!parameters?.lat) {
+                toast.error("Please add location first");
                 return;
               }
             }}
@@ -458,7 +561,7 @@ const Filters = ({
               setRadiusInput(value);
             }}
             type="number"
-            placeholder="100km"
+            placeholder="10km"
           />
         </Grid>
       </Grid>
@@ -478,6 +581,9 @@ const Filters = ({
                 ? mapMarkerBrand
                 : mapMarker
             }
+            mapRef={mapRef}
+            map={map}
+            setMap={setMap}
           />
         )}
       </Box>

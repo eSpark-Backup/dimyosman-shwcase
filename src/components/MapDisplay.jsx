@@ -1,9 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 
-const MapDisplay = React.memo(({ locations, marker }) => {
-  const mapRef = useRef(null);
-  const [map, setMap] = useState(null);
+const MapDisplay = React.memo(({ locations, marker, mapRef, map, setMap }) => {
   const markersRef = useRef([]); 
 
   useEffect(() => {
@@ -51,8 +49,8 @@ const MapDisplay = React.memo(({ locations, marker }) => {
   );
 });
 
-const MapWithKey = ({ locations, marker }) => (
-  <MapDisplay key={JSON.stringify(locations)} locations={locations} marker={marker} />
+const MapWithKey = ({ locations, marker, mapRef, map, setMap }) => (
+  <MapDisplay key={JSON.stringify(locations)} locations={locations} marker={marker} mapRef={mapRef} map={map} setMap={setMap} />
 );
 
 export default MapWithKey;
