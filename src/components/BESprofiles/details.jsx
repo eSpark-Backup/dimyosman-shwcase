@@ -727,7 +727,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         )}
       </Stack>
       <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-        <MapModal activity={activity === "/event" ? "event" : activity === "/brand" ? "brand" : "space"} disabled={true} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[details?.mapLocation?.lat, details?.mapLocation?.long]} instructionValue={details?.mapLocation?.additional} />
+        <MapModal activity={activity === "event" ? "event" : activity === "brand" ? "brand" : "space"} disabled={true} addressLine={"Selected Address:"} address={""} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[details?.mapLocation?.lat, details?.mapLocation?.long]} instructionValue={details?.mapLocation?.additional} />
       </ReusableModal>
       <CommentModal
         open={commentModal}
