@@ -760,8 +760,8 @@ router.get
 
 router.get(
   "/public/entity/profile/:id",
-  checkJwt,
-  validateRoles([ROLES.USER]),
+  // checkJwt,
+  // validateRoles([ROLES.USER]),
   setPagination,
   (req, res, next) => generalController.publicEntityProfile(req, res, next)
 );
