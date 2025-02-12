@@ -12,6 +12,7 @@ import SpaceInquireModal from "../../../components/SpaceInquireModal";
 
 import { useGetActivityDataQuery } from "../../../services/activity";
 import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../../../store/slices/activity";
+import { fetchAddressFromCoordinates } from "../../../utils";
 
 const Activity = () => {
   const dispatch = useDispatch();
@@ -30,69 +31,136 @@ const Activity = () => {
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {
-    if (isSuccess) {
+    const fetchData = async () => {
+      if (!isSuccess) return;
+
       if (!data?.data && page === 1) {
         dispatch(setAllActivityData([]));
         setHasFetchedData(true);
         return;
       }
-      if (data?.data) {
-        const updatedData = data.data.activity?.map((item) => {
-          const filterPrice = item?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") || [];
-          const spaceFeatures = item?.amenity?.map((amenityItem) => ({
-            icon: amenityItem?.iconUrl || "",
-            description: amenityItem?.name || ""
-          })) || [];
-          const coverArray = item?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
-          const category = item?.type === "brand" ? item?.brandCategory : item?.type === "event" ? item?.eventCategory : item?.spaceCategory
 
-          return {
-            shareableLink: item?.shareableLink,
-            profileId: item?.type === "brand" ? item?.user?.id : item?.brand?.id,
-            activity: item?.type,
-            id: item?.id || "",
-            userName: item?.type === "event" ? item?.brand?.brandName : item?.type === "brand" ? item?.user?.name : item?.brand?.brandName || "",
-            activityName: item?.type === "event" ? item?.eventName : item?.type === "brand" ? item?.brandName : item?.spaceName || "",
-            activityMaker: category[0]?.name || "",
-            content: [item?.details?.description || ""],
-            activityLocation: item?.type === "event" ? item?.space?.spaceName : item?.brand?.brandName || "",
-            activityLocationId: item?.type === "event" ? item?.space?.id : "",
-            activityLocation2: item?.type === "event" ? item?.brand?.brandName : "",
-            activityAddress: "123 Williamsburg Ave, Brooklyn, NY 11211",
-            value: item?.type === "event" ? moment.utc(new Date(item?.eventDate[0]?.startDate)).add(1, 'day').format("DD.MM.YYYY.") : filterPrice[0]?.price ? `$${filterPrice[0]?.price}/day` : "N/A",
-            deadline: item?.type === "event" ? moment.utc(new Date(item?.eventDate[0]?.endDate)).add(1, 'day').format("DD.MM.YYYY.") : filterPrice[0]?.minimum ? `minimum lease: ${filterPrice[0]?.minimum} days` : "N/A",
-            userImage: item?.type === "event" ? item?.brand?.brandImage : item?.type === "brand" ? item?.user?.profileImage : item?.brand?.brandImage || "",
-            activityImage: item?.type === "event" ? item?.eventImage : item?.type === "brand" ? item?.brandImage : item?.spaceImage || "",
-            features: spaceFeatures,
-            userRole: item?.type === "brand" ? "user" : item?.type === "space" ? "brand" : "brand",
-            slides: coverArray,
-            isFavourite: item?.isFavourite,
-            isFollowed: item?.isFollowed,
-            rsvpDates: item.event_rsvp?.attendanceDates?.rsvpDates ? item.event_rsvp?.attendanceDates?.rsvpDates?.map(item => item.dateTime) : [],
-            startDate: item?.type === "event" && item?.eventDate[0]?.startDate || "",
-            endDate: item?.type === "event" && item?.eventDate[0]?.endDate || "",
-            isDraftedBrandOwner: (item?.type === "event" || item?.type === "space") && item?.brand?.status === "DRAFT" ? item?.brand?.user?.id : null,
-            publicProfile: item?.user?.profile,
-            brandStatus: (item?.type === "event" || item?.type === "space") && item?.brand?.status,
-          };
-        }) || [];
+      if (data?.data) {
+        const updatedData = await Promise.all(
+          data.data.activity?.map(async (item) => {
+            const filterPrice =
+              item?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") || [];
+            const spaceFeatures =
+              item?.amenity?.map((amenityItem) => ({
+                icon: amenityItem?.iconUrl || "",
+                description: amenityItem?.name || "",
+              })) || [];
+            const coverArray =
+              item?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
+            const category =
+              item?.type === "brand"
+                ? item?.brandCategory
+                : item?.type === "event"
+                  ? item?.eventCategory
+                  : item?.spaceCategory;
+
+            let address = "";
+            if (item?.type === "event") {
+              address = await fetchAddressFromCoordinates(
+                item?.space?.brand?.location?.lat,
+                item?.space?.brand?.location?.long
+              );
+            }
+            else if(item?.type === "space"){
+              console.log(item)
+              address = await fetchAddressFromCoordinates(
+                item?.brand?.location?.lat,
+                item?.brand?.location?.long
+              );
+            }
+
+            return {
+              shareableLink: item?.shareableLink,
+              profileId: item?.type === "brand" ? item?.user?.id : item?.brand?.id,
+              activity: item?.type,
+              id: item?.id || "",
+              userName:
+                item?.type === "event"
+                  ? item?.brand?.brandName
+                  : item?.type === "brand"
+                    ? item?.user?.name
+                    : item?.brand?.brandName || "",
+              activityName:
+                item?.type === "event"
+                  ? item?.eventName
+                  : item?.type === "brand"
+                    ? item?.brandName
+                    : item?.spaceName || "",
+              activityMaker: category[0]?.name || "",
+              content: [item?.details?.description || ""],
+              activityLocation:
+                item?.type === "event" ? item?.space?.spaceName : item?.brand?.brandName || "",
+              activityLocationId: item?.type === "event" ? item?.space?.id : "",
+              activityLocation2: item?.type === "event" ? item?.brand?.brandName : "",
+              activityAddress: address || "",
+              value:
+                item?.type === "event"
+                  ? moment.utc(new Date(item?.eventDate[0]?.startDate)).add(1, "day").format("DD.MM.YYYY.")
+                  : filterPrice[0]?.price
+                    ? `$${filterPrice[0]?.price}/day`
+                    : "N/A",
+              deadline:
+                item?.type === "event"
+                  ? moment.utc(new Date(item?.eventDate[0]?.endDate)).add(1, "day").format("DD.MM.YYYY.")
+                  : filterPrice[0]?.minimum
+                    ? `minimum lease: ${filterPrice[0]?.minimum} days`
+                    : "N/A",
+              userImage:
+                item?.type === "event"
+                  ? item?.brand?.brandImage
+                  : item?.type === "brand"
+                    ? item?.user?.profileImage
+                    : item?.brand?.brandImage || "",
+              activityImage:
+                item?.type === "event"
+                  ? item?.eventImage
+                  : item?.type === "brand"
+                    ? item?.brandImage
+                    : item?.spaceImage || "",
+              features: spaceFeatures,
+              userRole: item?.type === "brand" ? "user" : item?.type === "space" ? "brand" : "brand",
+              slides: coverArray,
+              isFavourite: item?.isFavourite,
+              isFollowed: item?.isFollowed,
+              rsvpDates: item.event_rsvp?.attendanceDates?.rsvpDates
+                ? item.event_rsvp?.attendanceDates?.rsvpDates?.map((item) => item.dateTime)
+                : [],
+              startDate: item?.type === "event" && item?.eventDate[0]?.startDate || "",
+              endDate: item?.type === "event" && item?.eventDate[0]?.endDate || "",
+              isDraftedBrandOwner:
+                (item?.type === "event" || item?.type === "space") && item?.brand?.status === "DRAFT"
+                  ? item?.brand?.user?.id
+                  : null,
+              publicProfile: item?.user?.profile,
+              brandStatus: (item?.type === "event" || item?.type === "space") && item?.brand?.status,
+            };
+          }) || []
+        );
+
         const mergedData = [...allActivityData, ...updatedData];
 
-        const mergedSapcesData = [...activitySpaceData, ...data.data.activity].filter(
-          (item, index, self) =>
-            index === self.findIndex((t) => t?.id === item?.id)
+        const mergedSpacesData = [...activitySpaceData, ...data.data.activity].filter(
+          (item, index, self) => index === self.findIndex((t) => t?.id === item?.id)
         );
 
-        const uniqueData = Array.from(
-          new Map(mergedData.map((item) => [item.id, item])).values()
-        );
+        const uniqueData = Array.from(new Map(mergedData.map((item) => [item.id, item])).values());
+
         dispatch(setAllActivityData(uniqueData));
-        dispatch(setSpaceData(mergedSapcesData))
+        dispatch(setSpaceData(mergedSpacesData));
         setTotal(data?.data?.pagination?.totalItems);
       }
+
       setHasFetchedData(true);
-    }
+    };
+
+    fetchData(); // Call the async function
   }, [isSuccess, data, page]);
+
 
 
   useEffect(() => {

@@ -174,15 +174,25 @@ const SocketProvider = ({ children }) => {
           if (pathname !== "/message") {
             notificationRefetch().then(() => {
               handleNotificationUpdate("newInquiry", getNotificationCount, dispatch);
-              const navigateData = {
-                brandName: data.senderBrandName,
-                chatId: data.chatId,
+              const navigateBrandData = {
+                pName: data?.receiverBrandName,
+                chatId: data?.chatId,
+              };
+              
+              const navigateEventData = {
+                pName: data?.receiverEventName,
+                chatId: data?.chatId,
               };
 
               toast.info(data?.name, {
                 position: "bottom-right",
                 onClick: () => {
-                  dispatch(setGoToMessage(navigateData));
+                  if (data?.receiverBrandName) {
+                    dispatch(setGoToMessage(navigateBrandData));
+                  } else {
+                    dispatch(setGoToMessage(navigateEventData));
+                  }
+                  
                   dispatch(setFromNotification(true));
 
                   if (pathname !== "/message") {

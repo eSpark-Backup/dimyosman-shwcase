@@ -54,7 +54,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
   const [commentId, setCommentId] = useState(null);
   const [successModal, setSuccessModal] = useState(false);
   const [shareModal, setShareModal] = useState(false);
-
+  const [shareModalDetails, setShareModalDetails] = useState(null);
 
   const handleOk = () => {
     const newRsvpDates = selectedDates.map((item) => {
@@ -413,12 +413,13 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               if (!token) {
                 toast.error("You need to log in first")
               } else {
-                setShareModal({
+                setShareModalDetails({
                   id: myProfile?.id,
                   profileName: myProfile?.profileName,
                   profileImage: myProfile?.profilePic,
                   profileType: myProfile?.type
                 })
+                setShareModal(true)
               }
             }}
             style={{ cursor: "pointer", padding: "5px" }}
@@ -691,12 +692,13 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               if (!token) {
                 toast.error("You need to log in first")
               } else {
-                setShareModal({
+                setShareModalDetails({
                   id: myProfile?.id,
                   profileName: myProfile?.profileName,
                   profileImage: myProfile?.profilePic,
                   profileType: myProfile?.type,
                 })
+                setShareModal(true)
               }
             }}
             style={{ cursor: "pointer", padding: "5px" }}
@@ -781,7 +783,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         )}
       </Stack>
       <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-        <MapModal activity={activity === "event" ? "event" : activity === "brand" ? "brand" : "space"} disabled={true} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[details?.mapLocation?.lat, details?.mapLocation?.long]} instructionValue={details?.mapLocation?.additional} />
+        <MapModal activity={activity === "event" ? "event" : activity === "brand" ? "brand" : "space"} disabled={true} addressLine={"Selected Address:"} address={""} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[details?.mapLocation?.lat, details?.mapLocation?.long]} instructionValue={details?.mapLocation?.additional} />
       </ReusableModal>
       <CommentModal
         open={commentModal}
@@ -793,8 +795,8 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         commentId={commentId}
       />
       <CommentSuccessModal open={successModal} handleClose={() => setSuccessModal(false)} />
-      <ShareModal shareableLink={myProfile?.shareableLink} open={shareModal} handleClose={() => setShareModal(false)} />
-    </Box >
+      <ShareModal shareableLink={myProfile?.shareableLink} open={shareModal} handleClose={() => { setShareModal(false); setShareModalDetails(null); }} shareModalDetails={shareModalDetails} />
+    </Box>
   );
 };
 

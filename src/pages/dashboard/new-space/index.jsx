@@ -569,6 +569,7 @@ const NewSpace = () => {
                     onSelect={setfeatures}
                     maxSelections={Infinity}
                     description=''
+                    canType={true}
                 />
             </ReusableModal>
             <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>

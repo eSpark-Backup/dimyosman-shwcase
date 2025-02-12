@@ -150,37 +150,36 @@ const Space = () => {
     addListener("NEW_NOTIFICATION", (data) => {
       // console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
 
-      if (pathname === "/space") {
-        dispatch(setHasPaymentDone(true));
-      }
-
-      handleNotificationUpdate("newNotification", getNotificationCount);
-      let redName = data.redirect;
-
-      if (pathname === "/space") {
-        if (data.redirect === "Lease" && activeTabForNotif !== "Lease") {
-          redName = "Lease";
-        } else if (
-          data.redirect === "Tenant" &&
-          activeTabForNotif !== "Tenant"
-        ) {
-          redName = "Tenant";
+      notificationRefetch().then(() => {
+        if (pathname === "/space") {
+          dispatch(setHasPaymentDone(true));
         }
-      }
 
+        handleNotificationUpdate("newNotification", getNotificationCount);
 
+        let redName = data.redirect;
 
-      toast.info(data?.name, {
-        position: "bottom-right",
-        onClick: () => {
-          dispatch(setRedirectTab(redName));
-          if (pathname !== "/space") {
-            navigate("/space");
+        if (pathname === "/space") {
+          if (data.redirect === "Lease" && activeTabForNotif !== "Lease") {
+            redName = "Lease";
+          } else if (
+            data.redirect === "Tenant" &&
+            activeTabForNotif !== "Tenant"
+          ) {
+            redName = "Tenant";
           }
-        },
-      });
-
-      notificationRefetch();
+        }
+        
+        toast.info(data?.name, {
+          position: "bottom-right",
+          onClick: () => {
+            dispatch(setRedirectTab(redName));
+            if (pathname !== "/space") {
+              navigate("/space");
+            }
+          },
+        });
+      })
     });
 
     return () => {
@@ -243,7 +242,7 @@ const Space = () => {
               : space?.status === "Active"
                 ? "Leasing"
                 : "Lease Ended",
-        price: space?.pricing[0]?.price,
+        price: `$${space?.pricing[0]?.price}`,
         term: "Daily",
         status: space?.status,
         event: space?.contractDetails?.tenantDetails?.event,
@@ -326,7 +325,7 @@ const Space = () => {
                 ? "Leasing"
                 : "Lease Ended",
         // eventUrl: space?.event?.eventName ? `/event/${space?.event?.id}` : "-",
-        eventUrl: space?.event?.eventName && space?.event?.status === "PUBLSIH" ? `/event/${space?.event?.id}` : "-",
+        eventUrl: space?.event?.eventName && space?.event?.status === "PUBLISH" ? `/event/${space?.event?.id}` : "-",
         brandUrl: space?.brand?.status === "PUBLISH" ? `/brand/${space?.brand?.id}` : "-",
         action:
           space?.status === "SubmitForSignature"
