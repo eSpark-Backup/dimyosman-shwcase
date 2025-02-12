@@ -69,7 +69,8 @@ const SpaceDetails = () => {
                     title: "What to Expect:",
                     points: [data?.data?.details?.htmlContent || ""],
                   },
-                  mapLocation: { lat: data?.data?.brand?.location?.lat, long: data?.data?.brand?.location?.long, additional: data?.data?.brand?.location?.additional }
+                  mapLocation: { lat: data?.data?.brand?.location?.lat, long: data?.data?.brand?.location?.long, additional: data?.data?.brand?.location?.additional },
+                  status: data?.data?.status,
                 },
               },
             },

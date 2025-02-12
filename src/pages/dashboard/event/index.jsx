@@ -98,7 +98,7 @@ const Event = () => {
           brand: event?.brand?.brandName,
           brandUrl: event?.brand ? `/brand/${event?.brand?.id}` : null,
           rsvp: event?.rsvpCount,
-          startDate: event?.eventDate[0]?.startDate === "string" ? "-" : dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
+          startDate: event?.eventDate[0]?.startDate === "string" || event?.eventDate[0]?.startDate === "Invalid Date" ? "-" : dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
           status: event?.eventStatus || event?.status,
           hostedIn: event?.space?.spaceName || "-",
           spaceUrl: `/space/${event?.space?.id}`,

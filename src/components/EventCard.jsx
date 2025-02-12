@@ -13,7 +13,7 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
   const navigate = useNavigate()
   const [openCalendar, setOpenCalendar] = useState(false);
   const [addRsvp, { isLoading: rsvpLoading }] = useAddRsvpDateMutation();
-  
+
   const [selectedDates, setSelectedDates] = useState(
     event?.rsvpDates && event?.rsvpDates?.length > 0 ? event?.rsvpDates?.map((date) => dayjs(date).format("YYYY-MM-DD")) : []
   );
@@ -21,28 +21,28 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
   const handleCancel = () => {
     setOpenCalendar(false);
   };
-  
+
   const modalRef = useRef();
   useClickOutside(modalRef, () => handleCancel());
 
   const handleOk = () => {
-      const newRsvpDates = selectedDates.map(item => {return { dateTime: item }})
-        const objToSend = {
-          id: event?.id,
-          credentials: {
-            attendanceDates: {
-              dateTime: "string",
-              rsvpDates: newRsvpDates,
-            },
-          },
-        };
-        addRsvp(objToSend).then((res) => {
-          if (res?.data?.status) {
-            toast.success(res?.data?.message);
-            setOpenCalendar(false);
-          }
-        });
+    const newRsvpDates = selectedDates.map(item => { return { dateTime: item } })
+    const objToSend = {
+      id: event?.id,
+      credentials: {
+        attendanceDates: {
+          dateTime: "string",
+          rsvpDates: newRsvpDates,
+        },
+      },
     };
+    addRsvp(objToSend).then((res) => {
+      if (res?.data?.status) {
+        toast.success(res?.data?.message);
+        setOpenCalendar(false);
+      }
+    });
+  };
   return (
     <Box
       onClick={onClick ? onClick : () => { }}
@@ -61,13 +61,13 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
       }}
     >
       <figure style={{ width: "100%", height: "100%" }} role="event-image" aria-labelledby="event-image-figcaption">
-        {event?.slides[0] && <img
+        {event?.slides[0] ? <img
           style={{ borderRadius: "5px 5px 0 0 " }}
           width="100%"
           height="170px"
           src={event?.slides[0]}
           alt="event-img"
-        />}
+        /> : <Box sx={{ height: "170px", background: "rgb(209, 219, 215,0.4)" }}></Box>}
         <img
           style={{ width: "24px", height: "24px", position: "absolute", top: 0, right: 0, zIndex: 2 }}
           src={eventIcon}
@@ -85,7 +85,7 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
           {event?.tabs[0]?.props?.details?.overview?.length > 636 ? event?.tabs[0]?.props?.details?.overview?.slice(0, 637) + "..." : event?.tabs[0]?.props?.details?.overview}
         </Typography>
         <Typography fontWeight={300} fontSize={12} textAlign="left">
-          By: <span style={{ fontWeight: 400 }}>{event?.details?.by}</span>
+          By: <span style={{ fontWeight: 400 }}>{event?.details?.by ? event?.details?.by : "-"}</span>
         </Typography>
         <Typography fontWeight={300} fontSize={24} textAlign="left">
           Starting:{" "}
@@ -126,7 +126,7 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
           endDate={event?.endDate}
           isDetails={true}
         />
-        )}
+      )}
     </Box>
   )
 }

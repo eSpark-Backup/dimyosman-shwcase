@@ -85,6 +85,7 @@ const BrandDetails = () => {
                       ||
                       ""],
                   },
+                  status: data?.data?.status
                 },
               },
             },
