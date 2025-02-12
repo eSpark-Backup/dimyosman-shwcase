@@ -416,6 +416,7 @@ const NewBrand = () => {
                     categories={brandData.brandCategories}
                     handleClose={handleModalClose}
                     onSelect={(categories) => setBrandData({ ...brandData, brandCategories: categories })}
+                    canType={true}
                 />
             </ReusableModal>
             <OutlinedTabs tabs={tabs} />

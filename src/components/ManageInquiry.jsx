@@ -17,7 +17,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
-import { LocalizationProvider } from "@mui/x-date-pickers";
+import { LocalizationProvider, pickersLayoutClasses, StaticDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 import ActivityType from "./Message/ActivityType";
@@ -34,12 +34,13 @@ import {
   useLeaseSpaceInquireMutation,
   useTenantSignMutation,
 } from "../services/space";
+import dayjs from "dayjs";
 
 const Heading = ({
   name,
   mb = 0,
   mt = 0,
-  onClick = () => {},
+  onClick = () => { },
   cursor = "default",
 }) => {
   return (
@@ -124,7 +125,7 @@ const DetailHeading = ({ name, weight, onClick }) => {
 };
 
 const parsedFormat = (date) => {
-  return parse(date, "dd.MM.yyyy", new Date());
+  return dayjs(date, "DD.MM.YYYY");
 };
 
 const ManageInquiry = ({
@@ -261,6 +262,7 @@ const ManageInquiry = ({
 
   const handleStartOK = (val) => {
     const formattedDate = format(val, "dd.MM.yyyy");
+    setStartDateClick(false)
 
     if (val !== null) {
       setInquiryDetails((prev) => ({
@@ -277,6 +279,7 @@ const ManageInquiry = ({
   };
 
   const handleEndOK = (val) => {
+    setEndDateClick(false)
     const formattedDate = format(val, "dd.MM.yyyy");
 
     if (val !== null) {
@@ -632,16 +635,48 @@ const ManageInquiry = ({
             >
               <DetailHeading name="Starting:" weight={300} />
               {startDateClick ? (
+                // <LocalizationProvider dateAdapter={AdapterDayjs}>
+                //   <DatePicker
+                //     value={selectedStartDate}
+                //     onChange={handleStartDateChange}
+                //     onOk={handleStartOK}
+                //     appearance="default"
+                //     menuStyle={{ zIndex: 1300 }}
+                //     placeholder={`${inquiryDetails.contractDetails.leaseInfo?.startDate}`}
+                //     cleanable={false}
+                //     format="dd.MM.yyyy"
+                //   />
+                // </LocalizationProvider>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker
-                    value={selectedStartDate}
+                  <StaticDatePicker
+                    defaultValue={selectedStartDate}
                     onChange={handleStartDateChange}
-                    onOk={handleStartOK}
-                    appearance="default"
-                    menuStyle={{ zIndex: 1300 }}
-                    placeholder={`${inquiryDetails.contractDetails.leaseInfo?.startDate}`}
-                    cleanable={false}
-                    format="dd.MM.yyyy"
+                    onClose={() => handleStartOK(selectedStartDate)}
+                    disableHighlightToday
+                    sx={{
+                      ".MuiPickersToolbar-root": {
+                        display: "none"
+                      },
+                      button: {
+                        fontSize: "12px",
+                        fontWeight: 500,
+                        color: "#00141C",
+                        background: "transparent",
+                        "&:hover": {
+                          color: "#00141C",
+                          background: "transparent",
+                        },
+                      },
+                      ".MuiDialogActions-root > button:last-child": {
+                        fontWeight: 700,
+                      },
+                      ".MuiDateCalendar-root > div:first-child": {
+                        display: "none"
+                      },
+                      [`.${pickersLayoutClasses.contentWrapper}`]: {
+                        alignItems: 'center',
+                      },
+                    }}
                   />
                 </LocalizationProvider>
               ) : (
@@ -681,15 +716,35 @@ const ManageInquiry = ({
               <DetailHeading name="Ending:" weight={300} />
               {endDateClick ? (
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker
-                    value={selectedEndDate}
+                  <StaticDatePicker
+                    defaultValue={selectedEndDate}
                     onChange={handleEndDateChange}
-                    onOk={handleEndOK}
-                    appearance="default"
-                    menuStyle={{ zIndex: 1300 }}
-                    placeholder={`${inquiryDetails.contractDetails.leaseInfo?.endDate}`}
-                    cleanable={false}
-                    format="dd.MM.yyyy"
+                    onClose={() => handleEndOK(selectedEndDate)}
+                    disableHighlightToday
+                    sx={{
+                      ".MuiPickersToolbar-root": {
+                        display: "none"
+                      },
+                      button: {
+                        fontSize: "12px",
+                        fontWeight: 500,
+                        color: "#00141C",
+                        background: "transparent",
+                        "&:hover": {
+                          color: "#00141C",
+                          background: "transparent",
+                        },
+                      },
+                      ".MuiDialogActions-root > button:last-child": {
+                        fontWeight: 700,
+                      },
+                      ".MuiDateCalendar-root > div:first-child": {
+                        display: "none"
+                      },
+                      [`.${pickersLayoutClasses.contentWrapper}`]: {
+                        alignItems: 'center',
+                      },
+                    }}
                   />
                 </LocalizationProvider>
               ) : (
