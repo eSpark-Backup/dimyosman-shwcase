@@ -65,7 +65,9 @@ const ActivityCard = ({
   handleAction = () => { },
   handleNavigation = () => { },
   isDraftedBrandOwner,
-  brandStatus
+  brandStatus,
+  isDraftedSpaceOwner,
+  spaceStatus
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -645,14 +647,16 @@ const ActivityCard = ({
                 {activity === "event" ? "Hosted" : "Located"} at:
               </Typography>
               <Typography
-                onClick={
-                  activity !== "space" && activityLocationId
-                    ? () => {
+                onClick={() => {
+                  if(id && activity === "event" && (spaceStatus === "DRAFT" || spaceStatus === "ARCHIVE")) {
+                    toast.error(`This Space Is ${spaceStatus}${spaceStatus === "ARCHIVE" ? "D" : "ED"}. You Can Not View This Space.`);
+                  } else {
+                    if(activity !== "space" && activityLocationId){
                       navigate(`/space/${activityLocationId}`);
                       handleNavigation();
                     }
-                    : () => { }
-                }
+                  }
+                }}
                 style={{
                   cursor:
                     activity !== "space" && activityLocationId

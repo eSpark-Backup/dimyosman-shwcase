@@ -60,75 +60,81 @@ const Search = () => {
   }, []);
 
   useEffect(() => {
-    if (isSuccess) {
-      if (!skip && searchedData?.data) {
-        let updatedData = [];
-        const getObject = searchedData?.data;
-
-        if (getObject?.brands?.length) {
-          updatedData = [
-            ...updatedData,
-            ...getObject.brands.map(makeBrandsData),
-          ];
-        }
-
-        if (getObject?.events?.length) {
-          updatedData = [
-            ...updatedData,
-            ...getObject.events.map((event) =>
-              keysForBrandsSapcesEvents(event, "event")
-            ),
-          ];
-        }
-
-        if (getObject?.spaces?.length) {
-          updatedData = [
-            ...updatedData,
-            ...getObject.spaces.map((space) =>
-              keysForBrandsSapcesEvents(space, "space")
-            ),
-          ];
-
-          const mergedSapcesData = [...spaceData, ...getObject?.spaces].filter(
-            (item, index, self) =>
-              index === self.findIndex((t) => t?.id === item?.id)
+    const fetchData = async () => {
+      if (isSuccess) {
+        if (!skip && searchedData?.data) {
+          let updatedData = [];
+          const getObject = searchedData?.data;
+          let address = '';
+  
+          if (getObject?.brands?.length) {
+            updatedData = [
+              ...updatedData,
+              ...(await Promise.all(getObject.brands.map(makeBrandsData))),
+            ];
+          }
+  
+          if (getObject?.events?.length) {
+            updatedData = [
+              ...updatedData,
+              ...await Promise.all(getObject.events.map((event) =>
+                keysForBrandsSapcesEvents(event, "event", address) 
+              )),
+            ];
+          }
+  
+          if (getObject?.spaces?.length) {
+            updatedData = [
+              ...updatedData,
+              ...await Promise.all(getObject.spaces.map((space) =>
+                keysForBrandsSapcesEvents(space, "space", address) 
+              )),
+            ];
+  
+            const mergedSapcesData = [...spaceData, ...getObject?.spaces].filter(
+              (item, index, self) =>
+                index === self.findIndex((t) => t?.id === item?.id)
+            );
+  
+            dispatch(setSpaceSearchData(mergedSapcesData));
+          }
+  
+          updatedData?.sort((a, b) => {
+            const dateA = new Date(a?.createdAt);
+            const dateB = new Date(b?.createdAt);
+            return dateB - dateA;
+          });
+  
+          if (page === 1) {
+            dispatch(setAllSearchData(updatedData));
+            const locations = updatedData?.map((loc) => loc.location)?.flat();
+            dispatch(setAllLocations(locations));
+          } else {
+            const mergedData = [...allData, ...updatedData].filter(
+              (item, index, self) =>
+                index === self.findIndex((t) => t?.id === item?.id)
+            );
+  
+            const locations = mergedData?.map((loc) => loc.location)?.flat();
+            dispatch(setAllLocations(locations));
+            dispatch(setAllSearchData(mergedData));
+          }
+  
+          setHasMore(
+            searchedData?.data?.pagination?.currentPage <
+              searchedData?.data?.pagination?.totalPages
           );
-
-          dispatch(setSpaceSearchData(mergedSapcesData));
-        }
-
-        updatedData?.sort((a, b) => {
-          const dateA = new Date(a?.createdAt);
-          const dateB = new Date(b?.createdAt);
-          return dateB - dateA;
-        });
-
-        if (page === 1) {
-          dispatch(setAllSearchData(updatedData));
-          const locations = updatedData?.map((loc) => loc.location)?.flat();
-          dispatch(setAllLocations(locations));
+          setLoadingStart(false);
         } else {
-          const mergedData = [...allData, ...updatedData].filter(
-            (item, index, self) =>
-              index === self.findIndex((t) => t?.id === item?.id)
-          );
-
-          const locations = mergedData?.map((loc) => loc.location)?.flat();
-          dispatch(setAllLocations(locations));
-          dispatch(setAllSearchData(mergedData));
+          dispatch(setAllSearchData([]));
+          dispatch(setSpaceSearchData([]));
         }
-
-        setHasMore(
-          searchedData?.data?.pagination?.currentPage <
-            searchedData?.data?.pagination?.totalPages
-        );
-        setLoadingStart(false);
-      } else {
-        dispatch(setAllSearchData([]));
-        dispatch(setSpaceSearchData([]));
+        setHasFetchedData(true);
       }
-      setHasFetchedData(true);
-    }
+    };
+  
+    fetchData(); 
+  
   }, [
     searchedData?.data,
     isSuccess,
@@ -183,6 +189,7 @@ const Search = () => {
   const makeBrandsData = (el) => {
     const coverArray =
       el?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
+      const category = el?.brandCategory;
 
     return {
       isFollowed: el?.isFollowed,
@@ -196,13 +203,13 @@ const Search = () => {
       userImage: el?.user?.profileImage || "",
       activityImage: el?.brandImage || "",
       activityName: el?.brandName || "",
-      activityMaker:
-        el?.brandCategory?.map((item) => item.name).join(",") || "",
+      activityMaker: category[0]?.name || "",
       content: [el?.details?.description || ""],
       userRole: "user",
       slides: coverArray,
       location: el?.location || [],
-      publicProfile: el?.user?.profile
+      publicProfile: el?.user?.profile,
+      isDraftedBrandOwner: null,
     };
   };
 
@@ -222,6 +229,7 @@ const Search = () => {
       </Box>
     );
   }
+  console.log(allData)
 
   return (
     <>
@@ -290,6 +298,8 @@ const Search = () => {
                   handleNavigation={handleNavigation}
                   isDraftedBrandOwner={item?.isDraftedBrandOwner}
                   brandStatus={item?.brandStatus}
+                  isDraftedSpaceOwner={item?.isDraftedSpaceOwner}
+                  spaceStatus={item?.spaceStatus}
                   isFollowed={item?.isFollowed}
                   handleAction={(fullItem) => {
                     if (fullItem?.activity === "space") {
@@ -334,6 +344,8 @@ const Search = () => {
             setHasMore={setHasMore}
             setLoadingStart={setLoadingStart}
             loadingStart={isFetching || isLoading}
+            allData={allData}
+            searchedData={searchedData?.data}
           />
         </Grid>
       </Grid>
