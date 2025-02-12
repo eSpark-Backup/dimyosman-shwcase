@@ -84,6 +84,8 @@ const Details = ({ spaceInquire, details, myProfile }) => {
   const modalRef = useRef();
   useClickOutside(modalRef, () => setOpenCalendar(false));
 
+  console.log(details)
+
   return (
     <Box>
       <Stack
@@ -280,7 +282,13 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               height: "auto",
             }}
           >
-            <figure style={{ width: "100%", height: "100%", cursor: "pointer" }} role="img" aria-labelledby="profile-map" onClick={() => setMapModal(true)}>
+            <figure style={{ width: "100%", height: "100%", cursor: details?.mapLocation?.lat && details?.mapLocation?.long && "pointer" }} role="img" aria-labelledby="profile-map"
+              onClick={() => {
+                if (details?.mapLocation?.lat && details?.mapLocation?.long) {
+                  setMapModal(true);
+                }
+              }}
+            >
               <img width="100%" height="100%" src={miniMap} alt="map" />
               <figcaption
                 style={{
@@ -334,7 +342,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             </>
           )}
         </Box>
-      </Stack>
+      </Stack >
       <Stack
         direction="row"
         justifyContent="space-between"
@@ -359,7 +367,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             width={32}
             height={32}
             onClick={() => {
-              if(!token){
+              if (!token) {
                 toast.error("You need to log in first")
               } else {
                 if (!isLoading) {
@@ -392,7 +400,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   setCommentModal(true);
                 }
               }
-                }
+              }
               style={{ cursor: "pointer", padding: "5px" }}
               width={32}
               height={32}
@@ -400,9 +408,9 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               alt="like"
             />
           )}
-          <img
+          {details?.status === "PUBLISH" && <img
             onClick={() => {
-              if(!token){
+              if (!token) {
                 toast.error("You need to log in first")
               } else {
                 setShareModalDetails({
@@ -419,7 +427,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             height={32}
             src={share}
             alt="share"
-          />
+          />}
         </Stack>
         {openCalendar === 2 && myProfile?.type === "event" && (
           <RSVPCalendar
@@ -439,7 +447,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             loading={followLoading}
             disabled={followLoading}
             onClick={() => {
-              if(!token){
+              if (!token) {
                 toast.error("You need to log in first")
               } else {
                 if (myProfile?.type === "event") {
@@ -452,8 +460,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                     }).then((res) => {
                       res?.data?.status &&
                         toast.success(
-                          `You ${followPost ? "Unfollowed" : "Followed"} ${
-                            myProfile?.profileName
+                          `You ${followPost ? "Unfollowed" : "Followed"} ${myProfile?.profileName
                           }`
                         );
                       setFollowPost(!followPost);
@@ -496,33 +503,34 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           </LoadingButton>
         )}
       </Stack>
-      {details?.expectedPoint && (
-        <Box>
-          <Typography variant="h2" sx={{ fontSize: "24px", textAlign: "left", fontWeight: 600 }}>
-            {details?.expectedPoint?.title}
-          </Typography>
-          {details?.expectedPoint?.points?.map((point) => (
-            <Typography
-              key={point}
-              fontSize={16}
-              sx={{
-                textAlign: "left",
-                marginTop: 2,
-                fontWeight: 400,
-                wordBreak: "break-word",
-                "& ul, & ol": {
-                  paddingLeft: 2,
-                },
-                "& img": {
-                  maxWidth: "100%",
-                  height: "auto",
-                  objectFit: "contain",
-                },
-              }}
-              dangerouslySetInnerHTML={{ __html: point }}
-            />
-          ))}
-          {/* <ul style={{ marginLeft: "16px" }}>
+      {
+        details?.expectedPoint && (
+          <Box>
+            <Typography variant="h2" sx={{ fontSize: "24px", textAlign: "left", fontWeight: 600 }}>
+              {details?.expectedPoint?.title}
+            </Typography>
+            {details?.expectedPoint?.points?.map((point) => (
+              <Typography
+                key={point}
+                fontSize={16}
+                sx={{
+                  textAlign: "left",
+                  marginTop: 2,
+                  fontWeight: 400,
+                  wordBreak: "break-word",
+                  "& ul, & ol": {
+                    paddingLeft: 2,
+                  },
+                  "& img": {
+                    maxWidth: "100%",
+                    height: "auto",
+                    objectFit: "contain",
+                  },
+                }}
+                dangerouslySetInnerHTML={{ __html: point }}
+              />
+            ))}
+            {/* <ul style={{ marginLeft: "16px" }}>
             {details?.expectedPoint?.ulPoints?.map((point) => {
               const newPoints = point.split(":");
               return (
@@ -553,61 +561,68 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               );
             })}
           </ul> */}
-        </Box>
-      )}
-      {details?.otherPoints && (
-        <Box component="article">
-          <Typography
-            variant="h3"
-            sx={{ fontSize: "20px", textAlign: "left", fontWeight: 600 }}
-          >
-            {details?.otherPoints?.title}
-          </Typography>
-          {details?.otherPoints?.points?.map((point) => (
+          </Box>
+        )
+      }
+      {
+        details?.otherPoints && (
+          <Box component="article">
             <Typography
-              key={point}
-              fontSize={16}
-              sx={{ textAlign: "left", marginTop: 1, fontWeight: 400 }}
+              variant="h3"
+              sx={{ fontSize: "20px", textAlign: "left", fontWeight: 600 }}
             >
-              {point}
+              {details?.otherPoints?.title}
             </Typography>
-          ))}
-        </Box>
-      )}
-      {details?.overviewImage && (
-        <figure style={{ width: "100%", height: "100%" }} role="overview-image" aria-labelledby="overview-image-figcaption">
-          <img
-            style={{
-              borderRadius: "5px",
-              margin: "16px 0",
-              width: "100%",
-              height: "300px",
-              objectFit: "cover",
-            }}
-            src={details?.overviewImage}
-            alt="overview-image"
-          />
-        </figure>
-      )}
-      {details?.otherPoints2 && (
-        <Box component="article">
-          <Typography
-            variant="h3"
-            sx={{ fontSize: "20px", textAlign: "left", fontWeight: 600 }}
-          >
-            {details?.otherPoints2?.title}
-          </Typography>
-          {details?.otherPoints2?.points?.map((point) => (
+            {details?.otherPoints?.points?.map((point) => (
+              <Typography
+                key={point}
+                fontSize={16}
+                sx={{ textAlign: "left", marginTop: 1, fontWeight: 400 }}
+              >
+                {point}
+              </Typography>
+            ))}
+          </Box>
+        )
+      }
+      {
+        details?.overviewImage && (
+          <figure style={{ width: "100%", height: "100%" }} role="overview-image" aria-labelledby="overview-image-figcaption">
+            <img
+              style={{
+                borderRadius: "5px",
+                margin: "16px 0",
+                width: "100%",
+                height: "300px",
+                objectFit: "cover",
+              }}
+              src={details?.overviewImage}
+              alt="overview-image"
+            />
+          </figure>
+        )
+      }
+      {
+        details?.otherPoints2 && (
+          <Box component="article">
             <Typography
-              key={point}
-              fontSize={16}
-              sx={{ textAlign: "left", marginTop: 1, fontWeight: 400 }}
+              variant="h3"
+              sx={{ fontSize: "20px", textAlign: "left", fontWeight: 600 }}
             >
-              {point}
+              {details?.otherPoints2?.title}
             </Typography>
-          ))}
-        </Box>
-      )}
+            {details?.otherPoints2?.points?.map((point) => (
+              <Typography
+                key={point}
+                fontSize={16}
+                sx={{ textAlign: "left", marginTop: 1, fontWeight: 400 }}
+              >
+                {point}
+              </Typography>
+            ))}
+          </Box>
+        )
+      }
       <Stack
         direction="row"
         justifyContent="space-between"
@@ -632,7 +647,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             width={32}
             height={32}
             onClick={() => {
-              if(!token){
+              if (!token) {
                 toast.error("You need to log in first")
               } else {
                 if (!isLoading) {
@@ -658,7 +673,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           {myProfile.type !== "space" && !myProfile?.owned && (
             <img
               onClick={() => {
-                if(!token) {
+                if (!token) {
                   toast.error("You need to log in first")
                 } else {
                   setCommentId(myProfile?.id);
@@ -672,9 +687,9 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               alt="like"
             />
           )}
-          <img
+          {details?.status === "PUBLISH" && <img
             onClick={() => {
-              if(!token) {
+              if (!token) {
                 toast.error("You need to log in first")
               } else {
                 setShareModalDetails({
@@ -691,7 +706,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             height={32}
             src={share}
             alt="share"
-          />
+          />}
         </Stack>
         {openCalendar === 1 && myProfile?.type === "event" && (
           <RSVPCalendar
@@ -711,7 +726,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
             loading={followLoading}
             disabled={followLoading}
             onClick={() => {
-              if(!token){
+              if (!token) {
                 toast.error("You need to log in first")
               } else {
                 if (myProfile?.type === "event") {
@@ -724,8 +739,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                     }).then((res) => {
                       res?.data?.status &&
                         toast.success(
-                          `You ${followPost ? "Unfollowed" : "Followed"} ${
-                            myProfile?.profileName
+                          `You ${followPost ? "Unfollowed" : "Followed"} ${myProfile?.profileName
                           }`
                         );
                       setFollowPost(!followPost);
@@ -769,7 +783,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
         )}
       </Stack>
       <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>
-        <MapModal activity={activity === "event" ? "event" : activity === "brand" ? "brand" : "space"} disabled={true} addressLine={"Selected Address:"} address={"123 Williamsburg Ave, Brooklyn, NY 11211"} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[details?.mapLocation?.lat, details?.mapLocation?.long]} instructionValue={details?.mapLocation?.additional} />
+        <MapModal activity={activity === "event" ? "event" : activity === "brand" ? "brand" : "space"} disabled={true} addressLine={"Selected Address:"} address={""} handleClose={() => setMapModal(false)} buttonVal={"Select"} initialPosition={[details?.mapLocation?.lat, details?.mapLocation?.long]} instructionValue={details?.mapLocation?.additional} />
       </ReusableModal>
       <CommentModal
         open={commentModal}
@@ -777,7 +791,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
           setCommentId(null);
           setCommentModal(false);
         }}
-        handleSuccess={()  => setSuccessModal(true)}
+        handleSuccess={() => setSuccessModal(true)}
         commentId={commentId}
       />
       <CommentSuccessModal open={successModal} handleClose={() => setSuccessModal(false)} />
