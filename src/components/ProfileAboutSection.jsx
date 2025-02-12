@@ -4,8 +4,10 @@ import { close, copyIcon, fbIcon, shareHovered, shareNotHovered } from '../asset
 import { socialShareOptions } from '../constant'
 import { useClickOutside } from '../utils'
 import ShareModal from './shareModal'
+import { toast } from 'react-toastify'
 
 const ProfileAboutSection = ({ myProfileData, content }) => {
+    const token = window.localStorage.getItem("token");
     const theme = useTheme()
     const [showShareBox, setShowShareBox] = useState(false)
     const shareBoxRef = useRef(null);
@@ -42,7 +44,7 @@ const ProfileAboutSection = ({ myProfileData, content }) => {
                         maxHeight: "17.68px",
                         "&:hover": { backgroundColor: "transparent" }
                     }}
-                    onClick={() => setShowShareBox(true)}
+                    onClick={() => !token ? toast.error("You need to login first") : setShowShareBox(true)}
                     onMouseEnter={() => setIsIconHovered(true)}
                     onMouseLeave={() => setIsIconHovered(false)}>
 

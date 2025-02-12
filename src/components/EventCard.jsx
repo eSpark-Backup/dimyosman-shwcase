@@ -9,6 +9,7 @@ import dayjs from 'dayjs'
 import { toast } from 'react-toastify'
 
 const EventCard = ({ edit, onClick, event, showBtn }) => {
+  const token = window.localStorage.getItem("token");
   const theme = useTheme()
   const navigate = useNavigate()
   const [openCalendar, setOpenCalendar] = useState(false);
@@ -109,7 +110,7 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
               backgroundColor: "rgb(209, 219, 215, 0.4)"
             }
           }}
-          onClick={edit ? () => navigate(`/event/${event?.id}/edit`) : () => setOpenCalendar(true)}
+          onClick={token ? edit ? () => navigate(`/event/${event?.id}/edit`) : () => setOpenCalendar(true) : () => toast.error("You need to login first")}
         >
           {edit ? "Edit" : "RSVP"}
         </Button>

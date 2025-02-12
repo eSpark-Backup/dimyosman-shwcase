@@ -32,7 +32,8 @@ const BrandDetails = () => {
           profileName: item?.eventName,
           category: item?.eventCategory?.map(category => category.name) || [],
           id: item?.id,
-          status: item?.eventStatus,
+          status: item?.status,
+          eventStatus: item?.eventStatus,
           tabs: [
             {
               props: {
@@ -48,6 +49,20 @@ const BrandDetails = () => {
             RSVP: item?.rsvpCount
           }
         }));
+
+        const brandSpaces = data?.data?.brandSpaces?.map((item) => {
+          const dayPricing = item?.pricing?.find((priceItem) => priceItem.term === "Day");
+          return {
+            spacePic: item?.coverImages?.[0]?.url,
+            spaceName: item?.spaceName,
+            spaceAddress: item?.brand?.brandName,
+            spaceDescription: item?.details?.description,
+            spacePrice: dayPricing ? `$${dayPricing.price}/day` : "N/A",
+            spaceDeadline: dayPricing ? `miniumum lease: ${dayPricing?.minimum} days` : "N/A",
+            id: item?.id,
+            status: item?.status
+          }
+        });
 
 
         const brandData = {
@@ -91,9 +106,11 @@ const BrandDetails = () => {
             },
             {
               label: "Events",
-              props: {
-                eventData
-              },
+              props: eventData?.length > 0 ? { eventData, isMyProfile: data?.data?.user?.id === user?.id } : false
+            },
+            {
+              label: "Spaces",
+              props: brandSpaces?.length > 0 ? { brandSpaces, isMyProfile: data?.data?.user?.id === user?.id } : false
             },
             {
               label: "Stats",

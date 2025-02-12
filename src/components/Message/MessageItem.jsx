@@ -30,10 +30,7 @@ const MessageItem = ({
   setSelectedChatId,
   emitEvent,
   onlineUsers,
-  initialChatId,
-  selectedChatId,
   setPage,
-  setHasMore,
 }) => {
   const isLessThan768 = useMediaQuery("(max-width:768px)");
 
@@ -55,7 +52,6 @@ const MessageItem = ({
   }, [expanded]);
 
   const handleGroup = (el) => {
-    setHasMore(true);
     setPage(1);
 
     const obj = {
@@ -201,9 +197,9 @@ const MessageItem = ({
         }}
       >
         {message?.chatGroups?.length
-          ? message.chatGroups.map((el, i) => {
-              messageRefs.current[el.chatId] =
-                messageRefs.current[el.chatId] || React.createRef();
+          ? message?.chatGroups?.map((el, i) => {
+              messageRefs.current[el?.chatId] =
+                messageRefs.current[el?.chatId] || React.createRef();
 
               return (
                 <Box
@@ -222,14 +218,14 @@ const MessageItem = ({
                     position: "relative",
                     borderRadius: "3px",
                     borderBottom:
-                      isLessThan768 && i !== message.chatGroups.length - 1
+                      isLessThan768 && i !== message?.chatGroups?.length - 1
                         ? "1px solid rgba(209, 219, 215, 0.6)"
                         : "none",
                   }}
                   onClick={() => {
                     dispatch(emptyGoToMessage());
                     dispatch(setFromNotification(false));
-                    handleGroup(el);
+                    handleGroup(el, message?.parentActivity);
                   }}
                 >
                   <Box

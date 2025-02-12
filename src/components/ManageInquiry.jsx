@@ -1085,7 +1085,7 @@ const ManageInquiry = ({
                 dispatch(setGoToMessage(navigateData));
               } else {
                 const navigateData = {
-                  spaceName: details.space,
+                  pName: details.space,
                   chatId: details.chatId,
                 };
 

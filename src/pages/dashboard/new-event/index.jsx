@@ -76,7 +76,7 @@ const NewEvent = () => {
     const quillRef = useRef(null);
 
     const options = [
-        ...(brandData?.data?.groupedBrands?.draftBrands || []),
+        // ...(brandData?.data?.groupedBrands?.draftBrands || []),
         ...(brandData?.data?.groupedBrands?.publishedBrands || [])
     ].map((brand) => ({
         label: brand.brandName,

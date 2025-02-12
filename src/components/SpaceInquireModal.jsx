@@ -87,6 +87,7 @@ const SpaceInquireModal = ({
   useEffect(() => {
     if (isError) {
       toast.error(error?.data?.error)
+      setSelectedDate([]);
       return
     }
   }, [isError, error])
@@ -496,9 +497,10 @@ const SpaceInquireModal = ({
                       : "End Date"}
                   </time>
                 </Box>
-                {pricing?.map((item,index) => {
+                {pricing?.map((item, index) => {
                   return (
                     <Typography key={index}>
+                      {/* Minimum Lease {item?.term}: {item?.minimum} {item?.term} */}
                       {`Minimum Lease ${item?.term}${Number(item?.minimum) > 1 ? "s" : ""}: ${item?.minimum} ${item?.term}${Number(item?.minimum) > 1 ? "s" : ""}`}
                     </Typography>
                   )

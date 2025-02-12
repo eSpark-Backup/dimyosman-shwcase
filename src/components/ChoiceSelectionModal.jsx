@@ -12,7 +12,8 @@ const ChoiceSelectionModal = ({
     title = "Select Categories",
     description = "Selected Brand categories are inherited by Events and Spaces, allowing them for individual selection.",
     placeholder = "Search...",
-    handleClose
+    handleClose,
+    canType
 }) => {
     const theme = useTheme();
     const [searchValue, setSearchValue] = useState("");
@@ -45,7 +46,7 @@ const ChoiceSelectionModal = ({
 
     return (
         <Box sx={{ padding: "0px", display: "flex", flexDirection: "column", rowGap: "10px" }}>
-            <SearchBar placeholder={placeholder} value={searchValue} onInputChange={(e) => setSearchValue(e.target.value)} />
+            <SearchBar placeholder={placeholder} value={searchValue} onInputChange={(e) => setSearchValue(e.target.value)} canType={canType} />
 
             <Box
                 sx={{

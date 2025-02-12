@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import {
   Box,
   Button,
-  // CircularProgress,
+  CircularProgress,
   Stack,
   Typography,
   useMediaQuery,
@@ -27,9 +27,9 @@ import ManageInquiry from "../../../../components/ManageInquiry";
 
 import { addEmoji, convertToSameKeys } from "../../../../utils";
 
-// import { useGetSingleChatQuery } from "../../../../services/chats";
+import { useGetSingleChatQuery } from "../../../../services/chats";
 
-// import { getMessages } from "../../../../store/slices/chat";
+import { getMessages, getTotalPages } from "../../../../store/slices/chat";
 
 const TopHeading = ({ name, size, my = 0 }) => {
   return (
@@ -73,12 +73,11 @@ const AllMesaages = ({
   isTypingUser,
   onlineUsers,
   setToShare,
-  // page,
-  // setPage,
-  // inViewLoader,
-  // setInViewLoader,
-  // hasMore,
-  // setHasMore
+  inViewLoader,
+  setInViewLoader,
+  page,
+  setPage,
+  totalPageOfMessage,
 }) => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
@@ -86,54 +85,79 @@ const AllMesaages = ({
 
   const theme = useTheme();
 
-  // const {
-  //   data: messageData,
-  //   isSuccess,
-  //   isFetching,
-  // } = useGetSingleChatQuery(
-  //   { id: selectedGroup?.chatGroup?.chatId, page, pageSize: 10 },
-  //   {
-  //     skip: page === 1 || !selectedGroup?.chatGroup?.chatId,
-  //     refetchOnMountOrArgChange: true,
-  //     refetchOnFocus: true,
-  //   }
-  // );
-
   const quillInstance = useRef(null);
   const messagesContainerRef = useRef(null);
   const pickerRef = useRef(null);
   const buttonRef = useRef(null);
-  // const observerRef = useRef(null);
+  const observerRef = useRef(null);
 
   const { user } = useSelector((state) => state.auth);
-  // const { totalPagesOfMessage, messages } = useSelector((state) => state.chat);
+  const { messages, totalPagesOfMessage } = useSelector((state) => state.chat);
 
-  // const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
-  // const [totalPage, setTotalPage] = useState(1)
+  const {
+    data: messageD,
+    isSuccess,
+    isFetching,
+    isLoading,
+  } = useGetSingleChatQuery(
+    {
+      id: selectedGroup?.chatGroup?.chatId,
+      page: totalPageOfMessage?.currentPage,
+      pageSize: 10,
+    },
+    {
+      skip: page === 1,
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+    }
+  );
 
-  // useEffect(() => {
-  //   if (totalPagesOfMessage?.length) {
-  //     const findTotal = totalPagesOfMessage?.find(
-  //       (p) => p?.chat === selectedGroup?.chatGroup?.chatId
-  //     );
+  useEffect(() => {
+    if (isSuccess && messageD && totalPageOfMessage?.hasMore && page > 1) {
+      if (messageD?.messages?.length) {
+        if (
+          messages?.some((m) =>
+            messageD?.messages?.find((msg) => msg._id === m._id)
+          )
+        ) {
+          return;
+        }
 
-  //     setTotalPage(findTotal?.totalPages);
-  //   }
-  // }, [totalPagesOfMessage, selectedGroup?.chatGroup?.chatId]);
+        if (
+          messages?.some(
+            (m) => !messageD?.messages?.find((msg) => msg._id === m._id)
+          )
+        ) {
+          const update = totalPagesOfMessage?.map((p) => {
+            if (p.chat === selectedGroup?.chatGroup?.chatId) {
+              return {
+                ...p,
+                hasMore: totalPageOfMessage?.currentPage < messageD?.totalPages,
+              };
+            }
+            return { ...p };
+          });
 
-  // useEffect(() => {
-  //   if (isSuccess && messageData && messageData?.messages?.length ) {
-  //     if(messageData?.messages?.length){
-  //       dispatch(getMessages([...messageData?.messages, ...messages]));
-  //       setHasMore(messageData?.totalPages > page)
-  //       setInViewLoader(false);
-  //     }
-  //   }
-  // }, [isSuccess, messageData?.messages?.length, page, totalPage]);
+          dispatch(getTotalPages(update));
+          dispatch(getMessages([...messageD?.messages, ...messages]));
+          setInViewLoader(false);
+        }
+      }
+    }
+  }, [
+    messageD,
+    isSuccess,
+    isLoading,
+    isFetching,
+    selectedGroup?.chatGroup?.chatId,
+    page,
+    messages,
+  ]);
 
   const scrollToBottom = () => {
-    if (messagesContainerRef.current) {
+    if (messagesContainerRef.current && page === 1) {
       messagesContainerRef.current.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -141,32 +165,54 @@ const AllMesaages = ({
     }
   };
 
-  // useEffect(() => {
-  //   if (!hasMore || isFetching || page === totalPage) return;
+  useEffect(() => {
+    if (
+      page === totalPageOfMessage?.totalPages ||
+      !totalPageOfMessage?.hasMore ||
+      isFetching ||
+      totalPageOfMessage?.currentPage === totalPageOfMessage?.totalPages
+    )
+      return;
 
-  //   setInViewLoader(true);
+    setInViewLoader(true);
 
-  //   const observer = new IntersectionObserver(
-  //     (entries) => {
-  //       if (entries[0].isIntersecting) {
-  //         if (!isFetching) {
-  //           setPage((prevState) => prevState + 1);
-  //         }
-  //       }
-  //     },
-  //     { threshold: 0.5 }
-  //   );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          if (!isFetching) {
+            const update = totalPagesOfMessage?.map((p) => {
+              if (p.chat === selectedGroup?.chatGroup?.chatId) {
+                return {
+                  ...p,
+                  currentPage: totalPageOfMessage?.currentPage + 1,
+                };
+              }
+              return { ...p };
+            });
 
-  //   if (observerRef.current) {
-  //     observer.observe(observerRef.current);
-  //   }
+            dispatch(getTotalPages(update));
+            setPage((prev) => prev + 1);
+          }
+        }
+      },
+      { threshold: 0.5 }
+    );
 
-  //   return () => {
-  //     if (observerRef.current) {
-  //       observer.unobserve(observerRef.current);
-  //     }
-  //   };
-  // }, [hasMore, isFetching, selectedGroup?.chatGroup?.messages?.length, totalPage]);
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observer.unobserve(observerRef.current);
+      }
+    };
+  }, [
+    isFetching,
+    selectedGroup?.chatGroup?.messages?.length,
+    selectedGroup?.chatGroup?.chatId,
+    totalPagesOfMessage?.length,
+  ]);
 
   useEffect(() => {
     scrollToBottom();
@@ -399,9 +445,8 @@ const AllMesaages = ({
                   </Fragment>
                 );
               })}
-            {/* {selectedGroup?.chatGroup?.messages?.length > 0 &&
-              hasMore &&
-              totalPage > 1 && (
+            {selectedGroup?.chatGroup?.messages?.length > 0 &&
+              totalPageOfMessage?.hasMore && (
                 <div
                   ref={observerRef}
                   style={{
@@ -419,7 +464,7 @@ const AllMesaages = ({
                     />
                   )}
                 </div>
-              )} */}
+              )}
           </Box>
 
           {isTypingUser?.userId === user?.id &&

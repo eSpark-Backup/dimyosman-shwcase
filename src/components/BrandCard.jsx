@@ -35,6 +35,7 @@ const BrandCard = ({
   filter4,
   loading,
 }) => {
+  const token = window.localStorage.getItem("token");
   const theme = useTheme();
   const [selectedChoice, setSelectedChoice] = useState(0);
   const [showShareBox, setShowShareBox] = useState(false);
@@ -43,6 +44,7 @@ const BrandCard = ({
   const [brand, setBrand] = useState({});
   const [brandId, setBrandId] = useState(null);
   const [commentModal, setCommentModal] = useState(false);
+  const [commentId, setCommentId] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const navigate = useNavigate();
   const filteredItems = items?.filter((item) => {
@@ -355,21 +357,25 @@ const BrandCard = ({
                         >
                           <img
                             onClick={() => {
-                              if (!isLoading) {
-                                setBrandId(item?.id);
-                                likeFunc({
-                                  entityId: item?.id,
-                                  entityType: "BRAND",
-                                }).then((res) => {
-                                  res?.data?.status &&
-                                    handleLikeUpdate(item?.id);
-                                  toast.success(
-                                    res?.data?.message
-                                      .replace("Entity", "Post")
-                                      .replace(" successfully", "")
-                                  );
-                                  setBrandId(null);
-                                });
+                              if (!token) {
+                                toast.error("You need to login first");
+                              } else {
+                                if (!isLoading) {
+                                  setBrandId(item?.id);
+                                  likeFunc({
+                                    entityId: item?.id,
+                                    entityType: "BRAND",
+                                  }).then((res) => {
+                                    res?.data?.status &&
+                                      handleLikeUpdate(item?.id);
+                                    toast.success(
+                                      res?.data?.message
+                                        .replace("Entity", "Post")
+                                        .replace(" successfully", "")
+                                    );
+                                    setBrandId(null);
+                                  });
+                                }
                               }
                             }}
                             style={{
@@ -395,29 +401,40 @@ const BrandCard = ({
 
                       {!myProfile && (
                         <figure
-                          onClick={() => setCommentModal(item?.id)}
+                          onClick={() => {
+                            if (token) {
+                              setCommentId(item?.id);
+                              setCommentModal(true)
+                            } else {
+                              toast.error("You need to login first")
+                            }
+                          }}
                           style={{ width: "100%", height: "100%" }}
                           role="img"
                         >
-                          <img src={comment} alt="Share Icon" />
+                          <img src={comment} alt="Share Icon" style={{ cursor: "pointer" }} />
                         </figure>
                       )}
                       {item?.status === "PUBLISH" && (
                         <figure
                           onClick={() => {
-                            setBrand(item);
-                            setShowShareBox(true);
+                            if (token) {
+                              setBrand(item);
+                              setShowShareBox(true);
+                            } else {
+                              toast.error("You need to login first");
+                            }
                           }}
                           style={{ width: "100%", height: "100%" }}
                           role="img"
                         >
-                          <img src={share} alt="Share Icon" />
+                          <img src={share} alt="Share Icon" style={{ cursor: "pointer" }} />
                         </figure>
                       )}
                     </Box>
                     {!myProfile && (
                       <Typography
-                        onClick={() => navigate(`/brand/${item?.id}`)}
+                        onClick={() => token ? navigate(`/brand/${item?.id}`) : toast.error("You need to login first")}
                         sx={{
                           cursor: "pointer",
                           color: theme.palette.primary.main,
@@ -449,6 +466,7 @@ const BrandCard = ({
                         },
                       }}
                       onClick={
+                        token ?
                         myProfile
                           ? () => navigate(`/brand/${item?.id}/edit`)
                           : !followLoading
@@ -468,7 +486,7 @@ const BrandCard = ({
                                 setBrandId(null);
                               });
                             }
-                          : () => {}
+                          : () => {} : () => toast.error("You need to login first")
                       }
                     >
                       {myProfile
@@ -516,8 +534,12 @@ const BrandCard = ({
       </Box>
       <CommentModal
         open={commentModal}
-        handleClose={() => setCommentModal(false)}
+        handleClose={() => {
+          setCommentId(null);
+          setCommentModal(false)
+        }}
         handleSuccess={() => setSuccessModal(true)}
+        commentId={commentId}
       />
       <CommentSuccessModal
         open={successModal}

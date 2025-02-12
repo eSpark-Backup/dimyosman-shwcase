@@ -173,11 +173,13 @@ const MessageHeader = ({
                 <GroupDetail withColon="By" text={chatGroup?.creator} />
               )}
 
-              <GroupDetail withColon="Spaces" text={group?.spaces} />
+              {chatGroup?.activity === "brand" ? (
+                <GroupDetail withColon="Spaces" text={chatGroup?.spaces} />
+              ) : null}
 
-              <GroupDetail withColon="Followers" text={group?.followers} />
+              <GroupDetail withColon="Followers" text={chatGroup?.followers} />
 
-              <GroupDetail withColon="Saved" text={group?.saved} />
+              <GroupDetail withColon="Saved" text={chatGroup?.saved} />
 
               {isLessThan1100 ? (
                 <Box sx={{ display: "flex", alignItems: "center" }}>

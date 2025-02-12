@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Button, Divider, Stack, Typography, useTheme } from "@mui/material";
+import { Box, Button, Divider, Stack, Tooltip, Typography, useTheme } from "@mui/material";
 import {
   accountIcon,
   brandIcon,
@@ -73,6 +73,7 @@ const ActivityCard = ({
   const [commentId, setCommentId] = useState(null);
   const [successModal, setSuccessModal] = useState(false);
   const [shareModal, setShareModal] = useState(false);
+  const [shareModalDetails, setShareModalDetails] = useState(false);
   const [likePost, setLikePost] = useState(isFavourite);
   const [followPost, setFollowPost] = useState(isFollowed);
   useEffect(() => {
@@ -161,7 +162,7 @@ const ActivityCard = ({
                 handleNavigation();
               } else {
                 if (userRole === "brand") {
-                  toast.error(`This Brand Is ${brandStatus}${brandStatus === "ARCHIVE" ? "D" : "ED"}. You Can Not View This Brand.`);
+                  toast.error(`This brand is ${brandStatus?.toLowerCase()}${brandStatus === "ARCHIVE" ? "d" : "ed"}. You can not view this brand.`);
                 } else {
                   toast.error("You are not authorized to view this profile.");
                 }
@@ -683,18 +684,21 @@ const ActivityCard = ({
               aria-labelledby="profile-figcaption"
             >
               <img src={activity === "event" ? miniMap : miniMap2} alt="" />
-              <figcaption
-                style={{
-                  fontStyle: "normal",
-                  fontSize: "12px",
-                  fontWeight: "400",
-                  color: theme.palette.primary.main,
-                  textAlign: "left",
-                  fontFamily: `"Segoe UI", "sans-serif"`,
-                }}
-              >
-                {activityAddress}
-              </figcaption>
+              <Tooltip title={activityAddress?.length > 40 ? activityAddress : ""}>
+                <figcaption
+                  style={{
+                    fontStyle: "normal",
+                    fontSize: "12px",
+                    fontWeight: "400",
+                    color: theme.palette.primary.main,
+                    textAlign: "left",
+                    fontFamily: `"Segoe UI", "sans-serif"`,
+                    textWrap: "wrap"
+                  }}
+                >
+                  {activityAddress?.length > 40 ? activityAddress?.slice(0, 41) + "..." : activityAddress}
+                </figcaption>
+              </Tooltip>
             </figure>
             <Divider />
             <Typography
@@ -785,14 +789,15 @@ const ActivityCard = ({
             />
           )}
           <img
-            onClick={() =>
-              setShareModal({
+            onClick={() => {
+              setShareModalDetails({
                 id: activityId,
                 profileName: activityName,
                 profileImage: activityImage,
                 profileType: activity,
-              })
-            }
+              });
+              setShareModal(true);
+            }}
             src={share}
             alt="Share Icon"
             style={{ cursor: "pointer" }}
@@ -900,7 +905,7 @@ const ActivityCard = ({
         open={commentModal}
         handleClose={() => {
           setCommentId(null);
-          setCommentModal(false)
+          setCommentModal(false);
         }}
         handleSuccess={() => setSuccessModal(true)}
         commentId={commentId}
@@ -913,6 +918,7 @@ const ActivityCard = ({
         shareableLink={shareableLink}
         open={shareModal}
         handleClose={() => setShareModal(false)}
+        shareModalDetails={shareModalDetails}
       />
     </Box>
   );
