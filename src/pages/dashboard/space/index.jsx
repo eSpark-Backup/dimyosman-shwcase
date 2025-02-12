@@ -377,11 +377,13 @@ const Space = () => {
 
     if (tabsForApi[activeTab] !== "Saved") {
       if (isSuccess) {
-        if (data?.data?.spaces?.length) {
+        if (tabsForApi[activeTab] === "Space") {
           setMySpaceData(transformSpaceData(data?.data?.spaces || []));
-        } else if (data?.data?.leaseSpace?.length) {
+        }
+        if (tabsForApi[activeTab] === "Lease") {
           setMySpaceData(transformLeaseSpaceData(data?.data?.leaseSpace || []));
-        } else {
+        }
+        if (tabsForApi[activeTab] === "Tenant") {
           setMySpaceData(
             transformTenantSpaceData(data?.data?.tenantSpace || [])
           );
@@ -409,6 +411,7 @@ const Space = () => {
     page,
     data,
     data2,
+    activeTab,
   ]);
 
   const handlePageChange = (newPage) => {
