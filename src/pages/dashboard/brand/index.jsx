@@ -271,7 +271,6 @@ const Brand = () => {
       <Stack direction="row" justifyContent={{ xs: "center", sm: "flex-end" }}>
         <Box
           sx={{
-            cursor: "pointer",
             background: "rgba(196, 119, 127, 0.2)",
             width: "48px",
             height: "48px",

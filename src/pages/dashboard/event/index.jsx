@@ -233,7 +233,6 @@ const Event = () => {
       <Stack direction="row" justifyContent={{ xs: "center", sm: "flex-end" }}>
         <Box
           sx={{
-            cursor: "pointer",
             background: "rgba(148, 185, 134, 0.3)",
             width: "48px",
             height: "48px",

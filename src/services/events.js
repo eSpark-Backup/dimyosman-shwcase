@@ -17,16 +17,18 @@ export const eventApi = api.injectEndpoints({
                 formData.append('eventCategory', JSON.stringify(selectedCategories));
 
 
-                const formattedDates = eventData.selectedDate[0] ?
-                    [{
-                        startDate: eventData.selectedDate[0],
-                        endDate: eventData.selectedDate[1]
-                    }] : [{
-                        startDate: "string",
-                        endDate: "string"
-                    }]
-                formData.append('eventDate', JSON.stringify(formattedDates));
+                const formattedDates = eventData.selectedDate[0] ? [{
+                    startDate: eventData.selectedDate[0].toISOString(),
+                    endDate: eventData.selectedDate[1].toISOString()
+                }] : [{
+                    startDate: "string",
+                    endDate: "string"
+                }];
 
+                
+                if (formattedDates[0].startDate !== "string" && formattedDates[0].endDate !== "string") {
+                    formData.append('eventDate', JSON.stringify(formattedDates));
+                }
 
                 const details = {
                     description: eventData?.eventOverview,
@@ -102,21 +104,18 @@ export const eventApi = api.injectEndpoints({
                 console.log(eventData.selectedDate)
                 const isValidDate = (date) => date instanceof Date && !isNaN(date.getTime());
 
-                const formattedDates =
-                    Array.isArray(eventData.selectedDate) &&
-                        eventData.selectedDate.length === 2 &&
-                        isValidDate(eventData.selectedDate[0]) &&
-                        isValidDate(eventData.selectedDate[1])
-                        ? [{
-                            startDate: eventData.selectedDate[0].toISOString(),
-                            endDate: eventData.selectedDate[1].toISOString()
-                        }]
-                        : [{
-                            startDate: "Invalid Date",
-                            endDate: "Invalid Date"
-                        }];
+                const formattedDates = eventData.selectedDate[0] ? [{
+                    startDate: eventData.selectedDate[0].toISOString(),
+                    endDate: eventData.selectedDate[1].toISOString()
+                }] : [{
+                    startDate: "string",
+                    endDate: "string"
+                }];
 
-                formData.append('eventDate', JSON.stringify(formattedDates));
+                
+                if (formattedDates[0].startDate !== "string" && formattedDates[0].endDate !== "string") {
+                    formData.append('eventDate', JSON.stringify(formattedDates));
+                }
 
                 const details = {
                     description: eventData?.eventOverview,

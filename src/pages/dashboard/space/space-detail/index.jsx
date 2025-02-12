@@ -43,9 +43,10 @@ const SpaceDetails = () => {
           profilePic: data?.data?.spaceImage,
           profileName: data?.data?.spaceName,
           category: data?.data?.spaceCategory,
-          by: data?.data?.user?.profile && data?.data?.user?.id,
+          // by: data?.data?.user?.profile && data?.data?.user?.id,
+          by: data?.data?.brand?.status === "PUBLISH" && data?.data?.brand?.id,
           details: {
-            by: data?.data?.user?.name,
+            by: data?.data?.brand?.brandName,
             saved: data?.data?.likedCount,
           },
           rating: 5,
