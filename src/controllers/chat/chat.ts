@@ -25,7 +25,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
   if (chats.length < 1) {
     return res.status(200).json({
       success: true,
-      chats: { brands: [], spaces: [] },
+      chats: { brands: [], spaces: [],events:[] },
     });
   }
 
