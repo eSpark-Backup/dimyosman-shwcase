@@ -547,6 +547,23 @@ export class BrandController {
           res.status(200).json(handleResponse("Brand not found"));
           return next();
         }
+        let brandSpaces=await this.spaceRepo.createQueryBuilder
+        ("space")
+        .where("space.brand = :brandId", { brandId: singleBrand.id })
+        .getMany();
+        if(brandSpaces.length>0){
+          brandSpaces = brandSpaces.map((space) => {
+            if (typeof space.coverImages === "string") {
+              space.coverImages = JSON.parse(space.coverImages);
+            }
+            return space;
+          })
+        }
+        const groupedSpaces={
+          publishedSpaces: brandSpaces.filter((space) => space.status === SpaceStatus.PUBLISH),
+          draftSpaces: brandSpaces.filter((space) => space.status === SpaceStatus.DRAFT),
+          archivedSpaces:brandSpaces.filter((space) => space.status === SpaceStatus.ARCHIVE),
+        }
 
         if (typeof singleBrand.coverImages === "string") {
           singleBrand.coverImages = JSON.parse(singleBrand.coverImages);
@@ -688,7 +705,10 @@ export class BrandController {
         const isFavourite = savedEntities ? true : false;
         const isFollowed = followedEntities ? true : false;
 
+
+
         const brand = {
+          groupedSpaces,
           brandEvents,
           ...singleBrand,
           followedCount: getFollowedCount,
