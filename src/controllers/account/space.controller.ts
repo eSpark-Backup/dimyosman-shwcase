@@ -73,7 +73,8 @@ export class SpaceController {
         .createQueryBuilder("space")
         .leftJoinAndSelect("space.brand", "brand")
         .leftJoinAndSelect("space.user", "user")
-        .where("space.user = :userId", { userId })
+        .where("space.status = :status",{status:SpaceStatus.PUBLISH})
+        .andWhere("space.user = :userId", { userId })
 
         .skip(Number(skipNumber) || 0)
         .take(Number(takeNumber) || 10)
