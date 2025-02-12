@@ -1182,8 +1182,157 @@ export class GeneralController {
           savedEntities.map((entity) => entity.brand?.id).filter(Boolean) // Remove undefined/null values
         );
 
+        let brandSpaces = await this.spaceRepo
+        .createQueryBuilder("space")
+        .where("space.brand = :brandId", { brandId: entity.id })
+        .andWhere(
+          new Brackets((qb) => {
+            qb.where("space.user = :userId", {
+              userId: req.user?.id,
+            }).orWhere("space.status = :status", {
+              status: BRAND_STATUS.PUBLISH,
+            });
+          })
+        )
+        .getMany();
+
+      if (brandSpaces.length > 0) {
+        brandSpaces = brandSpaces.map((space) => {
+          if (typeof space.coverImages === "string") {
+            space.coverImages = JSON.parse(space.coverImages);
+          }
+          return space;
+        });
+      }
+
+      const singleEvent = await this.eventsRepo
+      .createQueryBuilder("event")
+      .leftJoinAndSelect("event.user", "user")
+  
+      .andWhere("event.brand = :eventId", { eventId: entity.id })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where("event.user = :userId", {
+            userId: req.user?.id,
+          }).orWhere("event.status = :status", {
+            status: EVENT_STATUS.PUBLISH,
+          });
+        })
+      )
+      .leftJoinAndSelect("event.space", "space")
+      .leftJoinAndSelect("event.leaseSpace", "leaseSpace")
+      .leftJoinAndSelect("space.brand", "spaceBrand")
+      .leftJoin(
+        (qb) => {
+          return qb
+            .select("rsvp_sub.event", "eventId")
+            .addSelect("COUNT(rsvp_sub.id)", "rsvpCount")
+            .from("rsvp", "rsvp_sub")
+            .groupBy("rsvp_sub.event");
+        },
+        "rsvpCountSubquery",
+        "rsvpCountSubquery.eventId = event.id"
+      )
+      .addSelect(
+        "COALESCE(rsvpCountSubquery.rsvpCount, 0)",
+        "event_rsvpCount"
+      )
+      .addSelect((subQuery) => {
+        return subQuery
+          .select(
+            `COALESCE(
+              JSON_OBJECT(
+                  'id', rsvp.id,
+                  'attendanceDates', rsvp.attendanceDates,
+                  'verifyAttendance', rsvp.verifyAttendance,
+                  'review', rsvp.review,
+                  'rating', rsvp.rating
+              ), '{}')`, // Ensure null values don't break the JSON
+            "event_rsvp"
+          )
+          .from("RSVP", "rsvp")
+          .where("rsvp.event = event.id")
+          .andWhere("rsvp.user = :userId", { userId: req.user?.id })
+          .limit(1);
+      }, "event_rsvp")
+
+      .getRawAndEntities();
+      const [getFollowedCount, getLikedCount] = await Promise.all([
+        this.savedEntity
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FOLLOW,
+          })
+          .andWhere("savedEntity.type = :type", {
+            type: SavedEntityType.BRAND,
+          })
+          .leftJoinAndSelect("savedEntity.brand", "brand")
+          .andWhere("brand.id = :brandId", { brandId: entity.id })
+          .getCount(),
+        this.savedEntity
+          .createQueryBuilder("savedEntity")
+          .where("savedEntity.ActionType = :actionType", {
+            actionType: ActionType.FAVORITE,
+          })
+          .andWhere("savedEntity.type = :type", {
+            type: SavedEntityType.BRAND,
+          })
+          .leftJoinAndSelect("savedEntity.brand", "brand")
+          .andWhere("brand.id = :brandId", { brandId: entity.id })
+          .getCount(),
+      ]);
+
+      const { entities: rsvpEvents, raw } = singleEvent;
+      const totalEventsCount = rsvpEvents.length;
+
+      const brandEvents = rsvpEvents.map((rsvp, index) => {
+        const rawData = raw[index];
+        parseCoverImages(rsvp);
+        parseCoverImages(rsvp.brand);
+        parseCoverImages(rsvp.space);
+        let event_rsvp;
+        if (rawData.event_rsvp) {
+          event_rsvp = JSON.parse(rawData.event_rsvp);
+        }
+        const eventDate =
+          rsvp.eventDate &&
+          (rsvp.eventDate as [{ startDate: string; endDate: string }]);
+
+        if (eventDate) {
+          const currentDate = new Date();
+
+          let eventStatus = "Ended";
+          if (currentDate < new Date(eventDate[0].startDate)) {
+            eventStatus = "Upcoming";
+          } else if (
+            currentDate >= new Date(eventDate[0].startDate) &&
+            currentDate <= new Date(eventDate[0].endDate)
+          ) {
+            eventStatus = "Ongoing";
+          }
+
+          return {
+            ...rsvp,
+            rsvpCount: Number(rawData.event_rsvpCount) || 0,
+            event_rsvp,
+            eventStatus,
+          };
+        }
+
+        return {
+          ...rsvp,
+          event_rsvp,
+          rsvpCount: Number(rawData.event_rsvpCount) || 0,
+        };
+      });
+
         const isFavourite = savedEventIds.has(entity.id);
         const brand = {
+          brandSpaces,
+          brandEvents,
+          likedCount: getLikedCount,
+          followedCount: getFollowedCount,
+          totalEventsCount,
           ...entity,
           isFavourite,
           type: "brand",
