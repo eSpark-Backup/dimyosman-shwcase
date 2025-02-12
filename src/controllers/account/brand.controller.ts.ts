@@ -24,6 +24,7 @@ import { commonHelper } from "../../helpers";
 import {
   BRAND_STATUS,
   CLOUD_FOLDERS,
+  EVENT_STATUS,
   HTTP_STATUS,
   NEW_NOTIFICATION,
   PAGINATION,
@@ -566,7 +567,17 @@ export class BrandController {
         const singleEvent = await this.eventsRepo
           .createQueryBuilder("event")
           .leftJoinAndSelect("event.user", "user")
+      
           .andWhere("event.brand = :eventId", { eventId: singleBrand.id })
+          .andWhere(
+            new Brackets((qb) => {
+              qb.where("event.user = :userId", {
+                userId: req.user?.id,
+              }).orWhere("event.status = :status", {
+                status: EVENT_STATUS.PUBLISH,
+              });
+            })
+          )
           .leftJoinAndSelect("event.space", "space")
           .leftJoinAndSelect("event.leaseSpace", "leaseSpace")
           .leftJoinAndSelect("space.brand", "spaceBrand")
