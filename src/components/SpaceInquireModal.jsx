@@ -10,7 +10,7 @@ import { DateRangePicker } from "rsuite";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 
-import { LocalizationProvider } from "@mui/x-date-pickers";
+import { LocalizationProvider, pickersLayoutClasses } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import {
   Box,
@@ -36,6 +36,7 @@ import {
   useSpacePriceMutation,
 } from "../services/space";
 import { useGetAllBrandsQuery } from "../services/brands";
+import { StaticDateRangePicker } from "@mui/x-date-pickers-pro";
 
 const SpaceInquireModal = ({
   open,
@@ -419,16 +420,38 @@ const SpaceInquireModal = ({
                     minHeight: "300px",
                   }}
                 >
-                  <DateRangePicker
-                    value={selectedDate}
+                  <StaticDateRangePicker
+                    defaultValue={selectedDate}
                     onChange={handleDateChange}
-                    onOk={handleOk}
-                    appearance="default"
-                    showOneCalendar
-                    menuStyle={{ zIndex: 1300 }}
+                    onAccept={handleOk}
                     shouldDisableDate={(date) =>
                       isDateInRanges(date, bookedRanges)
                     }
+                    disableHighlightToday={true}
+                    sx={{
+                      ".MuiPickersToolbar-root": {
+                        display: "none" 
+                      },
+                      button: {
+                        fontSize: "12px",
+                        fontWeight: 500,
+                        color: "#00141C",
+                        background: "transparent",
+                        "&:hover": {
+                          color: "#00141C",
+                          background: "transparent",
+                        },
+                      },
+                      ".MuiDialogActions-root > button:last-child": {
+                        fontWeight: 700,
+                      },
+                      ".MuiDateRangeCalendar-root > div:first-child": {
+                        display: "none"
+                      },
+                      [`.${pickersLayoutClasses.contentWrapper}`]: {
+                        alignItems: 'center',
+                      },
+                    }}
                   />
                 </Box>
               </LocalizationProvider>
