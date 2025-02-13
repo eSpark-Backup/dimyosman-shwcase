@@ -85,9 +85,9 @@ export const deleteAllCookiesExcept = (exceptions = []) => {
   });
 };
 
-export const logoutAuthUtils = (logoutAuth) => {
-  logoutAuth({ returnTo: window.location.origin, openUrl: false });
-  deleteAllCookiesExcept(["unreadChatIds", "newNotification", "newInquiry", "unreadTypes"]);
+export const logoutAuthUtils = (logout) => {
+  logout({ returnTo: window.location.origin, openUrl: false });
+  deleteAllCookiesExcept();
 }
 
 // FOR PICKER
