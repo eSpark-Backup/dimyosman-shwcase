@@ -88,6 +88,7 @@ const SpaceInquireModal = ({
     if (isError) {
       toast.error(error?.data?.error)
       setSelectedDate([]);
+      setTotalPrice("0")
       return
     }
   }, [isError, error])
@@ -329,7 +330,7 @@ const SpaceInquireModal = ({
         :
         <Box
           sx={{
-            width: { xs: "95vw", sm: "478px" },
+            width: { xs: "95vw", sm: "500px" },
             maxHeight: "90vh",
             overflowY: "auto",
             outline: "none",
@@ -422,7 +423,7 @@ const SpaceInquireModal = ({
                   }}
                 >
                   <StaticDateRangePicker
-                    defaultValue={selectedDate}
+                    value={selectedDate}
                     onChange={handleDateChange}
                     onAccept={handleOk}
                     shouldDisableDate={(date) =>
@@ -478,7 +479,7 @@ const SpaceInquireModal = ({
                       lineHeight: "140%",
                     }}
                   >
-                    {selectedDate?.length >= 1
+                    {selectedDate?.length >= 1 && dayjs(selectedDate[0]).isValid()
                       ? dayjs(selectedDate[0]).format("DD.MM.YYYY")
                       : "Start Date"}
                   </time>
@@ -492,7 +493,7 @@ const SpaceInquireModal = ({
                       display: "inline-block",
                     }}
                   >
-                    {selectedDate?.length >= 1
+                    {selectedDate?.length >= 1 && dayjs(selectedDate[1]).isValid()
                       ? dayjs(selectedDate[1]).format("DD.MM.YYYY")
                       : "End Date"}
                   </time>

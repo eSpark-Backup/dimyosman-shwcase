@@ -11,7 +11,7 @@ export const fetchedBrandData = (
     eventData: eveData || null,
   });
 
-  const brandSpaces = data?.data?.brandSpaces?.map((item) => {
+  const brandSpaces = data?.brandSpaces?.map((item) => {
     const dayPricing = item?.pricing?.find((priceItem) => priceItem.term === "Day");
     return {
       spacePic: item?.coverImages?.[0]?.url,
@@ -30,7 +30,7 @@ export const fetchedBrandData = (
     profileName: item?.eventName,
     category: item?.eventCategory?.map((category) => category.name) || [],
     id: item?.id,
-    status: item?.eventStatus,
+    eventStatus: item?.eventStatus,
     tabs: [
       {
         props: {
