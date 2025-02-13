@@ -951,7 +951,7 @@ const ManageInquiry = ({
             <input
               id="imageInput"
               type="file"
-              accept="image/*"
+              accept=".jpeg, .png, .jpg, .svg"
               style={{ display: "none" }}
               ref={profileImageRef}
               onChange={handleImageChange}
@@ -1030,7 +1030,7 @@ const ManageInquiry = ({
                 <input
                   id="imageInput"
                   type="file"
-                  accept="image/*"
+                  accept=".jpeg, .png, .jpg, .svg"
                   style={{ display: "none" }}
                   ref={profileImageRef}
                   onChange={handleImageChange}

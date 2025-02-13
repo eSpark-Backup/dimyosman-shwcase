@@ -591,8 +591,7 @@ const Settings = () => {
                   </Typography>
                   <img src={uploadIcon} alt="Icon" />
                   <input
-                    accept="image/*"
-                    type="file"
+                    accept=".jpeg, .png, .jpg, .svg"
                     style={{ display: "none" }}
                     ref={profileImageRef}
                     onChange={handleImageChange}

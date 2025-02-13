@@ -74,36 +74,42 @@ const Event = () => {
   const transformEventData = (apiData, type) => {
     let newData;
     type === "fav"
-      ? (newData = apiData.map(({event}, index) => ({
-          id: event?.id,
-          type: "event",
-          eventName: event?.eventName,
-          eventImg: event?.eventImage,
-          brand: event?.brand?.brandName,
-          brandUrl: `/brand/${event?.brand?.id}`,
-          rsvp: "-",
-          startDate: dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
-          status: event?.status,
-          hostedIn: event?.space?.spaceName,
-          spaceUrl: `/space/${event?.space?.id}`,
-          action: "Cancel",
-          category: event?.eventCategory[0]?.name
-        })))
+      ? (newData = apiData.map(({ event }, index) => ({
+        id: event?.id,
+        type: "event",
+        eventName: event?.eventName,
+        eventImg: event?.eventImage,
+        brand: event?.brand?.brandName,
+        brandUrl: `/brand/${event?.brand?.id}`,
+        rsvp: "-",
+        startDate: !event?.eventDate ||
+          !event?.eventDate[0]?.startDate ||
+          !dayjs(event?.eventDate[0]?.startDate).isValid()
+          ? "-"
+          : dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
+        status: event?.status,
+        hostedIn: event?.space?.spaceName,
+        spaceUrl: `/space/${event?.space?.id}`,
+        action: "Cancel",
+        category: event?.eventCategory[0]?.name
+      })))
       : (newData = apiData.map((event, index) => ({
-          id: event?.id,
-          rsvpId: event?.rsvpId,          
-          type: "event",
-          eventName: event?.eventName,
-          eventImg: event?.eventImage,
-          brand: event?.brand?.brandName,
-          brandUrl: event?.brand ? `/brand/${event?.brand?.id}` : null,
-          rsvp: event?.rsvpCount,
-          startDate: event?.eventDate[0]?.startDate === "string" || event?.eventDate[0]?.startDate === "Invalid Date" ? "-" : dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
-          status: event?.eventStatus || event?.status,
-          hostedIn: event?.space?.spaceName || "-",
-          spaceUrl: `/space/${event?.space?.id}`,
-          action: "Cancel",
-        })));
+        id: event?.id,
+        rsvpId: event?.rsvpId,
+        type: "event",
+        eventName: event?.eventName,
+        eventImg: event?.eventImage,
+        brand: event?.brand?.brandName,
+        brandUrl: event?.brand ? `/brand/${event?.brand?.id}` : null,
+        rsvp: event?.rsvpCount,
+        startDate: !event?.eventDate || !event?.eventDate[0]?.startDate || dayjs(event?.eventDate[0]?.startDate).isValid() === false
+          ? "-"
+          : dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
+        status: event?.eventStatus || event?.status,
+        hostedIn: event?.space?.spaceName || "-",
+        spaceUrl: `/space/${event?.space?.id}`,
+        action: "Cancel",
+      })));
     return newData;
   };
 
@@ -123,8 +129,8 @@ const Event = () => {
     }
 
     if (isSuccess) {
-      if(tabsForApi[activeTab] === "RSVP"){
-        setMyEventData(transformEventData(data?.data?.map(({ event, ...rest }) =>({ ...rest, ...event, rsvpId: rest?.id })) || []));
+      if (tabsForApi[activeTab] === "RSVP") {
+        setMyEventData(transformEventData(data?.data?.map(({ event, ...rest }) => ({ ...rest, ...event, rsvpId: rest?.id })) || []));
       } else {
         setMyEventData(transformEventData(data?.data?.events || []));
       }
@@ -172,9 +178,9 @@ const Event = () => {
     navigate(item?.spaceUrl);
   };
 
-    const [likeFunc, { isLoading: likeLoading }] = useAddInFavouritesMutation();
-    const [cancelRsvp, { isLoading: rsvpLoading }] = useCancelRsvpMutation();
-  
+  const [likeFunc, { isLoading: likeLoading }] = useAddInFavouritesMutation();
+  const [cancelRsvp, { isLoading: rsvpLoading }] = useCancelRsvpMutation();
+
 
   const handleAction = async (item, type) => {
     if (type === "edit") {

@@ -119,6 +119,7 @@ const ImgInputWithCategories = ({
                             type="file"
                             style={{ display: 'none' }}
                             ref={imgRef}
+                            accept=".jpeg, .png, .jpg, .svg"
                             onChange={handleImageChange}
                         />
                     </Box>

@@ -525,6 +525,10 @@ a:hover{
   width: 0;
 }
 
+.css-jfdcah-MuiButtonBase-root-MuiPickersDay-root-MuiDateRangePickerDay-day.Mui-selected:hover, .css-ia6q12-MuiButtonBase-root-MuiPickersDay-root-MuiDateRangePickerDay-day.Mui-selected:hover{
+  color: white !important;
+}
+
 @keyframes typing {
   0% {
     content: '.';

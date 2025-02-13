@@ -331,7 +331,8 @@ const SpaceInquireModal = ({
         :
         <Box
           sx={{
-            width: { xs: "95vw", sm: "500px" },
+            width: { xs: "95vw", sm: "max-content" },
+            // maxWidth: "max-content",
             maxHeight: "90vh",
             overflowY: "auto",
             outline: "none",

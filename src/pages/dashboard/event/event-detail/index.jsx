@@ -40,7 +40,11 @@ const EventDetails = () => {
           details: {
             by: data?.data?.brand?.brandName ? data?.data?.brand?.brandName : "-",
             // starting: dayjs(data?.data?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
-            starting: data?.data?.eventDate[0]?.startDate !== "string" && data?.data?.eventDate[0]?.startDate !== "Invalid Date" ? dayjs(data?.data?.eventDate[0]?.startDate).format("DD.MM.YYYY") : "DD.MM.YYYY",
+            starting: !data?.data?.eventDate ||
+              !data?.data?.eventDate[0]?.startDate ||
+              !dayjs(data?.data?.eventDate[0]?.startDate).isValid()
+              ? "DD.MM.YYYY"
+              : dayjs(data?.data?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
             RSVP: data?.data?.rsvpCount,
             saved: data?.data?.likedCount,
           },
@@ -55,15 +59,31 @@ const EventDetails = () => {
                   location: address,
                   space: data?.data?.space?.spaceName,
                   spaceCategory: data?.data?.space?.spaceCategory?.map(item => item.name) || [],
-                  startingDate: data?.data?.eventDate[0]?.startDate !== "string" && data?.data?.eventDate[0]?.startDate !== "Invalid Date" ? moment.utc(data?.data?.eventDate[0]?.startDate).add(1, 'day').format("DD.MM.YYYY") : "DD.MM.YYYY",
-                  endingDate: data?.data?.eventDate[0]?.endDate !== "string" && data?.data?.eventDate[0]?.endDate !== "Invalid Date" ? moment.utc(data?.data?.eventDate[0]?.endDate).add(1, 'day').format("DD.MM.YYYY") : "DD.MM.YYYY",
+                  startingDate: !data?.data?.eventDate ||
+                    !data?.data?.eventDate[0]?.startDate ||
+                    !moment(data?.data?.eventDate[0]?.startDate).isValid()
+                    ? "DD.MM.YYYY"
+                    : moment.utc(data?.data?.eventDate[0]?.startDate).add(1, 'day').format("DD.MM.YYYY"),
+                  endingDate: !data?.data?.eventDate ||
+                    !data?.data?.eventDate[0]?.endDate ||
+                    !moment(data?.data?.eventDate[0]?.endDate).isValid()
+                    ? "DD.MM.YYYY"
+                    : moment.utc(data?.data?.eventDate[0]?.endDate).add(1, 'day').format("DD.MM.YYYY"),
                   rsvpDates: data?.data?.event_rsvp?.attendanceDates?.rsvpDates
                     ? data?.data?.event_rsvp?.attendanceDates?.rsvpDates.map(item =>
                       moment.utc(item.dateTime).add(1, 'day').format()
                     )
                     : [],
-                  startDate: data?.data?.eventDate[0]?.startDate !== "string" && data?.data?.eventDate[0]?.startDate !== "Invalid Date" ? moment.utc(data?.data?.eventDate[0]?.startDate).add(1, 'day').format() : "DD.MM.YYYY",
-                  endDate: data?.data?.eventDate[0]?.endDate !== "string" && data?.data?.eventDate[0]?.endDate !== "Invalid Date" ? moment.utc(data?.data?.eventDate[0]?.endDate).add(1, 'day').format() : "DD.MM.YYYY",
+                  startDate: !data?.data?.eventDate ||
+                    !data?.data?.eventDate[0]?.startDate ||
+                    !moment(data?.data?.eventDate[0]?.startDate).isValid()
+                    ? "DD.MM.YYYY"
+                    : moment.utc(data?.data?.eventDate[0]?.startDate).add(1, 'day').format(),
+                  endDate: !data?.data?.eventDate ||
+                    !data?.data?.eventDate[0]?.endDate ||
+                    !moment(data?.data?.eventDate[0]?.endDate).isValid()
+                    ? "DD.MM.YYYY"
+                    : moment.utc(data?.data?.eventDate[0]?.endDate).add(1, 'day').format(),
                   expectedPoint: {
                     title: "What to Expect:",
                     points: [data?.data?.details?.htmlContent || ""],
