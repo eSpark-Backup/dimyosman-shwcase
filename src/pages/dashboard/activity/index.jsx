@@ -66,8 +66,7 @@ const Activity = () => {
                 item?.space?.brand?.location?.long
               );
             }
-            else if(item?.type === "space"){
-              console.log(item)
+            else if (item?.type === "space") {
               address = await fetchAddressFromCoordinates(
                 item?.brand?.location?.lat,
                 item?.brand?.location?.long
@@ -105,21 +104,21 @@ const Activity = () => {
               value:
                 item?.type === "event"
                   ? moment
-                      .utc(new Date(item?.eventDate[0]?.startDate))
-                      .add(1, "day")
-                      .format("DD.MM.YYYY.")
+                    .utc(new Date(item?.eventDate[0]?.startDate))
+                    .add(1, "day")
+                    .format("DD.MM.YYYY.")
                   : filterPrice[0]?.price
-                  ? `$${filterPrice[0]?.price}/day`
-                  : "N/A",
+                    ? `$${filterPrice[0]?.price}/day`
+                    : "N/A",
               deadline:
                 item?.type === "event"
                   ? moment
-                      .utc(new Date(item?.eventDate[0]?.endDate))
-                      .add(1, "day")
-                      .format("DD.MM.YYYY.")
+                    .utc(new Date(item?.eventDate[0]?.endDate))
+                    .add(1, "day")
+                    .format("DD.MM.YYYY.")
                   : filterPrice[0]?.minimum
-                  ? `minimum lease: ${filterPrice[0]?.minimum} days`
-                  : "N/A",
+                    ? `minimum lease: ${filterPrice[0]?.minimum} days`
+                    : "N/A",
               userImage:
                 item?.type === "event"
                   ? item?.brand?.brandImage
@@ -299,12 +298,17 @@ const Activity = () => {
             />
           ))}
           <div ref={ref} style={{ minHeight: 10, textAlign: "center" }}>
-            {isFetching && <CircularProgress />}
+            {isFetching && page !== 1 && <CircularProgress />}
           </div>
-          {!isFetching && !isLoading && allActivityData.length >= total &&
+          {!isFetching && !isLoading && allActivityData.length >= total && hasFetchedData &&
             <Typography fontWeight={700} fontSize={18} textAlign="center">
               You have seen all!
             </Typography>
+          }
+          {!isFetching && !isLoading && allActivityData.length >= total &&
+            <Box sx={{ width: "100%" }}>
+              <LinearProgress />
+            </Box>
           }
         </Grid>
         <Grid

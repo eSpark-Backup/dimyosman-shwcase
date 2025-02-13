@@ -92,21 +92,25 @@ const InputWithMap = ({
       !dayjs(defaultDate[0]).isValid() ||
       !dayjs(defaultDate[1]).isValid()
     ) {
-      setSelectedDate([null, null]);
+      // Only reset if selectedDate is not already [null, null]
+      setSelectedDate(prev => 
+        JSON.stringify(prev) !== JSON.stringify([null, null]) ? [null, null] : prev
+      );
       onDateChange && onDateChange([null, null]);
       return;
     }
-
+  
     const parsedDates = defaultDate.map(date => (date ? dayjs(date) : null));
     const isValidDefault = isRangeValid(parsedDates, bookedRanges);
-
+  
     setSelectedDate(prev => {
       const newDate = isValidDefault ? parsedDates : [null, null];
       return JSON.stringify(prev) !== JSON.stringify(newDate) ? newDate : prev;
     });
-
+  
     onDateChange(isValidDefault ? parsedDates : [null, null]);
   }, [defaultDate, bookedRanges]);
+  
 
 
 

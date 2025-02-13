@@ -121,11 +121,24 @@ const Profile = () => {
         ],
         details: {
           by: item?.brand?.brandName,
-          starting: dayjs.utc(item?.eventDate?.[0]?.startDate).startOf("day").local().format("DD.MM.YYYY"),
+          starting: !item?.eventDate ||
+            !item?.eventDate[0]?.startDate ||
+            !dayjs(item?.eventDate[0]?.startDate).isValid()
+            ? "-"
+            : dayjs.utc(item?.eventDate[0]?.startDate).startOf("day").local().format("DD.MM.YYYY"),
+
           RSVP: item?.rsvpCount
         },
-        startDate: dayjs.utc(item?.eventDate[0]?.startDate),
-        endDate: dayjs.utc(item?.eventDate[0]?.endDate),
+        startDate: !item?.eventDate ||
+          !item?.eventDate[0]?.startDate ||
+          !dayjs(item?.eventDate[0]?.startDate).isValid()
+          ? "DD.MM.YYYY"
+          : dayjs.utc(item?.eventDate[0]?.startDate),
+        endDate: !item?.eventDate ||
+          !item?.eventDate[0]?.endDate ||
+          !dayjs(item?.eventDate[0]?.endDate).isValid()
+          ? "DD.MM.YYYY"
+          : dayjs.utc(item?.eventDate[0]?.endDate),
         rsvpDates: item?.event_rsvp?.attendanceDates?.rsvpDates ? item?.event_rsvp?.attendanceDates?.rsvpDates?.map(item => item.dateTime) : [],
 
       }));

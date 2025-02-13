@@ -131,7 +131,7 @@ const ProfileCard = ({ myProfile, userRole = "account", isEdit, handleProfileImg
                             style={{ display: "none" }}
                             ref={mainImgRef}
                             multiple
-                            accept="image/*"
+                            accept=".jpeg, .png, .jpg, .svg"
                             onChange={handleFileChange}
                         />
                     </Box>
@@ -288,6 +288,7 @@ const ProfileCard = ({ myProfile, userRole = "account", isEdit, handleProfileImg
                                         <input type="file" style={{ display: "none" }}
                                             ref={profileImgRef}
                                             onChange={handleImageChange}
+                                            accept=".jpeg, .png, .jpg, .svg"
                                         />
                                     </Box>
 

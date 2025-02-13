@@ -183,7 +183,7 @@ const FullWidthImgInput = ({
                     style={{ display: "none" }}
                     ref={imageRef}
                     multiple={cover.length === currentIndex}
-                    accept="image/*"
+                    accept=".jpeg, .png, .jpg, .svg"
                     onChange={handleFileChange} // Use the updated handler
                 />
             </Box>
