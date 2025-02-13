@@ -1,8 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Box } from '@mui/material';
+import React, { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-const MapDisplay = React.memo(({ locations, marker, mapRef, map, setMap }) => {
-  const markersRef = useRef([]); 
+import { Box } from "@mui/material";
+
+const MapDisplay = React.memo(({ locations, marker, mapRef }) => {
+  const { pathname } = useLocation();
+  const { parameters, allData, isTyping } = useSelector(
+    (state) => state.search
+  );
+
+  const markersRef = useRef([]);
+  const [map, setMap] = useState(null);
 
   useEffect(() => {
     if (!map) {
@@ -39,18 +48,32 @@ const MapDisplay = React.memo(({ locations, marker, mapRef, map, setMap }) => {
 
       // Optionally fit map to show all markers
       const bounds = new window.google.maps.LatLngBounds();
-      locations.forEach((loc) => bounds.extend({ lat: loc.lat, lng: loc.long }));
+      locations.forEach((loc) =>
+        bounds.extend({ lat: loc.lat, lng: loc.long })
+      );
+
       map.fitBounds(bounds);
     }
   }, [map, locations]);
 
-  return (
-    <Box sx={{ height: '400px', width: '100%' }} ref={mapRef} />
-  );
+  useEffect(() => {
+    if (pathname === "/search") {
+      if (isTyping && allData?.length === 0 && map && parameters?.lat) {
+        map.panTo({ lat: parameters?.lat, lng: parameters?.long });
+      }
+    }
+  }, [allData, isTyping, map, parameters, pathname]);
+
+  return <Box sx={{ height: "400px", width: "100%" }} ref={mapRef} />;
 });
 
-const MapWithKey = ({ locations, marker, mapRef, map, setMap }) => (
-  <MapDisplay key={JSON.stringify(locations)} locations={locations} marker={marker} mapRef={mapRef} map={map} setMap={setMap} />
+const MapWithKey = ({ locations, marker, mapRef }) => (
+  <MapDisplay
+    key={JSON.stringify(locations)}
+    locations={locations}
+    marker={marker}
+    mapRef={mapRef}
+  />
 );
 
 export default MapWithKey;

@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 
 import {
   Box,
+  // Button,
   Grid,
   IconButton,
   InputAdornment,
@@ -13,6 +14,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  // Stack,
   Typography,
   useMediaQuery,
 } from "@mui/material";
@@ -92,8 +94,6 @@ const Filters = ({
   setHasMore = null,
   setLoadingStart = null,
   loadingStart = false,
-  allData = [],
-  searchedData = [],
 }) => {
   const isLessThan1281 = useMediaQuery("(max-width:1281px)");
 
@@ -111,13 +111,14 @@ const Filters = ({
 
   const mapRef = useRef(null);
 
-  const [radiusInput, setRadiusInput] = useState(parameters.radius);
+  const [radiusInput, setRadiusInput] = useState(parameters.radius || "");
   const [debouncedRadius, resetDebouncedRadius] = useDebounce(radiusInput, 500);
 
   const [suggestions, setSuggestions] = useState([]);
   const [isSelecting, setIsSelecting] = useState(false);
-  const [value, setValue] = useState(parameters?.locaion);
-  const [map, setMap] = useState(null);
+  const [value, setValue] = useState(parameters?.locaion || "");
+  // const [currentLoc, setCurrentLoc] = useState(true);
+  // const [askForLoc, setaskForLoc] = useState(false);
 
   const { data: getLocationData, error } = useGetGeneralLocationQuery(
     { query: value },
@@ -130,6 +131,8 @@ const Filters = ({
     const handleClickOutside = (event) => {
       if (mapRef.current && !mapRef.current.contains(event.target)) {
         setSuggestions([]);
+        // setCurrentLoc(false);
+        // setaskForLoc(false);
       }
     };
 
@@ -143,16 +146,14 @@ const Filters = ({
     if (pathname !== "/search") {
       resetDebouncedRadius();
       dispatch(emptyFilters());
-      setRadiusInput("");
-      dispatch(setLocation({ lat: "", long: "", location: "" }));
-      setValue("");
+
+      emptyInputs();
+
       dispatch(emptyAllLocations());
-      dispatch(setPageNumber(1));
       dispatch(setSkip(true));
-      dispatch(setRadius(""));
+
       dispatch(setAllSearchData([]));
       dispatch(setSpaceSearchData([]));
-      dispatch(setIsTyping(false));
     }
 
     if (pathname === "/search" && !isLessThan1281) {
@@ -169,9 +170,13 @@ const Filters = ({
       setLoadingStart?.(false);
 
       dispatch(setRadius(debouncedRadius));
-      dispatch(setSkip(false));
-      dispatch(setAllSearchData([]));
-      dispatch(setSpaceSearchData([]));
+
+      if (radiusInput?.length === 0) {
+        emptyInputs();
+      }
+
+      commonReset();
+
       setOpenFilterDrawer?.(false);
     }
   }, [debouncedRadius, dispatch, parameters.radius]);
@@ -250,17 +255,15 @@ const Filters = ({
     });
 
     dispatch(setAllFilterCategories(updatedCategories));
-
-    dispatch(setRadius(""));
     dispatch(setPageNumber(1));
+
     setHasMore?.(true);
     setLoadingStart?.(false);
-    dispatch(setAllSearchData([]));
-    dispatch(setSpaceSearchData([]));
+
+    commonReset();
 
     dispatch(emptyCategoryNames());
     dispatch(setEntity(entity.type));
-    dispatch(setSkip(false));
 
     if (pathname !== "/search") {
       actionAsDrawer();
@@ -343,10 +346,11 @@ const Filters = ({
             dispatch(setRadius(10));
           }
 
-          dispatch(setSkip(false));
-          dispatch(setAllSearchData([]));
-          dispatch(setSpaceSearchData([]));
-          setOpenFilterDrawer?.(false);
+          if (parameters?.lat !== lat || parameters?.long !== lng) {
+            commonReset();
+            setOpenFilterDrawer?.(false);
+            dispatch(setPageNumber(1));
+          }
         }
         setSuggestions([]);
       })
@@ -355,13 +359,20 @@ const Filters = ({
       );
   };
 
-  useEffect(() => {
-    if (pathname === "/search") {
-      if (isTyping && allData?.length === 0 && map && parameters?.lat) {
-        map.panTo({ lat: parameters?.lat, lng: parameters?.long });
-      }
-    }
-  }, [allData, isTyping, map, parameters, pathname]);
+  const commonReset = () => {
+    dispatch(setSkip(false));
+    dispatch(setAllSearchData([]));
+    dispatch(setSpaceSearchData([]));
+  };
+
+  const emptyInputs = () => {
+    setRadiusInput("");
+    dispatch(setLocation({ lat: "", long: "", location: "" }));
+    setValue("");
+    dispatch(setRadius(""));
+    dispatch(setIsTyping(false));
+    dispatch(setPageNumber(1));
+  };
 
   const inputStyles = {
     border: "1px solid rgba(209, 219, 215, 0.5)",
@@ -461,7 +472,13 @@ const Filters = ({
       </Box>
 
       <Grid container>
-        <Grid item xs={12} sm={8} pr={1} sx={{ mb: { xs: 1, sm: 0 } }}>
+        <Grid
+          item
+          xs={12}
+          sm={8}
+          pr={1}
+          sx={{ mb: { xs: 1, sm: 0 }, position: "relative" }}
+        >
           <Typography
             component="label"
             sx={{
@@ -475,12 +492,22 @@ const Filters = ({
           <Input
             sx={inputStyles}
             value={value}
-            readOnly={parameters?.entity?.length === 0 ? true : false}
+            readOnly={
+              parameters?.entity?.length === 0
+                ? true
+                : // : currentLoc
+                  // ? true
+                  false
+            }
             onClick={() => {
               if (parameters?.entity?.length === 0) {
                 toast.error("Filter is not selected");
                 return;
               }
+
+              // if (currentLoc) {
+              //   setaskForLoc(true);
+              // }
             }}
             onInputChange={handleSearch}
             type="text"
@@ -488,12 +515,86 @@ const Filters = ({
             autoComplete="off"
             endAdornment={
               <InputAdornment position="end">
-                <IconButton>
-                  <img src={locationIcon} alt="" />
+                <IconButton
+                  sx={{
+                    cursor:
+                      parameters?.lat || parameters?.long
+                        ? "pointer"
+                        : "default",
+                    backgroundColor: "transparent !important",
+                    pointerEvents:
+                      parameters?.lat || parameters?.long ? "auto" : "none",
+                  }}
+                  onClick={() => {
+                    if (parameters?.lat || parameters?.long) {
+                      emptyInputs();
+                      commonReset();
+                    }
+                  }}
+                >
+                  {parameters?.lat || parameters?.long ? (
+                    <img src={close} alt="Close" />
+                  ) : (
+                    <img src={locationIcon} alt="Location" />
+                  )}
                 </IconButton>
               </InputAdornment>
             }
           />
+
+          {/* {askForLoc ? (
+            <Box
+              sx={{
+                maxHeight: 200,
+                overflowY: "auto",
+                position: "absolute",
+                zIndex: 1,
+                width: "calc(100% - 8px)",
+                backgroundColor: "white",
+                border: "1px solid #ddd",
+                marginRight: 2,
+                textAlign: "center",
+                padding: "16px 0px",
+              }}
+            >
+              <Typography>
+                Do you want search with your current location
+              </Typography>
+
+              <Stack
+                flexDirection={"row"}
+                justifyContent={"center"}
+                gap={2}
+                mt={2}
+              >
+                <Button
+                  sx={{
+                    textTransform: "inherit",
+                    padding: "0px !important",
+                    fontSize: "16px",
+                    height: "28px",
+                  }}
+                  onClick={() => {}}
+                >
+                  Yes
+                </Button>
+                <Button
+                  sx={{
+                    textTransform: "inherit",
+                    padding: "0px !important",
+                    fontSize: "16px",
+                    height: "28px",
+                  }}
+                  onClick={() => {
+                    setCurrentLoc(false);
+                    setaskForLoc(false);
+                  }}
+                >
+                  No
+                </Button>
+              </Stack>
+            </Box>
+          ) : null} */}
 
           {/* Suggestions List */}
           {suggestions.length > 0 && (
@@ -503,7 +604,7 @@ const Filters = ({
                 overflowY: "auto",
                 position: "absolute",
                 zIndex: 1,
-                width: "100%",
+                width: "calc(100% - 8px)",
                 backgroundColor: "white",
                 border: "1px solid #ddd",
               }}
@@ -541,7 +642,7 @@ const Filters = ({
             readOnly={
               parameters?.entity?.length === 0
                 ? true
-                : !parameters?.lat
+                : !parameters?.lat || !parameters?.long
                 ? true
                 : false
             }
@@ -551,7 +652,7 @@ const Filters = ({
                 return;
               }
 
-              if (!parameters?.lat) {
+              if (!parameters?.lat || !parameters?.long) {
                 toast.error("Please add location first");
                 return;
               }
@@ -582,8 +683,6 @@ const Filters = ({
                 : mapMarker
             }
             mapRef={mapRef}
-            map={map}
-            setMap={setMap}
           />
         )}
       </Box>
