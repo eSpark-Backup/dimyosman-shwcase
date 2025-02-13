@@ -203,7 +203,6 @@ const SharedPage = () => {
     <Box
       sx={{
         marginTop: "80px !important",
-        marginTop: "80px !important",
         overflowY: "auto",
         maxHeight: "calc(100vh - 80px)",
         margin: "0px auto",
