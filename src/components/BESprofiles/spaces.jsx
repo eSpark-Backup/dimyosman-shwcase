@@ -126,7 +126,7 @@ const Spaces = ({ brandSpaces, isMyProfile }) => {
                     }}
                   >
                     <SpaceCard
-                      onClick={() => navigate(`/space/${space?.id}`)}
+                      onClick={() => token ?  navigate(`/space/${space?.id}`) : toast.error("You need to login first")}
                       spaces={space}
                       key={ind}
                     />

@@ -107,7 +107,7 @@ const MessageHeader = ({
               display: "flex",
               flexDirection: "column",
               justifyContent:
-                chatGroup?.isInquiryRole === "sender" ? "normal" : "center",
+              chatGroup?.isInquiryRole === "sender" && chatGroup?.activity !== "brand" ? "normal" : "center",
             }}
           >
             <Stack
@@ -149,7 +149,7 @@ const MessageHeader = ({
               )}
             </Stack>
 
-            {chatGroup?.isInquiryRole === "sender" && (
+            {chatGroup?.isInquiryRole === "sender" && chatGroup?.activity !== "brand" && (
               <Typography
                 sx={{
                   fontWeight: 300,
@@ -157,7 +157,7 @@ const MessageHeader = ({
                   lineHeight: isLessThan1100 ? "18px" : "28px",
                 }}
               >
-                {chatGroup?.receiverBrand?.brandName}
+                {chatGroup?.receiverBrand?.brandName || chatGroup?.receiverEvent?.brand?.brandName}
               </Typography>
             )}
 
@@ -181,7 +181,7 @@ const MessageHeader = ({
 
               <GroupDetail withColon="Saved" text={chatGroup?.saved} />
 
-              {isLessThan1100 ? (
+              {/* {isLessThan1100 ? (
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                   <Typography
                     sx={{
@@ -208,12 +208,12 @@ const MessageHeader = ({
                     })}
                   </Box>
                 </Box>
-              ) : null}
+              ) : null} */}
             </Box>
           </Box>
         </Box>
 
-        {!isLessThan1100 ? (
+        {/* {!isLessThan1100 ? (
           <Stack sx={{ flex: 1, alignItems: "end" }}>
             <Typography
               sx={{
@@ -246,7 +246,7 @@ const MessageHeader = ({
               }}
             >{`Based on ${group?.reviews} reviews from ${group?.leases} Leases`}</Typography>
           </Stack>
-        ) : null}
+        ) : null} */}
       </Box>
     </Box>
   );

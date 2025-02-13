@@ -130,7 +130,7 @@ const Events = ({ myProfile, addNewEvent, isMyProfile }) => {
                     }}
                   >
                     <EventCard
-                      onClick={() => navigate(`/event/${event?.id}`)}
+                      onClick={() => token ? navigate(`/event/${event?.id}`) : toast.error("You need to login first")}
                       event={event}
                       key={ind}
                     />
