@@ -50,6 +50,7 @@ const SpaceInquireModal = ({
   spaceId,
   brandId,
 }) => {
+  const token = window.localStorage.getItem("token");
   const quillInstance = useRef(null);
 
   const [selectedDate, setSelectedDate] = useState([]);
@@ -82,7 +83,7 @@ const SpaceInquireModal = ({
     isSuccess: IsBrandSuccess,
     error: BrandError,
     isFetching: IsBrandFetching,
-  } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
+  } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true, skip: !token });
 
   useEffect(() => {
     if (isError) {
