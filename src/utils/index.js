@@ -521,12 +521,10 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
           isEventsChats ||
           (item?.isInquiryRole && item?.isInquiryRole === "receiver")
             ? item?.senderBrand?.user?.name
-            : item?.receiverBrand?.user?.name;
+            : item?.receiverBrand?.user?.name || item?.receiverEvent?.user?.name;
 
-        const receiverbrandName = isSpacesChats
-          ? item?.receiverBrand?.brandName
-          : isEventsChats
-          ? item?.receiverEvent?.brand?.brandName
+        const receiverbrandName = isSpacesChats || isEventsChats
+          ? item?.receiverBrand?.brandName || item?.receiverEvent?.brand?.brandName
           : "";
 
         const activity =
