@@ -17,8 +17,8 @@ const IconBadge = ({
   activeBG,
   theme,
   onClick,
+  allGroups,
   activeTab,
-  allMessages,
 }) => {
   const getUnreadChatIds =
     getCookie("unreadChatIds") && JSON.parse(getCookie("unreadChatIds"));
@@ -32,7 +32,7 @@ const IconBadge = ({
   useEffect(() => {
     if (getUnreadChatIds?.length) {
       for (const unreadChatId of getUnreadChatIds) {
-        const matchingMessage = allMessages.find((message) =>
+        const matchingMessage = allGroups?.find((message) =>
           message.chatGroups.some((group) => group.id === unreadChatId)
         );
 
@@ -52,7 +52,7 @@ const IconBadge = ({
     } else {
       setIsMatched(false);
     }
-  }, [icon, allMessages, getUnreadChatIds]);
+  }, [icon, allGroups, getUnreadChatIds]);
 
   useEffect(() => {
     if (fromNotification) {

@@ -642,7 +642,6 @@ const Message = () => {
                 onClick={filterChats}
                 allGroups={allGroups}
                 activeTab={activeTab}
-                allMessages={allMessages}
                 selectedGroup={selectedGroup}
               />
             ))}
