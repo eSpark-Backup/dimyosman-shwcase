@@ -420,7 +420,7 @@ const SpaceInquireModal = ({
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <Box
                   sx={{
-                    width: "100%",
+                    // width: "100%",
                     minHeight: "300px",
                   }}
                 >
@@ -434,7 +434,7 @@ const SpaceInquireModal = ({
                     disableHighlightToday={true}
                     sx={{
                       ".MuiPickersToolbar-root": {
-                        display: "none" 
+                        display: "none"
                       },
                       button: {
                         fontSize: "12px",
@@ -466,7 +466,7 @@ const SpaceInquireModal = ({
                 gap="10px"
                 sx={{ height: "399px" }}
               >
-                <Box>
+                <Box sx={{ display: "flex", flexDirection:"column" }}>
                   <Typography textAlign="left" fontWeight={600} fontSize={12}>
                     {selectedDate?.length === 0
                       ? "Please select date"
