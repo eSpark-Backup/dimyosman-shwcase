@@ -12,11 +12,12 @@ import SpaceInquireModal from "../../../components/SpaceInquireModal";
 
 import { useGetActivityDataQuery } from "../../../services/activity";
 import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../../../store/slices/activity";
+import { fetchAddressFromCoordinates } from "../../../utils";
 
 const Activity = () => {
-const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
-const { allActivityData, activitySpaceData, page } = useSelector((state) => state.activity);
+  const { allActivityData, activitySpaceData, page } = useSelector((state) => state.activity);
 
   const [total, setTotal] = useState(0);
 
@@ -30,71 +31,169 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {
-    if (isSuccess) {
+    const fetchData = async () => {
+      if (!isSuccess) return;
+
       if (!data?.data && page === 1) {
         dispatch(setAllActivityData([]));
-        setHasFetchedData(true); 
+        setHasFetchedData(true);
         return;
       }
+
       if (data?.data) {
-        const updatedData = data.data.activity?.map((item) => {
-          const filterPrice = item?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") || [];
-          const spaceFeatures = item?.amenity?.map((amenityItem) => ({
-            icon: amenityItem?.iconUrl || "",
-            description: amenityItem?.name || ""
-          })) || [];
-          const coverArray = item?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
-          const category = item?.type === "brand" ? item?.brandCategory : item?.type === "event" ? item?.eventCategory : item?.spaceCategory
-        
-          return {
-            profileId: item?.type === "brand" ? item?.user?.id : item?.brand?.id,
-            activity: item?.type,
-            id: item?.id || "",
-            userName: item?.type === "event" ? item?.brand?.brandName : item?.type === "brand" ? item?.user?.name : item?.brand?.brandName || "",
-            activityName: item?.type === "event" ? item?.eventName : item?.type === "brand" ? item?.brandName : item?.spaceName || "",
-            activityMaker: category[0]?.name || "",
-            content: [item?.details?.description || ""],
-            activityLocation: item?.type === "event" ? item?.space?.spaceName : item?.brand?.brandName || "",
-            activityLocationId: item?.type === "event" ? item?.space?.id : "",
-            activityLocation2: item?.type === "event" ? item?.brand?.brandName : "",
-            activityAddress: "123 Williamsburg Ave, Brooklyn, NY 11211",
-            value: item?.type === "event" ? moment.utc(new Date(item?.eventDate[0]?.startDate)).add(1, 'day').format("DD.MM.YYYY.") : filterPrice[0]?.price ? `$${filterPrice[0]?.price}/day` : "N/A",
-            deadline: item?.type === "event" ? moment.utc(new Date(item?.eventDate[0]?.endDate)).add(1, 'day').format("DD.MM.YYYY.") : filterPrice[0]?.minimum ? `minimum lease: ${filterPrice[0]?.minimum} days` : "N/A",
-            userImage: item?.type === "event" ? item?.brand?.brandImage : item?.type === "brand" ? item?.user?.profileImage : item?.brand?.brandImage || "",
-            activityImage: item?.type === "event" ? item?.eventImage : item?.type === "brand" ? item?.brandImage : item?.spaceImage || "",
-            features: spaceFeatures,
-            userRole: item?.type === "brand" ? "user" : item?.type === "space" ? "brand" : "brand",
-            slides: coverArray,
-            isFavourite: item?.isFavourite,
-            rsvpDates: item.event_rsvp?.attendanceDates?.rsvpDates ? item.event_rsvp?.attendanceDates?.rsvpDates?.map(item => item.dateTime) : [],
-            startDate: item?.type === "event" && item?.eventDate[0]?.startDate || "",
-            endDate: item?.type === "event" && item?.eventDate[0]?.endDate || "",
-          };
-        }) || [];
+        const updatedData = await Promise.all(
+          data.data.activity?.map(async (item) => {
+            const filterPrice =
+              item?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") || [];
+            const spaceFeatures =
+              item?.amenity?.map((amenityItem) => ({
+                icon: amenityItem?.iconUrl || "",
+                description: amenityItem?.name || "",
+              })) || [];
+            const coverArray =
+              item?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
+            const category =
+              item?.type === "brand"
+                ? item?.brandCategory
+                : item?.type === "event"
+                  ? item?.eventCategory
+                  : item?.spaceCategory;
+
+            let address = "";
+            if (item?.type === "event") {
+              address = await fetchAddressFromCoordinates(
+                item?.space?.brand?.location?.lat,
+                item?.space?.brand?.location?.long
+              );
+            }
+            else if (item?.type === "space") {
+              address = await fetchAddressFromCoordinates(
+                item?.brand?.location?.lat,
+                item?.brand?.location?.long
+              );
+            }
+
+            return {
+              shareableLink: item?.shareableLink,
+              profileId:
+                item?.type === "brand" ? item?.user?.id : item?.brand?.id,
+              activity: item?.type,
+              id: item?.id || "",
+              userName:
+                item?.type === "event"
+                  ? item?.brand?.brandName
+                  : item?.type === "brand"
+                  ? item?.user?.name
+                  : item?.brand?.brandName || "",
+              activityName:
+                item?.type === "event"
+                  ? item?.eventName
+                  : item?.type === "brand"
+                  ? item?.brandName
+                  : item?.spaceName || "",
+              activityMaker: category[0]?.name || "",
+              content: [item?.details?.description || ""],
+              activityLocation:
+                item?.type === "event"
+                  ? item?.space?.spaceName
+                  : item?.brand?.brandName || "",
+              activityLocationId: item?.type === "event" ? item?.space?.id : "",
+              activityLocation2:
+                item?.type === "event" ? item?.brand?.brandName : "",
+              activityAddress: address || "",
+              value:
+                item?.type === "event"
+                  ? moment
+                    .utc(new Date(item?.eventDate[0]?.startDate))
+                    .add(1, "day")
+                    .format("DD.MM.YYYY.")
+                  : filterPrice[0]?.price
+                    ? `$${filterPrice[0]?.price}/day`
+                    : "N/A",
+              deadline:
+                item?.type === "event"
+                  ? moment
+                    .utc(new Date(item?.eventDate[0]?.endDate))
+                    .add(1, "day")
+                    .format("DD.MM.YYYY.")
+                  : filterPrice[0]?.minimum
+                    ? `minimum lease: ${filterPrice[0]?.minimum} days`
+                    : "N/A",
+              userImage:
+                item?.type === "event"
+                  ? item?.brand?.brandImage
+                  : item?.type === "brand"
+                  ? item?.user?.profileImage
+                  : item?.brand?.brandImage || "",
+              activityImage:
+                item?.type === "event"
+                  ? item?.eventImage
+                  : item?.type === "brand"
+                  ? item?.brandImage
+                  : item?.spaceImage || "",
+              features: spaceFeatures,
+              userRole:
+                item?.type === "brand"
+                  ? "user"
+                  : item?.type === "space"
+                  ? "brand"
+                  : "brand",
+              slides: coverArray,
+              isFavourite: item?.isFavourite,
+              isFollowed: item?.isFollowed,
+              rsvpDates: item.event_rsvp?.attendanceDates?.rsvpDates
+                ? item.event_rsvp?.attendanceDates?.rsvpDates?.map(
+                    (item) => item.dateTime
+                  )
+                : [],
+              startDate:
+                (item?.type === "event" && item?.eventDate[0]?.startDate) || "",
+              endDate:
+                (item?.type === "event" && item?.eventDate[0]?.endDate) || "",
+              isDraftedBrandOwner:
+                (item?.type === "event" || item?.type === "space") &&
+                item?.brand?.status === "DRAFT"
+                  ? item?.brand?.user?.id
+                  : null,
+              publicProfile: item?.user?.profile,
+              brandStatus:
+                (item?.type === "event" || item?.type === "space") &&
+                item?.brand?.status,
+              isDraftedSpaceOwner:
+                item?.type === "event" && item?.space?.status === "DRAFT"
+                  ? item?.space?.user?.id
+                  : null,
+              spaceStatus: item?.type === "event" ? item?.space?.status : null,
+            };
+          }) || []
+        );
+
         const mergedData = [...allActivityData, ...updatedData];
 
-        const mergedSapcesData = [...activitySpaceData, ...data.data.activity].filter(
-          (item, index, self) =>
-            index === self.findIndex((t) => t?.id === item?.id)
+        const mergedSpacesData = [...activitySpaceData, ...data.data.activity].filter(
+          (item, index, self) => index === self.findIndex((t) => t?.id === item?.id)
         );
-  
-        const uniqueData = Array.from(
-          new Map(mergedData.map((item) => [item.id, item])).values()
-        );
+
+        const uniqueData = Array.from(new Map(mergedData.map((item) => [item.id, item])).values());
+
         dispatch(setAllActivityData(uniqueData));
-        dispatch(setSpaceData(mergedSapcesData))
+        dispatch(setSpaceData(mergedSpacesData));
         setTotal(data?.data?.pagination?.totalItems);
       }
-      setHasFetchedData(true); 
-    }
+
+      setHasFetchedData(true);
+    };
+
+    fetchData(); // Call the async function
   }, [isSuccess, data, page]);
+
 
 
   useEffect(() => {
     const scrollPosition = localStorage.getItem("scrollPosition");
     if (scrollContainerRef.current && scrollPosition) {
       scrollContainerRef.current.scrollTop = parseInt(scrollPosition, 10);
-      localStorage.removeItem("scrollPosition"); 
+      localStorage.removeItem("scrollPosition");
     }
   }, []);
 
@@ -154,6 +253,8 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
         >
           {allActivityData?.map((item, index) => (
             <ActivityCard
+              publicProfile={item?.publicProfile}
+              isFollowed={item?.isFollowed}
               isFavourite={item?.isFavourite}
               key={index}
               fullItem={item}
@@ -175,11 +276,16 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
               deadline={item?.deadline}
               userRole={item?.userRole}
               slides={item?.slides}
+              shareableLink={item?.shareableLink}
               features={item?.features}
               rsvpDates={item?.rsvpDates}
               startDate={item?.startDate}
               endDate={item?.endDate}
+              brandStatus={item?.brandStatus}
               handleNavigation={handleNavigation}
+              isDraftedBrandOwner={item?.isDraftedBrandOwner}
+              isDraftedSpaceOwner={item?.isDraftedSpaceOwner}
+              spaceStatus={item?.spaceStatus}
               handleAction={(fullItem) => {
                 if (fullItem.activity === "space") {
                   const detail = activitySpaceData?.find(
@@ -192,12 +298,17 @@ const { allActivityData, activitySpaceData, page } = useSelector((state) => stat
             />
           ))}
           <div ref={ref} style={{ minHeight: 10, textAlign: "center" }}>
-            {isFetching && <CircularProgress />}
+            {isFetching && page !== 1 && <CircularProgress />}
           </div>
-          {!isFetching && !isLoading && allActivityData.length >= total &&
+          {!isFetching && !isLoading && allActivityData.length >= total && hasFetchedData &&
             <Typography fontWeight={700} fontSize={18} textAlign="center">
               You have seen all!
             </Typography>
+          }
+          {!isFetching && !isLoading && allActivityData.length >= total &&
+            <Box sx={{ width: "100%" }}>
+              <LinearProgress />
+            </Box>
           }
         </Grid>
         <Grid

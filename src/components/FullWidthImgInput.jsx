@@ -1,8 +1,10 @@
 import { Box, Typography, useTheme } from '@mui/material';
 import React from 'react';
 import { activeItemIcon, add, notActiveIcon, subtract, uploadIcon } from '../assets';
+import { toast } from 'react-toastify';
 
 const FullWidthImgInput = ({
+    cover,
     HandleChange,
     imageRef,
     HandleInputCLick,
@@ -17,8 +19,13 @@ const FullWidthImgInput = ({
     const theme = useTheme();
 
     const handleFileChange = (event) => {
-        if (HandleChange) {
-            HandleChange(event);
+        const files = Array.from(event.target.files);
+        if(currentIndex === cover.length && files.length + cover?.length > 3) {
+            toast.error("You can not select more than 3 images.")
+        } else {
+            if (HandleChange) {
+                HandleChange(files);
+            }
         }
         // Reset the file input value to allow selecting the same file again
         if (imageRef && imageRef.current) {
@@ -126,7 +133,7 @@ const FullWidthImgInput = ({
                     zIndex: 3, // Above the overlay
                 }}
             >
-                {[0, 1, 2].map((index) => (
+                {[0, 1, 2].map((_, index) => (
                     <img
                         key={index}
                         src={index === currentIndex ? activeItemIcon : notActiveIcon}
@@ -175,6 +182,8 @@ const FullWidthImgInput = ({
                     type="file"
                     style={{ display: "none" }}
                     ref={imageRef}
+                    multiple={cover.length === currentIndex}
+                    accept=".jpeg, .png, .jpg, .svg"
                     onChange={handleFileChange} // Use the updated handler
                 />
             </Box>

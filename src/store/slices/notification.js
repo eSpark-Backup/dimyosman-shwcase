@@ -6,6 +6,7 @@ const initialState = {
   notifications: [],
   gotToMessage: null,
   fromNotification: false,
+  forceReload: false
 };
 
 const slice = createSlice({
@@ -38,7 +39,7 @@ const slice = createSlice({
         };
       } else {
         state.gotToMessage = {
-          spaceName: payload?.spaceName,
+          pName: payload?.pName,
           chatId: payload?.chatId,
         };
       }
@@ -48,6 +49,9 @@ const slice = createSlice({
     },
     setFromNotification: (state, action) => {
       state.fromNotification = action.payload;
+    },
+    setForceReload: (state, action) => {
+      state.forceReload = action.payload;
     },
   },
 });
@@ -62,6 +66,7 @@ export const {
   setGoToMessage,
   emptyGoToMessage,
   setFromNotification,
+  setForceReload
 } = slice.actions;
 
 export default slice.reducer;

@@ -98,7 +98,7 @@ export const sidebarRoutes = [
     icon: profile,
     hoverIcon: profileHover,
     title: "Profile",
-    link: "/profile/emily",
+    link: null,
   },
   {
     icon: calendar,
@@ -712,14 +712,14 @@ export const likedSpaceData = [
   },
 ];
 
-export const brandTableData = (gotoDetail, handleAction, myBrandData, myBrandData2, likeLoading, savedId) => [
+export const brandTableData = (gotoDetail, handleAction, myBrandData, myBrandData2, myBrandData3, likeLoading, savedId, followLoading, followId) => [
   {
     data: myBrandData,
     column: myBrandColumns(gotoDetail, (item) => handleAction(item, "edit")),
   },
   {
-    data: followingBrandData,
-    column: followingBrandColumns(gotoDetail, (item) =>
+    data: myBrandData3,
+    column: followingBrandColumns(followLoading, followId, gotoDetail, (item) =>
       handleAction(item, "unfollow")
     ),
   },

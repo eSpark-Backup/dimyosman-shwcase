@@ -28,6 +28,7 @@ const SearchBar = ({
   error,
   onBlur,
   handleFilterDrawer,
+  canType
 }) => {
   const theme = useTheme();
   const isLessThan1281 = useMediaQuery("(max-width:1281px)");
@@ -66,7 +67,7 @@ const SearchBar = ({
       }}
       onClick={() => {
         if (pathname !== "/search" || isLessThan1281) {
-          handleFilterDrawer();
+          handleFilterDrawer && handleFilterDrawer();
         }
       }}
     >
@@ -89,7 +90,7 @@ const SearchBar = ({
         onBlur={onBlur}
         variant="outlined"
         InputProps={{
-          readOnly: true,
+          readOnly: canType ? false : true,
           endAdornment: (
             <InputAdornment position="end">
               <IconButton sx={{ pointerEvents: "none" }}>

@@ -30,7 +30,7 @@ const myBrandColumns = (gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="brand-image">
                   <img
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "5px" }}
                     src={item?.brandImg}
                     alt="brand-img"
                   />
@@ -113,6 +113,7 @@ const myBrandColumns = (gotoDetail, handleAction) => {
               maxHeight: "26px",
               fontSize: "14px",
               fontWeight: "600",
+              textTransform: "none"
             }}
           >
             Edit
@@ -123,7 +124,7 @@ const myBrandColumns = (gotoDetail, handleAction) => {
   ];
 };
 
-const followingBrandColumns = (gotoDetail, handleAction) => {
+const followingBrandColumns = (followLoading, followId, gotoDetail, handleAction) => {
   return [
     {
       name: "Brand Name",
@@ -151,7 +152,7 @@ const followingBrandColumns = (gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="brand-icon">
                   <img
-                    style={{ width: "100%", height: "100%", objectFit: "cover"  }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "5px" }}
                     src={item?.brandImg}
                     alt="brand-img"
                   />
@@ -192,17 +193,20 @@ const followingBrandColumns = (gotoDetail, handleAction) => {
       key: "action",
       component: (item) => {
         return (
-          <Button
+          <LoadingButton
+            loading={followLoading && item?.id === followId}
+            disabled={followLoading && item?.id === followId}
             onClick={() => handleAction(item)}
             sx={{
               width: "89px",
               maxHeight: "26px",
               fontSize: "14px",
               fontWeight: "600",
+              textTransform: "none"
             }}
           >
             Unfollow
-          </Button>
+          </LoadingButton>
         );
       },
     },
@@ -237,7 +241,7 @@ const likedBrandColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="brand-image">
                   <img
-                    style={{ width: "100%", height: "100%", objectFit: "cover"  }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "5px" }}
                     src={item?.brandImg}
                     alt="brand-img"
                   />
@@ -287,6 +291,7 @@ const likedBrandColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
               maxHeight: "26px",
               fontSize: "14px",
               fontWeight: "600",
+              textTransform: "none"
             }}
           >
             Remove
@@ -296,5 +301,7 @@ const likedBrandColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
     },
   ];
 };
+
+
 
 export { myBrandColumns, followingBrandColumns, likedBrandColumns };

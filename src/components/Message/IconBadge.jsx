@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Box } from "@mui/material";
@@ -8,13 +8,55 @@ import {
   setFromNotification,
 } from "../../store/slices/notification";
 
-const IconBadge = ({ icon, bg, type, activeBG, onClick, activeTab }) => {
+import { getCookie } from "../../utils";
+
+const IconBadge = ({
+  icon,
+  bg,
+  type,
+  activeBG,
+  theme,
+  onClick,
+  allGroups,
+  activeTab,
+}) => {
+  const getUnreadChatIds =
+    getCookie("unreadChatIds") && JSON.parse(getCookie("unreadChatIds"));
+
   const dispatch = useDispatch();
+
   const { fromNotification } = useSelector((state) => state.notification);
+
+  const [isMatched, setIsMatched] = useState(false);
+
+  useEffect(() => {
+    if (getUnreadChatIds?.length) {
+      for (const unreadChatId of getUnreadChatIds) {
+        const matchingMessage = allGroups?.find((message) =>
+          message.chatGroups.some((group) => group.id === unreadChatId)
+        );
+
+        if (matchingMessage) {
+          const matchingIcon = type === matchingMessage.parentActivity;
+
+          if (matchingIcon) {
+            setIsMatched(true);
+            break;
+          } else {
+            setIsMatched(false);
+          }
+        } else {
+          setIsMatched(false);
+        }
+      }
+    } else {
+      setIsMatched(false);
+    }
+  }, [icon, allGroups, getUnreadChatIds]);
 
   useEffect(() => {
     if (fromNotification) {
-      if (activeTab !== "space") {
+      if (activeTab !== "all") {
         callFn();
       }
     }
@@ -55,7 +97,7 @@ const IconBadge = ({ icon, bg, type, activeBG, onClick, activeTab }) => {
       }}
     >
       <img src={icon} alt="Icon" />
-      {/* {isRead && (
+      {isMatched ? (
         <Box
           sx={{
             width: "10px",
@@ -63,11 +105,11 @@ const IconBadge = ({ icon, bg, type, activeBG, onClick, activeTab }) => {
             borderRadius: "50%",
             backgroundColor: theme.palette.error.danger,
             position: "absolute",
-            top: "-4px",
-            right: "-3px",
+            top: "0px",
+            right: "0px",
           }}
         />
-      )} */}
+      ) : null}
     </Box>
   );
 };

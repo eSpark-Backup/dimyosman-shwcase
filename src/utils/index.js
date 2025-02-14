@@ -75,6 +75,21 @@ export function getCookie(name) {
 export function deleteCookie(name) {
   document.cookie = `${name}=; Max-Age=-1; path=/`;
 }
+
+export const deleteAllCookiesExcept = (exceptions = []) => {
+  document.cookie.split(";").forEach((cookie) => {
+    const name = cookie.split("=")[0].trim();
+    if (!exceptions.includes(name)) {
+      deleteCookie(name);
+    }
+  });
+};
+
+export const logoutAuthUtils = (logout) => {
+  logout({ returnTo: window.location.origin, openUrl: false });
+  deleteAllCookiesExcept();
+}
+
 // FOR PICKER
 export const addEmoji = (
   emoji,
@@ -272,7 +287,7 @@ export const spacesAction = (
     case "Message":
       const navDetails = tenantSpace?.find((tenant) => tenant.id === item.id);
       const navigateData = {
-        spaceName: navDetails?.space?.spaceName,
+        pName: navDetails?.space?.spaceName,
         chatId: navDetails.chatId,
       };
       dispatch(setGoToMessage(navigateData));
@@ -292,7 +307,7 @@ export const spacesAction = (
   }
 };
 
-export const keysForBrandsSapcesEvents = (object, type) => {
+export const keysForBrandsSapcesEvents = async (object, type, address) => {
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
 
@@ -307,21 +322,33 @@ export const keysForBrandsSapcesEvents = (object, type) => {
     object?.coverImages?.map((imageItem) => imageItem?.url || "") || [];
 
   const coverObject = {
-    profileId: 2,
+    profileId: object?.brand?.id,
+    shareableLink: object?.shareableLink,
     isFavourite: object?.isFavourite,
     id: object?.id,
     activity: type,
-    userName: object?.brand?.brandName || "",
-    activityMaker: object?.brand?.brandName || "",
     content: [object?.details?.description || ""],
-    activityLocation: object?.brand?.brandName || "",
-    activityAddress: "123 Williamsburg Ave, Brooklyn, NY 11211",
+    activityLocation:
+      type === "event"
+        ? object?.space?.spaceName
+        : object?.brand?.brandName || "",
     userImage: object?.brand?.brandImage || "",
     userRole: "brand",
+    activityLocationId: type === "event" ? object?.space?.id : "",
+    activityLocation2: type === "event" ? object?.brand?.brandName : "",
     slides: coverArray,
+    isDraftedBrandOwner:
+      object?.brand?.status === "DRAFT" ? object?.brand?.user?.id : null,
+    brandStatus: object?.brand?.status,
+    isFollowed: object?.isFollowed,
+    publicProfile: object?.user?.profile,
   };
 
   if (type === "space") {
+    address = await fetchAddressFromCoordinates(
+      object?.brand?.location?.lat,
+      object?.brand?.location?.long
+    );
 
     const filterPrice =
       object?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") ||
@@ -333,10 +360,14 @@ export const keysForBrandsSapcesEvents = (object, type) => {
         description: amenityItem?.name || "",
       })) || [];
 
+      const category = object?.spaceCategory;
+
     return {
       ...coverObject,
       spaceId: object?.id || "",
       activityName: object?.spaceName || "",
+      activityAddress: address || "",
+      activityMaker: category[0]?.name || "",
       value: filterPrice[0]?.price ? `$${filterPrice[0]?.price}/day` : "N/A",
       deadline: filterPrice[0]?.minimum
         ? `minimum lease: ${filterPrice[0]?.minimum} days`
@@ -344,24 +375,47 @@ export const keysForBrandsSapcesEvents = (object, type) => {
       features: spaceFeatures,
       activityImage: object?.spaceImage || "",
       location: object?.brand?.location || [],
+      userName: object?.brand?.brandName || "",
+      isDraftedSpaceOwner: null,
     };
   } else if (type === "event") {
+    address = await fetchAddressFromCoordinates(
+      object?.space?.brand?.location?.lat,
+      object?.space?.brand?.location?.long
+    );
+    const category = object?.eventCategory;
 
     return {
       ...coverObject,
-      rsvpDates: object.event_rsvp?.attendanceDates?.rsvpDates ? object.event_rsvp?.attendanceDates?.rsvpDates?.map(item => item.dateTime) : [],
+      rsvpDates: object.event_rsvp?.attendanceDates?.rsvpDates
+        ? object.event_rsvp?.attendanceDates?.rsvpDates?.map(
+            (item) => item.dateTime
+          )
+        : [],
       startDate: object?.eventDate[0]?.startDate || "",
       endDate: object?.eventDate[0]?.endDate || "",
       eventId: object?.id || "",
       activityName: object?.eventName || "",
       activityImage: object?.eventImage || "",
+      activityAddress: address || "",
+      activityMaker: category[0]?.name || "",
       value: object?.eventDate[0]?.startDate
-        ? moment.utc(new Date(object?.eventDate[0]?.startDate)).add(1, 'day').format("DD.MM.YYYY")
+        ? moment
+            .utc(new Date(object?.eventDate[0]?.startDate))
+            .add(1, "day")
+            .format("DD.MM.YYYY")
         : "N/A",
       deadline: object?.eventDate[0]?.endDate
-        ? moment.utc(new Date(object?.eventDate[0]?.endDate)).add(1, 'day').format("DD.MM.YYYY")
+        ? moment
+            .utc(new Date(object?.eventDate[0]?.endDate))
+            .add(1, "day")
+            .format("DD.MM.YYYY")
         : "N/A",
       location: object?.space?.brand?.location || [],
+      userName: object?.brand?.brandName,
+      isDraftedSpaceOwner:
+        object?.space?.status === "DRAFT" ? object?.space?.user?.id : null,
+      spaceStatus: object?.space?.status,
     };
   }
 };
@@ -379,26 +433,25 @@ export const removeNewInquiry = (dispatch) => {
 export const messageBox = (parentObj, chatDetails, allMessages) => {
   const getParentObject = () => {
     const isSpacesChats = parentObj?.spaceDetails;
+    const isEventsChats = parentObj?.eventDetails;
 
-    const details = isSpacesChats
-      ? parentObj?.spaceDetails
-      : parentObj?.brandDetails;
+    const details = isSpacesChats ? parentObj?.spaceDetails : isEventsChats ? parentObj?.eventDetails : parentObj?.brandDetails;
 
     return {
       parentId: details?.id,
-      parentActivity: isSpacesChats ? "space" : "brand",
-      parentName: details?.brandName || details?.spaceName,
-      parentImage: details?.brandImage || details?.spaceImage,
+      parentActivity: isSpacesChats ? "space" : isEventsChats ? "event" : "brand",
+      parentName: details?.brandName || details?.spaceName || details?.eventName,
+      parentImage: details?.brandImage || details?.spaceImage || details?.eventImage,
       ownerDetails: details?.user,
     };
   };
 
   const getMatchingChatDetails = (chatId) => {
-    return chatDetails?.find((item) => item._id === chatId) || {};
+    return chatDetails?.find((item) => item?._id === chatId) || {};
   };
 
   const getMessagesForChat = (chatId) => {
-    return allMessages.filter((message) => message.chat === chatId);
+    return allMessages?.filter((message) => message?.chat === chatId);
   };
 
   const formatDate = (date) => format(new Date(date), "MM/dd/yy");
@@ -409,32 +462,82 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
   return {
     ...parentObject,
     read: false,
-    spaces: 1234,
-    followers: 234566,
-    saved: "789k",
     reviews: 12345,
     leases: 12345,
     rating: 5,
     chatGroups: parentObj?.chats
       ?.map((item) => {
-        const matchingItem = getMatchingChatDetails(item._id);
-        const currentChatMessages = getMessagesForChat(item._id);
+        const matchingItem = getMatchingChatDetails(item?._id);
+        const currentChatMessages = getMessagesForChat(item?._id);
 
         const isSpacesChats = parentObj?.spaceDetails;
+        const isEventsChats = parentObj?.eventDetails;
+        
+        const spaces =
+          isSpacesChats ||
+          isEventsChats ||
+          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
+            ? matchingItem?.senderBrand?.spaceCount
+            : matchingItem?.receiverBrand?.spaceCount;
 
-        const childName = isSpacesChats
-          ? item?.senderBrand?.brandName
-          : item?.receiverSpace?.spaceName;
-        const childImage = isSpacesChats
-          ? item?.senderBrand?.brandImage
-          : item?.receiverSpace?.spaceImage;
-        const creator = isSpacesChats
-          ? item?.senderBrand?.user?.name
-          : item?.receiverBrand?.user?.name;
-        const receiverbrandName = isSpacesChats
-          ? item?.receiverBrand?.brandName
+        const followers =
+          isSpacesChats ||
+          isEventsChats ||
+          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
+            ? matchingItem?.senderBrand?.followedCount
+            : matchingItem?.receiverSpace?.followedCount ||
+              matchingItem?.receiverEvent?.followedCount ||
+              matchingItem?.receiverBrand?.followedCount;
+
+        const saved =
+          isSpacesChats ||
+          isEventsChats ||
+          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
+            ? matchingItem?.senderBrand?.likedCount
+            : matchingItem?.receiverSpace?.likedCount ||
+              matchingItem?.receiverEvent?.likedCount ||
+              matchingItem?.receiverBrand?.likedCount;
+
+        const childName =
+          isSpacesChats ||
+          isEventsChats ||
+          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
+            ? item?.senderBrand?.brandName
+            : item?.receiverSpace?.spaceName ||
+              item?.receiverEvent?.eventName ||
+              item?.receiverBrand?.brandName;
+
+        const childImage =
+          isSpacesChats ||
+          isEventsChats ||
+          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
+            ? item?.senderBrand?.brandImage
+            : item?.receiverSpace?.spaceImage ||
+              item?.receiverEvent?.eventImage ||
+              item?.receiverBrand?.brandImage;
+
+        const creator =
+          isSpacesChats ||
+          isEventsChats ||
+          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
+            ? item?.senderBrand?.user?.name
+            : item?.receiverBrand?.user?.name || item?.receiverEvent?.user?.name;
+
+        const receiverbrandName = isSpacesChats || isEventsChats
+          ? item?.receiverBrand?.brandName || item?.receiverEvent?.brand?.brandName
           : "";
-        const activity = isSpacesChats ? "brand" : "space";
+
+        const activity =
+          isSpacesChats ||
+          isEventsChats ||
+          item?.isInquiryRole === "receiver" ||
+          (item?.isInquiryRole === "sender" &&
+            !item?.receiverEvent &&
+            !item?.receiverSpace)
+            ? "brand"
+            : item?.receiverEvent?.eventName
+            ? "event"
+            : "space";
 
         return {
           ...item,
@@ -447,6 +550,9 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
           receiverbrandName,
           creator,
           chatName: matchingItem?.name,
+          spaces: spaces || 0,
+          followers:followers|| 0,
+          saved: saved|| 0,
           activity,
           read: false,
           date: matchingItem?.createdAt
@@ -475,6 +581,13 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
   };
 };
 
+export const handleNotificationUpdate = (cookieName, action, dispatch) => {
+  const currentValue = getCookie(cookieName);
+  const newCount = currentValue ? parseInt(currentValue) + 1 : 1;
+
+  setCookie(cookieName, newCount);
+  dispatch(action(newCount));
+};
 
 export const fetchAddressFromCoordinates = async (lat, lng) => {
   try {

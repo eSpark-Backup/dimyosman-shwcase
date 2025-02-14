@@ -15,6 +15,7 @@ import { profileContent } from '../../../constant'
 import { useGetMyChatsQuery } from '../../../services/chats'
 import { removeMychat } from '../../../store/slices/chat'
 import { fetchAddressFromCoordinates } from '../../../utils'
+import dayjs from 'dayjs'
 
 const EditBrand = () => {
   const navigate = useNavigate();
@@ -39,6 +40,8 @@ const EditBrand = () => {
   });
   const [currentIndex, setCurrentIndex] = useState(0);
   const params = useParams();
+  const [eventsData, setEventsData] = useState([])
+  const { user } = useSelector((state) => state.auth);
 
   const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading } = useGetCategoriesQuery('BRANDS')
   const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({
@@ -66,16 +69,16 @@ const EditBrand = () => {
           name: cat?.name,
           selected: false,
         })) : [];
-  
+
         const selectedCategories = Array.isArray(data?.data?.brandCategory)
           ? data?.data?.brandCategory?.map((cat) => cat?.name)
           : [];
-  
+
         const mergedCategories = allCategories.map((category) => ({
           ...category,
           selected: selectedCategories?.includes(category.name),
         }));
-  
+
         let address = "";
         if (data?.data?.location?.lat && data?.data?.location?.long) {
           address = await fetchAddressFromCoordinates(
@@ -83,7 +86,31 @@ const EditBrand = () => {
             data.data.location.long
           );
         }
-  
+        const eventData = data?.data?.brandEvents?.map((item) => ({
+          slides: [item?.coverImages?.[0]?.url],
+          profileName: item?.eventName,
+          category: item?.eventCategory?.map(category => category.name) || [],
+          id: item?.id,
+          status: item?.eventStatus,
+          tabs: [
+            {
+              props: {
+                details: {
+                  overview: item?.details?.description || null
+                }
+              }
+            }
+          ],
+          details: {
+            by: data?.data?.brandName,
+            starting: dayjs.utc(item?.eventDate?.[0]?.startDate).add(1, "day").startOf("day").local().format("DD.MM.YYYY"),
+            RSVP: item?.rsvpCount
+          },
+          owner: user?.id === item?.user?.id
+        }));
+
+        setEventsData(eventData)
+
         setBrandData((prevState) => ({
           ...prevState,
           brandCategories: mergedCategories,
@@ -98,26 +125,44 @@ const EditBrand = () => {
         }));
       }
     };
-  
+
     fetchAndSetAddress();
   }, [GetCategorySuccess, isSuccess, data]);
-  
-
-  useEffect(() => { 
-    console.log(brandData)
-  }, [brandData])
 
 
   const handleMainFileInputClick = () => {
     mainImageRef.current.click();
   };
 
-  const handleMainImageChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const updatedCover = [...brandData.cover];
-      updatedCover[currentIndex] = file;
-      setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+  const handleMainImageChange = (files) => {
+    if (files.length > 0) {
+        if (brandData.cover.length !== currentIndex) {
+          const updatedCover = [...brandData.cover];
+          updatedCover[currentIndex] = files[0];
+          setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+        }
+        if(brandData.cover.length === 0) {
+          setBrandData((prev) => ({ ...prev, cover: files }));
+        }
+        if(brandData.cover.length === 1) {
+            const updatedCover = [...brandData.cover];
+            updatedCover[1] = files[0];
+            files?.length > 1 ? updatedCover[2] = files[1] : null;
+            setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+            const nextIndex = brandData.cover.length;
+            if (nextIndex < 3) {
+              setCurrentIndex(nextIndex);
+            }
+        }
+        if(brandData.cover.length === 2) {
+            const updatedCover = [...brandData.cover];
+            updatedCover[2] = files[0];
+            setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+            const nextIndex = brandData.cover.length;
+            if (nextIndex < 3) {
+              setCurrentIndex(nextIndex);
+            }
+        }
     }
   };
 
@@ -125,6 +170,8 @@ const EditBrand = () => {
     const nextIndex = currentIndex + 1;
     if (nextIndex < brandData.cover.length + 1 && nextIndex <= 2) {
       setCurrentIndex(nextIndex);
+    } else {
+      toast.error("You can not select more that 3 images")
     }
   };
 
@@ -305,8 +352,15 @@ const EditBrand = () => {
 
 
   const handleSubmit = async (status) => {
-    if (!validateBrandData()) {
-      return;
+    if (status === "PUBLISH") {
+      if (!validateBrandData()) {
+          return;
+      }
+    } else {
+      if (!brandData?.brandName || brandData?.brandName.trim() === "") {
+          toast?.error("Brand name can not be empty.");
+          return;
+      }
     }
     setLoadingButton(status);
     try {
@@ -325,6 +379,18 @@ const EditBrand = () => {
       setCurrentIndex(index);
     }
   };
+
+  const [filteredEvents, setFilteredEvents] = useState(eventsData);
+
+  useEffect(() => {
+    const updatedEvents = eventsData?.filter(event => {
+      if (selectedChoice === 1) return event?.status === "Upcoming";
+      if (selectedChoice === 2) return event?.status === "Ended";
+      return true; // If selectedChoice === 0, show all events
+    });
+
+    setFilteredEvents(updatedEvents);
+  }, [selectedChoice, eventsData]);
 
   if (isLoading || GetCategoryLoading || isFetching) {
     return (
@@ -426,6 +492,7 @@ const EditBrand = () => {
         imageRef={mainImageRef}
         icon={brandIcon}
         activity="brand"
+        cover={brandData.cover}
         editImage={
           brandData.cover[currentIndex]?.url
             ?
@@ -464,6 +531,7 @@ const EditBrand = () => {
           categories={brandData?.brandCategories}
           handleClose={handleModalClose}
           onSelect={(categories) => setBrandData({ ...brandData, brandCategories: categories })}
+          canType={true}
         />
       </ReusableModal>
       <OutlinedTabs tabs={tabs} onTabChange={handleTabChange} />
@@ -480,82 +548,100 @@ const EditBrand = () => {
         {
           activeTab?.label === "Events"
             ?
-            <Box
-              sx={{
-                width: "98%",
-                display: "flex",
-                flexDirection: "column",
-                rowGap: "20px"
-              }}
-            >
-              <Box
-                sx={{
-                  width: "95%",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  flexWrap: "wrap",
-                  rowGap: "10px"
-                }}
-              >
+            eventsData?.length === 0 && data
+              ?
+              <>
+                <Typography>
+                  There are no events associated with this brand.
+                </Typography>
+              </>
+              :
+              <>
                 <Box
                   sx={{
+                    width: "98%",
                     display: "flex",
-                    columnGap: "16px",
-                    flexDirection: { xs: "column", sm: "row" },
-                    rowGap: "2px"
+                    flexDirection: "column",
+                    rowGap: "20px"
                   }}
                 >
-                  <Typography fontSize={16} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "400" }}>Show:</Typography>
-                  <Typography onClick={() => setSelectedChoice(0)} fontSize={16} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 0 ? "600" : "400", cursor: "pointer" }}>All</Typography>
-                  <Typography onClick={() => setSelectedChoice(1)} fontSize={16} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 1 ? "600" : "400", cursor: "pointer" }}>Upcoming</Typography>
-                  <Typography onClick={() => setSelectedChoice(2)} fontSize={16} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 2 ? "600" : "400", cursor: "pointer" }}>Past</Typography>
-                </Box>
-                <Button
-                  onClick={() => navigate("/new-event")}
-                  sx={{
-                    backgroundColor: "rgb(209, 219, 215, 0.4)",
-                    height: "31px",
-                    width: "142px",
-                    color: theme.palette.primary.main,
-                    fontWeight: "600",
-                    fontSize: "16px",
-                    display: "flex",
-                    columnGap: "6px",
-                    alignItems: "center",
-                    ":hover": {
-                      backgroundColor: "rgb(209, 219, 215, 0.4)",
-                      color: theme.palette.primary.main,
-                    }
-                  }}
-                >
-                  <img src={addGrey} alt="" />
-                  Add New
-                </Button>
-
-              </Box>
-              <Stack
-                marginTop={2}
-                direction={{ xs: "column", md: "row" }}
-                alignItems="center"
-                justifyContent="space-between"
-                flexWrap="wrap"
-                rowGap={4}
-                columnGap={0}
-              >
-                {profileContent[0].eventSection.map((event, ind) => {
-                  return (
+                  <Box
+                    sx={{
+                      width: "95%",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      flexWrap: "wrap",
+                      rowGap: "10px"
+                    }}
+                  >
                     <Box
-                      key={`event-${ind + 1}`}
                       sx={{
-                        width: { xs: "100%", md: "328px" }
+                        display: "flex",
+                        columnGap: "16px",
+                        flexDirection: { xs: "column", sm: "row" },
+                        rowGap: "2px"
                       }}
                     >
-                      <EventCard edit event={event} key={ind} showBtn={true} />
+                      <Typography fontSize={16} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: "400" }}>Show:</Typography>
+                      <Typography onClick={() => setSelectedChoice(0)} fontSize={16} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 0 ? "600" : "400", cursor: "pointer" }}>All</Typography>
+                      <Typography onClick={() => setSelectedChoice(1)} fontSize={16} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 1 ? "600" : "400", cursor: "pointer" }}>Upcoming</Typography>
+                      <Typography onClick={() => setSelectedChoice(2)} fontSize={16} sx={{ textAlign: "left", color: theme.palette.primary.main, fontWeight: selectedChoice === 2 ? "600" : "400", cursor: "pointer" }}>Past</Typography>
                     </Box>
-                  );
-                })}
-              </Stack>
-            </Box>
+                    <Button
+                      onClick={() => navigate("/new-event")}
+                      sx={{
+                        backgroundColor: "rgb(209, 219, 215, 0.4)",
+                        height: "31px",
+                        width: "142px",
+                        color: theme.palette.primary.main,
+                        fontWeight: "600",
+                        fontSize: "16px",
+                        display: "flex",
+                        columnGap: "6px",
+                        alignItems: "center",
+                        ":hover": {
+                          backgroundColor: "rgb(209, 219, 215, 0.4)",
+                          color: theme.palette.primary.main,
+                        }
+                      }}
+                    >
+                      <img src={addGrey} alt="" />
+                      Add New
+                    </Button>
+
+                  </Box>
+                  <Stack
+                    marginTop={2}
+                    direction={{ xs: "column", md: "row" }}
+                    alignItems="center"
+                    justifyContent="space-between"
+                    flexWrap="wrap"
+                    rowGap={4}
+                    columnGap={0}
+                  >
+                    {
+                      filteredEvents?.length === 0
+                        ?
+                        <Typography>
+                          No {selectedChoice === 1 ? "upcoming" : "past"} events available
+                        </Typography>
+                        :
+                        filteredEvents?.map((event, ind) => {
+                          return (
+                            <Box
+                              key={`event-${ind + 1}`}
+                              sx={{
+                                width: { xs: "100%", md: "328px" }
+                              }}
+                            >
+                              <EventCard edit event={event} key={ind} showBtn={event?.owner} onClick={() => navigate(`/event/${event?.id}`)} />
+                            </Box>
+                          );
+                        })
+                    }
+                  </Stack>
+                </Box>
+              </>
             :
             <>
               <InputWithMap inputLabel={"Brand Overview:"} inputValue={brandData?.brandOverview} setInputValue={(value) => setBrandData({ ...brandData, brandOverview: value })} handleClick={() => setMapModal(true)} mapDescription={brandData?.streetAddress} activity={"brand"} />

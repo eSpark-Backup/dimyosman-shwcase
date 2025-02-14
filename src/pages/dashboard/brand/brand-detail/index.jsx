@@ -7,6 +7,7 @@ import { updateBrands } from "../../../../store/slices/brand";
 import { brandMain } from "../../../../assets";
 import { Box, LinearProgress } from "@mui/material";
 import { fetchAddressFromCoordinates } from "../../../../utils";
+import dayjs from "dayjs";
 
 const BrandDetails = () => {
   const params = useParams()
@@ -26,7 +27,47 @@ const BrandDetails = () => {
           );
         }
 
+        const eventData = data?.data?.brandEvents?.map((item) => ({
+          slides: [item?.coverImages?.[0]?.url],
+          profileName: item?.eventName,
+          category: item?.eventCategory?.map(category => category.name) || [],
+          id: item?.id,
+          status: item?.status,
+          eventStatus: item?.eventStatus,
+          tabs: [
+            {
+              props: {
+                details: {
+                  overview: item?.details?.description || null
+                }
+              }
+            }
+          ],
+          details: {
+            by: data?.data?.brandName,
+            starting: dayjs.utc(item?.eventDate?.[0]?.startDate).add(1, "day").startOf("day").local().format("DD.MM.YYYY"),
+            RSVP: item?.rsvpCount
+          }
+        }));
+
+        const brandSpaces = data?.data?.brandSpaces?.map((item) => {
+          const dayPricing = item?.pricing?.find((priceItem) => priceItem.term === "Day");
+          return {
+            spacePic: item?.coverImages?.[0]?.url,
+            spaceName: item?.spaceName,
+            spaceAddress: item?.brand?.brandName,
+            spaceDescription: item?.details?.description,
+            spacePrice: dayPricing ? `$${dayPricing.price}/day` : "N/A",
+            spaceDeadline: dayPricing ? `miniumum lease: ${dayPricing?.minimum} days` : "N/A",
+            id: item?.id,
+            status: item?.status
+          }
+        });
+
+
         const brandData = {
+          shareableLink: data?.data?.shareableLink,
+          isFollowed: data?.data?.isFollowed,
           isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
           type: "brand",
@@ -35,13 +76,14 @@ const BrandDetails = () => {
           profilePic: data?.data?.brandImage,
           profileName: data?.data?.brandName,
           category: data?.data?.brandCategory,
+          by: data?.data?.user?.profile && data?.data?.user?.id,
           details: {
-            by: "Emily Thompson",
-            events: "1234",
-            followes: "234566",
-            saved: "789k",
+            by: data?.data?.user?.name,
+            events: data?.data?.totalEventsCount,
+            followers: data?.data?.followedCount,
+            saved: data?.data?.likedCount,
           },
-          rating: 5,
+          rating: 0,
           ratingBased: "Based on 12345 reviews from 12345 Events",
           tabs: [
             {
@@ -58,21 +100,26 @@ const BrandDetails = () => {
                       ||
                       ""],
                   },
+                  status: data?.data?.status
                 },
               },
             },
             {
               label: "Events",
-              props: null,
+              props: eventData?.length > 0 ? { eventData, isMyProfile: data?.data?.user?.id === user?.id } : false
+            },
+            {
+              label: "Spaces",
+              props: brandSpaces?.length > 0 ? { brandSpaces, isMyProfile: data?.data?.user?.id === user?.id } : false
             },
             {
               label: "Stats",
               props: null,
             },
-            {
-              label: "Reviews",
-              props: null,
-            },
+            // {
+            //   label: "Reviews",
+            //   props: null,
+            // },
           ],
         };
 

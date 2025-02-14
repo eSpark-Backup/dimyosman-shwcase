@@ -19,7 +19,15 @@ export const notificationApi = api.injectEndpoints({
         };
       },
     }),
+    getSharableLink: builder.query({
+      query: ({ data } = {}) => {
+        return {
+          url: `/general/share/${data}`,
+          method: "GET",
+        };
+      },
+    }),
   }),
 });
 
-export const { useGetNotificationDataQuery } = notificationApi;
+export const { useGetNotificationDataQuery, useGetSharableLinkQuery } = notificationApi;

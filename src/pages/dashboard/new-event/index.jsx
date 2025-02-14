@@ -75,7 +75,10 @@ const NewEvent = () => {
     const editorRef = useRef(null);
     const quillRef = useRef(null);
 
-    const options = brandData?.data?.groupedBrands?.draftBrands?.map((brand) => ({
+    const options = [
+        // ...(brandData?.data?.groupedBrands?.draftBrands || []),
+        ...(brandData?.data?.groupedBrands?.publishedBrands || [])
+    ].map((brand) => ({
         label: brand.brandName,
         value: brand.id,
         item: brand,
@@ -211,12 +214,35 @@ const NewEvent = () => {
     const handleMainFileInputClick = () => {
         mainImageRef.current.click();
     };
-    const handleMainImageChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const updatedCover = [...eventData.cover];
-            updatedCover[currentIndex] = file;
-            setEventData((prev) => ({ ...prev, cover: updatedCover }));
+    const handleMainImageChange = (files) => {
+        if (files.length > 0) {
+            if (eventData.cover.length !== currentIndex) {
+                const updatedCover = [...eventData.cover];
+                updatedCover[currentIndex] = files[0];
+                setEventData((prev) => ({ ...prev, cover: updatedCover }));
+            }
+            if (eventData.cover.length === 0) {
+                setEventData((prev) => ({ ...prev, cover: files }));
+            }
+            if (eventData.cover.length === 1) {
+                const updatedCover = [...eventData.cover];
+                updatedCover[1] = files[0];
+                files?.length > 1 ? updatedCover[2] = files[1] : null;
+                setEventData((prev) => ({ ...prev, cover: updatedCover }));
+                const nextIndex = eventData.cover.length;
+                if (nextIndex < 3) {
+                    setCurrentIndex(nextIndex);
+                }
+            }
+            if (eventData.cover.length === 2) {
+                const updatedCover = [...eventData.cover];
+                updatedCover[2] = files[0];
+                setEventData((prev) => ({ ...prev, cover: updatedCover }));
+                const nextIndex = eventData.cover.length;
+                if (nextIndex < 3) {
+                    setCurrentIndex(nextIndex);
+                }
+            }
         }
     };
 
@@ -237,6 +263,8 @@ const NewEvent = () => {
         const nextIndex = eventData.cover.length;
         if (nextIndex < 3) {
             setCurrentIndex(nextIndex);
+        } else {
+            toast.error("You can not select more that 3 images")
         }
     };
 
@@ -333,7 +361,7 @@ const NewEvent = () => {
         }
 
         if (!eventData?.eventName || eventData?.eventName.trim() === "") {
-            toast?.error("Brand name can not be empty.");
+            toast?.error("Event name can not be empty.");
             return false;
         }
 
@@ -344,18 +372,18 @@ const NewEvent = () => {
         }
 
         if (!eventData?.eventOverview || eventData?.eventOverview.trim() === "") {
-            toast?.error("Brand overview can not be empty.");
+            toast?.error("Event overview can not be empty.");
             return false;
         }
 
         if (!eventData?.eventTitle || eventData?.eventTitle.trim() === "") {
-            toast?.error("Brand title can not be empty.");
+            toast?.error("Event title can not be empty.");
             return false;
         }
 
         const strippedContent = eventData?.eventTitle?.replace(/<[^>]*>/g, "").trim();
         if (!strippedContent) {
-            toast?.error("Brand title can not be empty.");
+            toast?.error("Event title can not be empty.");
             return false;
         }
 
@@ -394,8 +422,15 @@ const NewEvent = () => {
     }, [IsEventPostError])
 
     const handleSubmit = async (status) => {
-        if (!validateEventData()) {
-            return;
+        if (status === "PUBLISH") {
+            if (!validateEventData()) {
+                return;
+            }
+        } else {
+            if (!eventData?.eventName || eventData?.eventName.trim() === "") {
+                toast?.error("Event name can not be empty.");
+                return;
+            }
         }
         setLoadingButton(status);
         try {
@@ -496,6 +531,7 @@ const NewEvent = () => {
                 HandleInputCLick={handleMainFileInputClick}
                 imageRef={mainImageRef}
                 icon={flag}
+                cover={eventData.cover}
                 editImage={eventData.cover[currentIndex] ? URL.createObjectURL(eventData.cover[currentIndex]) : null}
                 handleAdd={handleAddImage}
                 handleRemove={handleRemoveImage}

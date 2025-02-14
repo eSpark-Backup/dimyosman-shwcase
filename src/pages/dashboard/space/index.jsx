@@ -9,7 +9,7 @@ import {
 import { useEffect, useState } from "react";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { spaceTableData } from "../../../constant";
-import { addIcon, like, spaceIconLight } from "../../../assets";
+import { addIcon, like, spaceIcon, spaceIconLight } from "../../../assets";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useGetAllSpaceQuery } from "../../../services/space";
 import { toast } from "react-toastify";
@@ -65,6 +65,7 @@ const Space = () => {
     (state) => state.space
   );
   const { activeTabForNotif } = useSelector((state) => state.space);
+  const { user } = useSelector((state) => state.auth);
 
   const tabs = [
     {
@@ -147,44 +148,42 @@ const Space = () => {
   };
 
   useEffect(() => {
-    addListener("NEW_NOTIFICATION", (data) => {
-      // console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
-
-      if (pathname === "/space") {
-        dispatch(setHasPaymentDone(true));
-      }
-
-      handleNotificationUpdate("newNotification", getNotificationCount);
-      let redName = data.redirect;
-
-      if (pathname === "/space") {
-        if (data.redirect === "Lease" && activeTabForNotif !== "Lease") {
-          redName = "Lease";
-        } else if (
-          data.redirect === "Tenant" &&
-          activeTabForNotif !== "Tenant"
-        ) {
-          redName = "Tenant";
-        }
-      }
-
-
-
-      toast.info(data?.name, {
-        position: "bottom-right",
-        onClick: () => {
-          dispatch(setRedirectTab(redName));
-          if (pathname !== "/space") {
-            navigate("/space");
+    addListener("PAYMENT_NOTIFICATION", (data) => {
+      if (data?.receiverId === user?.userChatId) {
+        notificationRefetch().then(() => {
+          if (pathname === "/space") {
+            dispatch(setHasPaymentDone(true));
           }
-        },
-      });
 
-      notificationRefetch();
+          handleNotificationUpdate("newNotification", getNotificationCount);
+
+          let redName = data.redirect;
+
+          if (pathname === "/space") {
+            if (data.redirect === "Lease" && activeTabForNotif !== "Lease") {
+              redName = "Lease";
+            } else if (
+              data.redirect === "Tenant" &&
+              activeTabForNotif !== "Tenant"
+            ) {
+              redName = "Tenant";
+            }
+          }
+
+          toast.info(data?.name, {
+            position: "bottom-right",
+            onClick: () => {
+              dispatch(setRedirectTab(redName));
+              if (pathname !== "/space") {
+                navigate("/space");
+              }
+            },
+          });
+        });
+      }
     });
-
     return () => {
-      removeListener("NEW_NOTIFICATION");
+      removeListener("PAYMENT_NOTIFICATION");
     };
   }, [addListener, removeListener, emitEvent, activeTab, data?.data]);
   const {
@@ -220,7 +219,7 @@ const Space = () => {
         price: dayFilter?.length > 0 ? "$" + dayFilter[0]?.price : "-",
         term: dayFilter?.length > 0 ? dayFilter[0]?.term : "-",
         brand: space?.brand?.brandName,
-        brandUrl: `/brand/${space?.brand?.id}`,
+        brandUrl: space?.brand?.id ? `/brand/${space?.brand?.id}` : null,
         action: "Edit",
       };
     });
@@ -239,11 +238,11 @@ const Space = () => {
             ? "Pending Sign"
             : space?.status === "VerifyAndPay" ||
               space?.status === "PendingforApproval"
-            ? "Pending Pay"
-            : space?.status === "Active"
-            ? "Leasing"
-            : "Lease Ended",
-        price: space?.pricing[0]?.price,
+              ? "Pending Pay"
+              : space?.status === "Active"
+                ? "Leasing"
+                : "Lease Ended",
+        price: `$${space?.pricing[0]?.price}`,
         term: "Daily",
         status: space?.status,
         event: space?.contractDetails?.tenantDetails?.event,
@@ -254,12 +253,12 @@ const Space = () => {
           space?.status === "SubmitForSignature"
             ? "Sign"
             : space?.status === "VerifyAndPay"
-            ? "Verify Pay 0/2"
-            : space?.status === "PendingforApproval"
-            ? "Verify Pay 1/2"
-            : space?.status === "Active"
-            ? "Details"
-            : "Review",
+              ? "Verify Pay 0/2"
+              : space?.status === "PendingforApproval"
+                ? "Verify Pay 1/2"
+                : space?.status === "Active"
+                  ? "Details"
+                  : "Review",
       };
     });
   };
@@ -277,10 +276,10 @@ const Space = () => {
             ? "Pending Sign"
             : space?.status === "VerifyAndPay" ||
               space?.status === "PendingforApproval"
-            ? "Pending Pay"
-            : space?.status === "Active"
-            ? "Leasing"
-            : "Lease Ended",
+              ? "Pending Pay"
+              : space?.status === "Active"
+                ? "Leasing"
+                : "Lease Ended",
         price: space?.contractDetails?.leaseInfo?.leaseTotal,
         term: "Daily",
         event: space?.event?.eventName || "-",
@@ -291,18 +290,19 @@ const Space = () => {
           space?.status === "SubmitForSignature"
             ? "Sign"
             : space?.status === "VerifyAndPay"
-            ? "Verify Pay 0/2"
-            : space?.status === "PendingforApproval"
-            ? "Verify Pay 1/2"
-            : space?.status === "Active"
-            ? "Details"
-            : "Review",
+              ? "Verify Pay 0/2"
+              : space?.status === "PendingforApproval"
+                ? "Verify Pay 1/2"
+                : space?.status === "Active"
+                  ? "Details"
+                  : "Review",
       };
     });
   };
 
   const transformTenantSpaceData = (apiData) => {
     return apiData.map((space, index) => {
+      console.log(space)
       return {
         id: space?.id,
         spaceId: space?.space?.id,
@@ -320,22 +320,23 @@ const Space = () => {
             ? "Pending Sign"
             : space?.status === "VerifyAndPay" ||
               space?.status === "PendingforApproval"
-            ? "Pending Pay"
-            : space?.status === "Active"
-            ? "Leasing"
-            : "Lease Ended",
-        eventUrl: space?.event?.eventName ? `/event/${space?.event?.id}` : "-",
-        brandUrl: `/brand/${space?.brand?.id}`,
+              ? "Pending Pay"
+              : space?.status === "Active"
+                ? "Leasing"
+                : "Lease Ended",
+        // eventUrl: space?.event?.eventName ? `/event/${space?.event?.id}` : "-",
+        eventUrl: space?.event?.eventName && space?.event?.status === "PUBLISH" ? `/event/${space?.event?.id}` : "-",
+        brandUrl: space?.brand?.status === "PUBLISH" ? `/brand/${space?.brand?.id}` : "-",
         action:
           space?.status === "SubmitForSignature"
             ? "Message"
             : space?.status === "VerifyAndPay"
-            ? "Verify 0/2"
-            : space?.status === "PendingforApproval"
-            ? "Verify 1/2"
-            : space?.status === "Active"
-            ? "Details"
-            : "Review",
+              ? "Verify 0/2"
+              : space?.status === "PendingforApproval"
+                ? "Verify 1/2"
+                : space?.status === "Active"
+                  ? "Details"
+                  : "Review",
         spaceStatus: space?.status,
         tenant: true,
       };
@@ -375,11 +376,13 @@ const Space = () => {
 
     if (tabsForApi[activeTab] !== "Saved") {
       if (isSuccess) {
-        if (data?.data?.spaces?.length) {
+        if (tabsForApi[activeTab] === "Space") {
           setMySpaceData(transformSpaceData(data?.data?.spaces || []));
-        } else if (data?.data?.leaseSpace?.length) {
+        }
+        if (tabsForApi[activeTab] === "Lease") {
           setMySpaceData(transformLeaseSpaceData(data?.data?.leaseSpace || []));
-        } else {
+        }
+        if (tabsForApi[activeTab] === "Tenant") {
           setMySpaceData(
             transformTenantSpaceData(data?.data?.tenantSpace || [])
           );
@@ -407,6 +410,7 @@ const Space = () => {
     page,
     data,
     data2,
+    activeTab,
   ]);
 
   const handlePageChange = (newPage) => {
@@ -435,12 +439,20 @@ const Space = () => {
   const handleAction = async (item, type) => {
     if (type === "remove") {
       setSavedId(item?.spaceId);
-      await likeFunc({
+      likeFunc({
         entityId: item?.spaceId,
         entityType: item?.type?.toUpperCase(),
-      }).unwrap();
-      refetch2();
-      setSavedId(null);
+      }).then((res) => {
+        if (res?.data?.status) {
+          toast.success(
+            res?.data?.message
+              .replace("Entity", "Post")
+              .replace(" successfully", "")
+          );
+          refetch2();
+          setSavedId(null);
+        }
+      });
       return;
     }
     const findLeaseDetails = (type, itemId) => {
@@ -530,7 +542,7 @@ const Space = () => {
             }}
             role="space-icon"
           >
-            <img src={spaceIconLight} alt="event" />
+            <img src={spaceIcon} alt="event" />
           </figure>
         </Box>
       </Stack>

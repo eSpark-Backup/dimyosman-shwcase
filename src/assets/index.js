@@ -40,6 +40,7 @@ import comment from "./comment.svg";
 import share from "./share.svg";
 import brandIcon from "./brand.svg";
 import spaceIcon from "./space.svg";
+import eventIcon from "./event-icon.svg";
 import calender from "./calender.svg";
 import eventUserImage from "./event-user-image.svg";
 import brandUserImage from "./brand-user-image.svg";
@@ -65,10 +66,10 @@ import miniMap2 from "./micro-map2.svg";
 import logoIcon from "./logo-icon.svg";
 import logoText from "./logo-text.svg";
 import brandIconlight from "./brand-icon.png";
-import brandBadge from "./brand-badge.png";
+import brandBadge from "./brand-badge.svg";
 import eventIconLight from "./event-icon.png";
 import spaceIconLight from "./space-icon.png";
-import calenderIconLight from "./calendar-icon.png";
+import calenderIconLight from "./calendar-icon.svg";
 import settingsIconLight from "./settings-icon.png";
 import activeItemIcon from "./activeItemIcon.svg";
 import notActiveIcon from "./notActiveItemIcon.svg";
@@ -81,8 +82,8 @@ import uncheckedIcon from "./uncheckedIcon.svg";
 import locationIcon from "./locationIcon.svg";
 import modalMap from "./modalMap.svg";
 import addGrey from "./add-grey.svg";
-import eventBadge from "./event-badge.png";
-import spaceBadge from "./space-badge.png";
+import eventBadge from "./event-badge.svg";
+import spaceBadge from "./space-badge.svg";
 import profileBadge from "./profile-badge.png";
 import star from "./star.svg";
 import reviewer from "./reviewer.png";
@@ -163,6 +164,7 @@ export {
   share,
   brandIcon,
   spaceIcon,
+  eventIcon,
   calender,
   eventUserImage,
   spaceUserImage,

@@ -31,7 +31,7 @@ const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="event-image">
                   <img
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "5px" }}
                     src={item?.eventImg}
                     alt="event-img"
                   />
@@ -83,11 +83,11 @@ const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
             sx={{
               fontSize: "14px",
               fontWeight: item?.brandUrl ? 600 : 400,
-              cursor: "pointer",
+              cursor: item?.brandUrl ? "pointer" : "default",
             }}
-            onClick={() => gotoBrand(item)}
+            onClick={item?.brandUrl ? () => gotoBrand(item) : () => {}}
           >
-            {item?.brand}
+            {item?.brand || "-"}
           </Typography>
         );
       },
@@ -103,8 +103,7 @@ const mySpaceColumns = (gotoDetail, handleAction, gotoBrand) => {
               width: "56px",
               maxHeight: "26px",
               fontSize: "14px",
-              fontWeight: "600",
-              
+              fontWeight: "600",              
               textTransform: "none"
             }}
           >
@@ -145,7 +144,7 @@ const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand, gotoEvent) => 
 
                 <figure style={{ width: "100%", height: "100%" }} role="event-icon">
                   <img
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "5px" }}
                     src={item?.eventImg}
                     alt="event-img"
                   />
@@ -293,7 +292,7 @@ const likedSpaceColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
                     style={{
                       width: "100%",
                       height: "100%",
-                      objectFit: "cover",
+                      objectFit: "cover", borderRadius: "5px"
                     }}
                     src={item?.eventImg}
                     alt="event-img"
@@ -366,6 +365,7 @@ const likedSpaceColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
               maxHeight: "26px",
               fontSize: "14px",
               fontWeight: "600",
+              textTransform: "none"
             }}
           >
             Remove
@@ -409,7 +409,7 @@ const tenantSpaceColumns = (gotoDetail, handleAction, gotoBrand, gotoEvent) => {
                     style={{
                       width: "100%",
                       height: "100%",
-                      objectFit: "cover",
+                      objectFit: "cover", borderRadius: "5px"
                     }}
                     src={item?.eventImg}
                     alt="event-img"

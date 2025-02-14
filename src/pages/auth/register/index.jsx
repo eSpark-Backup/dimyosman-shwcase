@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux';
 import { Box, Button, Typography, useTheme } from '@mui/material'
 import { LoadingButton } from "@mui/lab";
@@ -10,8 +10,15 @@ import { useFormik } from "formik";
 import { registerSchema } from '../../../validation/validation';
 import { useRegisterMutation } from "../../../services/auth";
 import { useGetMyChatsQuery } from '../../../services/chats';
-import { logout } from '../../../store/slices/auth';
+import { logout as logoutFunc } from '../../../store/slices/auth';
 import { removeMychat } from '../../../store/slices/chat';
+import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
+import GoogleButton from "../../../components/SocialButtons/GoogleButton";
+import { deleteCookie, getCookie, logoutAuthUtils, removeActiveNotifications, removeNewInquiry } from "../../../utils";
+import { emptyNotification } from '../../../store/slices/notification';
+
+const AUTH0_APP_DOMAIN = import.meta.env.VITE_AUTH0_APP_DOMAIN;
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_AUTH0_GOOGLE_APP_CLIENT_ID;
 
 const Register = () => {
   const [register, { isLoading, isSuccess, isError, error}] =
@@ -19,6 +26,24 @@ const Register = () => {
     const { refetch } = useGetMyChatsQuery(undefined, {
       skip: !localStorage.getItem("token"),
     });
+
+  const { logout } = useAuth0();
+  const [authLoading, setAuthLoading] = useState(false)
+  
+  const logoutSession = getCookie("logout");
+  const socialType = getCookie("social_type");
+
+  useEffect(() => {
+    if (logoutSession && socialType) {
+        logoutAuthUtils(logout)
+
+      setTimeout(() => {
+        deleteCookie("logout");
+        deleteCookie("social_type");
+      }, 10);
+    }
+  }, [logoutSession, socialType]);
+
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -45,8 +70,11 @@ const Register = () => {
   });
 
   useEffect(() => {
-    dispatch(logout());
+    dispatch(logoutFunc());
     dispatch(removeMychat());
+    dispatch(emptyNotification());
+    removeActiveNotifications(dispatch);
+    removeNewInquiry(dispatch);
   }, []);
 
     useEffect(() => {
@@ -110,6 +138,7 @@ const Register = () => {
                             error={formik.touched.fName && Boolean(formik.errors.fName)}
                             helperText={formik.touched.fName && formik.errors.fName}
                             placeholder={"Type Your First Name"}
+                            disabled={authLoading}
                         />
                     </Box>
                     <Box
@@ -128,6 +157,7 @@ const Register = () => {
                             error={formik.touched.lName && Boolean(formik.errors.lName)}
                             helperText={formik.touched.lName && formik.errors.lName}
                             placeholder={"Type Your Last Name"}
+                            disabled={authLoading}
                         />
                     </Box>
 
@@ -143,6 +173,7 @@ const Register = () => {
                     error={formik.touched.email && Boolean(formik.errors.email)}
                     helperText={formik.touched.email && formik.errors.email}
                     placeholder={"Type Your Email"}
+                    disabled={authLoading}
                 />
                 <Box
                     sx={{
@@ -170,6 +201,7 @@ const Register = () => {
                             error={formik.touched.password && Boolean(formik.errors.password)}
                             helperText={formik.touched.password && formik.errors.password}
                             placeholder={"Type Your Password"}
+                            disabled={authLoading}
                         />
                     </Box>
                     <Box
@@ -188,10 +220,11 @@ const Register = () => {
                             error={formik.touched.conPassword && Boolean(formik.errors.conPassword)}
                             helperText={formik.touched.conPassword && formik.errors.conPassword}
                             placeholder={"Type Your Password"}
+                            disabled={authLoading}
                         />
                     </Box>
                 </Box>
-                <LoadingButton loading={isLoading} type="submit">
+                <LoadingButton loading={isLoading || authLoading} type="submit" sx={{ textTransform: "none", color: "#fff" }}>
                     Sign Up
                 </LoadingButton>
             </Box>
@@ -252,9 +285,23 @@ const Register = () => {
                         },
                     }}
                 >
-                    <Button sx={authBtnStyle}>
-                        <img src={google} alt="Google Logo" />
-                    </Button>
+                    <Auth0Provider
+                        domain={AUTH0_APP_DOMAIN}
+                        clientId={GOOGLE_CLIENT_ID}
+                        authorizationParams={{
+                            redirect_uri: window.location.origin,
+                        }}
+                    >
+                        <GoogleButton 
+                            authBtnStyle={authBtnStyle}
+                            register={register}
+                            isSuccessRegister={isSuccess}
+                            isErrorRegister={isError}
+                            errorRegister={error}
+                            setAuthLoading={setAuthLoading}
+                        />
+                    </Auth0Provider>
+                    
                     <Button sx={authBtnStyle}>
                         <img src={facebook} alt="Facebook Logo" />
                     </Button>

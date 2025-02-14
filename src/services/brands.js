@@ -27,10 +27,10 @@ export const brandApi = api.injectEndpoints({
                     long: brandData?.location?.long,
                     additional: brandData?.mapInstructions
                 };
-                formData.append('location', JSON.stringify(location));
+                if (brandData?.mapInstructions) formData.append('location', JSON.stringify(location));
 
 
-                if (brandData?.cover) {
+                if (brandData?.cover && Object.keys(brandData?.cover).length > 0) {
                     const coverOrder = [];
 
                     brandData.cover.forEach((file) => {
@@ -55,16 +55,17 @@ export const brandApi = api.injectEndpoints({
             invalidatesTags: ['brand'],
         }),
         getAllBrands: builder.query({
-            query: ({ id, page, pageSize } = {}) => {
-                const baseUrl = id ? `/brand/${id}` : `/brand`;
+            query: ({ publicProfile, id, entity, page, pageSize } = {}) => {
+                const baseUrl = publicProfile ? `/general/public/entity/profile/${id}` : id ? `/brand/${id}` : `/brand`;
                 const queryParams = new URLSearchParams();
 
                 if (pageSize) queryParams.append('pageSize', pageSize);
                 if (page) queryParams.append('page', page);
+                if (entity) queryParams.append('entity', entity);
 
                 const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
                 return {
-                    url: `${baseUrl}${id ? '' : queryString}`,
+                    url: `${baseUrl}${publicProfile ? queryString : id ? '' : queryString}`,
                     method: 'GET',
                 };
             },
@@ -98,7 +99,7 @@ export const brandApi = api.injectEndpoints({
                 formData.append('location', JSON.stringify(location));
 
 
-                if (brandData?.cover) {
+                if (brandData?.cover && Object.keys(brandData?.cover).length > 0) {
                     const coverKeys = [];
 
                     brandData.cover.forEach((file, index) => {

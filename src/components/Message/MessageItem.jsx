@@ -13,7 +13,10 @@ import {
 import ActivityType from "./ActivityType";
 
 import { isActiveMembers } from "../../store/slices/chat";
-import { emptyGoToMessage, setFromNotification } from "../../store/slices/notification";
+import {
+  emptyGoToMessage,
+  setFromNotification,
+} from "../../store/slices/notification";
 
 import { deleteCookie, getCookie, setCookie } from "../../utils";
 
@@ -27,14 +30,16 @@ const MessageItem = ({
   setSelectedChatId,
   emitEvent,
   onlineUsers,
+  setPage,
+  activeTab
 }) => {
-    const isLessThan768 = useMediaQuery("(max-width:768px)");
+  const isLessThan768 = useMediaQuery("(max-width:768px)");
 
-    const detailsRef = useRef(null);
-    const messageRefs = useRef({});
+  const detailsRef = useRef(null);
+  const messageRefs = useRef({});
 
-    const getUnreadChatIds =
-      getCookie("unreadChatIds") && JSON.parse(getCookie("unreadChatIds"));
+  const getUnreadChatIds =
+    getCookie("unreadChatIds") && JSON.parse(getCookie("unreadChatIds"));
 
   const { user } = useSelector((state) => state.auth);
   const { gotToMessage } = useSelector((state) => state.notification);
@@ -45,9 +50,11 @@ const MessageItem = ({
     if (expanded && detailsRef.current) {
       detailsRef.current.scrollTop = 0;
     }
-  }, [expanded]);
+  }, [expanded, activeTab]);
 
   const handleGroup = (el) => {
+    setPage(1);
+
     const obj = {
       userId: user.userChatId,
       members: el?.members,
@@ -70,15 +77,14 @@ const MessageItem = ({
     }
   };
 
-    useEffect(() => {
-      if (gotToMessage && messageRefs.current[gotToMessage?.chatId]) {
-
-        messageRefs.current[gotToMessage?.chatId].current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }
-    }, [gotToMessage, expanded]);
+  useEffect(() => {
+    if (gotToMessage && messageRefs.current[gotToMessage?.chatId]) {
+      messageRefs.current[gotToMessage?.chatId].current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [gotToMessage, expanded]);
 
   return (
     <Accordion
@@ -192,8 +198,9 @@ const MessageItem = ({
         }}
       >
         {message?.chatGroups?.length
-          ? message.chatGroups.map((el, i) => {
-            messageRefs.current[el.chatId] = messageRefs.current[el.chatId] || React.createRef();
+          ? message?.chatGroups?.map((el, i) => {
+              messageRefs.current[el?.chatId] =
+                messageRefs.current[el?.chatId] || React.createRef();
 
               return (
                 <Box
@@ -212,14 +219,14 @@ const MessageItem = ({
                     position: "relative",
                     borderRadius: "3px",
                     borderBottom:
-                      isLessThan768 && i !== message.chatGroups.length - 1
+                      isLessThan768 && i !== message?.chatGroups?.length - 1
                         ? "1px solid rgba(209, 219, 215, 0.6)"
                         : "none",
                   }}
                   onClick={() => {
                     dispatch(emptyGoToMessage());
                     dispatch(setFromNotification(false));
-                    handleGroup(el);
+                    handleGroup(el, message?.parentActivity);
                   }}
                 >
                   <Box
@@ -231,15 +238,10 @@ const MessageItem = ({
                       position: "relative",
                     }}
                   >
-                    {el?.receiverSpace?.spaceImage ||
-                    el?.senderBrand?.brandImage ? (
+                    {el?.childImage ? (
                       <Box sx={{ position: "relative", height: "100%" }}>
                         <img
-                          src={
-                            el?.isInquiryRole === "sender"
-                              ? el?.receiverSpace?.spaceImage
-                              : el?.senderBrand?.brandImage
-                          }
+                          src={el?.childImage}
                           alt="Message Icon"
                           style={{
                             width: "100%",
@@ -316,7 +318,10 @@ const MessageItem = ({
                     )}
 
                     <Box
-                      sx={{ display: "flex", justifyContent: "space-between" }}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
                     >
                       <Typography
                         sx={{

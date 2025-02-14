@@ -24,11 +24,13 @@ import {
   ForgotPassword,
   ResetPassword,
 } from "./pages";
+import SharedPage from './pages/sharedUrl';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useVerifyTokenQuery } from './services/auth';
-import { useSelector } from 'react-redux';
 import Search from './pages/dashboard/search';
+import { useAuth0 } from '@auth0/auth0-react';
+import { logoutAuthUtils } from './utils';
 
 function App() {
   const { pathname } = useLocation();
@@ -36,12 +38,15 @@ function App() {
   const token = window.localStorage.getItem("token");
 
   const { data, isLoading, isError, isFetching } = useVerifyTokenQuery(undefined, { skip: !token });
+  const { logout } = useAuth0();
+
 
   useEffect(() => {
     if (!token) {
 
       window.localStorage.removeItem("token");
-      if (pathname !== "/auth" && pathname !== "/forgot-password" && pathname !== "/reset-password") {
+      if (pathname !== "/auth" && pathname !== "/forgot-password" && pathname !== "/reset-password" && pathname !== "/share") {
+        logoutAuthUtils(logout)
         navigate("/auth?type=login");
       }
     } else if (pathname === "/auth") {
@@ -54,6 +59,7 @@ function App() {
     if (isError) {
 
       window.localStorage.removeItem("token");
+      logoutAuthUtils(logout)
       navigate("/auth?type=login");
     }
   }, [isError, navigate]);
@@ -66,6 +72,7 @@ function App() {
         <Route path="/auth" element={<AuthBox />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/share" element={<SharedPage />} />
         <Route path="*" element={<Navigate to={"/auth?type=login"} />} />
 
         <Route element={<DashboardLayout isTokenChecking={isLoading || isFetching} />}>

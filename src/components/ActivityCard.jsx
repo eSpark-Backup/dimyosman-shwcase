@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Button, Divider, Stack, Typography, useTheme } from "@mui/material";
+import { Box, Button, Divider, Stack, Tooltip, Typography, useTheme } from "@mui/material";
 import {
   accountIcon,
   brandIcon,
@@ -26,15 +26,23 @@ import dayjs from "dayjs";
 import RSVPCalendar from "./rsvp-calendar.jsx";
 import { useClickOutside } from "../utils/index.js";
 import { useAddRsvpDateMutation } from "../services/events.js";
+import CommentModal from "./commentModal.jsx";
+import CommentSuccessModal from "./commentSuccessModal.jsx";
+import ShareModal from "./shareModal.jsx";
+import { useFollowMutation } from "../services/follower.js";
+import { LoadingButton } from "@mui/lab";
+import { useSelector } from "react-redux";
 
 const ActivityCard = ({
   fullItem = {},
   id,
+  publicProfile,
   activityId,
   userName,
   userRole,
   userImage,
   mainImage,
+  shareableLink,
   activity,
   activityLocationId,
   activityName,
@@ -50,19 +58,34 @@ const ActivityCard = ({
   slides,
   search = false,
   isFavourite,
+  isFollowed,
   startDate,
   endDate,
   rsvpDates,
-  handleAction = () => {},
-  handleNavigation = () => {},
+  handleAction = () => { },
+  handleNavigation = () => { },
+  isDraftedBrandOwner,
+  brandStatus,
+  isDraftedSpaceOwner,
+  spaceStatus
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const [commentModal, setCommentModal] = useState(false);
+  const [commentId, setCommentId] = useState(null);
+  const [successModal, setSuccessModal] = useState(false);
+  const [shareModal, setShareModal] = useState(false);
+  const [shareModalDetails, setShareModalDetails] = useState(false);
   const [likePost, setLikePost] = useState(isFavourite);
+  const [followPost, setFollowPost] = useState(isFollowed);
   useEffect(() => {
     setLikePost(isFavourite);
-  },[isFavourite])
+  }, [isFavourite]);
+  useEffect(() => {
+    setFollowPost(isFollowed);
+  }, [isFollowed]);
   const [likeFunc, { isLoading }] = useAddInFavouritesMutation();
+  const [follow, { isLoading: followLoading }] = useFollowMutation();
   const [addRsvp, { isLoading: rsvpLoading }] = useAddRsvpDateMutation();
 
   const [selectedDates, setSelectedDates] = useState(
@@ -70,24 +93,26 @@ const ActivityCard = ({
   );
 
   const [openCalendar, setOpenCalendar] = useState(false);
+  const { user } = useSelector((state) => state.auth);
+
 
   const handleOk = () => {
-    const newRsvpDates = selectedDates.map(item => {return { dateTime: item }})
-      const objToSend = {
-        id: activityId,
-        credentials: {
-          attendanceDates: {
-            dateTime: "string",
-            rsvpDates: newRsvpDates,
-          },
+    const newRsvpDates = selectedDates.map(item => { return { dateTime: item } })
+    const objToSend = {
+      id: activityId,
+      credentials: {
+        attendanceDates: {
+          dateTime: "string",
+          rsvpDates: newRsvpDates,
         },
-      };
-      addRsvp(objToSend).then((res) => {
-        if (res?.data?.status) {
-          toast.success(res?.data?.message);
-          setOpenCalendar(false);
-        }
-      });
+      },
+    };
+    addRsvp(objToSend).then((res) => {
+      if (res?.data?.status) {
+        toast.success(res?.data?.message);
+        setOpenCalendar(false);
+      }
+    });
   };
 
   const handleCancel = () => {
@@ -130,14 +155,21 @@ const ActivityCard = ({
           }}
         >
           <Box
-            onClick={
-              id && userRole === "brand"
-                ? () => {
-                    navigate(`/${userRole}/${id}`);
-                    handleNavigation();
-                  }
-                : () => {}
-            }
+            onClick={() => {
+              if ((id && userRole === "brand" && !isDraftedBrandOwner && brandStatus !== "ARCHIVE") || (id && userRole === "brand" && isDraftedBrandOwner === user?.id && brandStatus !== "ARCHIVE")) {
+                navigate(`/${userRole}/${id}`);
+                handleNavigation();
+              } else if (id && userRole === "user" && publicProfile) {
+                navigate(`/profile/${id}`);
+                handleNavigation();
+              } else {
+                if (userRole === "brand") {
+                  toast.error(`This brand is ${brandStatus?.toLowerCase()}${brandStatus === "ARCHIVE" ? "d" : "ed"}. You can not view this brand.`);
+                } else {
+                  toast.error("You are not authorized to view this profile.");
+                }
+              }
+            }}
             sx={{
               cursor: "pointer",
               width: "64px",
@@ -167,6 +199,7 @@ const ActivityCard = ({
                       width: "100%",
                       height: "100%",
                       objectFit: "cover",
+                      borderRadius: "5px",
                     }}
                   />
                 </figure>
@@ -187,15 +220,15 @@ const ActivityCard = ({
                   userRole === "event"
                     ? "rgb(148, 185, 134)"
                     : userRole === "brand"
-                    ? "rgb(196, 119, 127)"
-                    : userRole === "space"
-                    ? "rgb(120, 150, 195)"
-                    : theme.palette.primary.main,
+                      ? "rgb(196, 119, 127)"
+                      : userRole === "space"
+                        ? "rgb(120, 150, 195)"
+                        : theme.palette.primary.main,
                 width: "16px",
                 height: "16px",
                 position: "absolute",
-                bottom: "0px",
-                right: "0px",
+                bottom: "3px",
+                right: "1px",
                 borderRadius: "5px",
                 display: "flex",
                 justifyContent: "center",
@@ -207,10 +240,10 @@ const ActivityCard = ({
                   userRole === "event"
                     ? flag
                     : userRole === "brand"
-                    ? brandIcon
-                    : userRole === "space"
-                    ? spaceIcon
-                    : accountIcon
+                      ? brandIcon
+                      : userRole === "space"
+                        ? spaceIcon
+                        : accountIcon
                 }
                 alt="Icon"
                 style={{ width: "12px", height: "10px" }}
@@ -218,16 +251,21 @@ const ActivityCard = ({
             </Box>
           </Box>
           <Box
-            onClick={
-              activityId
-                ? () => {
-                    navigate(`/${activity}/${activityId}`, {
-                      state: search ? { other: true } : null,
-                    });
-                    handleNavigation();
-                  }
-                : () => {}
-            }
+            onClick={() => {
+              if ((id && userRole === "brand" && !isDraftedBrandOwner && brandStatus !== "ARCHIVE") || (id && userRole === "brand" && isDraftedBrandOwner === user?.id && brandStatus !== "ARCHIVE")) {
+                navigate(`/${userRole}/${id}`);
+                handleNavigation();
+              } else if (id && userRole === "user" && publicProfile) {
+                navigate(`/profile/${id}`);
+                handleNavigation();
+              } else {
+                if (userRole === "brand") {
+                  toast.error(`This brand is ${brandStatus?.toLowerCase()}${brandStatus === "ARCHIVE" ? "d" : "ed"}. You can not view this brand.`);
+                } else {
+                  toast.error("You are not authorized to view this profile.");
+                }
+              }
+            }}
             sx={{
               cursor: activityId ? "pointer" : "default",
               display: "flex",
@@ -257,8 +295,8 @@ const ActivityCard = ({
               {activity === "event"
                 ? "Event!"
                 : activity === "brand"
-                ? "Brand!"
-                : "Space!"}
+                  ? "Brand!"
+                  : "Space!"}
             </Typography>
           </Box>
         </Box>
@@ -266,12 +304,12 @@ const ActivityCard = ({
           onClick={
             activityId
               ? () => {
-                  navigate(`/${activity}/${activityId}`, {
-                    state: search ? { other: true } : null,
-                  });
-                  handleNavigation();
-                }
-              : () => {}
+                navigate(`/${activity}/${activityId}`, {
+                  state: search ? { other: true } : null,
+                });
+                handleNavigation();
+              }
+              : () => { }
           }
           sx={{
             cursor: "pointer",
@@ -279,8 +317,8 @@ const ActivityCard = ({
               activity === "event"
                 ? "rgba(148, 185, 134, 0.3)"
                 : activity === "brand"
-                ? "rgba(196, 119, 127, 0.2)"
-                : "rgba(120, 150, 195, 0.3)",
+                  ? "rgba(196, 119, 127, 0.2)"
+                  : "rgba(120, 150, 195, 0.3)",
             width: "48px",
             height: "48px",
             borderRadius: "5px",
@@ -294,8 +332,8 @@ const ActivityCard = ({
               activity === "event"
                 ? flag
                 : activity === "brand"
-                ? brandIcon
-                : spaceIcon
+                  ? brandIcon
+                  : spaceIcon
             }
             alt=""
           />
@@ -339,12 +377,12 @@ const ActivityCard = ({
             onClick={
               activityId
                 ? () => {
-                    navigate(`/${activity}/${activityId}`, {
-                      state: search ? { other: true } : null,
-                    });
-                    handleNavigation();
-                  }
-                : () => {}
+                  navigate(`/${activity}/${activityId}`, {
+                    state: search ? { other: true } : null,
+                  });
+                  handleNavigation();
+                }
+                : () => { }
             }
             slides={slides}
           />
@@ -373,12 +411,12 @@ const ActivityCard = ({
             onClick={
               activityId
                 ? () => {
-                    navigate(`/${activity}/${activityId}`, {
-                      state: search ? { other: true } : null,
-                    });
-                    handleNavigation();
-                  }
-                : () => {}
+                  navigate(`/${activity}/${activityId}`, {
+                    state: search ? { other: true } : null,
+                  });
+                  handleNavigation();
+                }
+                : () => { }
             }
             sx={{
               cursor: "pointer",
@@ -398,7 +436,7 @@ const ActivityCard = ({
               <img
                 src={activityImage}
                 alt=""
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "5px" }}
               />
               <Box
                 sx={{
@@ -406,8 +444,8 @@ const ActivityCard = ({
                     activity === "event"
                       ? "rgb(148, 185, 134)"
                       : activity === "brand"
-                      ? "rgb(196, 119, 127)"
-                      : "rgb(120, 150, 195)",
+                        ? "rgb(196, 119, 127)"
+                        : "rgb(120, 150, 195)",
                   width: "16px",
                   height: "16px",
                   position: "absolute",
@@ -424,8 +462,8 @@ const ActivityCard = ({
                     activity === "event"
                       ? flag
                       : activity === "brand"
-                      ? brandIcon
-                      : spaceIcon
+                        ? brandIcon
+                        : spaceIcon
                   }
                   alt="Icon"
                   style={{ width: "12px", height: "10px" }}
@@ -609,14 +647,16 @@ const ActivityCard = ({
                 {activity === "event" ? "Hosted" : "Located"} at:
               </Typography>
               <Typography
-                onClick={
-                  activity !== "space" && activityLocationId
-                    ? () => {
-                        navigate(`/space/${activityLocationId}`);
-                        handleNavigation();
-                      }
-                    : () => {}
-                }
+                onClick={() => {
+                  if(id && activity === "event" && (spaceStatus === "DRAFT" || spaceStatus === "ARCHIVE")) {
+                    toast.error(`This space is ${spaceStatus?.toLowerCase()}${spaceStatus === "ARCHIVE" ? "d" : "ed"}. You can not view this space.`);
+                  } else {
+                    if(activity !== "space" && activityLocationId){
+                      navigate(`/space/${activityLocationId}`);
+                      handleNavigation();
+                    }
+                  }
+                }}
                 style={{
                   cursor:
                     activity !== "space" && activityLocationId
@@ -648,18 +688,21 @@ const ActivityCard = ({
               aria-labelledby="profile-figcaption"
             >
               <img src={activity === "event" ? miniMap : miniMap2} alt="" />
-              <figcaption
-                style={{
-                  fontStyle: "normal",
-                  fontSize: "12px",
-                  fontWeight: "400",
-                  color: theme.palette.primary.main,
-                  textAlign: "left",
-                  fontFamily: `"Segoe UI", "sans-serif"`,
-                }}
-              >
-                {activityAddress}
-              </figcaption>
+              <Tooltip title={activityAddress?.length > 40 ? activityAddress : ""}>
+                <figcaption
+                  style={{
+                    fontStyle: "normal",
+                    fontSize: "12px",
+                    fontWeight: "400",
+                    color: theme.palette.primary.main,
+                    textAlign: "left",
+                    fontFamily: `"Segoe UI", "sans-serif"`,
+                    textWrap: "wrap"
+                  }}
+                >
+                  {activityAddress?.length > 40 ? activityAddress?.slice(0, 41) + "..." : activityAddress}
+                </figcaption>
+              </Tooltip>
             </figure>
             <Divider />
             <Typography
@@ -738,8 +781,31 @@ const ActivityCard = ({
             className={`like-icon ${isLoading ? "loading" : ""}`}
             alt="Like Icon"
           />
-          {activity !== "space" && <img src={comment} alt="Comment Icon" />}
-          <img src={share} alt="Share Icon" />
+          {activity !== "space" && (
+            <img
+              onClick={() => {
+                setCommentId(activityId);
+                setCommentModal(true);
+              }}
+              src={comment}
+              alt="Comment Icon"
+              style={{ cursor: "pointer" }}
+            />
+          )}
+          <img
+            onClick={() => {
+              setShareModalDetails({
+                id: activityId,
+                profileName: activityName,
+                profileImage: activityImage,
+                profileType: activity,
+              });
+              setShareModal(true);
+            }}
+            src={share}
+            alt="Share Icon"
+            style={{ cursor: "pointer" }}
+          />
         </Box>
         <Stack
           direction="row"
@@ -752,12 +818,12 @@ const ActivityCard = ({
             onClick={
               activityId
                 ? () => {
-                    navigate(`/${activity}/${activityId}`, {
-                      state: search ? { other: true } : null,
-                    });
-                    handleNavigation();
-                  }
-                : () => {}
+                  navigate(`/${activity}/${activityId}`, {
+                    state: search ? { other: true } : null,
+                  });
+                  handleNavigation();
+                }
+                : () => { }
             }
             sx={{
               backgroundColor: "transparent",
@@ -786,7 +852,9 @@ const ActivityCard = ({
               endDate={endDate}
             />
           )}
-          <Button
+          <LoadingButton
+            loading={followLoading}
+            disabled={followLoading}
             sx={{
               backgroundColor: "rgb(209, 219, 215, 0.4)",
               width: { xs: "120px", sm: "220px" },
@@ -804,6 +872,17 @@ const ActivityCard = ({
             onClick={() => {
               if (activity === "event") {
                 setOpenCalendar(true);
+              } else if (activity === "brand") {
+                if (!followLoading) {
+                  follow({
+                    entityId: activityId,
+                    entityType: "BRAND",
+                  }).then((res) => {
+                    res?.data?.status &&
+                      toast.success(`You ${followPost ? "Unfollowed" : "Followed"} ${activityName}`);
+                    setFollowPost(!followPost);
+                  });
+                }
               } else {
                 handleAction(fullItem);
               }
@@ -812,16 +891,39 @@ const ActivityCard = ({
             {activity === "event" ? (
               "RSVP"
             ) : activity === "brand" ? (
-              "Follow"
+              followPost ? (
+                "Unfollow"
+              ) : (
+                "Follow"
+              )
             ) : (
               <>
                 <img src={calender} alt="Calender Icon" />
                 Inquire
               </>
             )}
-          </Button>
+          </LoadingButton>
         </Stack>
       </Box>
+      <CommentModal
+        open={commentModal}
+        handleClose={() => {
+          setCommentId(null);
+          setCommentModal(false);
+        }}
+        handleSuccess={() => setSuccessModal(true)}
+        commentId={commentId}
+      />
+      <CommentSuccessModal
+        open={successModal}
+        handleClose={() => setSuccessModal(false)}
+      />
+      <ShareModal
+        shareableLink={shareableLink}
+        open={shareModal}
+        handleClose={() => setShareModal(false)}
+        shareModalDetails={shareModalDetails}
+      />
     </Box>
   );
 };

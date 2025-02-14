@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { eventTableData } from "../../../constant";
-import { addIcon, eventIconLight, like } from "../../../assets";
+import { addIcon, eventIconLight, flag, like } from "../../../assets";
 import { useCancelRsvpMutation, useGetAllEventsQuery } from "../../../services/events";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
@@ -74,36 +74,42 @@ const Event = () => {
   const transformEventData = (apiData, type) => {
     let newData;
     type === "fav"
-      ? (newData = apiData.map(({event}, index) => ({
-          id: event?.id,
-          type: "event",
-          eventName: event?.eventName,
-          eventImg: event?.eventImage,
-          brand: event?.brand?.brandName,
-          brandUrl: `/brand/${event?.brand?.id}`,
-          rsvp: "-",
-          startDate: dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
-          status: event?.status,
-          hostedIn: event?.space?.spaceName,
-          spaceUrl: `/space/${event?.space?.id}`,
-          action: "Cancel",
-          category: event?.eventCategory[0]?.name
-        })))
+      ? (newData = apiData.map(({ event }, index) => ({
+        id: event?.id,
+        type: "event",
+        eventName: event?.eventName,
+        eventImg: event?.eventImage,
+        brand: event?.brand?.brandName,
+        brandUrl: `/brand/${event?.brand?.id}`,
+        rsvp: "-",
+        startDate: !event?.eventDate ||
+          !event?.eventDate[0]?.startDate ||
+          !dayjs(event?.eventDate[0]?.startDate).isValid()
+          ? "-"
+          : dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
+        status: event?.status,
+        hostedIn: event?.space?.spaceName,
+        spaceUrl: `/space/${event?.space?.id}`,
+        action: "Cancel",
+        category: event?.eventCategory[0]?.name
+      })))
       : (newData = apiData.map((event, index) => ({
-          id: event?.id,
-          rsvpId: event?.rsvpId,          
-          type: "event",
-          eventName: event?.eventName,
-          eventImg: event?.eventImage,
-          brand: event?.brand?.brandName,
-          brandUrl: `/brand/${event?.brand?.id}`,
-          rsvp: event?.rsvpCount,
-          startDate: dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
-          status: event?.eventStatus || event?.status,
-          hostedIn: event?.space?.spaceName,
-          spaceUrl: `/space/${event?.space?.id}`,
-          action: "Cancel",
-        })));
+        id: event?.id,
+        rsvpId: event?.rsvpId,
+        type: "event",
+        eventName: event?.eventName,
+        eventImg: event?.eventImage,
+        brand: event?.brand?.brandName,
+        brandUrl: event?.brand ? `/brand/${event?.brand?.id}` : null,
+        rsvp: event?.rsvpCount,
+        startDate: !event?.eventDate || !event?.eventDate[0]?.startDate || dayjs(event?.eventDate[0]?.startDate).isValid() === false
+          ? "-"
+          : dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
+        status: event?.eventStatus || event?.status,
+        hostedIn: event?.space?.spaceName || "-",
+        spaceUrl: `/space/${event?.space?.id}`,
+        action: "Cancel",
+      })));
     return newData;
   };
 
@@ -123,8 +129,8 @@ const Event = () => {
     }
 
     if (isSuccess) {
-      if(tabsForApi[activeTab] === "RSVP"){
-        setMyEventData(transformEventData(data?.data?.map(({ event, ...rest }) =>({ ...rest, ...event, rsvpId: rest?.id })) || []));
+      if (tabsForApi[activeTab] === "RSVP") {
+        setMyEventData(transformEventData(data?.data?.map(({ event, ...rest }) => ({ ...rest, ...event, rsvpId: rest?.id })) || []));
       } else {
         setMyEventData(transformEventData(data?.data?.events || []));
       }
@@ -172,9 +178,9 @@ const Event = () => {
     navigate(item?.spaceUrl);
   };
 
-    const [likeFunc, { isLoading: likeLoading }] = useAddInFavouritesMutation();
-    const [cancelRsvp, { isLoading: rsvpLoading }] = useCancelRsvpMutation();
-  
+  const [likeFunc, { isLoading: likeLoading }] = useAddInFavouritesMutation();
+  const [cancelRsvp, { isLoading: rsvpLoading }] = useCancelRsvpMutation();
+
 
   const handleAction = async (item, type) => {
     if (type === "edit") {
@@ -184,16 +190,31 @@ const Event = () => {
       }
     } else if (type === "remove") {
       setSavedId(item?.id);
-      await likeFunc({ entityId: item?.id, entityType: item?.type?.toUpperCase() }).unwrap();
-      refetch2();
-      setSavedId(null);
+      likeFunc({
+        entityId: item?.id,
+        entityType: item?.type?.toUpperCase(),
+      }).then((res) => {
+        if (res?.data?.status) {
+          toast.success(
+            res?.data?.message
+              .replace("Entity", "Post")
+              .replace(" successfully", "")
+          );
+          refetch2();
+          setSavedId(null);
+        }
+      });
       //remove functionality
     } else if (type === "Cancel") {
       //cancel rsvp functionality
       setRsvpId(item?.rsvpId);
-      await cancelRsvp({id: item?.rsvpId}).unwrap();
-      refetch();
-      setRsvpId(null);
+      cancelRsvp({ id: item?.rsvpId }).then((res) => {
+        if (res?.data?.status) {
+          toast.success(res?.data?.message);
+          refetch();
+          setRsvpId(null);
+        }
+      });
     } else {
       // other action functionality
     }
@@ -216,7 +237,33 @@ const Event = () => {
   return (
     <Box>
       <Stack direction="row" justifyContent={{ xs: "center", sm: "flex-end" }}>
-        <img src={eventIconLight} alt="event" />
+        <Box
+          sx={{
+            background: "rgba(148, 185, 134, 0.3)",
+            width: "48px",
+            height: "48px",
+            borderRadius: "5px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <figure
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            role="space-icon"
+          >
+            <img
+              src={flag}
+              alt=""
+            />
+          </figure>
+        </Box>
       </Stack>
       <Card sx={{ marginY: 2 }}>
         <FilterationTabs

@@ -5,7 +5,7 @@ export const spaceApi = api.injectEndpoints({
     newSpace: builder.mutation({
       query: (spaceData) => {
         const formData = new FormData();
-        formData.append("brandId", spaceData?.selectedBrand);
+        if (spaceData?.selectedBrand) formData.append("brandId", spaceData?.selectedBrand);
         formData.append("spaceName", spaceData?.spaceName);
 
         const pricing = spaceData?.price?.map((item) => ({
@@ -14,7 +14,7 @@ export const spaceApi = api.injectEndpoints({
           minimum: String(item?.minimum),
         }));
 
-        formData.append("pricing", JSON.stringify(pricing));
+        if (pricing?.length > 0) formData.append("pricing", JSON.stringify(pricing));
 
         const selectedCategories = spaceData?.spaceCategories
           ?.filter((item) => item.selected)
@@ -26,7 +26,7 @@ export const spaceApi = api.injectEndpoints({
           ?.filter((item) => item.selected)
           ?.map((item) => ({ name: item.name, iconUrl: item?.icon }));
 
-        formData.append("amenity", JSON.stringify(selectedAmenities));
+        if (selectedAmenities?.length > 0) formData.append("amenity", JSON.stringify(selectedAmenities));
 
         const details = {
           description: spaceData?.spaceOverview,
@@ -41,7 +41,7 @@ export const spaceApi = api.injectEndpoints({
         // };
         // formData.append("location", JSON.stringify(location));
 
-        if (spaceData?.cover) {
+        if (spaceData?.cover && Object.keys(spaceData?.cover).length > 0) {
           const coverOrder = [];
 
           spaceData.cover.forEach((file) => {
@@ -64,19 +64,20 @@ export const spaceApi = api.injectEndpoints({
       },
     }),
     getAllSpace: builder.query({
-      query: ({ id, page, pageSize, tab } = {}) => {
-        const baseUrl = id ? `/space/${id}` : "/space";
+      query: ({ publicProfile, entity, id, page, pageSize, tab } = {}) => {
+        const baseUrl = publicProfile ? `/general/public/entity/profile/${id}` : id ? `/space/${id}` : "/space";
         const queryParams = new URLSearchParams();
 
         if (pageSize) queryParams.append("pageSize", pageSize);
         if (page) queryParams.append("page", page);
         if (tab) queryParams.append("tab", tab);
+        if (entity) queryParams.append('entity', entity);
 
         const queryString = queryParams.toString()
           ? `?${queryParams.toString()}`
           : "";
         return {
-          url: `${baseUrl}${id ? "" : queryString}`,
+          url: `${baseUrl}${publicProfile ? queryString : id ? "" : queryString}`,
           method: "GET",
         };
       },
@@ -84,7 +85,7 @@ export const spaceApi = api.injectEndpoints({
     editSpace: builder.mutation({
       query: ({ spaceData, id }) => {
         const formData = new FormData();
-        formData.append("brandId", spaceData?.selectedBrand);
+        if (spaceData?.selectedBrand) formData.append("brandId", spaceData?.selectedBrand);
         formData.append("spaceName", spaceData?.spaceName);
 
         const pricing = spaceData?.price?.map((item) => ({
@@ -93,7 +94,7 @@ export const spaceApi = api.injectEndpoints({
           minimum: String(item?.minimum),
         }));
 
-        formData.append("pricing", JSON.stringify(pricing));
+        if (pricing?.length > 0) formData.append("pricing", JSON.stringify(pricing));
 
         const selectedCategories = spaceData?.spaceCategories
           ?.filter((item) => item.selected)
@@ -105,7 +106,7 @@ export const spaceApi = api.injectEndpoints({
           ?.filter((item) => item.selected)
           ?.map((item) => ({ name: item.name, iconUrl: item?.icon }));
 
-        formData.append("amenity", JSON.stringify(selectedAmenities));
+        if (pricing?.length > 0) formData.append("amenity", JSON.stringify(selectedAmenities));
 
         const details = {
           description: spaceData?.spaceOverview,
@@ -120,7 +121,7 @@ export const spaceApi = api.injectEndpoints({
         // };
         // formData.append("location", JSON.stringify(location));
 
-        if (spaceData?.cover) {
+        if (spaceData?.cover && Object.keys(spaceData?.cover).length > 0) {
           const coverKeys = [];
 
           spaceData.cover.forEach((file, index) => {

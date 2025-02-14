@@ -137,12 +137,35 @@ const EditSpace = () => {
 
 
     // Functions
-    const HandleMainImageChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const updatedCover = [...spaceData.cover];
-            updatedCover[currentIndex] = file;
-            setSpaceData((prev) => ({ ...prev, cover: updatedCover }));
+    const handleMainImageChange = (files) => {
+        if (files.length > 0) {
+            if (spaceData.cover.length !== currentIndex) {
+                const updatedCover = [...spaceData.cover];
+                updatedCover[currentIndex] = files[0];
+                setSpaceData((prev) => ({ ...prev, cover: updatedCover }));
+            }
+            if(spaceData.cover.length === 0) {
+                setSpaceData((prev) => ({ ...prev, cover: files }));
+            }
+            if(spaceData.cover.length === 1) {
+                const updatedCover = [...spaceData.cover];
+                updatedCover[1] = files[0];
+                files?.length > 1 ? updatedCover[2] = files[1] : null;
+                setSpaceData((prev) => ({ ...prev, cover: updatedCover }));
+                const nextIndex = spaceData.cover.length;
+                if (nextIndex < 3) {
+                    setCurrentIndex(nextIndex);
+                }
+            }
+            if(spaceData.cover.length === 2) {
+                const updatedCover = [...spaceData.cover];
+                updatedCover[2] = files[0];
+                setSpaceData((prev) => ({ ...prev, cover: updatedCover }));
+                const nextIndex = spaceData.cover.length;
+                if (nextIndex < 3) {
+                    setCurrentIndex(nextIndex);
+                }
+            }
         }
     };
 
@@ -174,6 +197,8 @@ const EditSpace = () => {
         const nextIndex = currentIndex + 1;
         if (nextIndex < spaceData.cover.length + 1 && nextIndex <= 2) {
             setCurrentIndex(nextIndex);
+        } else {
+            toast.error("You can not select more that 3 images")
         }
     };
 
@@ -378,8 +403,15 @@ const EditSpace = () => {
     };
 
     const handleSubmit = async (status) => {
-        if (!validateSpaceData()) {
-            return;
+        if (status === "PUBLISH") {
+            if (!validateSpaceData()) {
+                return;
+            }
+        } else {
+            if (!spaceData?.spaceName || spaceData?.spaceName.trim() === "") {
+                toast?.error("Space name can not be empty.");
+                return;
+            }
         }
         setLoadingButton(status);
         try {
@@ -473,7 +505,7 @@ const EditSpace = () => {
                     Archive
                 </LoadingButton>
             </Box>
-            <FullWidthImgInput activity={"space"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={spaceIcon} editImage={
+            <FullWidthImgInput cover={spaceData.cover} activity={"space"} HandleChange={handleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={spaceIcon} editImage={
                 spaceData.cover[currentIndex]?.url
                     ?
                     spaceData.cover[currentIndex]?.url
@@ -591,6 +623,7 @@ const EditSpace = () => {
                     onSelect={setfeatures}
                     maxSelections={Infinity}
                     description=''
+                    canType={true}
                 />
             </ReusableModal>
             <ReusableModal open={openMapModal} handleClose={() => setMapModal(false)} heading={"Select Location"}>

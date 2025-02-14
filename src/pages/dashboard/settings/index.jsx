@@ -12,6 +12,7 @@ import {
   eye,
   facebook,
   google,
+  settingsIcon,
   settingsIconLight,
   uploadIcon,
 } from "../../../assets";
@@ -181,6 +182,7 @@ const Settings = () => {
       if (image) {
         const formdata = new FormData();
         formdata.append("image", image);
+        formdata.append("isProfile", true);
         changeProfileImage(formdata).then((res) => {
           if (res?.error) {
             toast.error(res?.error?.data?.message || "something went wrong");
@@ -277,7 +279,7 @@ const Settings = () => {
             }}
             role="space-icon"
           >
-            <img src={settingsIconLight} alt="event" />
+            <img src={settingsIcon} alt="event" />
           </figure>
         </Box>
       </Stack>
@@ -589,10 +591,10 @@ const Settings = () => {
                   </Typography>
                   <img src={uploadIcon} alt="Icon" />
                   <input
-                    accept="image/*"
-                    type="file"
+                    accept=".jpeg, .png, .jpg, .svg"
                     style={{ display: "none" }}
                     ref={profileImageRef}
+                    type="file"
                     onChange={handleImageChange}
                   />
                 </Box>

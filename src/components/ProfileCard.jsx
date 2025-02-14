@@ -1,26 +1,41 @@
-import { Box, Button, Typography, useTheme } from '@mui/material'
-import React, { useState } from 'react'
-import { accountIcon, brandIcon, eventMain, eventMain2, eventMain3, flag, spaceIcon, uploadIcon, user } from '../assets'
-import { profileStats } from '../constant'
+import { Box, Button, CircularProgress, Typography, useTheme } from '@mui/material'
+import React, { useEffect, useState } from 'react'
+import { accountIcon, activeItemIcon, add, brandIcon, eventMain, eventMain2, eventMain3, flag, notActiveIcon, spaceIcon, subtract, uploadIcon, user } from '../assets'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ReusableModal from './Modal'
 import ImageModal from './ImageModal'
+import { LoadingButton } from '@mui/lab'
 
-const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, handleProfileChange, profileImgRef, handleMainImgChange, mainImgRef, handleMainImgClick, coverImg, userProfileImg, userName, imgUrl }) => {
+const ProfileCard = ({ myProfile, userRole = "account", isEdit, handleProfileImgClick, handleProfileChange, profileImgRef, handleMainImgChange, mainImgRef, coverImg, userProfileImg, userName, imgUrl, editImage, cover, HandleSlideChange, HandleInputCLick, handleRemove, onClick, loading, profileStats }) => {
     const theme = useTheme()
     const location = useLocation()
     const navigate = useNavigate();
     const [showImageModal, setShowImageModal] = useState(false)
-    const [previewImage, setPreviewImage] = useState(imgUrl ? imgUrl : null);
-    const [coverPreview, setCoverPreview] = useState(coverImg || null);
-
-
+    const [previewImage, setPreviewImage] = useState(userProfileImg ? userProfileImg : null);
 
     const handleModalClose = () => {
         setShowImageModal(false)
     }
 
+    useEffect(() => {
+        setPreviewImage(userProfileImg);
+    }, [userProfileImg]);
+
+
+    // const handleImageChange = (event) => {
+    //     handleProfileChange(event);
+    //     const file = event.target.files[0];
+    //     if (file) {
+    //         const reader = new FileReader();
+    //         reader.onload = (e) => {
+    //             setPreviewImage(e.target.result);
+    //         };
+    //         reader.readAsDataURL(file);
+    //     }
+    // };
+
     const handleImageChange = (event) => {
+        console.log("Hello")
         handleProfileChange(event);
         const file = event.target.files[0];
         if (file) {
@@ -32,39 +47,47 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
         }
     };
 
-    const handleMainImageChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setCoverPreview(e.target.result);
-            };
-            reader.readAsDataURL(file);
+    const handleFileChange = (event) => {
+        const files = event.target.files[0];
+            if (handleMainImgChange) {
+                handleMainImgChange(files);
+            }
+        // Reset the file input value to allow selecting the same file again
+        if (mainImgRef && mainImgRef.current) {
+            mainImgRef.current.value = '';
         }
-        handleMainImgChange(event);
     };
+
+    const images = cover?.map((item) => (item?.url))
     return (
         <>
             <Box
                 sx={{
-                    position: "relative",
-                    minHeight: { xs: "400px", md: "180px" },
-                    flex: 1,
-                    backgroundImage: isEdit && coverPreview
-                        ? `linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url(${coverPreview})`
-                        : !isEdit && `url(${coverImg})`,
-                    backgroundPosition: "center",
-                    backgroundSize: "cover",
-                    backgroundRepeat: "no-repeat",
-                    backgroundColor: isEdit && "rgba(209, 219, 215, 0.2)",
+                    height: "220px",
+                    borderRadius: "5px 5px 0 0",
                     border: isEdit && "1px dashed rgba(0, 20, 28, 0.4)",
-                    cursor: "pointer",
-                    borderTopLeftRadius: "5px",
-                    borderTopRightRadius: "5px",
+                    backgroundColor: "rgba(209, 219, 215, 0.2)",
+                    position: "relative",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    // overflow: "hidden",
                 }}
-                onClick={() => !isEdit && setShowImageModal(true)}
+                onClick={() => !isEdit && images.length > 0 && setShowImageModal(true)}
             >
-                {isEdit && (
+                {editImage && !Array.isArray(editImage) && (
+                    <img
+                        src={editImage}
+                        alt="edit"
+                        style={{
+                            objectFit: "cover",
+                            width: "100%",
+                            height: "100%",
+                            borderRadius: "5px 5px 0 0",
+                        }}
+                    />
+                )}
+                {editImage && (
                     <Box
                         sx={{
                             position: "absolute",
@@ -72,15 +95,48 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                             left: 0,
                             width: "100%",
                             height: "100%",
-                            backgroundColor: "rgba(0, 0, 0, 0.4)",
-                            zIndex: 1,
-                            pointerEvents: "none",
-                            borderTopLeftRadius: "5px",
-                            borderTopRightRadius: "5px",
+                            backgroundColor: isEdit && "rgb(185 185 185 / 40%)",
+                            borderRadius: "5px 5px 0 0",
+                            zIndex: 2,
                         }}
                     />
                 )}
-                <Button
+                {
+                    isEdit && <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            cursor: "pointer",
+                            zIndex: 3,
+                            position: "absolute",
+                            right: 10,
+                            bottom: 0
+                        }}
+                        onClick={HandleInputCLick}
+                    >
+                        <Typography
+                            component="label"
+                            sx={{
+                                fontSize: "14px",
+                                fontWeight: "300",
+                                color: theme.palette.primary.main,
+                                fontStyle: "italic",
+                            }}
+                        >
+                            Upload image:
+                        </Typography>
+                        <img src={uploadIcon} alt="Upload Icon" />
+                        <input
+                            type="file"
+                            style={{ display: "none" }}
+                            ref={mainImgRef}
+                            multiple
+                            accept=".jpeg, .png, .jpg, .svg"
+                            onChange={handleFileChange}
+                        />
+                    </Box>
+                }
+                <Box
                     sx={{
                         backgroundColor: "rgb(0, 20, 28, 0.2)",
                         height: "48px",
@@ -99,15 +155,14 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                     }}
                 >
                     <figure
-                        style={{ width: "100%", height: "100%" }}
                         role="img"
 
                     >
                         <img src={user} alt="User Icon" style={{ width: "31px", height: "32px" }} />
                     </figure>
 
-                </Button>
-                <Button
+                </Box>
+                {myProfile && <LoadingButton
                     sx={{
                         backgroundColor: isEdit ? "rgb(0, 20, 28, 0.9)" : "#4d5b60",
                         height: "31px",
@@ -127,14 +182,25 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                         },
                         zIndex: 8
                     }}
-                    onClick={() => isEdit ? navigate(`/profile/${location?.pathname.split("/").at(-2)}`) : navigate(`/profile/${location?.pathname.split("/").at(-1)}/edit`)}
+                    onClick={() => {
+                        if (isEdit) {
+                            if (onClick) {
+                                onClick();
+                            }
+                        } else {
+                            navigate(`/profile/${location?.pathname.split("/").at(-1)}/edit`);
+                        }
+                    }}
+                    loading={loading}
+                    loadingIndicator={<CircularProgress size={20} sx={{ color: "#FFFFFF" }} />}
                 >
                     {
                         isEdit ? "Publish" : "Edit"
                     }
 
-                </Button>
+                </LoadingButton>}
                 <Box
+                    onClick={e => e.stopPropagation()}
                     sx={{
                         position: "absolute",
                         width: { xs: "90%", md: "70%", lg: "50%", xl: "40%" },
@@ -187,6 +253,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                                                 objectFit: 'cover',
                                                 opacity: 0.5,
                                                 borderRadius: '5px',
+                                                pointerEvents: "none",
                                             }}
                                         />
                                     )}
@@ -220,8 +287,8 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                                         </figure>
                                         <input type="file" style={{ display: "none" }}
                                             ref={profileImgRef}
-                                            //  onChange={handleProfileChange}
                                             onChange={handleImageChange}
+                                            accept=".jpeg, .png, .jpg, .svg"
                                         />
                                     </Box>
 
@@ -231,7 +298,8 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                                     sx={{
                                         width: "96px",
                                         height: "96px",
-                                        position: "relative"
+                                        position: "relative",
+                                        border: !userProfileImg && "1px dashed rgb(0, 20, 28, 0.4)",
                                     }}
                                 >
                                     <figure
@@ -239,7 +307,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                                         role="img"
 
                                     >
-                                        <img src={userProfileImg} alt="User Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                        {userProfileImg && <img src={userProfileImg} alt="User Image" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
 
                                     </figure>
                                     <Box
@@ -319,49 +387,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
 
                     </Box>
                 </Box>
-                {
-                    isEdit
-                    &&
-                    <Box
-                        sx={{
-                            position: "absolute",
-                            bottom: 0,
-                            right: "20px",
-                            zIndex: 10
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                rowGap: "0px",
-                                cursor: "pointer"
-                            }}
-                            onClick={handleMainImgClick}
-                        >
-                            <Typography
-                                sx={{
-                                    fontSize: '14px',
-                                    fontWeight: "300",
-                                    color: theme.palette.primary.main,
-                                    fontStyle: "italic"
-                                }}
-                            >
-                                upload image:
-                            </Typography>
-                            <figure
-                                style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "centers" }}
-                                role="img"
 
-                            >
-                                <img src={uploadIcon} alt="Icon" />
-                            </figure>
-                            <input type="file" style={{ display: "none" }}
-                                ref={mainImgRef} onChange={handleMainImageChange}
-                            />
-                        </Box>
-                    </Box>
-                }
 
 
 
@@ -391,7 +417,7 @@ const ProfileCard = ({ userRole = "account", isEdit, handleProfileImgClick, hand
                         },
                     }}
                 >
-                    <ImageModal slides={[eventMain, eventMain2, eventMain3]} />
+                    <ImageModal single slides={images} />
                 </Box>
             </ReusableModal>
         </>

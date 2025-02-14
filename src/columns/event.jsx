@@ -31,7 +31,7 @@ const myEventsColumns = (gotoDetail, handleAction, gotoBrand, gotoSpace) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="event-image">
                   <img
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "5px" }}
                     src={item?.eventImg}
                     alt="event-img"
                   />
@@ -75,11 +75,11 @@ const myEventsColumns = (gotoDetail, handleAction, gotoBrand, gotoSpace) => {
             sx={{
               fontSize: "14px",
               fontWeight: item?.brandUrl ? 600 : 400,
-              cursor: "pointer",
+              cursor: item?.brandUrl ? "pointer" : "default",
             }}
-            onClick={() => gotoBrand(item)}
+            onClick={item?.brandUrl ? () => gotoBrand(item) : () => {}}
           >
-            {item?.brand}
+            {item?.brand || "-"}
           </Typography>
         );
       },
@@ -97,9 +97,9 @@ const myEventsColumns = (gotoDetail, handleAction, gotoBrand, gotoSpace) => {
             sx={{
               fontSize: "14px",
               fontWeight: item?.spaceUrl ? 600 : 400,
-              cursor: "pointer",
+              cursor: item?.hostedIn !== "-" ?"pointer":"text",
             }}
-            onClick={() => gotoSpace(item)}
+            onClick={item?.hostedIn !== "-" ? () => gotoSpace(item) : undefined}
           >
             {item?.hostedIn}
           </Typography>
@@ -158,7 +158,7 @@ const rsvpEventColumns = (rsvpLoading, rsvpId, gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="event-icon">
                   <img
-                    style={{ width: "100%", height: "100%", objectFit: "cover"  }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "5px" }}
                     src={item?.eventImg}
                     alt="event-img"
                   />
@@ -292,7 +292,7 @@ const likedEventColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
 
                 <figure style={{ width: "100%", height: "100%" }} role="event-icon">
                   <img
-                    style={{ width: "100%", height: "100%", objectFit: "cover"  }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "5px" }}
                     src={item?.eventImg}
                     alt="event-img"
                   />

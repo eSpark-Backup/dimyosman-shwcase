@@ -5,8 +5,8 @@ export const eventApi = api.injectEndpoints({
         newEvent: builder.mutation({
             query: (eventData) => {
                 const formData = new FormData();
-                formData.append("brandId", eventData?.brand?.id)
-                formData.append("spaceId", eventData?.toSendSpace)
+                if (eventData?.brand?.id) formData.append("brandId", eventData?.brand?.id)
+                if (eventData?.toSendSpace && eventData?.toSendSpace !== "None") formData.append("spaceId", eventData?.toSendSpace)
                 formData.append("eventName", eventData?.eventName)
                 // formData.append("minLeaseDays", "Hello")
 
@@ -17,12 +17,18 @@ export const eventApi = api.injectEndpoints({
                 formData.append('eventCategory', JSON.stringify(selectedCategories));
 
 
-                const formattedDates = [{
-                    startDate: eventData.selectedDate[0],
-                    endDate: eventData.selectedDate[1]
+                const formattedDates = eventData.selectedDate[0] ? [{
+                    startDate: eventData.selectedDate[0].toISOString(),
+                    endDate: eventData.selectedDate[1].toISOString()
+                }] : [{
+                    startDate: "string",
+                    endDate: "string"
                 }];
-                formData.append('eventDate', JSON.stringify(formattedDates));
 
+                
+                if (formattedDates[0].startDate !== "string" && formattedDates[0].endDate !== "string") {
+                    formData.append('eventDate', JSON.stringify(formattedDates));
+                }
 
                 const details = {
                     description: eventData?.eventOverview,
@@ -39,7 +45,7 @@ export const eventApi = api.injectEndpoints({
                 // formData.append('location', JSON.stringify(location));
 
 
-                if (eventData?.cover) {
+                if (eventData?.cover && Object.keys(eventData?.cover).length > 0) {
                     const coverOrder = [];
 
                     eventData.cover.forEach((file) => {
@@ -66,17 +72,18 @@ export const eventApi = api.injectEndpoints({
             },
         }),
         getAllEvents: builder.query({
-            query: ({ id, page, pageSize, tab } = {}) => {
-                const baseUrl = id ? `/event/${id}` : '/event';
+            query: ({ publicProfile, entity, id, page, pageSize, tab } = {}) => {
+                const baseUrl = publicProfile ? `/general/public/entity/profile/${id}` : id ? `/event/${id}` : '/event';
                 const queryParams = new URLSearchParams();
 
                 if (pageSize) queryParams.append('pageSize', pageSize);
                 if (page) queryParams.append('page', page);
                 if (tab) queryParams.append("tab", tab);
+                if (entity) queryParams.append('entity', entity);
 
                 const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
                 return {
-                    url: `${baseUrl}${id ? '' : queryString}`,
+                    url: `${baseUrl}${publicProfile ? queryString : id ? '' : queryString}`,
                     method: 'GET',
                 };
             },
@@ -86,16 +93,29 @@ export const eventApi = api.injectEndpoints({
                 const formData = new FormData();
                 formData.append('eventName', eventData?.eventName);
                 formData.append("spaceId", eventData?.toSendSpace)
+                if (eventData?.brand) {
+                    formData.append("brandId", typeof eventData?.brand === "string" ? eventData.brand : eventData?.brand?.id);
+                }
                 const selectedCategories = eventData?.eventCategories
                     ?.filter(item => item.selected)
                     ?.map(item => ({ name: item.name }));
 
                 formData.append('eventCategory', JSON.stringify(selectedCategories));
-                const formattedDates = [{
-                    startDate: eventData.selectedDate[0],
-                    endDate: eventData.selectedDate[1]
+                console.log(eventData.selectedDate)
+                const isValidDate = (date) => date instanceof Date && !isNaN(date.getTime());
+
+                const formattedDates = eventData.selectedDate[0] ? [{
+                    startDate: eventData.selectedDate[0].toISOString(),
+                    endDate: eventData.selectedDate[1].toISOString()
+                }] : [{
+                    startDate: "string",
+                    endDate: "string"
                 }];
-                formData.append('eventDate', JSON.stringify(formattedDates));
+
+                
+                if (formattedDates[0].startDate !== "string" && formattedDates[0].endDate !== "string") {
+                    formData.append('eventDate', JSON.stringify(formattedDates));
+                }
 
                 const details = {
                     description: eventData?.eventOverview,
@@ -104,7 +124,7 @@ export const eventApi = api.injectEndpoints({
                 formData.append('details', JSON.stringify(details));
 
 
-                if (eventData?.cover) {
+                if (eventData?.cover && Object.keys(eventData?.cover).length > 0) {
                     const coverKeys = [];
 
                     eventData.cover.forEach((file, index) => {

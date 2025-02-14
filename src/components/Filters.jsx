@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -6,10 +6,15 @@ import { toast } from "react-toastify";
 
 import {
   Box,
+  // Button,
   Grid,
   IconButton,
   InputAdornment,
   LinearProgress,
+  List,
+  ListItem,
+  ListItemText,
+  // Stack,
   Typography,
   useMediaQuery,
 } from "@mui/material";
@@ -19,7 +24,7 @@ import CheckBox from "./CheckBox";
 import MapDisplay from "./MapDisplay";
 
 import {
-  allIconLight,
+  // allIconLight,
   brandIcon,
   close,
   flag,
@@ -33,7 +38,10 @@ import {
 
 import { useDebounce } from "../helper/useDebounce";
 
-import { useGetGeneralCategoriesQuery } from "../services/general";
+import {
+  useGetGeneralCategoriesQuery,
+  useGetGeneralLocationQuery,
+} from "../services/general";
 
 import {
   emptyAllLocations,
@@ -48,10 +56,11 @@ import {
   setRadius,
   setSkip,
   setSpaceSearchData,
+  setIsTyping,
 } from "../store/slices/search";
 
 const icons = [
-  { icon: allIconLight, type: "not" },
+  // { icon: allIconLight, type: "not" },
   {
     icon: brandIcon,
     bg: "rgba(196, 119, 127, 0.2)",
@@ -78,6 +87,8 @@ const icons = [
   },
 ];
 
+const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
 const Filters = ({
   setOpenFilterDrawer = null,
   setHasMore = null,
@@ -95,42 +106,52 @@ const Filters = ({
     allFilterCategories,
     allCategoriesNotSearch,
     allLocations,
+    isTyping,
   } = useSelector((state) => state.search);
 
-  const [radiusInput, setRadiusInput] = useState(parameters.radius);
+  const mapRef = useRef(null);
+
+  const [radiusInput, setRadiusInput] = useState(parameters.radius || "");
   const [debouncedRadius, resetDebouncedRadius] = useDebounce(radiusInput, 500);
-  const [hasSet, setHasSet] = useState(false);
-  const [loc, setLoc] = useState({});
+
+  const [suggestions, setSuggestions] = useState([]);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [value, setValue] = useState(parameters?.locaion || "");
+  // const [currentLoc, setCurrentLoc] = useState(true);
+  // const [askForLoc, setaskForLoc] = useState(false);
+
+  const { data: getLocationData, error } = useGetGeneralLocationQuery(
+    { query: value },
+    {
+      skip: !value || value.length < 3 || isSelecting,
+    }
+  );
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
+    const handleClickOutside = (event) => {
+      if (mapRef.current && !mapRef.current.contains(event.target)) {
+        setSuggestions([]);
+        // setCurrentLoc(false);
+        // setaskForLoc(false);
+      }
+    };
 
-          setLoc({ lat: latitude, long: longitude });
-          setHasSet(true);
-        },
-        (error) => {
-          setHasSet(false);
-        }
-      );
-    } else {
-      setHasSet(false);
-    }
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
   }, []);
 
   useEffect(() => {
     if (pathname !== "/search") {
       resetDebouncedRadius();
       dispatch(emptyFilters());
-      setRadiusInput("");
-      dispatch(setLocation({ lat: "", long: "" }));
+
+      emptyInputs();
+
       dispatch(emptyAllLocations());
-      dispatch(setPageNumber(1));
       dispatch(setSkip(true));
-      dispatch(setRadius(""));
+
       dispatch(setAllSearchData([]));
       dispatch(setSpaceSearchData([]));
     }
@@ -141,22 +162,17 @@ const Filters = ({
   }, [pathname, isLessThan1281]);
 
   const [searchCategory, setSearchCategory] = useState("");
-  const [address, setAddress] = useState("");
 
   useEffect(() => {
     if (pathname === "/search" && debouncedRadius !== parameters.radius) {
+      dispatch(setRadius(debouncedRadius));
+
+      commonReset();
+
       dispatch(setPageNumber(1));
       setHasMore?.(true);
       setLoadingStart?.(false);
 
-      if (hasSet) {
-        dispatch(setLocation(loc));
-      }
-
-      dispatch(setRadius(debouncedRadius));
-      dispatch(setSkip(false));
-      dispatch(setAllSearchData([]));
-      dispatch(setSpaceSearchData([]));
       setOpenFilterDrawer?.(false);
     }
   }, [debouncedRadius, dispatch, parameters.radius]);
@@ -235,17 +251,15 @@ const Filters = ({
     });
 
     dispatch(setAllFilterCategories(updatedCategories));
-    
-    dispatch(setRadius(""));
     dispatch(setPageNumber(1));
+
     setHasMore?.(true);
     setLoadingStart?.(false);
-    dispatch(setAllSearchData([]));
-    dispatch(setSpaceSearchData([]));
+
+    commonReset();
 
     dispatch(emptyCategoryNames());
     dispatch(setEntity(entity.type));
-    dispatch(setSkip(false));
 
     if (pathname !== "/search") {
       actionAsDrawer();
@@ -254,9 +268,19 @@ const Filters = ({
   };
 
   const handleSearch = (e) => {
-    const query = e.target.value;
-    console.log(query);
+    dispatch(setIsTyping(false));
+
+    setIsSelecting(false);
+    setValue(e.target.value);
   };
+
+  useEffect(() => {
+    if (getLocationData?.status && getLocationData?.data && !isTyping) {
+      setSuggestions(getLocationData.data);
+    } else {
+      setSuggestions([]);
+    }
+  }, [getLocationData, isTyping]);
 
   const handleCategoryChange = (id) => {
     if (parameters?.entity?.length === 0) {
@@ -294,6 +318,58 @@ const Filters = ({
       actionAsDrawer();
     }
     setOpenFilterDrawer?.(false);
+  };
+
+  const handleSelectPlace = (place) => {
+    setValue(place.description);
+    setSuggestions([]);
+    setIsSelecting(true);
+    dispatch(setIsTyping(true));
+
+    // Fetch details for selected place
+    fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?place_id=${place.placeId}&key=${apiKey}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.results[0]) {
+          const { lat, lng } = data.results[0].geometry.location;
+          const formattedAddress = data.results[0].formatted_address;
+
+          dispatch(setLocation({ long: lng, lat, locaion: formattedAddress }));
+
+          // if (radiusInput?.length === 0) {
+          //   dispatch(setRadius(10));
+          //   setRadiusInput(10)
+          // }
+
+          if (parameters?.lat !== lat || parameters?.long !== lng) {
+            commonReset();
+            setOpenFilterDrawer?.(false);
+            dispatch(setPageNumber(1));
+          }
+        }
+        setSuggestions([]);
+      })
+      .catch((error) =>
+        console.error("Error fetching location details:", error)
+      );
+  };
+
+  const commonReset = () => {
+    dispatch(setSkip(false));
+    dispatch(setAllSearchData([]));
+    dispatch(setSpaceSearchData([]));
+  };
+
+  const emptyInputs = () => {
+    setRadiusInput("");
+    dispatch(setLocation({ lat: "", long: "", location: "" }));
+    setValue("");
+    dispatch(setRadius(""));
+    dispatch(setIsTyping(false));
+    dispatch(setPageNumber(1));
+    resetDebouncedRadius()
   };
 
   const inputStyles = {
@@ -394,7 +470,13 @@ const Filters = ({
       </Box>
 
       <Grid container>
-        <Grid item xs={12} sm={8} pr={1} sx={{ mb: { xs: 1, sm: 0 } }}>
+        <Grid
+          item
+          xs={12}
+          sm={8}
+          pr={1}
+          sx={{ mb: { xs: 1, sm: 0 }, position: "relative" }}
+        >
           <Typography
             component="label"
             sx={{
@@ -407,22 +489,138 @@ const Filters = ({
           </Typography>
           <Input
             sx={inputStyles}
-            // value={parameters.locaion}
-            // onInputChange={(e) =>
-            //   dispatch(setLocation({ locaion: e.target.value }))
-            // }
-            value={address}
-            onInputChange={(e) => setAddress(e.target.value)}
+            value={value}
+            readOnly={
+              parameters?.entity?.length === 0
+                ? true
+                : // : currentLoc
+                  // ? true
+                  false
+            }
+            onClick={() => {
+              if (parameters?.entity?.length === 0) {
+                toast.error("Filter is not selected");
+                return;
+              }
+
+              // if (currentLoc) {
+              //   setaskForLoc(true);
+              // }
+            }}
+            onInputChange={handleSearch}
             type="text"
             placeholder="Type Address..."
+            autoComplete="off"
             endAdornment={
               <InputAdornment position="end">
-                <IconButton>
-                  <img src={locationIcon} alt="" />
+                <IconButton
+                  sx={{
+                    cursor:
+                      parameters?.lat || parameters?.long
+                        ? "pointer"
+                        : "default",
+                    backgroundColor: "transparent !important",
+                    pointerEvents:
+                      parameters?.lat || parameters?.long ? "auto" : "none",
+                  }}
+                  onClick={() => {
+                    if (parameters?.lat || parameters?.long) {
+                      emptyInputs();
+                      commonReset();
+                    }
+                  }}
+                >
+                  {parameters?.lat || parameters?.long ? (
+                    <img src={close} alt="Close" />
+                  ) : (
+                    <img src={locationIcon} alt="Location" />
+                  )}
                 </IconButton>
               </InputAdornment>
             }
           />
+
+          {/* {askForLoc ? (
+            <Box
+              sx={{
+                maxHeight: 200,
+                overflowY: "auto",
+                position: "absolute",
+                zIndex: 1,
+                width: "calc(100% - 8px)",
+                backgroundColor: "white",
+                border: "1px solid #ddd",
+                marginRight: 2,
+                textAlign: "center",
+                padding: "16px 0px",
+              }}
+            >
+              <Typography>
+                Do you want search with your current location
+              </Typography>
+
+              <Stack
+                flexDirection={"row"}
+                justifyContent={"center"}
+                gap={2}
+                mt={2}
+              >
+                <Button
+                  sx={{
+                    textTransform: "inherit",
+                    padding: "0px !important",
+                    fontSize: "16px",
+                    height: "28px",
+                  }}
+                  onClick={() => {}}
+                >
+                  Yes
+                </Button>
+                <Button
+                  sx={{
+                    textTransform: "inherit",
+                    padding: "0px !important",
+                    fontSize: "16px",
+                    height: "28px",
+                  }}
+                  onClick={() => {
+                    setCurrentLoc(false);
+                    setaskForLoc(false);
+                  }}
+                >
+                  No
+                </Button>
+              </Stack>
+            </Box>
+          ) : null} */}
+
+          {/* Suggestions List */}
+          {suggestions.length > 0 && (
+            <Box
+              sx={{
+                maxHeight: 200,
+                overflowY: "auto",
+                position: "absolute",
+                zIndex: 1,
+                width: "calc(100% - 8px)",
+                backgroundColor: "white",
+                border: "1px solid #ddd",
+              }}
+            >
+              <List>
+                {suggestions.map((suggestion, index) => (
+                  <ListItem
+                    component={"button"}
+                    key={index}
+                    onClick={() => handleSelectPlace(suggestion)}
+                    sx={{ cursor: "pointer", backgroundColor: "white" }}
+                  >
+                    <ListItemText primary={suggestion.description} />
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
+          )}
         </Grid>
 
         <Grid item xs={12} sm={4} pl={1}>
@@ -440,7 +638,11 @@ const Filters = ({
             sx={inputStyles}
             value={radiusInput}
             readOnly={
-              parameters?.entity?.length === 0 ? true : !loc?.lat ? true : false
+              parameters?.entity?.length === 0
+                ? true
+                : !parameters?.lat || !parameters?.long
+                ? true
+                : false
             }
             onClick={() => {
               if (parameters?.entity?.length === 0) {
@@ -448,8 +650,8 @@ const Filters = ({
                 return;
               }
 
-              if (!loc?.lat) {
-                toast.error("You need to allow location");
+              if (!parameters?.lat || !parameters?.long) {
+                toast.error("Please add location first");
                 return;
               }
             }}
@@ -458,7 +660,7 @@ const Filters = ({
               setRadiusInput(value);
             }}
             type="number"
-            placeholder="100km"
+            placeholder="10km"
           />
         </Grid>
       </Grid>
@@ -478,6 +680,7 @@ const Filters = ({
                 ? mapMarkerBrand
                 : mapMarker
             }
+            mapRef={mapRef}
           />
         )}
       </Box>

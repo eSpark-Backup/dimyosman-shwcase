@@ -19,6 +19,8 @@ const OutlinedTabs = ({ tabs, onTabChange }) => {
     }
   }, [selectedTab, onTabChange]);
 
+  const newtabs = tabs.filter(item => item.show !== false)
+
   return (
     <Box>
       <Stack
@@ -30,12 +32,11 @@ const OutlinedTabs = ({ tabs, onTabChange }) => {
           overflowX: "auto",
         }}
       >
-        {tabs.map((tab) => {
+        {newtabs.map((tab) => {
           const active = tab.label === selectedTab.label;
-          return (
-            <Box
+          return  tab?.show === false ? null : <Box
               sx={{
-                width: { xs: "150px", md: `${100 / tabs.length}%` },
+                width: { xs: "150px", md: `${100 / newtabs.length}%` },
                 flexShrink: 0,
                 textAlign: "center",
                 cursor: "pointer",
@@ -54,7 +55,6 @@ const OutlinedTabs = ({ tabs, onTabChange }) => {
             >
               <Typography fontWeight={600} fontSize={16}>{tab.label}</Typography>
             </Box>
-          );
         })}
       </Stack>
       <Box marginY={2} paddingX={2}>

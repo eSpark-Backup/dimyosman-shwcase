@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { LoadingButton } from "@mui/lab";
 import { toast } from "react-toastify";
@@ -9,13 +9,21 @@ import { google, facebook, apple } from "../../../assets";
 import { useFormik } from "formik";
 import { loginSchema } from "../../../validation/validation";
 import { useTheme } from "@emotion/react";
-import { useLoginMutation } from "../../../services/auth";
+import { useLoginMutation, useRegisterMutation } from "../../../services/auth";
+import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
 import { useGetMyChatsQuery } from "../../../services/chats";
-import { logout } from "../../../store/slices/auth";
+import { logout as logoutFunc } from "../../../store/slices/auth";
 import { removeMychat } from "../../../store/slices/chat";
+import GoogleButton from "../../../components/SocialButtons/GoogleButton";
+import { deleteCookie, getCookie, logoutAuthUtils, removeActiveNotifications, removeNewInquiry } from "../../../utils";
+import { emptyNotification } from "../../../store/slices/notification";
+
+const AUTH0_APP_DOMAIN = import.meta.env.VITE_AUTH0_APP_DOMAIN;
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_AUTH0_GOOGLE_APP_CLIENT_ID;
 
 const Login = () => {
     const [login, { isLoading, isSuccess, isError, error }] = useLoginMutation();
+    const [register, { isSuccess: isSuccessRegister, isError: isErrorRegister, error: errorRegister, }] = useRegisterMutation();
     const { refetch } = useGetMyChatsQuery(undefined, {
       skip: !localStorage.getItem("token"),
     });
@@ -32,10 +40,29 @@ const Login = () => {
           login(values);
         },
   });
+  const { logout } = useAuth0();
+  const [authLoading, setAuthLoading] = useState(false)
+
+  const logoutSession = getCookie("logout");
+  const socialType = getCookie("social_type");
 
   useEffect(() => {
-    dispatch(logout());
+    if (logoutSession && socialType) {
+      logoutAuthUtils(logout)
+
+      setTimeout(() => {
+        deleteCookie("logout");
+        deleteCookie("social_type");
+      }, 10);
+    }
+  }, [logoutSession, socialType]);
+
+  useEffect(() => {
+    dispatch(logoutFunc());
     dispatch(removeMychat());
+    dispatch(emptyNotification());
+    removeActiveNotifications(dispatch);
+    removeNewInquiry(dispatch);
   }, []);
 
   useEffect(() => {
@@ -85,6 +112,7 @@ const Login = () => {
                     error={formik.touched.email && Boolean(formik.errors.email)}
                     helperText={formik.touched.email && formik.errors.email}
                     placeholder={"Type Your Email"}
+                    disabled={authLoading}
                 />
                 <Input
                     login
@@ -97,6 +125,7 @@ const Login = () => {
                     error={formik.touched.password && Boolean(formik.errors.password)}
                     helperText={formik.touched.password && formik.errors.password}
                     placeholder={"Type Your Password"}
+                    disabled={authLoading}
                 />
                 <Link
                     style={{
@@ -112,9 +141,9 @@ const Login = () => {
                     Forgot Password?
                 </Link>
                 <LoadingButton
-                    loading={isLoading}
+                    loading={isLoading || authLoading}
                     type="submit"
-                    sx={{ textTransform: "none" }}
+                    sx={{ textTransform: "none", color: "#fff" }}
                 >
                     Log In
                 </LoadingButton>           
@@ -176,9 +205,23 @@ const Login = () => {
                         },
                     }}
                 >
-                    <Button sx={authBtnStyle}>
-                        <img src={google} alt="Google Logo" />
-                    </Button>
+                  <Auth0Provider 
+                    domain={AUTH0_APP_DOMAIN}
+                    clientId={GOOGLE_CLIENT_ID}
+                    authorizationParams={{
+                      redirect_uri: window.location.origin,
+                    }}
+                  >
+                    <GoogleButton 
+                      authBtnStyle={authBtnStyle}
+                      register={register}
+                      isSuccessRegister={isSuccessRegister}
+                      isErrorRegister={isErrorRegister}
+                      errorRegister={errorRegister}
+                      setAuthLoading={setAuthLoading}
+                    />
+                  </Auth0Provider>
+                  
                     <Button sx={authBtnStyle}>
                         <img src={facebook} alt="Facebook Logo" />
                     </Button>

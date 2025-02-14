@@ -105,8 +105,15 @@ const NewBrand = () => {
     const [loadingButton, setLoadingButton] = useState(null);
 
     const handleSubmit = async (status) => {
-        if (!validateBrandData()) {
-            return;
+        if (status === "PUBLISH") {
+            if (!validateBrandData()) {
+                return;
+            }
+        } else {
+            if (!brandData?.brandName || brandData?.brandName.trim() === "") {
+                toast?.error("Brand name can not be empty.");
+                return;
+            }
         }
         setLoadingButton(status);
         try {
@@ -151,12 +158,35 @@ const NewBrand = () => {
         mainImageRef.current.click();
     };
 
-    const handleMainImageChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const updatedCover = [...brandData.cover];
-            updatedCover[currentIndex] = file;
-            setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+    const handleMainImageChange = (files) => {
+        if (files.length > 0) {
+            if (brandData.cover.length !== currentIndex) {
+                const updatedCover = [...brandData.cover];
+                updatedCover[currentIndex] = files[0];
+                setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+            }
+            if(brandData.cover.length === 0) {
+                setBrandData((prev) => ({ ...prev, cover: files }));
+            }
+            if(brandData.cover.length === 1) {
+                const updatedCover = [...brandData.cover];
+                updatedCover[1] = files[0];
+                files?.length > 1 ? updatedCover[2] = files[1] : null;
+                setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+                const nextIndex = brandData.cover.length;
+                if (nextIndex < 3) {
+                    setCurrentIndex(nextIndex);
+                }
+            }
+            if(brandData.cover.length === 2) {
+                const updatedCover = [...brandData.cover];
+                updatedCover[2] = files[0];
+                setBrandData((prev) => ({ ...prev, cover: updatedCover }));
+                const nextIndex = brandData.cover.length;
+                if (nextIndex < 3) {
+                    setCurrentIndex(nextIndex);
+                }
+            }
         }
     };
 
@@ -182,6 +212,8 @@ const NewBrand = () => {
         const nextIndex = brandData.cover.length;
         if (nextIndex < 3) {
             setCurrentIndex(nextIndex);
+        } else {
+            toast.error("You can not select more that 3 images")
         }
     };
 
@@ -353,6 +385,7 @@ const NewBrand = () => {
                 imageRef={mainImageRef}
                 icon={brandIcon}
                 activity="brand"
+                cover={brandData.cover}
                 editImage={brandData.cover[currentIndex] ? URL.createObjectURL(brandData.cover[currentIndex]) : null}
                 handleAdd={handleAddImage}
                 handleRemove={handleRemoveImage}
@@ -383,6 +416,7 @@ const NewBrand = () => {
                     categories={brandData.brandCategories}
                     handleClose={handleModalClose}
                     onSelect={(categories) => setBrandData({ ...brandData, brandCategories: categories })}
+                    canType={true}
                 />
             </ReusableModal>
             <OutlinedTabs tabs={tabs} />

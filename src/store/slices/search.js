@@ -18,6 +18,7 @@ const initialState = {
   allCategoriesNotSearch: [],
   allLocations: [],
   page: 1,
+  isTyping: false
 };
 
 const slice = createSlice({
@@ -42,7 +43,7 @@ const slice = createSlice({
     setLocation: (state, { payload }) => {
       state.parameters.long = payload.long;
       state.parameters.lat = payload.lat;
-      // state.parameters.locaion = payload.locaion;
+      state.parameters.locaion = payload.locaion;
     },
     setRadius: (state, action) => {
       state.parameters.radius = action.payload;
@@ -55,6 +56,9 @@ const slice = createSlice({
     },
     setSkip: (state, action) => {
       state.skip = action.payload;
+    },
+    setIsTyping: (state, action) => {
+      state.isTyping = action.payload;
     },
     emptyFilters: (state) => {
       state.parameters = {
@@ -103,6 +107,7 @@ export const {
   setAllLocations,
   emptyAllLocations,
   setPageNumber,
+  setIsTyping
 } = slice.actions;
 
 export default slice.reducer;

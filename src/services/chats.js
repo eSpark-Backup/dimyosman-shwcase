@@ -51,6 +51,31 @@ export const chatApi = api.injectEndpoints({
         }
       },
     }),
+    getSingleChat: builder.query({
+      query: ({ id, page, pageSize } = {}) => {
+        const baseUrl = "/chat/message";
+        const queryParams = new URLSearchParams();
+
+        if (pageSize) queryParams.append("pageSize", pageSize);
+        if (page) queryParams.append("page", page);
+
+        const queryString = queryParams.toString()
+          ? `?${queryParams.toString()}`
+          : "";
+        return {
+          url: `${baseUrl}/${id}${queryString}`,
+          method: "GET",
+        };
+      },
+    }),
+    sendDirectMessage: builder.mutation({
+      query: ({ id, credentials }) => ({
+        url: `/brand/${id}`,
+        method: "POST",
+        body: credentials,
+        credentials: "include",
+      }),
+    }),
   }),
 });
 
@@ -58,4 +83,6 @@ export const {
   useGetMyChatsQuery,
   useGetChatsForContactsQuery,
   useGetAllChatDetailsQuery,
+  useSendDirectMessageMutation,
+  useGetSingleChatQuery,
 } = chatApi;

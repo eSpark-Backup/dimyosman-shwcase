@@ -1,11 +1,12 @@
 import { Fragment, useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { toast } from "react-toastify";
 
 import {
   Box,
   Button,
+  CircularProgress,
   Stack,
   Typography,
   useMediaQuery,
@@ -25,6 +26,10 @@ import AfterSignature from "../../../../components/AfterSignature";
 import ManageInquiry from "../../../../components/ManageInquiry";
 
 import { addEmoji, convertToSameKeys } from "../../../../utils";
+
+import { useGetSingleChatQuery } from "../../../../services/chats";
+
+import { getMessages, getTotalPages } from "../../../../store/slices/chat";
 
 const TopHeading = ({ name, size, my = 0 }) => {
   return (
@@ -68,6 +73,11 @@ const AllMesaages = ({
   isTypingUser,
   onlineUsers,
   setToShare,
+  inViewLoader,
+  setInViewLoader,
+  page,
+  setPage,
+  totalPageOfMessage,
 }) => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
@@ -79,17 +89,130 @@ const AllMesaages = ({
   const messagesContainerRef = useRef(null);
   const pickerRef = useRef(null);
   const buttonRef = useRef(null);
+  const observerRef = useRef(null);
 
   const { user } = useSelector((state) => state.auth);
+  const { messages, totalPagesOfMessage } = useSelector((state) => state.chat);
+
+  const dispatch = useDispatch();
+
+  const {
+    data: messageD,
+    isSuccess,
+    isFetching,
+    isLoading,
+  } = useGetSingleChatQuery(
+    {
+      id: selectedGroup?.chatGroup?.chatId,
+      page: totalPageOfMessage?.currentPage,
+      pageSize: 10,
+    },
+    {
+      skip: page === 1,
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+    }
+  );
+
+  useEffect(() => {
+    if (isSuccess && messageD && totalPageOfMessage?.hasMore && page > 1) {
+      if (messageD?.messages?.length) {
+        if (
+          messages?.some((m) =>
+            messageD?.messages?.find((msg) => msg._id === m._id)
+          )
+        ) {
+          return;
+        }
+
+        if (
+          messages?.some(
+            (m) => !messageD?.messages?.find((msg) => msg._id === m._id)
+          )
+        ) {
+          const update = totalPagesOfMessage?.map((p) => {
+            if (p.chat === selectedGroup?.chatGroup?.chatId) {
+              return {
+                ...p,
+                hasMore: totalPageOfMessage?.currentPage < messageD?.totalPages,
+              };
+            }
+            return { ...p };
+          });
+
+          dispatch(getTotalPages(update));
+          dispatch(getMessages([...messageD?.messages, ...messages]));
+          setInViewLoader(false);
+        }
+      }
+    }
+  }, [
+    messageD,
+    isSuccess,
+    isLoading,
+    isFetching,
+    selectedGroup?.chatGroup?.chatId,
+    page,
+    messages,
+  ]);
 
   const scrollToBottom = () => {
-    if (messagesContainerRef.current) {
+    if (messagesContainerRef.current && page === 1) {
       messagesContainerRef.current.scrollTo({
         top: 0,
         behavior: "smooth",
       });
     }
   };
+
+  useEffect(() => {
+    if (
+      page === totalPageOfMessage?.totalPages ||
+      !totalPageOfMessage?.hasMore ||
+      isFetching ||
+      totalPageOfMessage?.currentPage === totalPageOfMessage?.totalPages
+    )
+      return;
+
+    setInViewLoader(true);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          if (!isFetching) {
+            const update = totalPagesOfMessage?.map((p) => {
+              if (p.chat === selectedGroup?.chatGroup?.chatId) {
+                return {
+                  ...p,
+                  currentPage: totalPageOfMessage?.currentPage + 1,
+                };
+              }
+              return { ...p };
+            });
+
+            dispatch(getTotalPages(update));
+            setPage((prev) => prev + 1);
+          }
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observer.unobserve(observerRef.current);
+      }
+    };
+  }, [
+    isFetching,
+    selectedGroup?.chatGroup?.messages?.length,
+    selectedGroup?.chatGroup?.chatId,
+    totalPagesOfMessage?.length,
+  ]);
 
   useEffect(() => {
     scrollToBottom();
@@ -233,7 +356,7 @@ const AllMesaages = ({
 
       {selectedGroup && selectedGroup?.chatGroup ? (
         <Box display="flex" justifyContent="end" mt={1} height="31px">
-          {selectedGroup?.chatGroup?.activity !== "space" ? (
+          {selectedGroup?.group?.parentActivity === "space" ? (
             <Button
               sx={{
                 padding: "0px 24px",
@@ -304,6 +427,8 @@ const AllMesaages = ({
                             selectedGroup?.chatGroup?.senderBrand?.user?.name
                               ? selectedGroup?.chatGroup?.senderBrand?.brandName
                               : selectedGroup?.chatGroup?.receiverBrand
+                                  ?.brandName ||
+                                selectedGroup?.chatGroup?.receiverEvent?.brand
                                   ?.brandName,
                           brandImage:
                             message?.sender?.name ===
@@ -311,6 +436,8 @@ const AllMesaages = ({
                               ? selectedGroup?.chatGroup?.senderBrand
                                   ?.brandImage
                               : selectedGroup?.chatGroup?.receiverBrand
+                                  ?.brandImage ||
+                                selectedGroup?.chatGroup?.receiverEvent?.brand
                                   ?.brandImage,
                         }}
                       />
@@ -318,6 +445,26 @@ const AllMesaages = ({
                   </Fragment>
                 );
               })}
+            {selectedGroup?.chatGroup?.messages?.length > 0 &&
+              totalPageOfMessage?.hasMore && (
+                <div
+                  ref={observerRef}
+                  style={{
+                    minHeight: 10,
+                    textAlign: "center",
+                    marginBottom: "16px",
+                  }}
+                >
+                  {inViewLoader && (
+                    <CircularProgress
+                      sx={{
+                        width: "30px !important",
+                        height: "30px !important",
+                      }}
+                    />
+                  )}
+                </div>
+              )}
           </Box>
 
           {isTypingUser?.userId === user?.id &&

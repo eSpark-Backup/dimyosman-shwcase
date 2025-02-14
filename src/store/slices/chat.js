@@ -7,6 +7,7 @@ const initialState = {
   hasChats: "",
   activeMembers: [],
   allChatIds: [],
+  unreadTypes: [],
   allGroups: [],
   hasMessages: "",
   totalPagesOfMessage: [],
@@ -25,9 +26,16 @@ const slice = createSlice({
       const gatherSpaces = newChat?.spaces?.flatMap((chat) =>
         chat.chats.map((c) => c)
       );
+      const gatherEvents = newChat?.events?.flatMap((chat) =>
+        chat.chats.map((c) => c)
+      );
 
-      const mergeAll = [...gatherBrands, ...gatherSpaces];
-      const mergeAllChats = [...newChat?.brands, ...newChat?.spaces];
+      const mergeAll = [...gatherBrands, ...gatherSpaces, ...gatherEvents];
+      const mergeAllChats = [
+        ...newChat?.brands,
+        ...newChat?.spaces,
+        ...newChat?.events,
+      ];
 
       const gatherAllIds = mergeAll.map((c) => c._id);
 
@@ -47,8 +55,9 @@ const slice = createSlice({
       state.myChat = [];
       state.chatDetails = [];
       state.messages = [];
-      state.totalPagesOfMessage = [];
       state.allChatIds = [];
+      state.allGroups = [];
+      state.totalPagesOfMessage = [];
     },
     isUserHasChat(state, action) {
       state.hasChats = action.payload;
@@ -62,21 +71,11 @@ const slice = createSlice({
     getAllMyGroups: (state, action) => {
       state.allGroups = action.payload;
     },
-    filterAllMyGroups: (state, action) => {
-      const { type, filterGroups } = action.payload;
-
-      state.allGroups = filterGroups;
-
-      if (type === "all") {
-        state.hasMessages = "";
-      } else if (filterGroups?.length > 0) {
-        state.hasMessages = "";
-      } else {
-        state.hasMessages = "No Chats";
-      }
-    },
     changeMessageType: (state, action) => {
       state.hasMessages = action.payload;
+    },
+    getUnreadTypesSlice(state, action) {
+      state.unreadTypes = action.payload;
     },
   },
 });
@@ -90,9 +89,9 @@ export const {
   isActiveMembers,
   emptyActiveMembers,
   getAllMyGroups,
-  filterAllMyGroups,
   changeMessageType,
-  getTotalPages
+  getTotalPages,
+  getUnreadTypesSlice
 } = slice.actions;
 
 export default slice.reducer;

@@ -20,16 +20,17 @@ const EventDetails = () => {
     const fetchAddress = async () => {
       if (isSuccess) {
         let address = "";
-        if (data?.data?.space?.location?.lat && data?.data?.space?.location?.long) {
+        if (data?.data?.space?.brand?.location?.lat && data?.data?.space?.brand?.location?.long) {
           address = await fetchAddressFromCoordinates(
-            data?.data?.space?.location?.lat,
-            data?.data?.space?.location?.long
+            data?.data?.space?.brand?.location?.lat,
+            data?.data?.space?.brand?.location?.long
           );
         }
         const updatedEvents = {
+          shareableLink: data?.data?.shareableLink,
           isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
-          by: 1,
+          by: data?.data?.brand?.status === "PUBLISH" && data?.data?.brand?.id,
           type: "event",
           owned: user?.id === data?.data?.user?.id,
           slides: data?.data?.coverImages,
@@ -37,10 +38,15 @@ const EventDetails = () => {
           profileName: data?.data?.eventName,
           category: data?.data?.eventCategory || [],
           details: {
-            by: "EcoLux Designs",
-            starting: dayjs(data?.data?.eventDate[0]?.startDate).add(1, 'day').format("DD.MM.YYYY"),
-            RSVP: "234566",
-            saved: "789k",
+            by: data?.data?.brand?.brandName ? data?.data?.brand?.brandName : "-",
+            // starting: dayjs(data?.data?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
+            starting: !data?.data?.eventDate ||
+              !data?.data?.eventDate[0]?.startDate ||
+              !dayjs(data?.data?.eventDate[0]?.startDate).isValid()
+              ? "DD.MM.YYYY"
+              : dayjs(data?.data?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
+            RSVP: data?.data?.rsvpCount,
+            saved: data?.data?.likedCount,
           },
           rating: 5,
           ratingBased: "Based on 12345 reviews from 12345 Events",
@@ -53,15 +59,31 @@ const EventDetails = () => {
                   location: address,
                   space: data?.data?.space?.spaceName,
                   spaceCategory: data?.data?.space?.spaceCategory?.map(item => item.name) || [],
-                  startingDate: moment.utc(data?.data?.eventDate[0]?.startDate).add(1, 'day').format("DD.MM.YYYY"),
-                  endingDate: moment.utc(data?.data?.eventDate[0]?.endDate).add(1, 'day').format("DD.MM.YYYY"),
+                  startingDate: !data?.data?.eventDate ||
+                    !data?.data?.eventDate[0]?.startDate ||
+                    !moment(data?.data?.eventDate[0]?.startDate).isValid()
+                    ? "DD.MM.YYYY"
+                    : moment.utc(data?.data?.eventDate[0]?.startDate).add(1, 'day').format("DD.MM.YYYY"),
+                  endingDate: !data?.data?.eventDate ||
+                    !data?.data?.eventDate[0]?.endDate ||
+                    !moment(data?.data?.eventDate[0]?.endDate).isValid()
+                    ? "DD.MM.YYYY"
+                    : moment.utc(data?.data?.eventDate[0]?.endDate).add(1, 'day').format("DD.MM.YYYY"),
                   rsvpDates: data?.data?.event_rsvp?.attendanceDates?.rsvpDates
-                    ? data?.data?.event_rsvp?.attendanceDates?.rsvpDates.map(item => 
-                        moment.utc(item.dateTime).add(1, 'day').format()
-                      )
+                    ? data?.data?.event_rsvp?.attendanceDates?.rsvpDates.map(item =>
+                      moment.utc(item.dateTime).add(1, 'day').format()
+                    )
                     : [],
-                  startDate: moment.utc(data?.data?.eventDate[0]?.startDate).add(1, 'day').format(),
-                  endDate: moment.utc(data?.data?.eventDate[0]?.endDate).add(1, 'day').format(),
+                  startDate: !data?.data?.eventDate ||
+                    !data?.data?.eventDate[0]?.startDate ||
+                    !moment(data?.data?.eventDate[0]?.startDate).isValid()
+                    ? "DD.MM.YYYY"
+                    : moment.utc(data?.data?.eventDate[0]?.startDate).add(1, 'day').format(),
+                  endDate: !data?.data?.eventDate ||
+                    !data?.data?.eventDate[0]?.endDate ||
+                    !moment(data?.data?.eventDate[0]?.endDate).isValid()
+                    ? "DD.MM.YYYY"
+                    : moment.utc(data?.data?.eventDate[0]?.endDate).add(1, 'day').format(),
                   expectedPoint: {
                     title: "What to Expect:",
                     points: [data?.data?.details?.htmlContent || ""],
@@ -70,7 +92,8 @@ const EventDetails = () => {
                     lat: data?.data?.space?.brand?.location?.lat,
                     long: data?.data?.space?.brand?.location?.long,
                     additional: data?.data?.space?.brand?.location?.additional,
-                  }
+                  },
+                  status: data?.data?.status,
                 },
               },
             },
@@ -78,10 +101,10 @@ const EventDetails = () => {
               label: "Stats",
               props: null,
             },
-            {
-              label: "Reviews",
-              props: null,
-            },
+            // {
+            //   label: "Reviews",
+            //   props: null,
+            // },
           ],
         };
 

@@ -15,6 +15,8 @@ import { toast } from 'react-toastify'
 import ReusableModal from '../../../components/Modal'
 import { LoadingButton } from '@mui/lab'
 import { fetchAddressFromCoordinates } from '../../../utils'
+import { useGetAllBrandsQuery } from '../../../services/brands'
+
 
 const EditEvent = () => {
     const navigate = useNavigate();
@@ -23,6 +25,9 @@ const EditEvent = () => {
     const params = useParams();
     const [bookedRanges, setBookedRanges] = useState([])
 
+    const { data: brandData, isError: isBrandError, isLoading: BrandLoading, isSuccess: isBrandSuccess, error: brandError, isFetching: isBrandFetching } = useGetAllBrandsQuery({}, {
+        refetchOnMountOrArgChange: true,
+    });
 
     const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading } = useGetCategoriesQuery('EVENTS')
 
@@ -97,14 +102,13 @@ const EditEvent = () => {
                     eventCategories: mergedCategories,
                 }));
                 const selectedSpace = spaceData?.data?.tenantSpaces?.filter((item) => item?.id === data?.data?.leaseSpace?.id)
-                console.log(selectedSpace)
                 setEventData((prevState) => ({
                     ...prevState,
                     eventCategories: mergedCategories,
                     eventName: data?.data?.eventName,
                     profileImage: data?.data?.eventImage,
                     eventOverview: data?.data?.details?.description,
-                    cover: data?.data?.coverImages,
+                    cover: Array.isArray(data?.data?.coverImages) ? data?.data?.coverImages : [],
                     selectedDate: Array.isArray(data?.data?.eventDate) && data?.data?.eventDate[0]
                         ? [
                             new Date(data.data.eventDate[0]?.startDate),
@@ -117,7 +121,8 @@ const EditEvent = () => {
                     streetAddress: address,
                     // lease: selectedSpace[0]?.id,
                     toSendSpace: data?.data?.leaseSpace?.id ? selectedSpace[0]?.space?.id : data?.data?.space?.id,
-                    mapInstructions: data?.data?.space?.brand?.location?.additional
+                    mapInstructions: data?.data?.space?.brand?.location?.additional,
+                    brand: data?.data?.brand ? data?.data?.brand?.id : null
                 }));
             }
         }
@@ -234,13 +239,30 @@ const EditEvent = () => {
 
             }
         }
-        console.log(eventData)
     }, [spaceData, eventData, eventData?.space])
 
     const tabs = [
         { label: "Details", component: <></> },
-        { label: "Reviews", component: <></> },
+        // { label: "Reviews", component: <></> },
     ];
+
+    const options = [
+        // ...(brandData?.data?.groupedBrands?.draftBrands || []),
+        ...(brandData?.data?.groupedBrands?.publishedBrands || [])
+    ].map((brand) => ({
+        label: brand.brandName,
+        value: brand.id,
+        item: brand,
+    }));
+
+    const handleBrandSelect = (value) => {
+        const selectedItem = options.find((option) => option.value === value);
+        console.log(selectedItem)
+        setEventData((prev) => ({
+            ...prev,
+            brand: selectedItem?.item,
+        }));
+    };
 
     const [reviews, setReviews] = useState(eventReviews);
 
@@ -252,12 +274,35 @@ const EditEvent = () => {
     const HandleMainFileInputClick = () => {
         mainImageRef.current.click();
     }
-    const HandleMainImageChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const updatedCover = [...eventData.cover];
-            updatedCover[currentIndex] = file;
-            setEventData((prev) => ({ ...prev, cover: updatedCover }));
+    const handleMainImageChange = (files) => {
+        if (files.length > 0) {
+            if (eventData.cover.length !== currentIndex) {
+                const updatedCover = [...eventData.cover];
+                updatedCover[currentIndex] = files[0];
+                setEventData((prev) => ({ ...prev, cover: updatedCover }));
+            }
+            if (eventData.cover.length === 0) {
+                setEventData((prev) => ({ ...prev, cover: files }));
+            }
+            if (eventData.cover.length === 1) {
+                const updatedCover = [...eventData.cover];
+                updatedCover[1] = files[0];
+                files?.length > 1 ? updatedCover[2] = files[1] : null;
+                setEventData((prev) => ({ ...prev, cover: updatedCover }));
+                const nextIndex = eventData.cover.length;
+                if (nextIndex < 3) {
+                    setCurrentIndex(nextIndex);
+                }
+            }
+            if (eventData.cover.length === 2) {
+                const updatedCover = [...eventData.cover];
+                updatedCover[2] = files[0];
+                setEventData((prev) => ({ ...prev, cover: updatedCover }));
+                const nextIndex = eventData.cover.length;
+                if (nextIndex < 3) {
+                    setCurrentIndex(nextIndex);
+                }
+            }
         }
     };
 
@@ -265,6 +310,8 @@ const EditEvent = () => {
         const nextIndex = currentIndex + 1;
         if (nextIndex < eventData.cover.length + 1 && nextIndex <= 2) {
             setCurrentIndex(nextIndex);
+        } else {
+            toast.error("You can not select more that 3 images")
         }
     };
 
@@ -454,16 +501,37 @@ const EditEvent = () => {
             return false;
         }
 
-        if (!eventData?.selectedDate || eventData?.selectedDate?.includes(null)) {
-            toast?.error("Please select date");
+        if (!eventData?.brand || eventData?.brand?.trim() === "") {
+            toast?.error("Please select brand");
             return false;
         }
+
+        if (
+            !eventData?.selectedDate ||
+            !Array.isArray(eventData.selectedDate) ||
+            eventData.selectedDate.length !== 2 ||
+            eventData.selectedDate.some(
+                (date) => !date || isNaN(new Date(date).getTime())
+            )
+        ) {
+            toast?.error("Please select a valid date");
+            return false;
+        }
+
         return true;
     };
 
     const handleSubmit = async (status) => {
-        if (!validateEventData()) {
-            return;
+        if (status === "PUBLISH") {
+            console.log(eventData)
+            if (!validateEventData()) {
+                return;
+            }
+        } else {
+            if (!eventData?.eventName || eventData?.eventName.trim() === "") {
+                toast?.error("Event name can not be empty.");
+                return;
+            }
         }
         setLoadingButton(status);
         try {
@@ -477,6 +545,9 @@ const EditEvent = () => {
     const HandlePublishSubmit = () => handleSubmit("PUBLISH");
     const HandleDraftSubmit = () => handleSubmit("DRAFT");
     const HandleArchiveSubmit = () => handleSubmit("ARCHIVE");
+    // const HandlePublishSubmit = () => console.log(eventData);
+    // const HandleDraftSubmit = () => console.log(eventData);
+    // const HandleArchiveSubmit = () => console.log(eventData);
 
     // useEffect(() => {
     //     if (spaceData && data) {
@@ -594,7 +665,7 @@ const EditEvent = () => {
                     Archive
                 </LoadingButton>
             </Box>
-            <FullWidthImgInput activity={"event"} HandleChange={HandleMainImageChange} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={flag}
+            <FullWidthImgInput activity={"event"} HandleChange={handleMainImageChange} cover={eventData.cover} HandleInputCLick={HandleMainFileInputClick} imageRef={mainImageRef} icon={flag}
                 editImage={
                     eventData.cover[currentIndex]?.url
                         ?
@@ -626,6 +697,10 @@ const EditEvent = () => {
                 HandleCategoryChange={CategoryChangeHandler}
                 activity={"event"}
                 imgUrl={eventData?.profileImage}
+                showDropDown={data?.data?.brand?.id ? false : true}
+                options={options}
+                selectedValue={eventData?.brand?.id || ''}
+                onBrandSelect={handleBrandSelect}
             />
 
 

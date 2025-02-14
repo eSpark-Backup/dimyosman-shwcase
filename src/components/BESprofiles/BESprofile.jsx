@@ -8,7 +8,7 @@ import Events from "./events";
 import Stats from "./stats";
 import Reviews from "./reviews";
 import Spaces from "./spaces";
-import Teenacy from "./teenacy";
+import Tenancy from "./teenacy";
 import { brandBadge, eventBadge, spaceBadge, star } from "../../assets";
 
 const BESProfile = ({ spaceInquire, type, data }) => {
@@ -32,12 +32,13 @@ const BESProfile = ({ spaceInquire, type, data }) => {
     Stats,
     Reviews,
     Spaces,
-    Teenacy,
+    Tenancy,
   };
 
   const mapTabsToComponents = (myProfile, tabs) => {
     return tabs?.map((tab) => ({
       label: tab.label,
+      show: tab?.props === false ? false : true,
       component: () => {
         const Component = componentsMap[tab.label];
         return (
@@ -52,13 +53,18 @@ const BESProfile = ({ spaceInquire, type, data }) => {
     }));
   };
 
-  const filteredProfile = data.find((profile) => profile.id === id);
+  const filteredProfile = data.find((profile) => (profile.id === id) || profile);
   const myProfile = {
     ...filteredProfile,
     tabs: mapTabsToComponents(filteredProfile, filteredProfile?.tabs),
   };
 
-  const transformedSlides = myProfile?.slides?.map((slide) => slide.url) || [];
+  const transformedSlides = Array.isArray(myProfile?.slides)
+    ? myProfile.slides.map((slide) => slide.url)
+    : [];
+
+  console.log(transformedSlides)
+
 
   if (!filteredProfile) {
     return (
@@ -67,6 +73,8 @@ const BESProfile = ({ spaceInquire, type, data }) => {
       </Box>
     )
   }
+
+  console.log(myProfile.profilePic)
 
   return (
     <>
@@ -155,6 +163,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                 height: { xs: "69px", md: "96px" },
                 position: "relative",
                 flexShrink: 0,
+                backgroundColor: !myProfile.profilePic && "rgb(209, 219, 215, 0.4)"
               }}
             >
               <figure
@@ -162,11 +171,11 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                 role="profile-image"
                 aria-labelledby="profile-image-figcaption"
               >
-                <img
+                {myProfile.profilePic && <img
                   style={{ width: "100%", height: "100%" }}
                   src={myProfile.profilePic}
                   alt="brand-profile"
-                />
+                />}
                 <img
                   style={{
                     position: "absolute",
@@ -180,8 +189,8 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                     myProfile?.type === "brand"
                       ? brandBadge
                       : myProfile?.type === "event"
-                      ? eventBadge
-                      : spaceBadge
+                        ? eventBadge
+                        : spaceBadge
                   }
                   alt={`${type}-badge`}
                 />
@@ -246,13 +255,12 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                         onClick={
                           myProfile?.by && key === "by"
                             ? () => {
-                                navigate(
-                                  `/${type === "brand" ? "profile" : "brand"}/${
-                                    myProfile?.by
-                                  }`
-                                );
-                              }
-                            : () => {}
+                              navigate(
+                                `/${type === "brand"? "profile" : "brand"}/${myProfile?.by
+                                }`
+                              );
+                            }
+                            : () => { }
                         }
                         key={ind}
                         fontSize={12}
@@ -282,7 +290,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
               </Stack>
             </Stack>
           </Stack>
-          <Stack
+          {/* <Stack
             component="section"
             direction="column"
             justifyContent="center"
@@ -327,7 +335,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
             >
               {myProfile?.ratingBased}
             </Typography>
-          </Stack>
+          </Stack> */}
         </Stack>
         <OutlinedTabs tabs={myProfile?.tabs} />
       </Box>
