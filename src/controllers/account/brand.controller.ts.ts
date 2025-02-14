@@ -125,6 +125,7 @@ export class BrandController {
           senderBrandImage: senderBrand.brandImage,
           senderBrandName: senderBrand.brandName,
           receiverBrandName: receiverBrand.brandName,
+          receiverId:receiverBrand.user.userChatId,
           chatId: ChatId,
         });
       } else if (receiverEvent) {
@@ -165,6 +166,7 @@ export class BrandController {
           senderBrandImage: senderBrand.brandImage,
           senderBrandName: senderBrand.brandName,
           receiverEventName: receiverEvent.eventName,
+          receiverId:receiverEvent.user.userChatId,
           chatId: ChatId,
         });
       }
