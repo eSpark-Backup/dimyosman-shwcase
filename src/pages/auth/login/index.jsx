@@ -15,7 +15,8 @@ import { useGetMyChatsQuery } from "../../../services/chats";
 import { logout as logoutFunc } from "../../../store/slices/auth";
 import { removeMychat } from "../../../store/slices/chat";
 import GoogleButton from "../../../components/SocialButtons/GoogleButton";
-import { deleteCookie, getCookie, logoutAuthUtils } from "../../../utils";
+import { deleteCookie, getCookie, logoutAuthUtils, removeActiveNotifications, removeNewInquiry } from "../../../utils";
+import { emptyNotification } from "../../../store/slices/notification";
 
 const AUTH0_APP_DOMAIN = import.meta.env.VITE_AUTH0_APP_DOMAIN;
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_AUTH0_GOOGLE_APP_CLIENT_ID;
@@ -59,6 +60,9 @@ const Login = () => {
   useEffect(() => {
     dispatch(logoutFunc());
     dispatch(removeMychat());
+    dispatch(emptyNotification());
+    removeActiveNotifications(dispatch);
+    removeNewInquiry(dispatch);
   }, []);
 
   useEffect(() => {

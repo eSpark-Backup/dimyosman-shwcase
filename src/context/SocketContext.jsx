@@ -81,7 +81,6 @@ const SocketProvider = ({ children }) => {
   const socket = useRef(null);
   const { user } = useSelector((state) => state.auth);
   const { activeMembers, messages } = useSelector((state) => state.chat);
-  const { activeTabForNotif } = useSelector((state) => state.space);
 
   const { data, isSuccess, refetch } = useGetMyChatsQuery(undefined, {
     skip: !user,
@@ -90,7 +89,11 @@ const SocketProvider = ({ children }) => {
     data: notificationData,
     isSuccess: notificationSuccess,
     refetch: notificationRefetch,
-  } = useGetNotificationDataQuery(undefined, { skip: !user });
+  } = useGetNotificationDataQuery(undefined, {
+    skip: !user,
+    refetchOnFocus: true,
+    refetchOnMountOrArgChange: true,
+  });
 
   const { pathname } = useLocation();
   const dispatch = useDispatch();
@@ -102,6 +105,8 @@ const SocketProvider = ({ children }) => {
       notificationData?.data?.notifications?.length > 0
     ) {
       dispatch(getNotification(notificationData?.data?.notifications));
+    } else {
+      dispatch(getNotification([]));
     }
   }, [notificationSuccess, notificationData]);
 
@@ -148,140 +153,7 @@ const SocketProvider = ({ children }) => {
         console.error("Socket connection error:", error.message);
       });
 
-      socket.current.on("REFETCH_CHATS", () => {
-        // console.log("REFETCH_CHAT EVENT TRIGGERED.");
-        refetch();
-      });
-
-      socket.current.on("NEW_NOTIFICATION", (data) => {
-        // console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
-        if (data?.redirect) {
-          if (pathname !== "/space") {
-            notificationRefetch().then(() => {
-              handleNotificationUpdate("newNotification", getNotificationCount, dispatch);
-
-              let redName = data.redirect;
-
-              toast.info(data?.name, {
-                position: "bottom-right",
-                onClick: () => {
-                  dispatch(setRedirectTab(redName));
-                },
-              });
-            });
-          }
-        } else {
-          if (pathname !== "/message") {
-            notificationRefetch().then(() => {
-              handleNotificationUpdate("newInquiry", getNotificationCount, dispatch);
-              const navigateBrandData = {
-                pName: data?.receiverBrandName,
-                chatId: data?.chatId,
-              };
-              
-              const navigateEventData = {
-                pName: data?.receiverEventName,
-                chatId: data?.chatId,
-              };
-
-              toast.info(data?.name, {
-                position: "bottom-right",
-                onClick: () => {
-                  if (data?.receiverBrandName) {
-                    dispatch(setGoToMessage(navigateBrandData));
-                  } else {
-                    dispatch(setGoToMessage(navigateEventData));
-                  }
-                  
-                  dispatch(setFromNotification(true));
-
-                  if (pathname !== "/message") {
-                    navigate("/message");
-                  }
-                },
-              });
-
-              const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
-
-              if (!getUnreadChatIds) {
-                setCookie("unreadChatIds", JSON.stringify([data.chatId]));
-              } else {
-                if (!getUnreadChatIds.includes(data.chatId)) {
-                  getUnreadChatIds.push(data.chatId);
-                  setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
-                }
-              }
-            });
-          }
-        }
-      });
-
-      socket.current.on("NEW_REQUEST", (data) => {
-        // console.log("NEW_REQUEST EVENT TRIGGERED.");
-
-        notificationRefetch().then(() => {
-          handleNotificationUpdate(
-            "newNotification",
-            getNotificationCount,
-            dispatch
-          );
-          if (pathname !== "/message") {
-            handleNotificationUpdate(
-              "newInquiry",
-              getNotificationCount,
-              dispatch
-            );
-          }
-
-          const navigateBrandData = {
-            pName: data?.receiverBrandName,
-            chatId: data?.chatId,
-          };
-
-          const navigateSpaceData = {
-            pName: data?.receiverSpaceName,
-            chatId: data?.chatId,
-          };
-          
-          const navigateEventData = {
-            pName: data?.receiverEventName,
-            chatId: data?.chatId,
-          };
-
-          toast.info(data?.name, {
-            position: "bottom-right",
-            onClick: () => {
-              if (data?.receiverBrandName) {
-                dispatch(setGoToMessage(navigateBrandData));
-              } else if (data?.receiverSpaceName) {
-                dispatch(setGoToMessage(navigateSpaceData));
-              } else {
-                dispatch(setGoToMessage(navigateEventData));
-              }
-
-              dispatch(setFromNotification(true));
-
-              if (pathname !== "/message") {
-                navigate("/message");
-              }
-            },
-          });
-
-          const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
-
-          if (!getUnreadChatIds) {
-            setCookie("unreadChatIds", JSON.stringify([data.chatId]));
-          } else {
-            if (!getUnreadChatIds.includes(data.chatId)) {
-              getUnreadChatIds.push(data.chatId);
-              setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
-            }
-          }
-        });
-      });
-
       return () => {
-        // Cleanup socket on unmount
         if (socket.current) {
           socket.current.removeAllListeners();
           socket.current.disconnect();
@@ -292,7 +164,150 @@ const SocketProvider = ({ children }) => {
   }, [user, socket]);
 
   useEffect(() => {
-    if (user) {
+    if (user && socket.current) {
+      socket.current.on("REFETCH_CHATS", () => {
+        refetch();
+      });
+
+      socket.current.on("NEW_REQUEST", (data) => {
+        if (data?.receiverId === user?.userChatId) {
+          notificationRefetch().then(() => {
+            handleNotificationUpdate(
+              "newNotification",
+              getNotificationCount,
+              dispatch
+            );
+            if (pathname !== "/message") {
+              handleNotificationUpdate(
+                "newInquiry",
+                getNotificationCount,
+                dispatch
+              );
+            }
+
+            const navigateBrandData = {
+              pName: data?.receiverBrandName,
+              chatId: data?.chatId,
+            };
+
+            const navigateSpaceData = {
+              pName: data?.receiverSpaceName,
+              chatId: data?.chatId,
+            };
+
+            const navigateEventData = {
+              pName: data?.receiverEventName,
+              chatId: data?.chatId,
+            };
+
+            toast.info(data?.name, {
+              position: "bottom-right",
+              onClick: () => {
+                if (data?.receiverBrandName) {
+                  dispatch(setGoToMessage(navigateBrandData));
+                } else if (data?.receiverSpaceName) {
+                  dispatch(setGoToMessage(navigateSpaceData));
+                } else {
+                  dispatch(setGoToMessage(navigateEventData));
+                }
+
+                dispatch(setFromNotification(true));
+
+                if (pathname !== "/message") {
+                  navigate("/message");
+                }
+              },
+            });
+
+            const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
+
+            if (!getUnreadChatIds) {
+              setCookie("unreadChatIds", JSON.stringify([data.chatId]));
+            } else {
+              if (!getUnreadChatIds.includes(data.chatId)) {
+                getUnreadChatIds.push(data.chatId);
+                setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
+              }
+            }
+          });
+        }
+      });
+
+      socket.current.on("NEW_NOTIFICATION", (data) => {
+        if (data?.receiverId === user?.userChatId) {
+          if (data?.redirect) {
+            if (pathname !== "/space") {
+              notificationRefetch().then(() => {
+                handleNotificationUpdate(
+                  "newNotification",
+                  getNotificationCount,
+                  dispatch
+                );
+
+                let redName = data.redirect;
+
+                toast.info(data?.name, {
+                  position: "bottom-right",
+                  onClick: () => {
+                    dispatch(setRedirectTab(redName));
+                  },
+                });
+              });
+            }
+          } else {
+            if (pathname !== "/message") {
+              notificationRefetch().then(() => {
+                handleNotificationUpdate(
+                  "newInquiry",
+                  getNotificationCount,
+                  dispatch
+                );
+                const navigateBrandData = {
+                  pName: data?.receiverBrandName,
+                  chatId: data?.chatId,
+                };
+
+                const navigateEventData = {
+                  pName: data?.receiverEventName,
+                  chatId: data?.chatId,
+                };
+
+                toast.info(data?.name, {
+                  position: "bottom-right",
+                  onClick: () => {
+                    if (data?.receiverBrandName) {
+                      dispatch(setGoToMessage(navigateBrandData));
+                    } else {
+                      dispatch(setGoToMessage(navigateEventData));
+                    }
+
+                    dispatch(setFromNotification(true));
+
+                    if (pathname !== "/message") {
+                      navigate("/message");
+                    }
+                  },
+                });
+
+                const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
+
+                if (!getUnreadChatIds) {
+                  setCookie("unreadChatIds", JSON.stringify([data.chatId]));
+                } else {
+                  if (!getUnreadChatIds.includes(data.chatId)) {
+                    getUnreadChatIds.push(data.chatId);
+                    setCookie(
+                      "unreadChatIds",
+                      JSON.stringify(getUnreadChatIds)
+                    );
+                  }
+                }
+              });
+            }
+          }
+        }
+      });
+
       if (pathname !== "/message") {
         socket.current.on("NEW_MESSAGE", (data) => {
           if (messages?.length > 0) {
@@ -316,20 +331,22 @@ const SocketProvider = ({ children }) => {
           }
         };
         socket.current.on("NEW_MESSAGE_ALERT", handleNewMessageAlert);
-
-        return () => {
-          // Cleanup event on unmount
-          if (socket.current) {
-            socket.current.off("NEW_MESSAGE");
-            socket.current.off("NEW_MESSAGE_ALERT");
-          }
-        };
       }
+
+      return () => {
+        if (socket.current) {
+          socket.current.off("REFETCH_CHATS");
+          socket.current.off("NEW_REQUEST");
+          socket.current.off("NEW_NOTIFICATION");
+          socket.current.off("NEW_MESSAGE");
+          socket.current.off("NEW_MESSAGE_ALERT");
+        }
+      };
     }
   }, [messages, user, socket, pathname]);
 
   useEffect(() => {
-    if (user) {
+    if (user && socket.current) {
       if (pathname !== "/message" && activeMembers?.length > 0) {
         const obj = {
           userId: user.userChatId,
@@ -338,13 +355,13 @@ const SocketProvider = ({ children }) => {
 
         socket.current.emit("CHAT_LEFT", obj);
         dispatch(emptyActiveMembers());
-        return () => {
-          // Cleanup event on unmount
-          if (socket.current) {
-            socket.current.off("CHAT_LEFT");
-          }
-        };
       }
+
+      return () => {
+        if (socket.current) {
+          socket.current.off("CHAT_LEFT");
+        }
+      };
     }
   }, [pathname, activeMembers, user, socket]);
 

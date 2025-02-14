@@ -72,6 +72,8 @@ const Header = ({ isLogin }) => {
     dispatch(logoutFunc());
     dispatch(removeMychat());
     dispatch(emptyNotification());
+    removeActiveNotifications(dispatch);
+    removeNewInquiry(dispatch);
     setAddPopup(false);
     setOpenProfilePopup(false);
     setShowNotification(false);
