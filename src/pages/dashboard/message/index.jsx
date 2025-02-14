@@ -165,7 +165,11 @@ const Message = () => {
     isFetching: isFetchingMessage,
   } = useGetChatsForContactsQuery(
     { chats: isNewIdsForAllMessages, page: 1, pageSize },
-    {skip: !myChat?.length, refetchOnMountOrArgChange: true, refetchOnFocus: true },
+    {
+      skip: !myChat?.length,
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+    }
   );
 
   const {
@@ -174,7 +178,11 @@ const Message = () => {
     isFetching,
   } = useGetAllChatDetailsQuery(
     { chats: isNewIdsForChatDetails },
-    {skip: !myChat?.length, refetchOnMountOrArgChange: true, refetchOnFocus: true },
+    {
+      skip: !myChat?.length,
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+    }
   );
 
   const {
@@ -205,45 +213,45 @@ const Message = () => {
 
   useEffect(() => {
     removeNewInquiry(dispatch);
-  },[])
+  }, []);
 
   useEffect(() => {
-      if (isSuccess && messageData && messageData?.length) {
-        const filteredMessages = messageData
-          ?.map((message) => message?.messages)
-          ?.flat();
+    if (isSuccess && messageData && messageData?.length) {
+      const filteredMessages = messageData
+        ?.map((message) => message?.messages)
+        ?.flat();
 
-        const filteredMessagesTotalPage = messageData?.map((message) => {
-          return {
-            totalPages: message?.totalPages,
-            chat: message?.messages[0]?.chat,
-            currentPage: 1,
-            remainingPages: message?.totalPages,
-            hasMore: message?.totalPages > 1 ? true : false,
-          };
-        });
+      const filteredMessagesTotalPage = messageData?.map((message) => {
+        return {
+          totalPages: message?.totalPages,
+          chat: message?.messages[0]?.chat,
+          currentPage: 1,
+          remainingPages: message?.totalPages,
+          hasMore: message?.totalPages > 1 ? true : false,
+        };
+      });
 
-        // Get existing message IDs from the current state
-        const existingMessageIds = messages?.map((message) => message?.chat);
-        const existingPageIds = totalPagesOfMessage?.map(
-          (message) => message?.chat
-        );
-        // Filter new messages that are not already in the current state
-        const newMessages = filteredMessages?.filter(
-          (message) => !existingMessageIds?.includes(message?.chat)
-        );
-        const newTotalPage = filteredMessagesTotalPage?.filter(
-          (message) => !existingPageIds?.includes(message?.chat)
-        );
-        // Dispatch only new messages to add them to the state
-        if (newMessages?.length > 0) {
-          dispatch(getMessages([...messages, ...newMessages]));
-          dispatch(getTotalPages([...totalPagesOfMessage, ...newTotalPage]));
-        } else {
-          dispatch(getMessages(filteredMessages));
-          dispatch(getTotalPages(filteredMessagesTotalPage));
-        }
+      // Get existing message IDs from the current state
+      const existingMessageIds = messages?.map((message) => message?.chat);
+      const existingPageIds = totalPagesOfMessage?.map(
+        (message) => message?.chat
+      );
+      // Filter new messages that are not already in the current state
+      const newMessages = filteredMessages?.filter(
+        (message) => !existingMessageIds?.includes(message?.chat)
+      );
+      const newTotalPage = filteredMessagesTotalPage?.filter(
+        (message) => !existingPageIds?.includes(message?.chat)
+      );
+      // Dispatch only new messages to add them to the state
+      if (newMessages?.length > 0) {
+        dispatch(getMessages([...messages, ...newMessages]));
+        dispatch(getTotalPages([...totalPagesOfMessage, ...newTotalPage]));
+      } else {
+        dispatch(getMessages(filteredMessages));
+        dispatch(getTotalPages(filteredMessagesTotalPage));
       }
+    }
   }, [messageData, isSuccess]);
 
   useEffect(() => {
@@ -266,7 +274,7 @@ const Message = () => {
 
   useEffect(() => {
     addListener("NEW_NOTIFICATION", (data) => {
-      if(data?.receiverId === user?.userChatId){
+      if (data?.receiverId === user?.userChatId) {
         notificationRefetch().then(() => {
           handleNotificationUpdate(
             "newNotification",
@@ -287,13 +295,14 @@ const Message = () => {
           toast.info(data?.name, {
             position: "bottom-right",
             onClick: () => {
+              setActiveTab("all");
+              dispatch(setFromNotification(true));
+
               if (data?.receiverBrandName) {
                 dispatch(setGoToMessage(navigateBrandData));
               } else {
                 dispatch(setGoToMessage(navigateEventData));
               }
-
-              dispatch(setFromNotification(false));
 
               if (pathname !== "/message") {
                 navigate("/message");
@@ -409,25 +418,14 @@ const Message = () => {
   }, [addListener, removeListener, emitEvent, allGroups, user]);
 
   const handleNewInquiry = (selected, initialId = null) => {
-    let findParentIndex = -1;
-    if (activeTab !== "space") {
-      findParentIndex = allGroups?.findIndex(
-        (msg) =>
-          msg?.parentName === (gotToMessage?.pName || gotToMessage?.brandName)
-      );
-    } else {
-      findParentIndex = allMessages?.findIndex(
-        (msg) =>
-          msg?.parentName === (gotToMessage?.pName || gotToMessage?.brandName)
-      );
-    }
+    let findParentIndex = allGroups?.findIndex(
+      (msg) =>
+        msg?.parentName === (gotToMessage?.pName || gotToMessage?.brandName)
+    );
 
     if (findParentIndex !== -1) {
       setExpanded(findParentIndex);
-      const parentGroup =
-        activeTab !== "space"
-          ? allGroups[findParentIndex]
-          : allMessages[findParentIndex];
+      const parentGroup = allGroups[findParentIndex];
       const selectedGroup = parentGroup?.chatGroups?.find(
         (gr) => gr?.id === gotToMessage?.chatId
       );
@@ -448,7 +446,7 @@ const Message = () => {
       setSelectedChatId(allGroups[index]?.chatGroups[0]?.chatId);
     }
 
-    setPage(1)
+    setPage(1);
     setExpanded(index);
 
     const obj = {
@@ -479,24 +477,36 @@ const Message = () => {
         if (gotToMessage) {
           handleNewInquiry(selected, initialId);
           setInitialChatId(selected?.chatGroup?.id);
+
+          setSelectedGroup(selected);
+
+          const obj = {
+            userId: user.userChatId,
+            members: selected?.chatGroup?.members,
+          };
+
+          dispatch(isActiveMembers(obj.members));
+          emitEvent("CHAT_JOINED", obj);
+
+          unreadChat(selected?.chatGroup?.id);
         } else {
           selected.chatGroup = allGroups[0]?.chatGroups[0];
           selected.group = allGroups[0];
           initialId = allGroups[0]?.chatGroups[0]?._id;
 
           setInitialChatId(initialId);
+          setSelectedGroup(selected);
+
+          const obj = {
+            userId: user.userChatId,
+            members: selected?.chatGroup?.members,
+          };
+
+          dispatch(isActiveMembers(obj.members));
+          emitEvent("CHAT_JOINED", obj);
+
+          unreadChat(selected?.chatGroup?.id);
         }
-        setSelectedGroup(selected);
-
-        const obj = {
-          userId: user.userChatId,
-          members: selected?.chatGroup?.members,
-        };
-
-        dispatch(isActiveMembers(obj.members));
-        emitEvent("CHAT_JOINED", obj);
-
-        unreadChat(selected?.chatGroup?.id);
       }
 
       if (selectedChatId !== null && expanded !== null) {
@@ -570,7 +580,7 @@ const Message = () => {
       }
 
       unreadChat(filterGroups[0]?.chatGroups[0]?.chatId);
-      setSelectedChatId(filterGroups[0]?.chatGroups[0]?.chatId)
+      setSelectedChatId(filterGroups[0]?.chatGroups[0]?.chatId);
 
       dispatch(changeMessageType(msgTxt));
       setActiveTab(type);
@@ -680,6 +690,7 @@ const Message = () => {
                       emitEvent={emitEvent}
                       onlineUsers={onlineUsers}
                       setPage={setPage}
+                      activeTab={activeTab}
                     />
                   ))
                 : null}

@@ -56,7 +56,7 @@ const IconBadge = ({
 
   useEffect(() => {
     if (fromNotification) {
-      if (activeTab !== "space") {
+      if (activeTab !== "all") {
         callFn();
       }
     }

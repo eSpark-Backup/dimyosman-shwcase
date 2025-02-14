@@ -33,8 +33,11 @@ export const generalCategoriesApi = api.injectEndpoints({
 
         if (parameters.lat) queryParams.append("lat", parameters.lat);
 
-        if (parameters.radius)
+        if (parameters.radius) {
           queryParams.append("radius", parseInt(parameters.radius));
+        } else if(parameters.long && parameters.lat) {
+          queryParams.append("radius", 10);
+        }
 
         if (parameters.additional)
           queryParams.append("additional", parameters.additional);
@@ -70,5 +73,8 @@ export const generalCategoriesApi = api.injectEndpoints({
   }),
 });
 
-export const { useGetGeneralCategoriesQuery, useGetGeneralSearchQuery, useGetGeneralLocationQuery } =
-  generalCategoriesApi;
+export const {
+  useGetGeneralCategoriesQuery,
+  useGetGeneralSearchQuery,
+  useGetGeneralLocationQuery,
+} = generalCategoriesApi;
