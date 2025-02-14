@@ -594,6 +594,7 @@ const Settings = () => {
                     accept=".jpeg, .png, .jpg, .svg"
                     style={{ display: "none" }}
                     ref={profileImageRef}
+                    type="file"
                     onChange={handleImageChange}
                   />
                 </Box>

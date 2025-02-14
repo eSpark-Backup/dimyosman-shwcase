@@ -670,8 +670,8 @@ const ManageInquiry = ({
                       ".MuiDialogActions-root > button:last-child": {
                         fontWeight: 700,
                       },
-                      ".MuiDateCalendar-root > div:first-child": {
-                        display: "none"
+                      ".MuiDateCalendar-root > div:first-of-type": {
+                        display: "none",
                       },
                       [`.${pickersLayoutClasses.contentWrapper}`]: {
                         alignItems: 'center',
@@ -738,8 +738,8 @@ const ManageInquiry = ({
                       ".MuiDialogActions-root > button:last-child": {
                         fontWeight: 700,
                       },
-                      ".MuiDateCalendar-root > div:first-child": {
-                        display: "none"
+                      ".MuiDateCalendar-root > div:first-of-type": {
+                        display: "none",
                       },
                       [`.${pickersLayoutClasses.contentWrapper}`]: {
                         alignItems: 'center',
