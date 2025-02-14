@@ -24,6 +24,7 @@ import { commonHelper } from "../../helpers";
 import {
   BRAND_STATUS,
   CLOUD_FOLDERS,
+  DIRECT_CHAT,
   EVENT_STATUS,
   HTTP_STATUS,
   NEW_NOTIFICATION,
@@ -120,7 +121,7 @@ export class BrandController {
 
         emitEvent(req, REFETCH_CHATS, members);
 
-        emitEvent(req, NEW_NOTIFICATION, [receiverBrand.user.userChatId], {
+        emitEvent(req, DIRECT_CHAT, [receiverBrand.user.userChatId], {
           name: `${senderBrand.brandName} sent you a message on Brand ${receiverBrand.brandName}`,
           senderBrandImage: senderBrand.brandImage,
           senderBrandName: senderBrand.brandName,
@@ -161,7 +162,7 @@ export class BrandController {
         await this.messageModel.create(messageForDB);
         emitEvent(req, REFETCH_CHATS, members);
 
-        emitEvent(req, NEW_NOTIFICATION, [receiverEvent.user.userChatId], {
+        emitEvent(req, DIRECT_CHAT, [receiverEvent.user.userChatId], {
           name: `${senderBrand.brandName} sent you a message on Event ${receiverEvent.eventName}`,
           senderBrandImage: senderBrand.brandImage,
           senderBrandName: senderBrand.brandName,

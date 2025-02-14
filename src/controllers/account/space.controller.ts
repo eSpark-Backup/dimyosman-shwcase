@@ -27,6 +27,7 @@ import {
   NEW_NOTIFICATION,
   NEW_REQUEST,
   PAGINATION,
+  PAYMENT_NOTIFICATION,
   REFETCH_CHATS,
 } from "../../constants";
 import { uploadService } from "../../services";
@@ -233,7 +234,7 @@ export class SpaceController {
           message: `Tenant ${leaseSpace.tenant.name} has requested for payment verification of the ${leaseSpace.space.spaceName} space`,
           type: "info",
         }),
-          emitEvent(req, NEW_NOTIFICATION, [leaseSpace.owner.userChatId], {
+          emitEvent(req, PAYMENT_NOTIFICATION, [leaseSpace.owner.userChatId], {
             name: `Tenant ${leaseSpace.tenant.name} has requested for payment verification of the ${leaseSpace.space.spaceName} space`,
             senderImage: leaseSpace.brand.brandImage,
             receiverId: leaseSpace.owner.userChatId,
@@ -264,7 +265,7 @@ export class SpaceController {
           message: `Owner ${leaseSpace.owner.name} has verified the payment for the ${leaseSpace.space.spaceName} space`,
           type: "info",
         }),
-          emitEvent(req, NEW_NOTIFICATION, [leaseSpace.tenant.userChatId], {
+          emitEvent(req, PAYMENT_NOTIFICATION, [leaseSpace.tenant.userChatId], {
             name: `Owner ${leaseSpace.owner.name} has verified the payment`,
             senderImage: leaseSpace.space.spaceImage,
             receiverId: leaseSpace.tenant.userChatId,
