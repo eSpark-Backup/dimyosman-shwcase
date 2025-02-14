@@ -236,6 +236,7 @@ export class SpaceController {
           emitEvent(req, NEW_NOTIFICATION, [leaseSpace.owner.userChatId], {
             name: `Tenant ${leaseSpace.tenant.name} has requested for payment verification of the ${leaseSpace.space.spaceName} space`,
             senderImage: leaseSpace.brand.brandImage,
+            receiverId: leaseSpace.owner.userChatId,
             redirect: "Tenant",
           });
         res
@@ -266,6 +267,7 @@ export class SpaceController {
           emitEvent(req, NEW_NOTIFICATION, [leaseSpace.tenant.userChatId], {
             name: `Owner ${leaseSpace.owner.name} has verified the payment`,
             senderImage: leaseSpace.space.spaceImage,
+            receiverId: leaseSpace.tenant.userChatId,
             redirect: "Lease",
           });
         res
@@ -544,6 +546,7 @@ export class SpaceController {
         senderBrandImage: senderBrand.brandImage,
         senderBrandUserName: senderBrand.user.name,
         receiverSpaceName: receiverSpace.spaceName,
+        receiverId: receiverBrand.user.userChatId,
         chatId: NewChat._id,
       });
 
