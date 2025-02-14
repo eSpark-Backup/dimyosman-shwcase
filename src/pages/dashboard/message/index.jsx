@@ -266,51 +266,53 @@ const Message = () => {
 
   useEffect(() => {
     addListener("NEW_NOTIFICATION", (data) => {
-      notificationRefetch().then(() => {
-        handleNotificationUpdate(
-          "newNotification",
-          getNotificationCount,
-          dispatch
-        );
+      if(data?.receiverId === user?.userChatId){
+        notificationRefetch().then(() => {
+          handleNotificationUpdate(
+            "newNotification",
+            getNotificationCount,
+            dispatch
+          );
 
-        const navigateBrandData = {
-          pName: data?.receiverBrandName,
-          chatId: data?.chatId,
-        };
+          const navigateBrandData = {
+            pName: data?.receiverBrandName,
+            chatId: data?.chatId,
+          };
 
-        const navigateEventData = {
-          pName: data?.receiverEventName,
-          chatId: data?.chatId,
-        };
+          const navigateEventData = {
+            pName: data?.receiverEventName,
+            chatId: data?.chatId,
+          };
 
-        toast.info(data?.name, {
-          position: "bottom-right",
-          onClick: () => {
-            if (data?.receiverBrandName) {
-              dispatch(setGoToMessage(navigateBrandData));
-            } else {
-              dispatch(setGoToMessage(navigateEventData));
+          toast.info(data?.name, {
+            position: "bottom-right",
+            onClick: () => {
+              if (data?.receiverBrandName) {
+                dispatch(setGoToMessage(navigateBrandData));
+              } else {
+                dispatch(setGoToMessage(navigateEventData));
+              }
+
+              dispatch(setFromNotification(false));
+
+              if (pathname !== "/message") {
+                navigate("/message");
+              }
+            },
+          });
+
+          const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
+
+          if (!getUnreadChatIds) {
+            setCookie("unreadChatIds", JSON.stringify([data.chatId]));
+          } else {
+            if (!getUnreadChatIds.includes(data.chatId)) {
+              getUnreadChatIds.push(data.chatId);
+              setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
             }
-
-            dispatch(setFromNotification(false));
-
-            if (pathname !== "/message") {
-              navigate("/message");
-            }
-          },
-        });
-
-        const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
-
-        if (!getUnreadChatIds) {
-          setCookie("unreadChatIds", JSON.stringify([data.chatId]));
-        } else {
-          if (!getUnreadChatIds.includes(data.chatId)) {
-            getUnreadChatIds.push(data.chatId);
-            setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
           }
-        }
-      });
+        });
+      }
     });
 
     return () => {

@@ -65,6 +65,7 @@ const Space = () => {
     (state) => state.space
   );
   const { activeTabForNotif } = useSelector((state) => state.space);
+  const { user } = useSelector((state) => state.auth);
 
   const tabs = [
     {
@@ -148,38 +149,38 @@ const Space = () => {
 
   useEffect(() => {
     addListener("NEW_NOTIFICATION", (data) => {
-      // console.log("NEW_NOTIFICATION EVENT TRIGGERED.");
-
-      notificationRefetch().then(() => {
-        if (pathname === "/space") {
-          dispatch(setHasPaymentDone(true));
-        }
-
-        handleNotificationUpdate("newNotification", getNotificationCount);
-
-        let redName = data.redirect;
-
-        if (pathname === "/space") {
-          if (data.redirect === "Lease" && activeTabForNotif !== "Lease") {
-            redName = "Lease";
-          } else if (
-            data.redirect === "Tenant" &&
-            activeTabForNotif !== "Tenant"
-          ) {
-            redName = "Tenant";
+      if (data?.receiverId === user?.userChatId) {
+        notificationRefetch().then(() => {
+          if (pathname === "/space") {
+            dispatch(setHasPaymentDone(true));
           }
-        }
-        
-        toast.info(data?.name, {
-          position: "bottom-right",
-          onClick: () => {
-            dispatch(setRedirectTab(redName));
-            if (pathname !== "/space") {
-              navigate("/space");
+
+          handleNotificationUpdate("newNotification", getNotificationCount);
+
+          let redName = data.redirect;
+
+          if (pathname === "/space") {
+            if (data.redirect === "Lease" && activeTabForNotif !== "Lease") {
+              redName = "Lease";
+            } else if (
+              data.redirect === "Tenant" &&
+              activeTabForNotif !== "Tenant"
+            ) {
+              redName = "Tenant";
             }
-          },
+          }
+
+          toast.info(data?.name, {
+            position: "bottom-right",
+            onClick: () => {
+              dispatch(setRedirectTab(redName));
+              if (pathname !== "/space") {
+                navigate("/space");
+              }
+            },
+          });
         });
-      })
+      }
     });
 
     return () => {
