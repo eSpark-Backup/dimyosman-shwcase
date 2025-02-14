@@ -69,7 +69,7 @@ import {
 
 import { getCookie, handleNotificationUpdate, setCookie } from "../utils";
 
-// import { setHasPaymentDone, setRedirectTab } from "../store/slices/space";
+import { setRedirectTab } from "../store/slices/space";
 
 const SocketContext = createContext(null);
 
@@ -250,6 +250,9 @@ const SocketProvider = ({ children }) => {
                   position: "bottom-right",
                   onClick: () => {
                     dispatch(setRedirectTab(redName));
+                    if (pathname !== "/space") {
+                      navigate("/space");
+                    }
                   },
                 });
               });

@@ -31,6 +31,7 @@ const MessageItem = ({
   emitEvent,
   onlineUsers,
   setPage,
+  activeTab
 }) => {
   const isLessThan768 = useMediaQuery("(max-width:768px)");
 
@@ -49,7 +50,7 @@ const MessageItem = ({
     if (expanded && detailsRef.current) {
       detailsRef.current.scrollTop = 0;
     }
-  }, [expanded]);
+  }, [expanded, activeTab]);
 
   const handleGroup = (el) => {
     setPage(1);

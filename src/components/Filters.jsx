@@ -24,7 +24,7 @@ import CheckBox from "./CheckBox";
 import MapDisplay from "./MapDisplay";
 
 import {
-  allIconLight,
+  // allIconLight,
   brandIcon,
   close,
   flag,
@@ -165,17 +165,13 @@ const Filters = ({
 
   useEffect(() => {
     if (pathname === "/search" && debouncedRadius !== parameters.radius) {
+      dispatch(setRadius(debouncedRadius));
+
+      commonReset();
+
       dispatch(setPageNumber(1));
       setHasMore?.(true);
       setLoadingStart?.(false);
-
-      dispatch(setRadius(debouncedRadius));
-
-      if (radiusInput?.length === 0) {
-        emptyInputs();
-      }
-
-      commonReset();
 
       setOpenFilterDrawer?.(false);
     }
@@ -342,9 +338,10 @@ const Filters = ({
 
           dispatch(setLocation({ long: lng, lat, locaion: formattedAddress }));
 
-          if (radiusInput?.length === 0) {
-            dispatch(setRadius(10));
-          }
+          // if (radiusInput?.length === 0) {
+          //   dispatch(setRadius(10));
+          //   setRadiusInput(10)
+          // }
 
           if (parameters?.lat !== lat || parameters?.long !== lng) {
             commonReset();
