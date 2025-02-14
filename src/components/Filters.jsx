@@ -369,6 +369,7 @@ const Filters = ({
     dispatch(setRadius(""));
     dispatch(setIsTyping(false));
     dispatch(setPageNumber(1));
+    resetDebouncedRadius()
   };
 
   const inputStyles = {
