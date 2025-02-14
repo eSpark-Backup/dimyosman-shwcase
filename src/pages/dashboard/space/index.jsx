@@ -148,7 +148,7 @@ const Space = () => {
   };
 
   useEffect(() => {
-    addListener("NEW_NOTIFICATION", (data) => {
+    addListener("PAYMENT_NOTIFICATION", (data) => {
       if (data?.receiverId === user?.userChatId) {
         notificationRefetch().then(() => {
           if (pathname === "/space") {
@@ -182,9 +182,8 @@ const Space = () => {
         });
       }
     });
-
     return () => {
-      removeListener("NEW_NOTIFICATION");
+      removeListener("PAYMENT_NOTIFICATION");
     };
   }, [addListener, removeListener, emitEvent, activeTab, data?.data]);
   const {

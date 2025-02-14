@@ -233,80 +233,79 @@ const SocketProvider = ({ children }) => {
         }
       });
 
-      socket.current.on("NEW_NOTIFICATION", (data) => {
+      socket.current.on("PAYMENT_NOTIFICATION", (data) => {
         if (data?.receiverId === user?.userChatId) {
-          if (data?.redirect) {
-            if (pathname !== "/space") {
-              notificationRefetch().then(() => {
-                handleNotificationUpdate(
-                  "newNotification",
-                  getNotificationCount,
-                  dispatch
-                );
+          if (pathname !== "/space") {
+            notificationRefetch().then(() => {
+              handleNotificationUpdate(
+                "newNotification",
+                getNotificationCount,
+                dispatch
+              );
 
-                let redName = data.redirect;
+              let redName = data.redirect;
 
-                toast.info(data?.name, {
-                  position: "bottom-right",
-                  onClick: () => {
-                    dispatch(setRedirectTab(redName));
-                    if (pathname !== "/space") {
-                      navigate("/space");
-                    }
-                  },
-                });
-              });
-            }
-          } else {
-            if (pathname !== "/message") {
-              notificationRefetch().then(() => {
-                handleNotificationUpdate(
-                  "newInquiry",
-                  getNotificationCount,
-                  dispatch
-                );
-                const navigateBrandData = {
-                  pName: data?.receiverBrandName,
-                  chatId: data?.chatId,
-                };
-
-                const navigateEventData = {
-                  pName: data?.receiverEventName,
-                  chatId: data?.chatId,
-                };
-
-                toast.info(data?.name, {
-                  position: "bottom-right",
-                  onClick: () => {
-                    if (data?.receiverBrandName) {
-                      dispatch(setGoToMessage(navigateBrandData));
-                    } else {
-                      dispatch(setGoToMessage(navigateEventData));
-                    }
-
-                    dispatch(setFromNotification(true));
-
-                    if (pathname !== "/message") {
-                      navigate("/message");
-                    }
-                  },
-                });
-
-                const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
-
-                if (!getUnreadChatIds) {
-                  setCookie("unreadChatIds", JSON.stringify([data.chatId]));
-                } else {
-                  if (!getUnreadChatIds.includes(data.chatId)) {
-                    getUnreadChatIds.push(data.chatId);
-                    setCookie(
-                      "unreadChatIds",
-                      JSON.stringify(getUnreadChatIds)
-                    );
+              toast.info(data?.name, {
+                position: "bottom-right",
+                onClick: () => {
+                  dispatch(setRedirectTab(redName));
+                  if (pathname !== "/space") {
+                    navigate("/space");
                   }
-                }
+                },
               });
-            }
+            });
+          }
+        }
+      });
+
+      socket.current.on("DIRECT_CHAT", (data) => {
+        if (data?.receiverId === user?.userChatId) {
+          if (pathname !== "/message") {
+            notificationRefetch().then(() => {
+              handleNotificationUpdate(
+                "newInquiry",
+                getNotificationCount,
+                dispatch
+              );
+              const navigateBrandData = {
+                pName: data?.receiverBrandName,
+                chatId: data?.chatId,
+              };
+
+              const navigateEventData = {
+                pName: data?.receiverEventName,
+                chatId: data?.chatId,
+              };
+
+              toast.info(data?.name, {
+                position: "bottom-right",
+                onClick: () => {
+                  if (data?.receiverBrandName) {
+                    dispatch(setGoToMessage(navigateBrandData));
+                  } else {
+                    dispatch(setGoToMessage(navigateEventData));
+                  }
+
+                  dispatch(setFromNotification(true));
+
+                  if (pathname !== "/message") {
+                    navigate("/message");
+                  }
+                },
+              });
+
+              const getUnreadChatIds = JSON.parse(getCookie("unreadChatIds"));
+
+              if (!getUnreadChatIds) {
+                setCookie("unreadChatIds", JSON.stringify([data.chatId]));
+              } else {
+                if (!getUnreadChatIds.includes(data.chatId)) {
+                  getUnreadChatIds.push(data.chatId);
+                  setCookie("unreadChatIds", JSON.stringify(getUnreadChatIds));
+                }
+              }
+            });
           }
         }
       });
@@ -340,7 +339,8 @@ const SocketProvider = ({ children }) => {
         if (socket.current) {
           socket.current.off("REFETCH_CHATS");
           socket.current.off("NEW_REQUEST");
-          socket.current.off("NEW_NOTIFICATION");
+          socket.current.off("PAYMENT_NOTIFICATION");
+          socket.current.off("DIRECT_CHAT");
           socket.current.off("NEW_MESSAGE");
           socket.current.off("NEW_MESSAGE_ALERT");
         }

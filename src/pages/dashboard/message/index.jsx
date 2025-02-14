@@ -273,7 +273,7 @@ const Message = () => {
   }, [chatDetailsData, chatDetailsSuccess]);
 
   useEffect(() => {
-    addListener("NEW_NOTIFICATION", (data) => {
+    addListener("DIRECT_CHAT", (data) => {
       if (data?.receiverId === user?.userChatId) {
         notificationRefetch().then(() => {
           handleNotificationUpdate(
@@ -325,7 +325,7 @@ const Message = () => {
     });
 
     return () => {
-      removeListener("NEW_NOTIFICATION");
+      removeListener("DIRECT_CHAT");
     };
   }, [addListener, removeListener, emitEvent]);
 
