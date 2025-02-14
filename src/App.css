@@ -525,7 +525,9 @@ a:hover{
   width: 0;
 }
 
-.css-jfdcah-MuiButtonBase-root-MuiPickersDay-root-MuiDateRangePickerDay-day.Mui-selected:hover, .css-ia6q12-MuiButtonBase-root-MuiPickersDay-root-MuiDateRangePickerDay-day.Mui-selected:hover{
+.css-jfdcah-MuiButtonBase-root-MuiPickersDay-root-MuiDateRangePickerDay-day.Mui-selected:hover,
+.css-ia6q12-MuiButtonBase-root-MuiPickersDay-root-MuiDateRangePickerDay-day.Mui-selected:hover,
+.css-1u63cbv-MuiButtonBase-root-MuiPickersDay-root.Mui-selected:hover {
   color: white !important;
 }
 

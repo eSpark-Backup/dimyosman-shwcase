@@ -229,7 +229,6 @@ const Search = () => {
       </Box>
     );
   }
-  console.log(allData)
 
   return (
     <>

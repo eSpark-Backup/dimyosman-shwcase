@@ -449,8 +449,8 @@ const SpaceInquireModal = ({
                       ".MuiDialogActions-root > button:last-child": {
                         fontWeight: 700,
                       },
-                      ".MuiDateRangeCalendar-root > div:first-child": {
-                        display: "none"
+                      ".MuiDateRangeCalendar-root > div:nth-of-type(1)": {
+                        display: "none",
                       },
                       [`.${pickersLayoutClasses.contentWrapper}`]: {
                         alignItems: 'center',

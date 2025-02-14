@@ -649,7 +649,7 @@ const ActivityCard = ({
               <Typography
                 onClick={() => {
                   if(id && activity === "event" && (spaceStatus === "DRAFT" || spaceStatus === "ARCHIVE")) {
-                    toast.error(`This Space Is ${spaceStatus}${spaceStatus === "ARCHIVE" ? "D" : "ED"}. You Can Not View This Space.`);
+                    toast.error(`This space is ${spaceStatus?.toLowerCase()}${spaceStatus === "ARCHIVE" ? "d" : "ed"}. You can not view this space.`);
                   } else {
                     if(activity !== "space" && activityLocationId){
                       navigate(`/space/${activityLocationId}`);

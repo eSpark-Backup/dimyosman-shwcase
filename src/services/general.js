@@ -29,11 +29,9 @@ export const generalCategoriesApi = api.injectEndpoints({
         if (parameters.entity) queryParams.append("entity", parameters.entity);
         if (parameters.name) queryParams.append("name", parameters.name);
 
-        if (parameters.radius && parameters.long)
-          queryParams.append("long", parameters.long);
+        if (parameters.long) queryParams.append("long", parameters.long);
 
-        if (parameters.radius && parameters.lat)
-          queryParams.append("lat", parameters.lat);
+        if (parameters.lat) queryParams.append("lat", parameters.lat);
 
         if (parameters.radius)
           queryParams.append("radius", parseInt(parameters.radius));
