@@ -15,6 +15,8 @@ const onlineUsers = new Set();
 import {
   CHAT_JOINED,
   CHAT_LEFT,
+  ERROR_MESSAGES,
+  HTTP_STATUS,
   NEW_MESSAGE,
   NEW_MESSAGE_ALERT,
   ONLINE_USERS,
@@ -31,6 +33,7 @@ import { Message } from "./models";
 import { connectDb } from "./utils/";
 import { createUser } from "./seeders/user";
 import { createMessages, createSingleChats } from "./seeders/chat";
+import { logToDatabase } from "./services";
 const mongoURI = process.env.ME_CONFIG_MONGODB_URL;
 const app = express();
 app.use(cookieParser());
@@ -174,7 +177,12 @@ AppDataSource.initialize()
     });
     app.use(errorHandler);
   })
-  .catch((error: any) => {
+  .catch(async (error: any) => {
+    const message = error.message || ERROR_MESSAGES.SOMETHING_WRONG;
+    const level = error?.statusCode === HTTP_STATUS.SERVER_ERROR ? "error" : "warning"; 
+    
+    await logToDatabase(message, level);
     console.error("❌ Error connecting to the database:", error);
+     
   });
 export { server, app, envMode, userSocketIDs };

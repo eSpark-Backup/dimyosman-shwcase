@@ -29,6 +29,7 @@ const TryCatch = (passedFunc: any) => async (req: any, res: any, next: any) => {
     await passedFunc(req, res, next);
   } catch (error) {
     console.log(error);
+    console.log("envMode");
     next(error);
   }
 };

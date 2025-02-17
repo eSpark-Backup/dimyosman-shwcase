@@ -4,9 +4,10 @@ import mongoose from "mongoose";
 import { v4 as uuid } from "uuid";
 import { getBase64, getSockets } from "../lib";
 import { UploadResult } from "../interfaces";
-import { CHAT_COOKIE } from "../constants";
+import { CHAT_COOKIE, ERROR_MESSAGES, HTTP_STATUS } from "../constants";
 import { configs } from "../config";
 import axios from "axios";
+import { logToDatabase } from "../services";
 
 const cookieOptions = {
   maxAge: 15 * 24 * 60 * 60 * 1000,
@@ -14,7 +15,6 @@ const cookieOptions = {
   httpOnly: true,
   secure: true,
 };
-
 
 const getPlaceSuggestions = async (query: string) => {
   try {
@@ -45,8 +45,14 @@ const connectDb = async (uri: string, delay: number = 2000) => {
       console.log(`✅ Connected to MongoDB: ${connection.connection.host}`);
       return connection;
     } catch (err) {
+      const message = err.message || ERROR_MESSAGES.SOMETHING_WRONG;
+      const level =
+        err?.statusCode === HTTP_STATUS.SERVER_ERROR ? "error" : "warning";
+
+      await logToDatabase(message, level);
       console.error(`❌ MongoDB Connection Failed: ${err.message}`);
       console.log(`🔄 Retrying in ${delay / 1000} seconds...`);
+
       await new Promise((res) => setTimeout(res, delay));
     }
   }
@@ -136,5 +142,5 @@ export {
   deleteFilesFromCloudinary,
   emitEvent,
   uploadFilesToCloudinary,
-  getPlaceSuggestions
+  getPlaceSuggestions,
 };
