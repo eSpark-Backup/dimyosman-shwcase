@@ -3,8 +3,10 @@ import React, { useState } from 'react'
 import SpaceCard from './SpaceCard';
 import { addGrey } from '../assets';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const ProfileSpaces = ({ myProfile, filter1, filter2, filter3, filter4, cardsData, loading }) => {
+    const token = localStorage.getItem("token")
     const [selectedChoice, setSelectedChoice] = useState(0)
     const theme = useTheme();
     const navigate = useNavigate()
@@ -87,7 +89,7 @@ const ProfileSpaces = ({ myProfile, filter1, filter2, filter3, filter4, cardsDat
             >
                 {filteredItems?.length > 0 ? filteredItems.map((space, ind) => (
                     <Box key={ind} sx={{ width: { xs: "100%", md: "328px" } }}>
-                        <SpaceCard myProfile={myProfile} spaces={space} showBtn={true} />
+                        <SpaceCard onClick={() => token ?  navigate(`/space/${space?.id}`) : toast.error("You need to login first")} myProfile={myProfile} spaces={space} showBtn={true} />
                     </Box>
                 ))
                 :

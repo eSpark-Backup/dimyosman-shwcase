@@ -46,7 +46,7 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
   };
   return (
     <Box
-      onClick={onClick ? onClick : () => { }}
+      onClick={!openCalendar && onClick ? onClick : () => { }}
       sx={{
         width: "100%",
         borderRadius: "5px",
@@ -58,7 +58,7 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
         justifyContent: "center",
         alignItems: "center",
         pb: "10px",
-        cursor: onClick ? "pointer" : "default",
+        cursor: !openCalendar && onClick ? "pointer" : "default",
       }}
     >
       <figure style={{ width: "100%", height: "100%" }} role="event-image" aria-labelledby="event-image-figcaption">
@@ -110,7 +110,20 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
               backgroundColor: "rgb(209, 219, 215, 0.4)"
             }
           }}
-          onClick={token ? edit ? () => navigate(`/event/${event?.id}/edit`) : () => setOpenCalendar(true) : () => toast.error("You need to login first")}
+          onClick={(eve) => {
+            eve.stopPropagation();
+
+            if (!token) {
+              toast.error("You need to login first");
+              return;
+            }
+          
+            if (edit) {
+              navigate(`/event/${event?.id}/edit`);
+            } else {
+              setOpenCalendar(true);
+            }
+          }}
         >
           {edit ? "Edit" : "RSVP"}
         </Button>
