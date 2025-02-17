@@ -16,7 +16,7 @@ const SpaceCard = ({ myProfile, onClick, spaces, showBtn }) => {
 
   return (
     <Box
-      onClick={onClick ? onClick : () => {}}
+      onClick={!openInquiryModal && onClick ? onClick : () => {}}
       sx={{
         width: "100%",
         borderRadius: "5px",
@@ -28,7 +28,7 @@ const SpaceCard = ({ myProfile, onClick, spaces, showBtn }) => {
         justifyContent: "center",
         alignItems: "center",
         pb: "10px",
-        cursor: onClick ? "pointer" : "default",
+        cursor: !openInquiryModal && onClick ? "pointer" : "default",
       }}
     >
       {spaces?.spacePic && <figure style={{ width: "100%", height: "100%" }} role="img">
@@ -132,18 +132,24 @@ const SpaceCard = ({ myProfile, onClick, spaces, showBtn }) => {
               backgroundColor: "rgb(209, 219, 215, 0.4)",
             },
           }}
-          onClick={
-            token ?
-            myProfile
-              ? () => navigate(`/space/${spaces?.id}/edit`)
-              : () => {
-                  const detail = activitySpaceData?.find(
-                    (spc) => spc.id === spaces.id
-                  );
-                  setInquiredDetail(detail);
-                  setOpenInquiryModal(true);
-                } : () => toast.error("You need to login first")
-          }
+          onClick={(eve) => {
+            eve.stopPropagation();
+
+            if (!token) {
+              toast.error("You need to login first");
+              return;
+            }
+          
+            if (myProfile) {
+              navigate(`/space/${spaces?.id}/edit`)
+            } else {
+              const detail = activitySpaceData?.find(
+                (spc) => spc.id === spaces.id
+              );
+              setInquiredDetail(detail);
+              setOpenInquiryModal(true);
+            }
+          }}
         >
           {myProfile ? (
             "Edit"

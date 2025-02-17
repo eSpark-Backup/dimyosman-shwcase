@@ -233,6 +233,15 @@ const BrandCard = ({
                         width: "64px",
                         height: "64px",
                         position: "relative",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => {
+                        if(!token){
+                          toast.error("You need to login first")
+                          return
+                        }
+
+                        navigate(`/brand/${item?.id}`)
                       }}
                     >
                       <Box
@@ -302,8 +311,17 @@ const BrandCard = ({
                           color: theme.palette.primary.main,
                           fontWeight: "600",
                           textAlign: "left",
+                          cursor: "pointer",
                         }}
                         variant="h2"
+                        onClick={() => {
+                          if(!token){
+                            toast.error("You need to login first")
+                            return
+                          }
+
+                          navigate(`/brand/${item?.id}`)
+                        }}
                       >
                         {item?.brandName}
                       </Typography>

@@ -4,8 +4,10 @@ import { useSelector } from 'react-redux';
 import EventCard from './EventCard';
 import { addGrey } from '../assets';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const ProfileEvents = ({ myProfile, filter1, filter2, filter3, filter4, filter5, filter6, filter7, cardsData, loading }) => {
+    const token = localStorage.getItem("token");
     const theme = useTheme();
     const [selectedChoice, setSelectedChoice] = useState(0);
     const navigate = useNavigate()
@@ -94,7 +96,7 @@ const ProfileEvents = ({ myProfile, filter1, filter2, filter3, filter4, filter5,
             >
                 {filteredItems?.length > 0 ? filteredItems?.map((event, ind) => (
                     <Box key={ind} sx={{ width: { xs: "100%", md: "328px" } }}>
-                        <EventCard event={event} showBtn={true} edit={myProfile} />
+                        <EventCard onClick={() => token ? navigate(`/event/${event?.id}`) : toast.error("You need to login first")} event={event} showBtn={true} edit={myProfile} />
                     </Box>
                 ))
                 :
