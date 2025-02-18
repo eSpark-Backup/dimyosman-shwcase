@@ -152,7 +152,7 @@ export const generateShareableLink = (entity: { id: string; type: string } | { i
   const encrypted = CryptoJS.AES.encrypt(jsonString, configs.LINK_SECRET_KEY).toString();
   const encoded = encodeURIComponent(encrypted);
 
-  return `https://shwcase-stg.esparkconsultants.com/share?data=${encoded}`;
+  return `https://shwcase.esparkconsultants.com/share?data=${encoded}`;
 };
 
 
