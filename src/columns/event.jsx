@@ -130,7 +130,7 @@ const myEventsColumns = (gotoDetail, handleAction, gotoBrand, gotoSpace) => {
   ];
 };
 
-const rsvpEventColumns = (rsvpLoading, rsvpId, gotoDetail, handleAction) => {
+const rsvpEventColumns = (rsvpLoading, rsvpId, gotoDetail, handleAction, gotoBrand, gotoSpace) => {
   return [
     {
       name: "Event Name",
@@ -199,6 +199,7 @@ const rsvpEventColumns = (rsvpLoading, rsvpId, gotoDetail, handleAction) => {
               fontWeight: item?.brandUrl ? 600 : 400,
               cursor: "pointer",
             }}
+            onClick={item?.brandUrl ? () => gotoBrand(item) : () => {}}
           >
             {item?.brand}
           </Typography>
@@ -222,6 +223,7 @@ const rsvpEventColumns = (rsvpLoading, rsvpId, gotoDetail, handleAction) => {
               fontWeight: item?.spaceUrl ? 600 : 400,
               cursor: "pointer",
             }}
+            onClick={item?.hostedIn !== "-" ? () => gotoSpace(item) : undefined}
           >
             {item?.hostedIn}
           </Typography>
@@ -264,7 +266,7 @@ const rsvpEventColumns = (rsvpLoading, rsvpId, gotoDetail, handleAction) => {
   ];
 };
 
-const likedEventColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
+const likedEventColumns = (likeLoading, savedId, gotoDetail, handleAction, gotoSpace) => {
   return [
     {
       name: "Event Name",
@@ -360,6 +362,7 @@ const likedEventColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
               fontWeight: item?.spaceUrl ? 600 : 400,
               cursor: "pointer",
             }}
+            onClick={item?.hostedIn !== "-" ? () => gotoSpace(item) : undefined}
           >
             {item?.hostedIn}
           </Typography>

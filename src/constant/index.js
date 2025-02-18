@@ -739,13 +739,13 @@ export const eventTableData = (gotoDetail, handleAction, myEventData, myEventDat
   {
     data: myEventData,
     column: rsvpEventColumns(rsvpLoading, rsvpId, gotoDetail, (item) =>
-      handleAction(item, item?.action)
+      handleAction(item, item?.action), gotoBrand, gotoSpace
     ),
   },
   {
     data: myEventData2,
     column: likedEventColumns(likeLoading, savedId, gotoDetail, (item) =>
-      handleAction(item, "remove")
+      handleAction(item, "remove"), gotoSpace
     ),
   },
 ];
