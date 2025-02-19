@@ -9,5 +9,4 @@ try {
   });
 } catch (error) {
   logger.error(`Server Initialization Error :: ${(error as Error)?.message}`);
-  process.exit(1);
 }
