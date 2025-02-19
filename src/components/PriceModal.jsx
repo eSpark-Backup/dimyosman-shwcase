@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 const PriceModal = ({ handleClose, data }) => {
     const theme = useTheme();
     const [items, setItems] = useState([
-        { id: 1, price: undefined, term: "Day", minimum: undefined, select: false },
+        { id: 1, price: undefined, term: "Day", minimum: undefined, select: true },
         { id: 2, price: undefined, term: "Week", minimum: undefined, select: false },
         { id: 3, price: undefined, term: "Month", minimum: undefined, select: false },
         { id: 4, price: undefined, term: "Year", minimum: undefined, select: false },
@@ -116,7 +116,7 @@ const PriceModal = ({ handleClose, data }) => {
 
                                     }}
                                 >
-                                    {column.component ? column.component(item[column.key], index) : item[column.key]}
+                                    {column.component ? column.component(item[column.key], index, item.term) : item[column.key]}
                                 </Box>
                             ))}
                         </Box>

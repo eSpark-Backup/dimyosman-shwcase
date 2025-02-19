@@ -610,8 +610,8 @@ const Message = () => {
 
   if (hasChats === "empty") {
     return (
-      <Box sx={style}>
-        <h1>You don't have any conversations.</h1>
+      <Box sx={(style, { textAlign: "center" })}>
+        <h1 style={{ fontSize: "38px" }}>You don't have any conversations.</h1>
       </Box>
     );
   }
