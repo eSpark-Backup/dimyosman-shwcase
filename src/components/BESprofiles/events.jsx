@@ -114,7 +114,7 @@ const Events = ({ myProfile, addNewEvent, isMyProfile }) => {
               marginTop={2}
               direction="row"
               alignItems="center"
-              justifyContent="space-between"
+              justifyContent="flex-start"
               flexWrap="wrap"
               rowGap={4}
               columnGap={2}

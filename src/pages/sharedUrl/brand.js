@@ -87,10 +87,10 @@ export const fetchedBrandData = (
         label: "Spaces",
         props: brandSpaces?.length > 0 ? { brandSpaces, isMyProfile: false } : false
       },
-      {
-        label: "Stats",
-        props: null,
-      },
+      // {
+      //   label: "Stats",
+      //   props: null,
+      // },
     ],
   };
 };

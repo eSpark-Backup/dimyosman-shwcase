@@ -5,7 +5,7 @@ import DynamicPaginationSwiper from "../Slider";
 import OutlinedTabs from "../outlinedTabs";
 import Details from "./details";
 import Events from "./events";
-import Stats from "./stats";
+// import Stats from "./stats";
 import Reviews from "./reviews";
 import Spaces from "./spaces";
 import Tenancy from "./teenacy";
@@ -29,7 +29,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
   const componentsMap = {
     Details,
     Events,
-    Stats,
+    // Stats,
     Reviews,
     Spaces,
     Tenancy,
@@ -63,8 +63,6 @@ const BESProfile = ({ spaceInquire, type, data }) => {
     ? myProfile.slides.map((slide) => slide.url)
     : [];
 
-  console.log(transformedSlides)
-
 
   if (!filteredProfile) {
     return (
@@ -73,8 +71,6 @@ const BESProfile = ({ spaceInquire, type, data }) => {
       </Box>
     )
   }
-
-  console.log(myProfile.profilePic)
 
   return (
     <>

@@ -75,10 +75,10 @@ const SpaceDetails = () => {
                 },
               },
             },
-            {
-              label: "Stats",
-              props: null,
-            },
+            // {
+            //   label: "Stats",
+            //   props: null,
+            // },
             {
               label: "Tenancy",
               props: data?.data?.tenantSpaceDetail?.length > 0 ? { tenancy: data?.data?.tenantSpaceDetail } : false,

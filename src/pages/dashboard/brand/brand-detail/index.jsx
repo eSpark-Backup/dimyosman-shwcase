@@ -112,10 +112,10 @@ const BrandDetails = () => {
               label: "Spaces",
               props: brandSpaces?.length > 0 ? { brandSpaces, isMyProfile: data?.data?.user?.id === user?.id } : false
             },
-            {
-              label: "Stats",
-              props: null,
-            },
+            // {
+            //   label: "Stats",
+            //   props: null,
+            // },
             // {
             //   label: "Reviews",
             //   props: null,

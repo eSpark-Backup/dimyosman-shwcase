@@ -16,8 +16,8 @@ const MapDisplay = React.memo(({ locations, marker, mapRef }) => {
   useEffect(() => {
     if (!map) {
       const googleMap = new window.google.maps.Map(mapRef.current, {
-        center: { lat: 28.40680267823096, lng: 68.2791477297778 },
-        zoom: 6,
+        center: { lat: 40.0902, lng: -99.7129 },
+        zoom: 5,
       });
       setMap(googleMap);
     }
