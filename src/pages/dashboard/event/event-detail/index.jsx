@@ -97,10 +97,10 @@ const EventDetails = () => {
                 },
               },
             },
-            {
-              label: "Stats",
-              props: null,
-            },
+            // {
+            //   label: "Stats",
+            //   props: null,
+            // },
             // {
             //   label: "Reviews",
             //   props: null,

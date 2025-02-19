@@ -255,7 +255,7 @@ const Header = ({ isLogin }) => {
       <div className="header">
         <nav>
           <div className="logo">
-            <img width={42} height={42} src={logoIcon} alt="Icon" />
+            <img width={42} height={42} src={logoIcon} style={{ cursor: isLogin ? "pointer" : "default" }} alt="Icon" onClick={() => navigate("/activity")} />
             <img
               className="text-icon"
               src={logoText}
