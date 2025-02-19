@@ -57,7 +57,6 @@ const MapModal = ({
     }, [data]);
 
     const handleSelectPlace = (place) => {
-        console.log(place)
         setValue(place.description);
         setSuggestions([]);
         setIsSelecting(true);
@@ -168,14 +167,9 @@ const MapModal = ({
         }
     }, [position, map]);
 
-
-    useEffect(() => {
-        console.log(suggestions)
-    }, [suggestions])
-
     return (
         <Box sx={{ position: "relative" }}>
-            <Input
+            { !disabled && <Input
                 sx={{ border: "1px solid #D1DBD7 !important" }}
                 value={value}
                 type={"text"}
@@ -189,7 +183,7 @@ const MapModal = ({
                     </InputAdornment>
                 }
                 disabled={disabled}
-            />
+            /> }
 
             {/* Suggestions List */}
             {suggestions.length > 0 && (
@@ -211,10 +205,10 @@ const MapModal = ({
                     <span style={{ fontWeight: "300" }}>{addressLine} </span>
                     {streetAddress}
                 </Typography>
-                <Input disabled={disabled} type={"text"} placeholder={"Additional instructions like entrances, floors..."} value={instructionValue} onInputChange={setInstructionValue} />
+                { !disabled && <Input disabled={disabled} type={"text"} placeholder={"Additional instructions like entrances, floors..."} value={instructionValue} onInputChange={setInstructionValue} /> }
             </Box>
 
-            <Box sx={{ display: "flex", justifyContent: "flex-end", pt: "10px" }}>
+            { !disabled && <Box sx={{ display: "flex", justifyContent: "flex-end", pt: "10px" }}>
                 <Button
                     sx={{
                         height: "31px",
@@ -229,7 +223,7 @@ const MapModal = ({
                 >
                     {buttonVal}
                 </Button>
-            </Box>
+            </Box> }
         </Box>
     );
 };

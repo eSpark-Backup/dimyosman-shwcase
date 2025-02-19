@@ -38,10 +38,10 @@ export const PriceColumns = ({ items, setItems }) => {
             //         onChange={handleSelectAllChange}
             //     />
             // ),
-            component: (item, index) => (
+            component: (item, index, term) => (
                 <CheckBox
-                    checked={item || false}
-                    onChange={() => handleSelectChange(index)}
+                    checked={term === "Day" || item || false}
+                    onChange={() => term !== "Day" && handleSelectChange(index)}
                 />
             )
         },
