@@ -397,11 +397,12 @@ router.delete("/:id", checkJwt, validateRoles([ROLES.USER]), (req, res, next) =>
  *     parameters:
  *       - in: path
  *         name: id
- *         required: true
+ *         required: false
  *         description: ID of the brand to delete
  *         schema:
  *           type: string
  *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -422,7 +423,7 @@ router.delete("/:id", checkJwt, validateRoles([ROLES.USER]), (req, res, next) =>
  *       500:
  *         description: Server error.
  */
-router.post("/:id", checkJwt, validateRoles([ROLES.USER]),
+router.post("/:id?", checkJwt, validateRoles([ROLES.USER]),
 validate(BrandValidation.sendMessage, "body"),
 (req, res, next) =>
   brandController.sendMessage(req, res, next)

@@ -36,6 +36,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
         name,
         members,
         groupChat,
+        userToUser,
         creator,
         receiverBrand,
         receiverEvent,
@@ -133,6 +134,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
           senderBrand: populatedSenderBrand,
           receiverSpace: populatedReceiverSpace,
           receiverEvent: populateReceiverEvent,
+          userToUser: userToUser,
           name: otherMember.name,
           members: members.reduce((prev: any, curr: any) => {
             if (curr._id.toString() !== req.socketUserId.toString()) {
@@ -239,10 +241,16 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
 
         acc.events[eventKey].chats.push(chat);
       }
+      if(chat.userToUser){
+        acc.user[chat._id]=
+          chat
+        
+
+      }
 
       return acc;
     },
-    { brands: {}, spaces: {}, events: {} }
+    { brands: {}, spaces: {}, events: {},user:{} }
   );
 
   // Format the grouped data for response
@@ -254,6 +262,9 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
       ...group,
     })),
     events: Object.values(groupedByUser.events).map((group: any) => ({
+      ...group,
+    })),
+    user:Object.values(groupedByUser.user).map((group: any) => ({
       ...group,
     })),
   };

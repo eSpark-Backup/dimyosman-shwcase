@@ -85,14 +85,70 @@ export class BrandController {
           return next();
         }
       }
+    
       if (receiverBrand) {
+
+        if(!senderBrand){
+          const members = [req.user?._id, receiverBrand.user.userChatId];
+          const sender = await this.userRepo.createQueryBuilder("user")
+          .where("user.id = :userId", { userId: req.user?.id })
+          .getOne();
+          if(!sender){
+            res.status(200).json(handleResponse("Sender not found"));
+            return next();
+          }
+          const chat = await this.chatModel.create({
+            members,
+            name: `${receiverBrand.brandName}`,
+            userToUser: true,
+            receiverBrand: receiverBrand.id,
+            creator: req.user?._id,
+          });
+  
+          await this.notificationModel.create({
+            user: receiverBrand.user.userChatId,
+            title: `New message received for ${receiverBrand.brandName}`,
+            message,
+            metadata: {
+              name: `${sender.name} sent you a message on Brand ${receiverBrand.brandName}`,
+              senderImage: sender.profileImage,
+              senderName: sender.name,
+              chatId: chat.id.toString(),
+              receiverBrandName: receiverBrand.brandName,
+            },
+            type: "info",
+          });
+          const ChatId = chat.id.toString();
+  
+          const messageForDB = {
+            content: message,
+            sender: req.user?._id,
+            chat: ChatId,
+          };
+          await this.messageModel.create(messageForDB);
+  
+          emitEvent(req, REFETCH_CHATS, members);
+  
+          emitEvent(req, DIRECT_CHAT, [receiverBrand.user.userChatId], {
+            name: `${sender.name} sent you a message on Brand ${receiverBrand.brandName}`,
+            senderImage: sender.profileImage,
+            senderName: sender.name,
+            receiverBrandName: receiverBrand.brandName,
+            receiverId:receiverBrand.user.userChatId,
+            chatId: ChatId,
+          });
+
+          res.status(200).json(handleResponse("Message Sent Successfully"));
+          return next();
+  
+        }
         const members = [req.user?._id, receiverBrand.user.userChatId];
 
         const chat = await this.chatModel.create({
           members,
           name: `${receiverBrand.brandName}`,
           directChat: true,
-          senderBrand: senderBrand.id,
+          senderBrand: senderBrand?.id,
 
           receiverBrand: receiverBrand.id,
           creator: req.user?._id,
@@ -130,6 +186,59 @@ export class BrandController {
           chatId: ChatId,
         });
       } else if (receiverEvent) {
+        if(!senderBrand){
+          const members = [req.user?._id, receiverEvent.user.userChatId];
+          const sender = await this.userRepo.createQueryBuilder("user")
+          .where("user.id = :userId", { userId: req.user?.id })
+          .getOne();
+          if(!sender){
+            res.status(200).json(handleResponse("Sender not found"));
+            return next();
+          }
+          const chat = await this.chatModel.create({
+            members,
+            name: `${receiverEvent.eventName}`,
+            userToUser: true,
+            receiverEvent: receiverEvent.id,
+            creator: req.user?._id,
+          });
+  
+          await this.notificationModel.create({
+            user: receiverEvent.user.userChatId,
+            title: `New message received for ${receiverEvent.eventName}`,
+            message,
+            metadata: {
+              name: `${sender.name} sent you a message on Event ${receiverEvent.eventName}`,
+              senderImage: sender.profileImage,
+              senderName: sender.name,
+              chatId: chat.id.toString(),
+              receiverEventName: receiverEvent.eventName,
+            },
+            type: "info",
+          });
+          const ChatId = chat.id.toString();
+  
+          const messageForDB = {
+            content: message,
+            sender: req.user?._id,
+            chat: ChatId,
+          };
+          await this.messageModel.create(messageForDB);
+  
+          emitEvent(req, REFETCH_CHATS, members);
+  
+          emitEvent(req, DIRECT_CHAT, [receiverEvent.user.userChatId], {
+            name: `${sender.name} sent you a message on Event ${receiverEvent.eventName}`,
+            senderImage: sender.profileImage,
+            senderName: sender.name,
+            receiverEventName: receiverEvent.eventName,
+            receiverId:receiverEvent.user.userChatId,
+            chatId: ChatId,
+          });
+          res.status(200).json(handleResponse("Message Sent Successfully"));
+          return next();
+  
+        }
         const members = [req.user?._id, receiverEvent.user.userChatId];
 
         const chat = await this.chatModel.create({
