@@ -11,7 +11,7 @@ import {
   User,
 } from "../../entity";
 import { ApiError } from "../../errors";
-import { Brackets, Raw, Repository } from "typeorm";
+import { Brackets, Like, Raw, Repository } from "typeorm";
 import {
   emitEvent,
   generateShareableLink,
@@ -215,22 +215,26 @@ export class BrandController {
         );
       }
       const similarBrands = await this.brandRepo.find({
-        where: { 
-          brandName: Raw(alias => `${alias} LIKE '${brandName}%'`)
-        }
+        where: { brandName: Like(`${brandName}%`) }
       });
       
-      let maxSuffix = 0;
       
+      let maxSuffix = -1;
+
       similarBrands.forEach(brand => {
-        const parts = brand.brandName.split(' ');
-        const suffix = parseInt(parts[parts.length - 1]);
-        if (!isNaN(suffix)) {
-          maxSuffix = Math.max(maxSuffix, suffix);
+        if (brand.brandName === brandName) {
+          maxSuffix = Math.max(maxSuffix, 0);
+        } else {
+          const regex = new RegExp(`^${brandName}\\s(\\d+)$`);
+          const match = brand.brandName.match(regex);
+          if (match) {
+            const suffix = parseInt(match[1], 10);
+            maxSuffix = Math.max(maxSuffix, suffix);
+          }
         }
       });
       
-      const newBrandName = maxSuffix === 0 ? brandName : `${brandName} ${maxSuffix + 1}`;
+      const newBrandName = maxSuffix === -1 ? brandName : `${brandName} ${maxSuffix + 1}`;
       
       
       coverOrder = coverOrder || [];
@@ -361,12 +365,35 @@ export class BrandController {
         );
       }
       const checkName = await this.brandRepo.findOne({ where: { brandName } });
-      if (checkName && checkName.brandName !== existingBrand.brandName) {
+      if (checkName && status==BrandStatus.PUBLISH &&checkName.status==BrandStatus.PUBLISH&&  checkName.brandName !== existingBrand.brandName) {
         throw new ApiError(
           "Brand with this name already exists",
           HTTP_STATUS.BAD_REQUEST
         );
       }
+      const similarBrands = await this.brandRepo.find({
+        where: { brandName: Like(`${brandName}%`) }
+      });
+      
+      
+      let maxSuffix = -1;
+
+      similarBrands.forEach(brand => {
+        if (brand.brandName === brandName) {
+          maxSuffix = Math.max(maxSuffix, 0);
+        } else {
+          const regex = new RegExp(`^${brandName}\\s(\\d+)$`);
+          const match = brand.brandName.match(regex);
+          if (match) {
+            const suffix = parseInt(match[1], 10);
+            maxSuffix = Math.max(maxSuffix, suffix);
+          }
+        }
+      });
+      
+      const newBrandName = maxSuffix === -1 ? brandName : `${brandName} ${maxSuffix + 1}`;
+      
+
       if (status == BrandStatus.DRAFT || status == BrandStatus.ARCHIVE) {
         const events = await this.eventsRepo
           .createQueryBuilder("event")
@@ -497,7 +524,7 @@ export class BrandController {
         await uploadService.deleteFile(existingBrand.imageKey);
       }
 
-      existingBrand.brandName = brandName || existingBrand.brandName;
+      existingBrand.brandName = newBrandName || existingBrand.brandName;
       existingBrand.brandCategory =
         brandCategory || existingBrand.brandCategory;
       existingBrand.details = details || existingBrand.details;
