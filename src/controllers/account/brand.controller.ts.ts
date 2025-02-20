@@ -11,7 +11,7 @@ import {
   User,
 } from "../../entity";
 import { ApiError } from "../../errors";
-import { Brackets, Repository } from "typeorm";
+import { Brackets, Raw, Repository } from "typeorm";
 import {
   emitEvent,
   generateShareableLink,
@@ -208,12 +208,31 @@ export class BrandController {
       }
 
       const checkName = await this.brandRepo.findOne({ where: { brandName } });
-      if (checkName) {
+      if (checkName && status==BrandStatus.PUBLISH&& checkName.status==BrandStatus.PUBLISH) {
         throw new ApiError(
           "Brand with this name already exists",
           HTTP_STATUS.BAD_REQUEST
         );
       }
+      const similarBrands = await this.brandRepo.find({
+        where: { 
+          brandName: Raw(alias => `${alias} ILIKE '${brandName}%'`)
+        }
+      });
+      
+      let maxSuffix = 0;
+      
+      similarBrands.forEach(brand => {
+        const parts = brand.brandName.split(' ');
+        const suffix = parseInt(parts[parts.length - 1]);
+        if (!isNaN(suffix)) {
+          maxSuffix = Math.max(maxSuffix, suffix);
+        }
+      });
+      
+      const newBrandName = maxSuffix === 0 ? brandName : `${brandName} ${maxSuffix + 1}`;
+      
+      
       coverOrder = coverOrder || [];
       coverFiles = commonHelper.reorderCoverFiles(coverFiles, coverOrder);
 
@@ -240,7 +259,7 @@ export class BrandController {
       const user = await this.userRepo.findOne({ where: { id: userId } });
 
       const newBrand = new Brand();
-      newBrand.brandName = brandName;
+      newBrand.brandName = newBrandName;
       newBrand.brandCategory = brandCategory || null;
       newBrand.details = details || null;
       newBrand.location = location || null;
