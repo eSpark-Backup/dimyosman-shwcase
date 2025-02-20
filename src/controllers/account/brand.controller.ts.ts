@@ -216,7 +216,7 @@ export class BrandController {
       }
       const similarBrands = await this.brandRepo.find({
         where: { 
-          brandName: Raw(alias => `${alias} ILIKE '${brandName}%'`)
+          brandName: Raw(alias => `${alias} LIKE '${brandName}%'`)
         }
       });
       
