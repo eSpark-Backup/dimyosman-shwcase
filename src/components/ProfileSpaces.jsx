@@ -82,10 +82,10 @@ const ProfileSpaces = ({ myProfile, filter1, filter2, filter3, filter4, cardsDat
                 marginTop={2}
                 direction={{ xs: "column", md: "row" }}
                 alignItems="center"
-                justifyContent="space-between"
+                justifyContent="flex-start"
                 flexWrap="wrap"
                 rowGap={4}
-                columnGap={0}
+                columnGap={2}
             >
                 {filteredItems?.length > 0 ? filteredItems.map((space, ind) => (
                     <Box key={ind} sx={{ width: { xs: "100%", md: "328px" } }}>
