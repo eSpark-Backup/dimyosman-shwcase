@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 import { useEffect } from 'react';
 import { Header, AuthBox, DashboardLayout } from "./layout";
@@ -31,15 +31,15 @@ import { useVerifyTokenQuery } from './services/auth';
 import Search from './pages/dashboard/search';
 import { useAuth0 } from '@auth0/auth0-react';
 import { logoutAuthUtils } from './utils';
+import SplashScreen from './layout/splash';
 
 function App() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const token = window.localStorage.getItem("token");
 
-  const { data, isLoading, isError, isFetching } = useVerifyTokenQuery(undefined, { skip: !token });
+  const { isLoading, isError, isFetching } = useVerifyTokenQuery(undefined, { skip: !token });
   const { logout } = useAuth0();
-
 
   useEffect(() => {
     if (!token) {
@@ -64,16 +64,29 @@ function App() {
     }
   }, [isError, navigate]);
 
+  if (isLoading || isFetching) {
+    return <SplashScreen />;
+  }
+
+  const PublicRoute = () => {
+    if (token) {
+      return <Navigate to="/activity" />;
+    }
+    return <Outlet />;
+  };
+
   return (
     <>
       <Header isLogin={!!token} />
       <Routes>
-        <Route path="/" element={<Navigate to={"/auth?type=login"} />} />
-        <Route path="/auth" element={<AuthBox />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/share" element={<SharedPage />} />
-        <Route path="*" element={<Navigate to={"/auth?type=login"} />} />
+          <Route path="/share" element={<SharedPage />} />
+        <Route element={<PublicRoute />}>
+          <Route path="/" element={<Navigate to={"/auth?type=login"} />} />
+          <Route path="/auth" element={<AuthBox />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="*" element={<Navigate to={"/auth?type=login"} />} />
+        </Route>
 
         <Route element={<DashboardLayout isTokenChecking={isLoading || isFetching} />}>
           <Route path="/activity" element={<Activity />} />
