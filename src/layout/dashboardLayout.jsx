@@ -36,9 +36,9 @@ const DashboardLayout = ({ isTokenChecking }) => {
 
   const activeIcon = sidebarRoutes.find((item) => (!item?.link && item.title === "Profile") || (item?.link === currentPath));
 
-  if (loading || isTokenChecking) {
-    return <SplashScreen />;
-  }
+  // if (loading || isTokenChecking) {
+  //   return <SplashScreen />;
+  // }
   return (
     <Box
       sx={{
