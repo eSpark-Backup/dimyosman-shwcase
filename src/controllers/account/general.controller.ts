@@ -1845,4 +1845,276 @@ export class GeneralController {
         }
       }
 
+
+      async generalLocationSearch(
+        req: ICustomRequest,
+        res: Response,
+        next: NextFunction
+      ): Promise<void> {
+        try {
+          const {
+            page = 1,
+            take = 1000,
+            lat,
+            radius = 10,
+            long,
+            entity = "All",
+          } = req.query;
+          const skipNumber = (Number(page) - 1) * Number(take);
+          const takeNumber = Number(take);
+    
+          const userId = req.user?.id;
+          const earthRadius = 6371;
+    
+          // Initialize base queries
+          let spaceQuery = this.spaceRepo
+            .createQueryBuilder("space")
+            .leftJoinAndSelect("space.brand", "brand")
+            .leftJoinAndSelect("brand.user", "brandUser")
+    
+            .andWhere("space.user != :userId", { userId })
+            .andWhere("space.status = :STATUS", { STATUS: SPACE_STATUS.PUBLISH })
+            .orderBy("space.createdAt", "DESC")
+            .select([
+              "space.id",
+              "space.spaceName",
+              "brand.location",
+              "space.createdAt",
+            ])
+            .skip(skipNumber)
+            .take(takeNumber);
+    
+          let eventQuery = this.eventsRepo
+            .createQueryBuilder("event")
+            .leftJoinAndSelect("event.brand", "brand")
+            .leftJoinAndSelect("brand.user", "brandUser")
+    
+            .leftJoinAndSelect("event.space", "space")
+            .leftJoinAndSelect("space.user", "spaceUser")
+            .leftJoinAndSelect("space.brand", "spaceBrand")
+            .andWhere("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
+            .andWhere("event.user != :userId", { userId })
+            .orderBy("event.createdAt", "DESC")
+            .select([
+              "event.id",
+              "event.eventName",
+              "space.spaceName",
+              "spaceBrand.location",
+              "event.createdAt",
+            ])
+            .skip(skipNumber)
+            .take(takeNumber);
+    
+            let eventCountQuery =this.eventsRepo
+            .createQueryBuilder("event")
+            .leftJoinAndSelect("event.brand", "brand")
+            .leftJoinAndSelect("event.space", "space")
+            .leftJoinAndSelect("space.brand", "spaceBrand")
+            .andWhere("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
+            .andWhere("event.user != :userId", { userId })
+      
+    
+          let brandQuery = this.brandRepo
+            .createQueryBuilder("brand")
+            .andWhere("brand.status = :STATUS", { STATUS: BRAND_STATUS.PUBLISH })
+            .andWhere("brand.user != :userId", { userId })
+            .leftJoinAndSelect("brand.user", "user")
+            .orderBy("brand.createdAt", "DESC")
+            .select(
+              [
+                "brand.id",
+                "brand.brandName",
+                "brand.location",
+                "brand.createdAt",
+              ]
+            )
+            .skip(skipNumber)
+            .take(takeNumber);
+    
+          // Apply name filter if provided
+     
+    
+       
+    
+          if (lat && long) {
+            const newlat = parseFloat(lat as string);
+            const newlong = parseFloat(long as string);
+            const searchRadius = parseFloat(radius as string); // Ensure radius is float
+    
+            brandQuery.andWhere(
+              new Brackets((qb) => {
+                qb.where(
+                  `(${earthRadius} * acos(
+                            cos(radians(:lat)) *
+                            cos(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.lat')) * 1)) *
+                            cos(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.long')) * 1) - radians(:long)) +
+                            sin(radians(:lat)) *
+                            sin(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.lat')) * 1))
+                        )) <= :radius`,
+                  { lat: newlat, long: newlong, radius: searchRadius }
+                );
+              })
+            );
+    
+            spaceQuery.andWhere(
+              new Brackets((qb) => {
+                qb.where(
+                  `(${earthRadius} * acos(
+                            cos(radians(:lat)) *
+                            cos(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.lat')) * 1)) *
+                            cos(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.long')) * 1) - radians(:long)) +
+                            sin(radians(:lat)) *
+                            sin(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.lat')) * 1))
+                        )) <= :radius`,
+                  { lat: newlat, long: newlong, radius: searchRadius }
+                );
+              })
+            );
+            eventQuery.andWhere(
+              new Brackets((qb) => {
+                qb.where(
+                  `(${earthRadius} * acos(
+                            cos(radians(:lat)) *
+                            cos(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.lat')) * 1)) *
+                            cos(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.long')) * 1) - radians(:long)) +
+                            sin(radians(:lat)) *
+                            sin(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.lat')) * 1))
+                        )) <= :radius`,
+                  { lat: newlat, long: newlong, radius: searchRadius }
+                );
+              })
+            );
+    
+            eventCountQuery.andWhere(
+              new Brackets((qb) => {
+                qb.where(
+                  `(${earthRadius} * acos(
+                            cos(radians(:lat)) *
+                            cos(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.lat')) * 1)) *
+                            cos(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.long')) * 1) - radians(:long)) +
+                            sin(radians(:lat)) *
+                            sin(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.lat')) * 1))
+                        )) <= :radius`,
+                  { lat: newlat, long: newlong, radius: searchRadius }
+                );
+              })
+            );
+          }
+    
+       
+    
+          if (entity !== "All") {
+            if (entity === "SPACE") {
+              eventQuery = null;
+              brandQuery = null;
+              eventCountQuery=null;
+            } else if (entity === "EVENT") {
+              spaceQuery = null;
+              brandQuery = null;
+            } else if (entity === "BRAND") {
+              spaceQuery = null;
+              eventQuery = null;
+              eventCountQuery=null;
+    
+            }
+          }
+    
+          const queries = [];
+          if (spaceQuery) queries.push(spaceQuery.getManyAndCount());
+          if (eventQuery) queries.push(eventQuery.getRawAndEntities());
+          if (brandQuery) queries.push(brandQuery.getManyAndCount());
+          if(eventCountQuery) queries.push(eventCountQuery.getRawAndEntities());
+    
+    
+          const results = await Promise.all(queries);
+    
+          const entityMap: {
+            Space: [Spaces[], number] | null;
+            Event: [Events[], number] | null;
+            Brand: [Brand[], number] | null;
+          } = {
+            Space: null,
+            Event: null,
+            Brand: null,
+          };
+          const totalEventsCount = results ? results[1] : 0;
+          delete results[1];
+          
+    
+          results.forEach((result, index) => {
+            if (entity === "SPACE") {
+              entityMap.Space = result as [Spaces[], number];
+            } else if (entity === "EVENT") {
+              if (result && "entities" in result && "raw" in result) {
+                const { entities: rsvpEvents, raw } = result;
+    
+                const events = rsvpEvents.map((eventRaw, index) => {
+                  const rawData = raw[index];
+                  const event = eventRaw as any;
+    
+                  // Parse the RSVP data if needed
+                  if (rawData.event_rsvp) {
+                    event.event_rsvp = JSON.parse(rawData.event_rsvp);
+                  }
+    
+                  if (event.brand) {
+                    event.brand = {
+                      ...event.brand,
+                    };
+                  }
+    
+                  return event;
+                });
+    
+                entityMap.Event = [events, raw] as unknown as [Events[], number];
+              }
+            } else if (entity === "BRAND") {
+              entityMap.Brand = result as [Brand[], number];
+            }
+          });
+    
+          const [spaces, spaceCount] = entityMap.Space || [[], 0];
+          const [events, eventCount] = entityMap.Event || [[], 0];
+          const [brands, brandCount] = entityMap.Brand || [[], 0];
+    
+    
+          const updatedSpaces = spaces.map((space) => ({
+            ...space,
+            shareableLink: generateShareableLink({ id: space.id, type: "space" }),
+          }));
+    
+          const updatedEvents = events.map((event) => ({
+            ...event,
+            shareableLink: generateShareableLink({ id: event.id, type: "event" }),
+          }));
+    
+          const updatedBrands = brands.map((brand) => ({
+            ...brand,
+            shareableLink: generateShareableLink({ id: brand.id, type: "brand" }),
+          }));
+          const totalResults = spaceCount + (totalEventsCount && 'entities' in totalEventsCount ? totalEventsCount.entities.length : 0) + brandCount;
+    
+          const response = {
+            spaces: updatedSpaces,
+            events: updatedEvents,
+            brands: updatedBrands,
+            totalResults,
+            pagination: {
+              currentPage: parseInt(page as string, 10),
+              pageSize: takeNumber,
+              totalPages: Math.ceil(totalResults / takeNumber),
+            },
+          };
+    
+          res
+            .status(200)
+            .json(handleResponse("Search completed successfully", response));
+          return next();
+        } catch (error) {
+          logger.error(
+            `GeneralController :: General Search :: ${(error as Error)?.message}`
+          );
+          return next(error);
+        }
+      }
 }
