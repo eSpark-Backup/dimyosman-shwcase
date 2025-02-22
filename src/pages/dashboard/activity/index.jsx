@@ -9,14 +9,19 @@ import { Box, Grid, Typography, LinearProgress, CircularProgress } from "@mui/ma
 
 import { ActivityCard } from "../../../components";
 import SpaceInquireModal from "../../../components/SpaceInquireModal";
+import Filters from "../../../components/Filters";
+
+import { fetchAddressFromCoordinates, getCookie } from "../../../utils";
 
 import { useGetActivityDataQuery } from "../../../services/activity";
 import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../../../store/slices/activity";
-import { fetchAddressFromCoordinates } from "../../../utils";
 
 const Activity = () => {
+  const searchQuery = getCookie("search_query")
+  
   const dispatch = useDispatch();
-
+  
+  const {search_query} = useSelector(state => state.search)
   const { allActivityData, activitySpaceData, page } = useSelector((state) => state.activity);
 
   const [total, setTotal] = useState(0);
@@ -164,6 +169,7 @@ const Activity = () => {
                   ? item?.space?.user?.id
                   : null,
               spaceStatus: item?.type === "event" ? item?.space?.status : null,
+              location: item?.type === "event" ? item?.space?.brand?.location : item?.type === "space" ? item?.brand?.location : item?.location
             };
           }) || []
         );
@@ -233,11 +239,11 @@ const Activity = () => {
 
   return (
     <>
-      <Grid container sx={{ display: "flex", justifyContent: "space-between" }}>
+      <Grid container sx={{ display: "flex", justifyContent: "space-between" }} spacing={!(searchQuery || search_query) ? 0 : 2}>
         <Grid
           item
           xs={12}
-          lg={8}
+          lg={!(searchQuery || search_query) ? 8 : 7}
           sx={{
             // pb: "10px",
             maxWidth: "1080px !important",
@@ -311,35 +317,54 @@ const Activity = () => {
             </Box>
           }
         </Grid>
-        <Grid
-          item
-          xs={12}
-          lg={3.8}
-          sx={{
-            height: "70vh",
-            overflow: "hidden",
-            display: { xs: "none", lg: "flex" },
-            flexDirection: "column",
-            justifyContent: "space-between",
-          }}
-        >
-          <Box
+        {!(searchQuery || search_query) ? (
+          <Grid
+            item
+            xs={12}
+            lg={3.8}
             sx={{
-              background: "white",
-              height: "49%",
-              width: "100%",
-              borderRadius: "5px",
+              height: "70vh",
+              overflow: "hidden",
+              display: { xs: "none", lg: "flex" },
+              flexDirection: "column",
+              justifyContent: "space-between",
             }}
-          ></Box>
-          <Box
+          >
+            <Box
+              sx={{
+                background: "white",
+                height: "49%",
+                width: "100%",
+                borderRadius: "5px",
+              }}
+            ></Box>
+            <Box
+              sx={{
+                background: "white",
+                height: "49%",
+                width: "100%",
+                borderRadius: "5px",
+              }}
+            ></Box>
+          </Grid>
+        ) : (
+          <Grid
+            item
+            xs={12}
+            lg={5}
             sx={{
-              background: "white",
-              height: "49%",
-              width: "100%",
-              borderRadius: "5px",
+              maxHeight: "calc(100vh - 130px)",
+              overflowY: "hidden",
+              display: { xs: "none", lg: "flex" },
             }}
-          ></Box>
-        </Grid>
+          >
+            <Filters
+              // setHasMore={setHasMore}
+              // setLoadingStart={setLoadingStart}
+              loadingStart={page === 1 && (isLoading || isFetching)}
+            />
+          </Grid>
+        )}
       </Grid>
 
       <SpaceInquireModal

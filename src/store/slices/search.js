@@ -5,7 +5,7 @@ const initialState = {
   spaceData: [],
   skip: true,
   parameters: {
-    entity: "",
+    entity: "BRAND",
     name: "",
     locaion: "",
     long: "",
@@ -18,7 +18,9 @@ const initialState = {
   allCategoriesNotSearch: [],
   allLocations: [],
   page: 1,
-  isTyping: false
+  isTyping: false,
+  search_query: null,
+  shouldReturn: false
 };
 
 const slice = createSlice({
@@ -62,7 +64,7 @@ const slice = createSlice({
     },
     emptyFilters: (state) => {
       state.parameters = {
-        entity: "",
+        entity: "BRAND",
         name: "",
         locaion: "",
         long: "",
@@ -87,6 +89,12 @@ const slice = createSlice({
     setPageNumber: (state, action) => {
       state.page = action.payload;
     },
+    setSearchQuery: (state, action) => {
+      state.search_query = action.payload;
+    },
+    setShouldReturn: (state, action) => {
+      state.shouldReturn = action.payload;
+    },
   },
 });
 
@@ -107,7 +115,9 @@ export const {
   setAllLocations,
   emptyAllLocations,
   setPageNumber,
-  setIsTyping
+  setIsTyping,
+  setSearchQuery,
+  setShouldReturn
 } = slice.actions;
 
 export default slice.reducer;
