@@ -37,7 +37,7 @@ const Sidebar = () => {
       }}
     >
       {sidebarRoutes.map((item, ind) => {
-        const active = item?.link === currentPath;
+        const active = item?.subLink?.includes(currentPath);
         const hover = hovered === ind;
         return (
           <Stack

@@ -11,15 +11,16 @@ import Spaces from "./spaces";
 import Tenancy from "./teenacy";
 import { brandBadge, eventBadge, spaceBadge, star } from "../../assets";
 
-const BESProfile = ({ spaceInquire, type, data }) => {
+const BESProfile = ({ spaceInquire, type, data}) => {
   const [openSliderModal, setOpenSliderModal] = useState(false);
   const handleCloseModal = () => setOpenSliderModal(false);
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { id } = useParams();
+  const { name } = useParams();
 
   const editProfile = () => {
-    navigate(`/${type}/${id}/edit`);
+    const updateType = `my-${type}s`;
+    navigate(`/${updateType}/${name}/edit`, { state: { id: state?.id } });
   };
 
   const addNewEvent = () => {
@@ -52,8 +53,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
       },
     }));
   };
-
-  const filteredProfile = data.find((profile) => (profile.id === id) || profile);
+  const filteredProfile = data.find((profile) => (profile.id === state?.id) || profile);
   const myProfile = {
     ...filteredProfile,
     tabs: mapTabsToComponents(filteredProfile, filteredProfile?.tabs),

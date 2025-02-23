@@ -131,9 +131,8 @@ const NewBrand = () => {
 
     useEffect(() => {
         if (brandPostSuccess) {
-            console.log(brandPostData)
             toast.success(brandPostData?.message)
-            navigate("/brand")
+            navigate("/my-brands")
         }
     }, [brandPostSuccess])
 

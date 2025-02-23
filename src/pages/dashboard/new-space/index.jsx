@@ -279,7 +279,7 @@ const NewSpace = () => {
     useEffect(() => {
         if (spacePostSuccess) {
             toast.success(spacePostData?.message)
-            navigate("/space")
+            navigate("/my-spaces")
         }
     }, [spacePostSuccess])
 

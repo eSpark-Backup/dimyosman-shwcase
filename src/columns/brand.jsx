@@ -74,34 +74,6 @@ const myBrandColumns = (gotoDetail, handleAction) => {
     { name: "Followers", key: "followers" },
     { name: "Status", key: "status" },
     {
-      name: "Col Header",
-      key: "colHeader1",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader2",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader3",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader4",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader5",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader6",
-    },
-    {
-      name: "Col Header",
-      key: "colHeader7",
-    },
-    {
       name: "Action",
       key: "action",
       component: (item) => {
@@ -137,7 +109,7 @@ const followingBrandColumns = (followLoading, followId, gotoDetail, handleAction
             justifyContent="flex-start"
             gap={2}
             sx={{ cursor: "pointer" }}
-            onClick={() => gotoDetail(item)}
+            onClick={() => gotoDetail(item, "other")}
           >
             <Box
               sx={{
@@ -226,7 +198,7 @@ const likedBrandColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
             justifyContent="flex-start"
             gap={2}
             sx={{ cursor: "pointer" }}
-            onClick={() => gotoDetail(item)}
+            onClick={() => gotoDetail(item, "other")}
           >
             <Box
               sx={{
@@ -301,7 +273,5 @@ const likedBrandColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
     },
   ];
 };
-
-
 
 export { myBrandColumns, followingBrandColumns, likedBrandColumns };

@@ -129,7 +129,7 @@ const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand, gotoEvent) => 
             justifyContent="flex-start"
             gap={2}
             sx={{ cursor: "pointer" }}
-            onClick={() => gotoDetail(item, "lease")}
+            onClick={() => gotoDetail(item, "lease", "other")}
           >
             <Box
               sx={{
@@ -196,7 +196,7 @@ const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand, gotoEvent) => 
             }}
             onClick={() => {
               if(item?.eventUrl !== "-"){
-                gotoEvent(item);
+                gotoEvent(item, "other");
               }
             }}
           >
@@ -261,7 +261,7 @@ const leasingSpaceColumns = (gotoDetail, handleAction, gotoBrand, gotoEvent) => 
   ];
 };
 
-const likedSpaceColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
+const likedSpaceColumns = (likeLoading, savedId, gotoDetail, handleAction, gotoBrand) => {
   return [
     {
       name: "Event Name",
@@ -274,7 +274,7 @@ const likedSpaceColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
             justifyContent="flex-start"
             gap={2}
             sx={{ cursor: "pointer" }}
-            onClick={() => gotoDetail(item)}
+            onClick={() => gotoDetail(item, null, "other")}
           >
             <Box
               sx={{
@@ -338,9 +338,9 @@ const likedSpaceColumns = (likeLoading, savedId, gotoDetail, handleAction) => {
                 color: "#00141C !important"
               }
             }}
+            onClick={() => item?.brandUrl ? gotoBrand(item, "other") : null}
           >
-          
-            {item?.brandUrl ? <Link to={item?.brandUrl}>{item?.brand}</Link> :  item?.brand}
+            {item?.brand}
           </Typography>
         );
       },

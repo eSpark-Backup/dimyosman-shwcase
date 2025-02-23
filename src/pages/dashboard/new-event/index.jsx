@@ -410,7 +410,7 @@ const NewEvent = () => {
     useEffect(() => {
         if (eventPostSuccess) {
             toast.success(eventPostData?.message)
-            navigate("/event")
+            navigate("/my-events")
         }
     }, [eventPostSuccess])
 

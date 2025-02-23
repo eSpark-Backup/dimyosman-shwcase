@@ -11,15 +11,16 @@ import { useGetAmenitiesQuery } from '../../../services/amenities';
 import { LoadingButton } from '@mui/lab';
 import { toast } from 'react-toastify';
 import { useEditSpaceMutation, useGetAllSpaceQuery, useNewSpaceMutation } from '../../../services/space';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { fetchAddressFromCoordinates } from '../../../utils';
 
 const EditSpace = () => {
     const theme = useTheme()
     const [currentIndex, setCurrentIndex] = useState(0);
-    const params = useParams();
+    // const params = useParams();
+    const { state } = useLocation();
     const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllSpaceQuery({
-        page: 1, pageSize: 7, id: params?.spaceId
+        page: 1, pageSize: 7, id: state?.id
     }, { refetchOnMountOrArgChange: true });
     // States
 
@@ -111,7 +112,6 @@ const EditSpace = () => {
                         data?.data?.brand?.location?.long
                     );
                 }
-                console.log(address)
 
                 setSpaceData({
                     cover: data?.data?.coverImages || [],
@@ -322,7 +322,7 @@ const EditSpace = () => {
     useEffect(() => {
         if (spacePostSuccess) {
             toast.success(spacePostData?.message)
-            navigate("/space")
+            navigate("/my-spaces")
         }
     }, [spacePostSuccess])
 
@@ -415,7 +415,7 @@ const EditSpace = () => {
         }
         setLoadingButton(status);
         try {
-            await space({ spaceData: { ...spaceData, status }, id: params?.spaceId });
+            await space({ spaceData: { ...spaceData, status }, id: state?.id });
         } finally {
             setLoadingButton(null);
         }

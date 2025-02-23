@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { BESProfile } from "../../../../components";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { useGetAllBrandsQuery } from "../../../../services/brands";
 import { updateBrands } from "../../../../store/slices/brand";
@@ -10,8 +10,9 @@ import { fetchAddressFromCoordinates } from "../../../../utils";
 import dayjs from "dayjs";
 
 const BrandDetails = () => {
-  const params = useParams()
-  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({ page: 1, pageSize: 7, id: params?.id }, { refetchOnMountOrArgChange: true });
+  const { name } = useParams();
+  const { state } = useLocation()
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({ page: 1, pageSize: 7, id: state?.id }, { refetchOnMountOrArgChange: true });
   const dispatch = useDispatch()
   const { user } = useSelector((state) => state.auth)
 
@@ -127,7 +128,7 @@ const BrandDetails = () => {
       }
     }
     fetchAddress()
-  }, [isSuccess, data, dispatch, params])
+  }, [isSuccess, data, dispatch, state])
 
 
   const { brands } = useSelector((state) => state.brand);
@@ -138,7 +139,9 @@ const BrandDetails = () => {
       </Box>
     )
   }
-  return <BESProfile type="brand" data={brands} />;
+  return (
+    <BESProfile type="brand" data={brands} />
+  );
 };
 
 export default BrandDetails;

@@ -15,6 +15,7 @@ import { toast } from "react-toastify";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { useAddInFavouritesMutation, useGetFavouritesQuery } from "../../../services/favourite";
+import { addHyphenToName } from "../../../utils";
 
 const Event = () => {
   const [page, setPage] = useState(1);
@@ -80,7 +81,8 @@ const Event = () => {
         eventName: event?.eventName,
         eventImg: event?.eventImage,
         brand: event?.brand?.brandName,
-        brandUrl: `/brand/${event?.brand?.id}`,
+        brandUrl: `/brand/${addHyphenToName(event?.brand?.brandName)}`,
+        brandId: event?.brand?.id,
         rsvp: "-",
         startDate: !event?.eventDate ||
           !event?.eventDate[0]?.startDate ||
@@ -89,7 +91,8 @@ const Event = () => {
           : dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
         status: event?.status,
         hostedIn: event?.space?.spaceName,
-        spaceUrl: `/space/${event?.space?.id}`,
+        spaceUrl: `/space/${addHyphenToName(event?.space?.spaceName)}`,
+        spaceId: event?.space?.id,
         action: "Cancel",
         category: event?.eventCategory[0]?.name
       })))
@@ -100,14 +103,16 @@ const Event = () => {
         eventName: event?.eventName,
         eventImg: event?.eventImage,
         brand: event?.brand?.brandName,
-        brandUrl: event?.brand ? `/brand/${event?.brand?.id}` : null,
+        brandUrl: event?.brand ? `/my-brands/${addHyphenToName(event?.brand?.brandName)}` : null,
+        brandId: event?.brand?.id,
         rsvp: event?.rsvpCount,
         startDate: !event?.eventDate || !event?.eventDate[0]?.startDate || dayjs(event?.eventDate[0]?.startDate).isValid() === false
           ? "-"
           : dayjs(event?.eventDate[0]?.startDate).format("DD.MM.YYYY"),
         status: event?.eventStatus || event?.status,
         hostedIn: event?.space?.spaceName || "-",
-        spaceUrl: `/space/${event?.space?.id}`,
+        spaceUrl: `/my-spaces/${addHyphenToName(event?.space?.spaceName)}`,
+        spaceId: event?.space?.id,
         action: "Cancel",
       })));
     return newData;
@@ -164,18 +169,46 @@ const Event = () => {
     setActiveTab(newValue);
   };
 
-  const gotoDetail = (item) => {
-    //go to detail page functionality
-    navigate(`/event/${item?.id}`);
+  const gotoDetail = (item, other = null) => {
+    let url = "";
+
+    if(other) {
+      url = "/event"
+    } else {
+      url = "/my-events"
+    }
+
+    navigate(`${url}/${addHyphenToName(item?.eventName)}`, {
+      state: { id: item?.id },
+    });
   };
 
-  const gotoBrand = (item) => {
-    //go to detail page functionality
-    navigate(item?.brandUrl);
+  const gotoBrand = (item, other = null) => {
+    let url = "";
+
+    if(other) {
+      url = "/brand"
+    } else {
+      url = "/my-brands"
+    }
+
+    navigate(`${url}/${addHyphenToName(item?.brand)}`, {
+      state: { id: item?.brandId },
+    });
   };
 
-  const gotoSpace = (item) => {
-    navigate(item?.spaceUrl);
+  const gotoSpace = (item, other = null) => {
+    let url = "";
+
+    if(other) {
+      url = "/space"
+    } else {
+      url = "/my-spaces"
+    }
+
+    navigate(`${url}/${addHyphenToName(item?.hostedIn)}`, {
+      state: { id: item?.spaceId },
+    });
   };
 
   const [likeFunc, { isLoading: likeLoading }] = useAddInFavouritesMutation();
@@ -185,9 +218,11 @@ const Event = () => {
   const handleAction = async (item, type) => {
     if (type === "edit") {
       //edit functionality
-      if (location?.pathname === "/event") {
-        navigate(`/event/${item?.id}/edit`);
-      }
+      // if (location?.pathname === "/event") {
+        navigate(`/my-events/${addHyphenToName(item?.eventName)}/edit`, {
+          state: { id: item?.id },
+        });
+      // }
     } else if (type === "remove") {
       setSavedId(item?.id);
       likeFunc({
@@ -221,9 +256,9 @@ const Event = () => {
   };
 
   const handleAdd = () => {
-    if (location?.pathname === "/event") {
+    // if (location?.pathname === "/event") {
       navigate("/new-event");
-    }
+    // }
   };
 
   if (isLoading || isLoading2 || isFetching || isFetching2) {
