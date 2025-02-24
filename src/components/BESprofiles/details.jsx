@@ -315,7 +315,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   color: (theme) => theme.palette.primary.dark,
                 }}
               >
-                Staring from:
+                {activity === "event" ? "Starting" : "Lease"} from:
               </Typography>
               <Typography
                 style={{
@@ -334,7 +334,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   textAlign: "left",
                 }}
               >
-                until {details?.endingDate}
+                {activity === "event" ? 'until' : ""} {details?.endingDate}
               </Typography>
               <Divider sx={{ marginTop: 1 }} />
             </>

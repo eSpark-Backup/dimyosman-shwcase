@@ -23,6 +23,8 @@ const SpaceDetails = () => {
   useEffect(() => {
     const fetchAddress = async () => {
       if (isSuccess) {
+        const filterPrice =
+        data?.data?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") || [];
         const amenities = data?.data?.amenity?.map((item) => ({
           description: item?.name,
           icon: item?.iconUrl
@@ -64,14 +66,24 @@ const SpaceDetails = () => {
                   },
                   location: address,
                   space: data?.data?.brand?.brandName,
-                  spaceCategory: data?.data?.brand?.brandCategory?.map(item => item.name),
-                  startingDate: "28.02.2025.",
-                  endingDate: "15.4.2025.",
+                  spaceCategory: data?.data?.brand?.brandCategory?.map(
+                    (item) => item.name
+                  ),
+                  startingDate: filterPrice[0]?.price
+                    ? `$${filterPrice[0]?.price}/day`
+                    : "N/A",
+                  endingDate: filterPrice[0]?.minimum
+                    ? `minimum lease: ${filterPrice[0]?.minimum} days`
+                    : "N/A",
                   expectedPoint: {
                     title: "What to Expect:",
                     points: [data?.data?.details?.htmlContent || ""],
                   },
-                  mapLocation: { lat: data?.data?.brand?.location?.lat, long: data?.data?.brand?.location?.long, additional: data?.data?.brand?.location?.additional },
+                  mapLocation: {
+                    lat: data?.data?.brand?.location?.lat,
+                    long: data?.data?.brand?.location?.long,
+                    additional: data?.data?.brand?.location?.additional,
+                  },
                   status: data?.data?.status,
                 },
               },
@@ -82,14 +94,17 @@ const SpaceDetails = () => {
             // },
             {
               label: "Tenancy",
-              props: data?.data?.tenantSpaceDetail?.length > 0 ? { tenancy: data?.data?.tenantSpaceDetail } : false,
+              props:
+                data?.data?.tenantSpaceDetail?.length > 0
+                  ? { tenancy: data?.data?.tenantSpaceDetail }
+                  : false,
             },
             // {
             //   label: "Reviews",
             //   props: null,
             // },
           ],
-        }
+        };
         dispatch(updateSpace([updatedSpace]));
       }
     }
