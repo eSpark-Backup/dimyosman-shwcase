@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import {
   Box,
@@ -14,7 +14,9 @@ import {
 
 import { search } from "../assets";
 
-import { setAllCategoriesNotSearch } from "../store/slices/search";
+import { setAllCategoriesNotSearch, setSearchQuery } from "../store/slices/search";
+
+import { getCookie, setCookie } from "../utils";
 
 import { useGetGeneralCategoriesQuery } from "../services/general";
 
@@ -27,21 +29,28 @@ const SearchBar = ({
   helperText,
   error,
   onBlur,
-  handleFilterDrawer,
+  // handleFilterDrawer,
   canType
 }) => {
   const theme = useTheme();
+
   const isLessThan1281 = useMediaQuery("(max-width:1281px)");
 
-  const { pathname } = useLocation();
+  const token = localStorage.getItem("token")
+  const searchQuery = getCookie("search_query")
+
+  // const { pathname } = useLocation();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const {search_query} = useSelector(state => state.search)
 
   const { data } = useGetGeneralCategoriesQuery(undefined, {
-    skip: pathname === "/search",
+    skip: !token, // pathname === "/search",
   });
 
   useEffect(() => {
-    if (data?.data?.length) {
+    if (data?.data?.length && !isLessThan1281) {
       const updatedCategories = data?.data
         .map((category, index) => ({
           id: index,
@@ -55,7 +64,7 @@ const SearchBar = ({
 
       dispatch(setAllCategoriesNotSearch(updatedCategories));
     }
-  }, [data]);
+  }, [data, isLessThan1281]);
 
   return (
     <Box
@@ -63,11 +72,17 @@ const SearchBar = ({
         display: "flex",
         flexDirection: "column",
         rowGap: "8px",
-        cursor: pathname !== "/search" ? "pointer" : "default",
+        // cursor: pathname !== "/search" ? "pointer" : "default",
+        cursor: !(searchQuery || search_query) ? "pointer" : "default",
       }}
       onClick={() => {
-        if (pathname !== "/search" || isLessThan1281) {
-          handleFilterDrawer && handleFilterDrawer();
+        // if (pathname !== "/search" || isLessThan1281) {
+        //   handleFilterDrawer && handleFilterDrawer();
+        // }
+        if (!(searchQuery || search_query) || isLessThan1281) {
+          navigate("/activity")
+          setCookie("search_query", true);
+          dispatch(setSearchQuery(true))
         }
       }}
     >
@@ -82,7 +97,8 @@ const SearchBar = ({
       <TextField
         type="text"
         name={name}
-        placeholder={placeholder}
+        // placeholder={placeholder}
+        placeholder={!(searchQuery || search_query) ? placeholder : "Search Query"}
         onChange={onInputChange}
         value={value}
         helperText={helperText}
@@ -105,10 +121,12 @@ const SearchBar = ({
               color: theme.palette.primary.main,
               fontWeight: "500",
               fontSize: "16px",
-              cursor: pathname !== "/search" ? "pointer" : "default",
+              // cursor: pathname !== "/search" ? "pointer" : "default",
+              cursor: !(searchQuery || search_query) ? "pointer" : "default",
 
               "& input": {
-                cursor: pathname !== "/search" ? "pointer" : "default",
+                // cursor: pathname !== "/search" ? "pointer" : "default",
+                cursor: !(searchQuery || search_query) ? "pointer" : "default",
               },
             },
           },

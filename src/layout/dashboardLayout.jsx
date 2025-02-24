@@ -4,15 +4,17 @@ import SplashScreen from "./splash";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./sidebar";
 import { getFullSidebar, getSmallSidebar, sidebarRoutes } from "../constant";
-import { useClickOutside } from "../utils";
+import { getCookie, useClickOutside } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../store/slices/activity";
 
 const DashboardLayout = ({ isTokenChecking }) => {
   const { user } = useSelector((state) => state.auth);
+  const {search_query} = useSelector((state) => state.search)
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const token = window.localStorage.getItem("token");
+  const searchQuery = getCookie("search_query")
   const { pathname } = useLocation();
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -63,7 +65,7 @@ const DashboardLayout = ({ isTokenChecking }) => {
           padding:
             getSmallSidebar(pathname) ||
             getFullSidebar(pathname) ||
-            pathname === "/message"
+            pathname === "/message" || (searchQuery || search_query)
               ? { xs: "0px", sm: "0 0 0 105px" }
               : getSmallSidebar(pathname)
               ? "0"

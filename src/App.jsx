@@ -28,7 +28,7 @@ import SharedPage from './pages/sharedUrl';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useVerifyTokenQuery } from './services/auth';
-import Search from './pages/dashboard/search';
+// import Search from './pages/dashboard/search';
 import { useAuth0 } from '@auth0/auth0-react';
 import { logoutAuthUtils } from './utils';
 import SplashScreen from './layout/splash';
@@ -114,7 +114,7 @@ function App() {
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/message" element={<Message />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/search" element={<Search />} />
+          {/* <Route path="/search" element={<Search />} /> */}
         </Route>
       </Routes>
       <ToastContainer
