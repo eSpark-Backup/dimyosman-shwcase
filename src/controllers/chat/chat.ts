@@ -556,6 +556,9 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
           .andWhere("event.id = :eventId", { eventId: singleEvent.id })
           .getCount(),
       ]);
+      if(chatDetails._doc.userToUser){
+        chat={...chatDetails._doc,}
+      }
       chat={
         ...chat,
         receiverEvent:{
