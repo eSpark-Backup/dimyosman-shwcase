@@ -167,11 +167,12 @@ const ActivityCard = ({
                   brandStatus !== "ARCHIVE")
               ) {
                 navigate(`/${userRole}/${addHyphenToName(userName)}`, {
-                  state: { id: id },
+                  state: { id },
                 });
                 handleNavigation();
               } else if (id && userRole === "user" && publicProfile) {
-                navigate(`/profile/${id}`);
+              
+                navigate(`/profile/${addHyphenToName(userName)}`, {state: { id }});
                 handleNavigation();
               } else {
                 if (userRole === "brand") {
@@ -278,11 +279,11 @@ const ActivityCard = ({
                   brandStatus !== "ARCHIVE")
               ) {
                 navigate(`/${userRole}/${addHyphenToName(userName)}`, {
-                  state: { id: id },
+                  state: { id },
                 });
                 handleNavigation();
               } else if (id && userRole === "user" && publicProfile) {
-                navigate(`/profile/${id}`);
+                navigate(`/profile/${addHyphenToName(userName)}`, {state: { id }});
                 handleNavigation();
               } else {
                 if (userRole === "brand") {

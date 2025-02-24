@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getSmallSidebar, sidebarRoutes } from "../constant";
 import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../store/slices/activity";
-import { deleteCookie, getCookie } from "../utils";
+import { addHyphenToName, deleteCookie, getCookie } from "../utils";
 import { emptyFilters, setSearchQuery, setShouldReturn } from "../store/slices/search";
 
 const Sidebar = () => {
@@ -55,7 +55,7 @@ const Sidebar = () => {
               dispatch(emptyFilters());
 
               if (item.title === "Profile") {
-                navigate(`/profile/${user?.id}`);
+                navigate(`/profile/${addHyphenToName(user?.name)}`, { state: { id: user?.id } });
                 return;  // <== Stops further execution
               }
               

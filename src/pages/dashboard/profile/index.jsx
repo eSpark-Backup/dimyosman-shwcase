@@ -8,16 +8,17 @@ import dayjs from "dayjs";
 import { useGetAllBrandsQuery } from "../../../services/brands";
 import { useGetAllEventsQuery } from "../../../services/events";
 import { useGetAllSpaceQuery } from "../../../services/space";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const Profile = () => {
-  const { id } = useParams()
+  // const { name } = useParams()
   const navigate = useNavigate();
+  const { state } = useLocation();
   const [profileData, setProfileData] = useState(profileContent)
   const { user } = useSelector((state) => state.auth);
-  const myProfile = id === user.id;
-  const { data, isLoading, isSuccess, isError, error, isFetching } = useGetUserProfileQuery(myProfile ? null : id, { refetchOnFocus: true, refetchOnMountOrArgChange: true })
+  const myProfile = state?.id === user.id;
+  const { data, isLoading, isSuccess, isError, error, isFetching } = useGetUserProfileQuery(myProfile ? null : state?.id, { refetchOnFocus: true, refetchOnMountOrArgChange: true })
   const [brands, setBrands] = useState([])
   const [myEvents, setMyEvents] = useState([])
   const [mySpaces, setMySpaces] = useState([])
@@ -33,7 +34,7 @@ const Profile = () => {
 
   const { data: brandData, isError: isBrandError, isLoading: isBrandLoading, isSuccess: isBrandSuccess, error: brandError, isFetching: isBrandFetching } =
     useGetAllBrandsQuery(
-      myProfile ? { pageSize: 100 } : { publicProfile: true, id, entity: "BRAND", pageSize: 100 },
+      myProfile ? { pageSize: 100 } : { publicProfile: true, id:state?.id, entity: "BRAND", pageSize: 100 },
       {
         refetchOnMountOrArgChange: true,
         refetchOnFocus: true,
@@ -42,7 +43,7 @@ const Profile = () => {
 
   const { data: eventData, isError: isEventError, isLoading: isEventLoading, isSuccess: isEventSuccess, error: eventError, isFetching: isEventFetchhing } =
     useGetAllEventsQuery(
-      myProfile ? { pageSize: 100, tab: "Group" } : { publicProfile: true, id, entity: "EVENT", pageSize: 100 },
+      myProfile ? { pageSize: 100, tab: "Group" } : { publicProfile: true, id:state?.id, entity: "EVENT", pageSize: 100 },
       {
         refetchOnMountOrArgChange: true,
         refetchOnFocus: true,
@@ -51,7 +52,7 @@ const Profile = () => {
 
   const { data: spaceData, isError: isSpaceError, isLoading: isSpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching, } =
     useGetAllSpaceQuery(
-      myProfile ? { pageSize: 100, tab: "Group" } : { publicProfile: true, id, entity: "SPACE", pageSize: 100 },
+      myProfile ? { pageSize: 100, tab: "Group" } : { publicProfile: true, id:state?.id, entity: "SPACE", pageSize: 100 },
       {
         refetchOnMountOrArgChange: true,
         refetchOnFocus: true,

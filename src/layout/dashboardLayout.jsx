@@ -4,7 +4,7 @@ import SplashScreen from "./splash";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./sidebar";
 import { getFullSidebar, getSmallSidebar, sidebarRoutes } from "../constant";
-import { getCookie, useClickOutside } from "../utils";
+import { addHyphenToName, getCookie, useClickOutside } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../store/slices/activity";
 
@@ -144,7 +144,7 @@ const DashboardLayout = ({ isTokenChecking }) => {
                 <Stack
                   onClick={() => {
                     if (item.title === "Profile") {
-                      navigate(`/profile/${user?.id}`);
+                      navigate(`/profile/${addHyphenToName(user?.name)}`, { state: { id: user?.id } });
                       setActive(false);
                       return;
                     }
