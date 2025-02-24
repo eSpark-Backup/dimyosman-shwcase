@@ -34,6 +34,7 @@ const Activity = () => {
   const [openInquiryModal, setOpenInquiryModal] = useState(false);
   const [inquiredDetail, setInquiredDetail] = useState({});
   const scrollContainerRef = useRef(null);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -185,6 +186,10 @@ const Activity = () => {
         dispatch(setAllActivityData(uniqueData));
         dispatch(setSpaceData(mergedSpacesData));
         setTotal(data?.data?.pagination?.totalItems);
+        setHasMore(
+          data?.data?.pagination?.currentPage <
+          data?.data?.pagination?.totalPages
+        );
       }
 
       setHasFetchedData(true);
@@ -210,7 +215,7 @@ const Activity = () => {
       dispatch(setActivityPageNumber(page + 1));
     }
 
-  }, [inView, isLoading, isFetching, allActivityData.length, total]);
+  }, [inView, isLoading, isFetching, allActivityData.length, total, hasMore]);
 
   const handleNavigation = () => {
     if (scrollContainerRef.current) {
@@ -239,7 +244,11 @@ const Activity = () => {
 
   return (
     <>
-      <Grid container sx={{ display: "flex", justifyContent: "space-between" }} spacing={!(searchQuery || search_query) ? 0 : 2}>
+      <Grid
+        container
+        sx={{ display: "flex", justifyContent: "space-between" }}
+        spacing={!(searchQuery || search_query) ? 0 : 2}
+      >
         <Grid
           item
           xs={12}
@@ -303,19 +312,26 @@ const Activity = () => {
               }}
             />
           ))}
-          <div ref={ref} style={{ minHeight: 10, textAlign: "center" }}>
-            {isFetching && page !== 1 && <CircularProgress />}
-          </div>
-          {!isFetching && !isLoading && allActivityData.length >= total && hasFetchedData &&
-            <Typography fontWeight={700} fontSize={18} textAlign="center">
-              You have seen all!
-            </Typography>
-          }
-          {!isFetching && !isLoading && allActivityData.length >= total &&
+
+          {allActivityData.length && hasMore && (
+            <div ref={ref} style={{ minHeight: 10, textAlign: "center" }}>
+              {page !== 1 && <CircularProgress />}
+            </div>
+          )}
+
+          {!isFetching &&
+            !isLoading &&
+            allActivityData.length >= total &&
+            hasFetchedData && (
+              <Typography fontWeight={700} fontSize={18} textAlign="center">
+                You have seen all!
+              </Typography>
+            )}
+          {/* {!isFetching && !isLoading && allActivityData.length >= total &&
             <Box sx={{ width: "100%" }}>
               <LinearProgress />
             </Box>
-          }
+          } */}
         </Grid>
         {!(searchQuery || search_query) ? (
           <Grid
