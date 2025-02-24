@@ -457,6 +457,9 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
           .where("space.brand = :brandId", { brandId: singleBrand.id })
           .getCount()
       ]);
+      if(chatDetails._doc.userToUser){
+        chat={...chatDetails._doc,}
+      }
       chat={
       ...chat,
       receiverBrand:{
