@@ -9,14 +9,14 @@ import {
 import { useEffect, useState } from "react";
 import { DynamicTable, FilterationTabs } from "../../../components";
 import { spaceTableData } from "../../../constant";
-import { addIcon, like, spaceIcon, spaceIconLight } from "../../../assets";
+import { addIcon, like, spaceHover, spaceIcon, spaceIconLight } from "../../../assets";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useGetAllSpaceQuery } from "../../../services/space";
 import { toast } from "react-toastify";
 import ReusableModal from "../../../components/Modal";
 import AfterSignature from "../../../components/AfterSignature";
 import ManageInquiry from "../../../components/ManageInquiry";
-import { convertToSameKeys, getCookie, setCookie, spacesAction } from "../../../utils";
+import { addHyphenToName, convertToSameKeys, getCookie, setCookie, spacesAction } from "../../../utils";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setHasPaymentDone,
@@ -151,7 +151,7 @@ const Space = () => {
     addListener("PAYMENT_NOTIFICATION", (data) => {
       if (data?.receiverId === user?.userChatId) {
         notificationRefetch().then(() => {
-          if (pathname === "/space") {
+          if (pathname === "/my-spaces") {
             dispatch(setHasPaymentDone(true));
           }
 
@@ -159,7 +159,7 @@ const Space = () => {
 
           let redName = data.redirect;
 
-          if (pathname === "/space") {
+          if (pathname === "/my-spaces") {
             if (data.redirect === "Lease" && activeTabForNotif !== "Lease") {
               redName = "Lease";
             } else if (
@@ -174,8 +174,8 @@ const Space = () => {
             position: "bottom-right",
             onClick: () => {
               dispatch(setRedirectTab(redName));
-              if (pathname !== "/space") {
-                navigate("/space");
+              if (pathname !== "/my-spaces") {
+                navigate("/my-spaces");
               }
             },
           });
@@ -219,6 +219,7 @@ const Space = () => {
         price: dayFilter?.length > 0 ? "$" + dayFilter[0]?.price : "-",
         term: dayFilter?.length > 0 ? dayFilter[0]?.term : "-",
         brand: space?.brand?.brandName,
+        brandId: space?.brand?.id,
         brandUrl: space?.brand?.id ? `/brand/${space?.brand?.id}` : null,
         action: "Edit",
       };
@@ -247,6 +248,7 @@ const Space = () => {
         status: space?.status,
         event: space?.contractDetails?.tenantDetails?.event,
         brand: space?.brand?.brandName,
+        brandId: space?.brand?.id,
         eventUrl: "-",
         brandUrl: `/brand/${space?.brand?.id}`,
         action:
@@ -276,33 +278,35 @@ const Space = () => {
             ? "Pending Sign"
             : space?.status === "VerifyAndPay" ||
               space?.status === "PendingforApproval"
-              ? "Pending Pay"
-              : space?.status === "Active"
-                ? "Leasing"
-                : "Lease Ended",
+            ? "Pending Pay"
+            : space?.status === "Active"
+            ? "Leasing"
+            : "Lease Ended",
         price: space?.contractDetails?.leaseInfo?.leaseTotal,
         term: "Daily",
         event: space?.event?.eventName || "-",
         brand: space?.brand?.brandName,
+        brandId: space?.brand?.id,
         eventUrl: space?.event?.eventName ? `/event/${space?.event?.id}` : "-",
+        spaceEventName: space?.event?.eventName,
+        spaceEventId: space?.event?.id,
         brandUrl: `/brand/${space?.brand?.id}`,
         action:
           space?.status === "SubmitForSignature"
             ? "Sign"
             : space?.status === "VerifyAndPay"
-              ? "Verify Pay 0/2"
-              : space?.status === "PendingforApproval"
-                ? "Verify Pay 1/2"
-                : space?.status === "Active"
-                  ? "Details"
-                  : "Review",
+            ? "Verify Pay 0/2"
+            : space?.status === "PendingforApproval"
+            ? "Verify Pay 1/2"
+            : space?.status === "Active"
+            ? "Details"
+            : "Review",
       };
     });
   };
 
   const transformTenantSpaceData = (apiData) => {
     return apiData.map((space, index) => {
-      console.log(space)
       return {
         id: space?.id,
         spaceId: space?.space?.id,
@@ -310,6 +314,7 @@ const Space = () => {
         eventName: space?.space?.spaceName,
         eventImg: space?.space?.spaceImage,
         brand: space?.brand?.brandName,
+        brandId: space?.brand?.id,
         owner: space?.owner?.name,
         event: space?.event?.eventName || "-",
         starting: space?.contractDetails?.leaseInfo?.startDate,
@@ -326,6 +331,8 @@ const Space = () => {
                 : "Lease Ended",
         // eventUrl: space?.event?.eventName ? `/event/${space?.event?.id}` : "-",
         eventUrl: space?.event?.eventName && space?.event?.status === "PUBLISH" ? `/event/${space?.event?.id}` : "-",
+        spaceEventName: space?.event?.eventName && space?.event?.status === "PUBLISH" ? space?.event?.eventName : "",
+        spaceEventId: space?.event?.eventName && space?.event?.status === "PUBLISH" ? space?.event?.id : null,
         brandUrl: space?.brand?.status === "PUBLISH" ? `/brand/${space?.brand?.id}` : "-",
         action:
           space?.status === "SubmitForSignature"
@@ -422,16 +429,26 @@ const Space = () => {
     setActiveTab(newValue);
   };
 
-  const gotoDetail = (item, lease = null) => {
+  const gotoDetail = (item, lease = null, other = null) => {
     //go to detail page functionality
     let id = null;
+    let url = "";
 
     if (lease) {
       id = item.spaceId;
     } else {
       id = item.id;
     }
-    navigate(`/space/${id}`);
+
+    if(other){
+      url = "/space"
+    } else {
+      url = "/my-spaces"
+    }
+
+    navigate(`${url}/${addHyphenToName(item?.eventName)}`, {
+      state: { id: id },
+    });
   };
 
   const [likeFunc, { isLoading: likeLoading }] = useAddInFavouritesMutation();
@@ -488,20 +505,20 @@ const Space = () => {
   };
 
   const gotoBrand = (item, type = "") => {
-    //go to detail page functionality
-
     if (type === "other") {
-      navigate(item?.brandUrl, { state: { other: true } });
+      navigate(`/brand/${addHyphenToName(item?.brand)}`, { state: { other: true, id: item?.brandId } });
     } else {
-      navigate(item?.brandUrl);
+      navigate(`/my-brands/${addHyphenToName(item?.brand)}`, {
+        state: { id: item?.brandId },
+      });
     }
   };
 
   const gotoEvent = (item, type = "") => {
     if (type === "other") {
-      navigate(item?.eventUrl, { state: { other: true } });
+      navigate(`/event/${addHyphenToName(item?.spaceEventName)}`, { state: { other: true, id: item?.spaceEventId } });
     } else {
-      navigate(item?.eventUrl);
+      navigate(`/my-events/${addHyphenToName(item?.spaceEventName)}`, { state: { id: item?.spaceEventId } });
     }
   };
 

@@ -6,13 +6,14 @@ import dayjs from "dayjs";
 import { Box, LinearProgress } from "@mui/material";
 import { updateEvents } from "../../../../store/slices/event";
 import { eventMainImage } from "../../../../assets";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { fetchAddressFromCoordinates } from "../../../../utils";
 import moment from "moment";
 
 const EventDetails = () => {
-  const { id } = useParams();
-  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllEventsQuery({ page: 1, pageSize: 7, id }, { refetchOnMountOrArgChange: true });
+  // const { name } = useParams();
+  const { state } = useLocation()
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllEventsQuery({ page: 1, pageSize: 7, id: state?.id }, { refetchOnMountOrArgChange: true });
   const dispatch = useDispatch()
   const { user } = useSelector((state) => state.auth)
 

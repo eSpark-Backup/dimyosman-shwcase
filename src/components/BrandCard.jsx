@@ -25,6 +25,7 @@ import { toast } from "react-toastify";
 import { useFollowMutation } from "../services/follower";
 import CommentModal from "./commentModal";
 import CommentSuccessModal from "./commentSuccessModal";
+import { addHyphenToName } from "../utils";
 
 const BrandCard = ({
   myProfile,
@@ -236,12 +237,11 @@ const BrandCard = ({
                         cursor: "pointer",
                       }}
                       onClick={() => {
-                        if(!token){
-                          toast.error("You need to login first")
-                          return
+                        if (!token) {
+                          toast.error("You need to login first");
+                          return;
                         }
-
-                        navigate(`/brand/${item?.id}`)
+                        navigate(`${myProfile ? "/my-brands" : "/brand"}/${addHyphenToName(item?.brandName)}`, { state: { id: item?.id } })
                       }}
                     >
                       <Box
@@ -252,20 +252,22 @@ const BrandCard = ({
                           height: "62px",
                         }}
                       >
-                        {item?.profileImage && <figure
-                          style={{ width: "100%", height: "100%" }}
-                          role="img"
-                        >
-                          <img
-                            src={item?.profileImage}
-                            alt="User Image"
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                            }}
-                          />
-                        </figure>}
+                        {item?.profileImage && (
+                          <figure
+                            style={{ width: "100%", height: "100%" }}
+                            role="img"
+                          >
+                            <img
+                              src={item?.profileImage}
+                              alt="User Image"
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                              }}
+                            />
+                          </figure>
+                        )}
                       </Box>
                       <Box
                         sx={{
@@ -315,12 +317,12 @@ const BrandCard = ({
                         }}
                         variant="h2"
                         onClick={() => {
-                          if(!token){
-                            toast.error("You need to login first")
-                            return
+                          if (!token) {
+                            toast.error("You need to login first");
+                            return;
                           }
 
-                          navigate(`/brand/${item?.id}`)
+                          navigate(`${myProfile ? "/my-brands" : "/brand"}/${addHyphenToName(item?.brandName)}`, { state: { id: item?.id } })
                         }}
                       >
                         {item?.brandName}
@@ -422,15 +424,19 @@ const BrandCard = ({
                           onClick={() => {
                             if (token) {
                               setCommentId(item?.id);
-                              setCommentModal(true)
+                              setCommentModal(true);
                             } else {
-                              toast.error("You need to login first")
+                              toast.error("You need to login first");
                             }
                           }}
                           style={{ width: "100%", height: "100%" }}
                           role="img"
                         >
-                          <img src={comment} alt="Share Icon" style={{ cursor: "pointer" }} />
+                          <img
+                            src={comment}
+                            alt="Share Icon"
+                            style={{ cursor: "pointer" }}
+                          />
                         </figure>
                       )}
                       {item?.status === "PUBLISH" && (
@@ -446,13 +452,21 @@ const BrandCard = ({
                           style={{ width: "100%", height: "100%" }}
                           role="img"
                         >
-                          <img src={share} alt="Share Icon" style={{ cursor: "pointer" }} />
+                          <img
+                            src={share}
+                            alt="Share Icon"
+                            style={{ cursor: "pointer" }}
+                          />
                         </figure>
                       )}
                     </Box>
                     {!myProfile && (
                       <Typography
-                        onClick={() => token ? navigate(`/brand/${item?.id}`) : toast.error("You need to login first")}
+                        onClick={() =>
+                          token
+                            ? navigate(`${myProfile ? "/my-brands" : "/brand"}/${addHyphenToName(item?.brandName)}`, { state: { id: item?.id } })
+                            : toast.error("You need to login first")
+                        }
                         sx={{
                           cursor: "pointer",
                           color: theme.palette.primary.main,
@@ -484,27 +498,33 @@ const BrandCard = ({
                         },
                       }}
                       onClick={
-                        token ?
-                        myProfile
-                          ? () => navigate(`/brand/${item?.id}/edit`)
-                          : !followLoading
-                          ? () => {
-                              setBrandId(item?.id);
-                              follow({
-                                entityId: item?.id,
-                                entityType: "BRAND",
-                              }).then((res) => {
-                                res?.data?.status &&
-                                  handleFollowUpdate(item?.id);
-                                toast.success(
-                                  `You ${
-                                    item?.isFollowed ? "Unfollowed" : "Followed"
-                                  } ${item?.brandName}`
-                                );
-                                setBrandId(null);
-                              });
-                            }
-                          : () => {} : () => toast.error("You need to login first")
+                        token
+                          ? myProfile
+                            ? () =>
+                                navigate(`/my-brands/${item?.brandName}/edit`, {
+                                  state: { id: item?.id },
+                                })
+                            : !followLoading
+                            ? () => {
+                                setBrandId(item?.id);
+                                follow({
+                                  entityId: item?.id,
+                                  entityType: "BRAND",
+                                }).then((res) => {
+                                  res?.data?.status &&
+                                    handleFollowUpdate(item?.id);
+                                  toast.success(
+                                    `You ${
+                                      item?.isFollowed
+                                        ? "Unfollowed"
+                                        : "Followed"
+                                    } ${item?.brandName}`
+                                  );
+                                  setBrandId(null);
+                                });
+                              }
+                            : () => {}
+                          : () => toast.error("You need to login first")
                       }
                     >
                       {myProfile
@@ -525,17 +545,22 @@ const BrandCard = ({
                     background: "rgb(209, 219, 215, 0.4)",
                   }}
                 >
-                  {item?.brandImage && <figure style={{ width: "100%", height: "100%" }} role="img">
-                    <img
-                      src={item?.brandImage}
-                      alt="Image"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  </figure>}
+                  {item?.brandImage && (
+                    <figure
+                      style={{ width: "100%", height: "100%" }}
+                      role="img"
+                    >
+                      <img
+                        src={item?.brandImage}
+                        alt="Image"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </figure>
+                  )}
                 </Box>
               </Box>
             );

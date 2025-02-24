@@ -3,7 +3,7 @@ import { Box, Button, Typography, useTheme } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import RSVPCalendar from './rsvp-calendar'
 import { useRef, useState } from 'react'
-import { useClickOutside } from '../utils'
+import { addHyphenToName, useClickOutside } from '../utils'
 import { useAddRsvpDateMutation } from '../services/events'
 import dayjs from 'dayjs'
 import { toast } from 'react-toastify'
@@ -119,7 +119,9 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
             }
           
             if (edit) {
-              navigate(`/event/${event?.id}/edit`);
+              navigate(`/my-events/${addHyphenToName(event?.profileName)}/edit`, {
+                state: { id: event?.id },
+              });
             } else {
               setOpenCalendar(true);
             }

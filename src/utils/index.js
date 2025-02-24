@@ -262,9 +262,11 @@ export const spacesAction = (
 ) => {
   switch (type) {
     case "edit":
-      if (location?.pathname === "/space") {
-        navigate(`/space/${item?.id}/edit`);
-      }
+      // if (location?.pathname === "/space") {
+        navigate(`/my-spaces/${addHyphenToName(item?.eventName)}/edit`, {
+          state: { id: item?.id },
+        });
+      // }
       break;
 
     case "Sign":
@@ -604,3 +606,7 @@ export const fetchAddressFromCoordinates = async (lat, lng) => {
     return "";
   }
 };
+
+export const addHyphenToName = (name) => {
+  return name?.toLowerCase()?.replace(/ /g, '-');
+}

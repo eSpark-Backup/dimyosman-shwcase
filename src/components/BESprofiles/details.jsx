@@ -84,8 +84,6 @@ const Details = ({ spaceInquire, details, myProfile }) => {
   const modalRef = useRef();
   useClickOutside(modalRef, () => setOpenCalendar(false));
 
-  console.log(details)
-
   return (
     <Box>
       <Stack

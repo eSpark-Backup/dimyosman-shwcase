@@ -138,7 +138,8 @@ const DashboardLayout = ({ isTokenChecking }) => {
             }}
           >
             {sidebarRoutes.map((item) => {
-              const activetab = (!item?.link && item.title === "Profile") || (item?.link === currentPath);
+              const activetab = item?.subLink?.includes(currentPath);
+              // const activetab = (!item?.link && item.title === "Profile") || (item?.subLink === currentPath);
               return (
                 <Stack
                   onClick={() => {

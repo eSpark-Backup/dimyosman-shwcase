@@ -143,7 +143,7 @@ const rsvpEventColumns = (rsvpLoading, rsvpId, gotoDetail, handleAction, gotoBra
             justifyContent="flex-start"
             gap={2}
             sx={{ cursor: "pointer" }}
-            onClick={() => gotoDetail(item)}
+            onClick={() => gotoDetail(item, "other")}
           >
             <Box
               sx={{
@@ -199,7 +199,7 @@ const rsvpEventColumns = (rsvpLoading, rsvpId, gotoDetail, handleAction, gotoBra
               fontWeight: item?.brandUrl ? 600 : 400,
               cursor: "pointer",
             }}
-            onClick={item?.brandUrl ? () => gotoBrand(item) : () => {}}
+            onClick={item?.brandUrl ? () => gotoBrand(item, "other") : () => {}}
           >
             {item?.brand}
           </Typography>
@@ -223,7 +223,7 @@ const rsvpEventColumns = (rsvpLoading, rsvpId, gotoDetail, handleAction, gotoBra
               fontWeight: item?.spaceUrl ? 600 : 400,
               cursor: "pointer",
             }}
-            onClick={item?.hostedIn !== "-" ? () => gotoSpace(item) : undefined}
+            onClick={item?.hostedIn !== "-" ? () => gotoSpace(item, "other") : undefined}
           >
             {item?.hostedIn}
           </Typography>
@@ -266,7 +266,7 @@ const rsvpEventColumns = (rsvpLoading, rsvpId, gotoDetail, handleAction, gotoBra
   ];
 };
 
-const likedEventColumns = (likeLoading, savedId, gotoDetail, handleAction, gotoSpace) => {
+const likedEventColumns = (likeLoading, savedId, gotoDetail, handleAction, gotoBrand, gotoSpace) => {
   return [
     {
       name: "Event Name",
@@ -279,7 +279,7 @@ const likedEventColumns = (likeLoading, savedId, gotoDetail, handleAction, gotoS
             justifyContent="flex-start"
             gap={2}
             sx={{ cursor: "pointer" }}
-            onClick={() => gotoDetail(item)}
+            onClick={() => gotoDetail(item, "other")}
           >
             <Box
               sx={{
@@ -335,12 +335,10 @@ const likedEventColumns = (likeLoading, savedId, gotoDetail, handleAction, gotoS
               fontSize: "14px",
               fontWeight: item?.brandUrl ? 600 : 400,
               cursor: "pointer",
-              a: {
-                color: "#00141C !important"
-              }
             }}
+            onClick={() => item?.brandUrl ? gotoBrand(item, "other") : null}
           >
-            {item?.brandUrl ? <Link to={item?.brandUrl}>{item?.brand}</Link> :  item?.brand}
+            {item?.brand}
           </Typography>
         );
       },
@@ -362,7 +360,7 @@ const likedEventColumns = (likeLoading, savedId, gotoDetail, handleAction, gotoS
               fontWeight: item?.spaceUrl ? 600 : 400,
               cursor: "pointer",
             }}
-            onClick={item?.hostedIn !== "-" ? () => gotoSpace(item) : undefined}
+            onClick={item?.hostedIn !== "-" ? () => gotoSpace(item, "other") : undefined}
           >
             {item?.hostedIn}
           </Typography>

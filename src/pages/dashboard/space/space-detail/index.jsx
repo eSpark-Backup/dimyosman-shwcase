@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 
 import { Box, LinearProgress } from "@mui/material";
 import { fetchAddressFromCoordinates } from "../../../../utils";
@@ -13,8 +13,9 @@ import { useGetAllSpaceQuery } from "../../../../services/space";
 import { updateSpace } from "../../../../store/slices/space";
 
 const SpaceDetails = () => {
-  const { id: spaceId } = useParams()
-  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllSpaceQuery({ page: 1, pageSize: 7, id: spaceId }, { refetchOnMountOrArgChange: true });
+  const { name } = useParams()
+  const { state } = useLocation();
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllSpaceQuery({ page: 1, pageSize: 7, id: state?.id }, { refetchOnMountOrArgChange: true });
   const { user } = useSelector((state) => state.auth)
 
   const dispatch = useDispatch()
