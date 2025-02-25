@@ -188,7 +188,8 @@ const Notification = ({ open, theme, setShowNotification }) => {
                     <>
                       <strong style={{ textTransform: "capitalize" }}>
                         {item?.metadata?.senderBrandUserName ||
-                          item?.metadata?.senderBrandName}
+                          item?.metadata?.senderBrandName ||
+                          item?.metadata?.senderName}
                       </strong>{" "}
                       sent a{" "}
                       {item.title
