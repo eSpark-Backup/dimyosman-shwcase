@@ -17,11 +17,12 @@ const BESProfile = ({ spaceInquire, type, data}) => {
   const handleCloseModal = () => setOpenSliderModal(false);
   const navigate = useNavigate();
   const { state } = useLocation();
+  const navId = localStorage?.getItem("navId")
   const { name } = useParams();
 
   const editProfile = () => {
     const updateType = `my-${type}s`;
-    navigate(`/${updateType}/${name}/edit`, { state: { id: state?.id } });
+    navigate(`/${updateType}/${name}/edit`, { state: { id: state?.id || navId } });
   };
 
   const addNewEvent = () => {
@@ -54,7 +55,7 @@ const BESProfile = ({ spaceInquire, type, data}) => {
       },
     }));
   };
-  const filteredProfile = data.find((profile) => (profile.id === state?.id) || profile);
+  const filteredProfile = data.find((profile) => (profile.id === state?.id || navId) || profile);
   const myProfile = {
     ...filteredProfile,
     tabs: mapTabsToComponents(filteredProfile, filteredProfile?.tabs),

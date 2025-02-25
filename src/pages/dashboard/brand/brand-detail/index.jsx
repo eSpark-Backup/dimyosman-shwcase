@@ -1,18 +1,17 @@
 import { useDispatch, useSelector } from "react-redux";
 import { BESProfile } from "../../../../components";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { useGetAllBrandsQuery } from "../../../../services/brands";
 import { updateBrands } from "../../../../store/slices/brand";
-import { brandMain } from "../../../../assets";
 import { Box, LinearProgress } from "@mui/material";
-import { fetchAddressFromCoordinates } from "../../../../utils";
+import { fetchAddressFromCoordinates, getCookie } from "../../../../utils";
 import dayjs from "dayjs";
 
 const BrandDetails = () => {
-  const { name } = useParams();
-  const { state } = useLocation()
-  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({ page: 1, pageSize: 7, id: state?.id }, { refetchOnMountOrArgChange: true });
+  const { state } = useLocation();
+  const navId = getCookie("navId")
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({ page: 1, pageSize: 7, id: state?.id || navId }, { refetchOnMountOrArgChange: true });
   const dispatch = useDispatch()
   const { user } = useSelector((state) => state.auth)
 

@@ -45,7 +45,7 @@ function App() {
     if (!token) {
 
       window.localStorage.removeItem("token");
-      if (pathname !== "/auth" && pathname !== "/forgot-password" && pathname !== "/reset-password" && pathname !== "/share") {
+      if (pathname !== "/auth" && pathname !== "/forgot-password" && pathname !== "/reset-password" && !pathname.includes("share")) {
         logoutAuthUtils(logout)
         navigate("/auth?type=login");
       }
@@ -79,7 +79,7 @@ function App() {
     <>
       <Header isLogin={!!token} />
       <Routes>
-          <Route path="/share" element={<SharedPage />} />
+          <Route path="/:type/share" element={<SharedPage />} />
         <Route element={<PublicRoute />}>
           <Route path="/" element={<Navigate to={"/auth?type=login"} />} />
           <Route path="/auth" element={<AuthBox />} />

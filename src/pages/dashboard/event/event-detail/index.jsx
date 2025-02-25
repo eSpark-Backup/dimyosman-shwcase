@@ -5,17 +5,16 @@ import { useEffect } from "react";
 import dayjs from "dayjs";
 import { Box, LinearProgress } from "@mui/material";
 import { updateEvents } from "../../../../store/slices/event";
-import { eventMainImage } from "../../../../assets";
-import { useLocation, useParams } from "react-router-dom";
-import { fetchAddressFromCoordinates } from "../../../../utils";
+import { useLocation } from "react-router-dom";
+import { fetchAddressFromCoordinates, getCookie } from "../../../../utils";
 import moment from "moment";
 
 const EventDetails = () => {
-  // const { name } = useParams();
-  const { state } = useLocation()
-  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllEventsQuery({ page: 1, pageSize: 7, id: state?.id }, { refetchOnMountOrArgChange: true });
+  const { state } = useLocation();
+  const navId = getCookie("navId")
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllEventsQuery({ page: 1, pageSize: 7, id: state?.id || navId }, { refetchOnMountOrArgChange: true });
   const dispatch = useDispatch()
-  const { user } = useSelector((state) => state.auth)
+  const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchAddress = async () => {
