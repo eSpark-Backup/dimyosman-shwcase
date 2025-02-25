@@ -1,6 +1,14 @@
 import { Box, Typography, useMediaQuery } from "@mui/material";
 
-const Message = ({ ActivityType, theme, message, sender }) => {
+const Message = ({
+  ActivityType,
+  theme,
+  message,
+  chatActivity,
+  isDirect,
+  shortName,
+  sender,
+}) => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
 
   return (
@@ -45,7 +53,7 @@ const Message = ({ ActivityType, theme, message, sender }) => {
             />
           )}
 
-          <ActivityType type={message?.activity} theme={theme} />
+          <ActivityType type={chatActivity} theme={theme} />
         </Box>
 
         <Box flex={1}>
@@ -63,6 +71,7 @@ const Message = ({ ActivityType, theme, message, sender }) => {
                 lineHeight: "22px",
                 fontSize: "16px",
                 textAlign: "left",
+                textTransform: "capitalize",
               }}
             >
               {sender.brandName}
@@ -91,19 +100,27 @@ const Message = ({ ActivityType, theme, message, sender }) => {
               </Typography>
             </Box>
           </Box>
-
-          <Typography
-            sx={{ fontWeight: 300, fontSize: "12px", lineHeight: "17px" }}
-          >
-            {message.sender.name}
-          </Typography>
+          
+          {isDirect ? (
+            <Typography
+              sx={{ fontWeight: 300, fontSize: "12px", lineHeight: "17px" }}
+            >
+              {shortName?.trim() !== "" ? message.sender.name : ""}
+            </Typography>
+          ) : (
+            <Typography
+              sx={{ fontWeight: 300, fontSize: "12px", lineHeight: "17px" }}
+            >
+              {message.sender.name}
+            </Typography>
+          )}
         </Box>
       </Box>
 
       <Typography
         sx={{
           marginTop: isLessThan1400 ? 2 : 3,
-          wordBreak:"break-word",
+          wordBreak: "break-word",
 
           "& a": {
             color: "#00141C !important",

@@ -89,10 +89,10 @@ const CommentModal = ({ open, handleClose, handleSuccess, commentId }) => {
   };
 
   const HandleMessageSend = () => {
-    if (finalMessage?.senderBrandId === "") {
-      toast.error("Please Select Brand First");
-      return;
-    }
+    // if (finalMessage?.senderBrandId === "") {
+    //   toast.error("Please Select Brand First");
+    //   return;
+    // }
     if (finalMessage?.message === "") {
       toast.error("Message can not be empty");
       return;
@@ -104,7 +104,17 @@ const CommentModal = ({ open, handleClose, handleSuccess, commentId }) => {
       toast?.error("Message can not be empty.");
       return false;
     }
-    sendDirectMessage({ id, credentials: finalMessage })
+    let obj = {};
+    
+    if (finalMessage?.senderBrandId === "" || finalMessage?.senderBrandId === "none") {
+      obj = {
+        message: finalMessage?.message,
+      };
+    } else {
+      obj = finalMessage;
+    }
+    
+    sendDirectMessage({ id, credentials: obj })
       .then((res) => {
         if (res?.data?.status) {
           resetALsStates();
@@ -211,7 +221,7 @@ const CommentModal = ({ open, handleClose, handleSuccess, commentId }) => {
                 Sender:
               </Typography>
               <Dropdown
-                options={brandOptions}
+                options={[...brandOptions, { label: "None", value: "none" }]}
                 onChange={handleSelectChange}
                 value={finalMessage?.senderBrandId}
                 placeholder={"Brand name"}

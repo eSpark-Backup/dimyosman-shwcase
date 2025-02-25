@@ -380,7 +380,7 @@ const Message = () => {
   useEffect(() => {
     if (chatDetails?.length > 0 && messages?.length > 0) {
       let message = myChat?.map((el) => {
-        return messageBox(el, chatDetails, messages);
+        return messageBox(el, chatDetails, messages, user);
       });
 
       dispatch(getAllMyGroups(message));
@@ -432,18 +432,24 @@ const Message = () => {
 
       selected.chatGroup = selectedGroup;
       selected.group = parentGroup;
-      initialId = selectedGroup?.id;
-      initialId === null && setSelectedChatId(selectedGroup?.id);
+      initialId = selectedGroup?.id || parentGroup?.directUserChat?._id;
+      initialId === null && setSelectedChatId(selectedGroup?.id || parentGroup?.directUserChat?._id);
     }
   };
 
   const handleAccordionChange = (index) => (event, isExpanded) => {
+    const chatGroups = allGroups[index]?.chatGroups;
+    const directUserChat = allGroups[index]?.directUserChat;
+
+    const members = chatGroups ? chatGroups[0]?.members : directUserChat?.members;
+    const chatId = chatGroups ? chatGroups[0]?.chatId : directUserChat?._id;
+
     if (!isLessThan768) {
       dispatch(emptyGoToMessage());
       dispatch(setFromNotification(false));
 
       setSelectedGroup(commonSelectedChatGroup(allGroups, index));
-      setSelectedChatId(allGroups[index]?.chatGroups[0]?.chatId);
+      setSelectedChatId(chatId);
     }
 
     setPage(1);
@@ -451,7 +457,7 @@ const Message = () => {
 
     const obj = {
       userId: user.userChatId,
-      members: allGroups[index]?.chatGroups[0]?.members,
+      members,
     };
 
     if (index !== expanded) {
@@ -459,7 +465,7 @@ const Message = () => {
       emitEvent("CHAT_JOINED", obj);
     }
 
-    unreadChat(allGroups[index]?.chatGroups[0]?.id);
+    unreadChat(chatId);
   };
 
   useEffect(() => {
@@ -476,36 +482,41 @@ const Message = () => {
 
         if (gotToMessage) {
           handleNewInquiry(selected, initialId);
-          setInitialChatId(selected?.chatGroup?.id);
+          const chatId = selected?.chatGroup?.id || selected?.group?.directUserChat?._id
+          setInitialChatId(chatId);
 
           setSelectedGroup(selected);
+          const members = selected?.chatGroup?.members || selected?.group?.directUserChat?.members
 
           const obj = {
             userId: user.userChatId,
-            members: selected?.chatGroup?.members,
+            members: members,
           };
 
           dispatch(isActiveMembers(obj.members));
           emitEvent("CHAT_JOINED", obj);
 
-          unreadChat(selected?.chatGroup?.id);
+          unreadChat(chatId);
         } else {
+          const chatId = allGroups[0]?.chatGroups[0]?._id || allGroups[0]?.directUserChat?._id
+
           selected.chatGroup = allGroups[0]?.chatGroups[0];
           selected.group = allGroups[0];
-          initialId = allGroups[0]?.chatGroups[0]?._id;
+          initialId = chatId;
+          const members = selected?.chatGroup?.members || selected?.group?.directUserChat?.members
 
           setInitialChatId(initialId);
           setSelectedGroup(selected);
 
           const obj = {
             userId: user.userChatId,
-            members: selected?.chatGroup?.members,
+            members: members,
           };
 
           dispatch(isActiveMembers(obj.members));
           emitEvent("CHAT_JOINED", obj);
 
-          unreadChat(selected?.chatGroup?.id);
+          unreadChat(selected?.chatGroup?.id || selected?.group?.directUserChat?._id);
         }
       }
 
@@ -523,17 +534,21 @@ const Message = () => {
         if (gotToMessage) {
           handleNewInquiry(selected, null);
           setSelectedGroup(selected);
-          setSelectedChatId(selected?.chatGroup?.id);
+          
+          const chatId = selected?.chatGroup?.id || selected?.group?.directUserChat?._id
+          setSelectedChatId(chatId);
         } else {
+          
           selected.chatGroup = chatGroup;
           selected.group = group;
-
-          if (chatGroup) {
+          
+          if (chatGroup || group?.directUserChat !== null) {
             setSelectedGroup(selected);
           }
         }
+        const chatId = selected?.chatGroup?.id || selected?.group?.directUserChat?._id
 
-        unreadChat(selected?.chatGroup?.id);
+        unreadChat(chatId);
         setInitialChatId(null);
 
         if (toShare && toShare?.chatId !== selectedChatId) {
@@ -574,13 +589,17 @@ const Message = () => {
       } else {
         msgTxt = "No Chats";
       }
+
+      const isChatGroup = filterGroups?.length && filterGroups[0]?.chatGroups
+      const chatId = isChatGroup ? isChatGroup[0]?.chatId : isChatGroup[0]?.directUserChat?._id;
+
       if (!isLessThan768) {
         setSelectedGroup(commonSelectedChatGroup(filterGroups, 0));
-        setSelectedChatId(filterGroups[0]?.chatGroups[0]?.chatId);
+        setSelectedChatId(chatId);
       }
 
-      unreadChat(filterGroups[0]?.chatGroups[0]?.chatId);
-      setSelectedChatId(filterGroups[0]?.chatGroups[0]?.chatId);
+      unreadChat(chatId);
+      setSelectedChatId(chatId);
 
       dispatch(changeMessageType(msgTxt));
       setActiveTab(type);
@@ -591,7 +610,7 @@ const Message = () => {
 
   const commonSelectedChatGroup = (all, index) => {
     return {
-      chatGroup: all[index]?.chatGroups[0],
+      chatGroup: all[index]?.chatGroups ? all[index]?.chatGroups[0] : null,
       group: all[index],
     };
   };
@@ -687,6 +706,7 @@ const Message = () => {
                       setSelectedGroup={setSelectedGroup}
                       selectedGroup={selectedGroup}
                       setSelectedChatId={setSelectedChatId}
+                      selectedChatId={selectedChatId}
                       emitEvent={emitEvent}
                       onlineUsers={onlineUsers}
                       setPage={setPage}

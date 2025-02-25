@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
@@ -31,7 +31,8 @@ const MessageItem = ({
   emitEvent,
   onlineUsers,
   setPage,
-  activeTab
+  activeTab,
+  selectedChatId
 }) => {
   const isLessThan768 = useMediaQuery("(max-width:768px)");
 
@@ -64,18 +65,18 @@ const MessageItem = ({
 
     setSelectedChatId(el?.chatId);
     setSelectedGroup({ chatGroup: el, group: message });
-    getUnreadChatIds && filterCount(el?.chatId);
+    // getUnreadChatIds && filterCount(el?.chatId);
   };
 
-  const filterCount = (chatId) => {
-    const ifChatIdExists = getUnreadChatIds?.filter((id) => id !== chatId);
+  // const filterCount = (chatId) => {
+  //   const ifChatIdExists = getUnreadChatIds?.filter((id) => id !== chatId);
 
-    if (ifChatIdExists?.length > 0) {
-      setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
-    } else {
-      deleteCookie("unreadChatIds");
-    }
-  };
+  //   if (ifChatIdExists?.length > 0) {
+  //     setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
+  //   } else {
+  //     deleteCookie("unreadChatIds");
+  //   }
+  // };
 
   useEffect(() => {
     if (gotToMessage && messageRefs.current[gotToMessage?.chatId]) {
@@ -103,7 +104,12 @@ const MessageItem = ({
         },
       }}
       expanded={message?.chatGroups?.length ? expanded : false}
-      onChange={message?.chatGroups?.length ? onChange : null}
+      onChange={
+        message?.chatGroups?.length ||
+        (message?.directUserChat && message?.directUserChat?.userToUser)
+          ? onChange
+          : null
+      }
     >
       <AccordionSummary
         sx={{
@@ -113,11 +119,34 @@ const MessageItem = ({
           alignItems: "center",
           margin: "0px !important",
           position: "relative",
+          backgroundColor:
+            message?.directUserChat?.userToUser &&
+            selectedChatId === message?.directUserChat?._id
+              ? "rgba(209, 219, 215, 0.6)"
+              : "#ffffff",
 
           "& .MuiAccordionSummary-content": {
             alignItems: "center",
             margin: "0px !important",
           },
+        }}
+        onClick={() => {
+          if (message?.directUserChat?.userToUser) {
+            dispatch(emptyGoToMessage());
+            dispatch(setFromNotification(false));
+
+            setPage(1);
+
+            const obj = {
+              userId: user.userChatId,
+              members: message?.directUserChat?.members,
+            };
+            dispatch(isActiveMembers(obj.members));
+            emitEvent("CHAT_JOINED", obj);
+
+            setSelectedChatId(message?.directUserChat?._id);
+            setSelectedGroup({ chatGroup: null, group: message });
+          }
         }}
       >
         <Box
@@ -162,6 +191,7 @@ const MessageItem = ({
             lineHeight: "22px",
             fontSize: "16px",
             textAlign: "left",
+            textTransform: "capitalize",
           }}
         >
           {message.parentName}
@@ -277,7 +307,25 @@ const MessageItem = ({
                           bgcolor: "rgba(0, 28, 20, 0.4)",
                           borderRadius: "5px",
                         }}
-                      />
+                      >
+                        {onlineUsers?.length
+                          ? el.members?.some((member) =>
+                              onlineUsers?.includes(member)
+                            ) && (
+                              <Box
+                                sx={{
+                                  width: "10px",
+                                  height: "10px",
+                                  borderRadius: "50%",
+                                  backgroundColor: "#00FF00",
+                                  position: "absolute",
+                                  top: "-4px",
+                                  right: "-3px",
+                                }}
+                              />
+                            )
+                          : null}
+                      </Box>
                     )}
 
                     <ActivityType type={el.activity} theme={theme} />
@@ -298,6 +346,7 @@ const MessageItem = ({
                         lineHeight: "22px",
                         fontSize: "16px",
                         textAlign: "left",
+                        textTransform: "capitalize",
                       }}
                     >
                       {el?.childName}
