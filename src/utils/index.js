@@ -433,21 +433,6 @@ export const removeNewInquiry = (dispatch) => {
 };
 
 export const messageBox = (parentObj, chatDetails, allMessages) => {
-  const getParentObject = () => {
-    const isSpacesChats = parentObj?.spaceDetails;
-    const isEventsChats = parentObj?.eventDetails;
-
-    const details = isSpacesChats ? parentObj?.spaceDetails : isEventsChats ? parentObj?.eventDetails : parentObj?.brandDetails;
-
-    return {
-      parentId: details?.id,
-      parentActivity: isSpacesChats ? "space" : isEventsChats ? "event" : "brand",
-      parentName: details?.brandName || details?.spaceName || details?.eventName,
-      parentImage: details?.brandImage || details?.spaceImage || details?.eventImage,
-      ownerDetails: details?.user,
-    };
-  };
-
   const getMatchingChatDetails = (chatId) => {
     return chatDetails?.find((item) => item?._id === chatId) || {};
   };
@@ -458,6 +443,89 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
 
   const formatDate = (date) => format(new Date(date), "MM/dd/yy");
   const formatTime = (date) => format(new Date(date), "h:mma");
+
+  const getParentObject = () => {
+    const isSpacesChats = parentObj?.spaceDetails;
+    const isEventsChats = parentObj?.eventDetails;
+    const isDirectChats = parentObj?.userToUser;
+
+    const matchingItem = isDirectChats
+      ? getMatchingChatDetails(parentObj?._id)
+      : null;
+    const currentChatMessages = isDirectChats
+      ? getMessagesForChat(parentObj?._id)
+      : null;
+
+    const details = isDirectChats
+      ? parentObj?.receiverEvent || parentObj?.receiverBrand
+      : isSpacesChats
+      ? parentObj?.spaceDetails
+      : isEventsChats
+      ? parentObj?.eventDetails
+      : parentObj?.brandDetails;
+
+      const spaces = matchingItem?.receiverBrand?.spaceCount || 0;
+
+      const followers =
+        matchingItem?.receiverEvent?.followedCount ||
+        matchingItem?.receiverBrand?.followedCount || 0;
+
+      const saved =
+        matchingItem?.receiverEvent?.likedCount ||
+        matchingItem?.receiverBrand?.likedCount || 0;
+
+      const creator =
+        parentObj?.receiverBrand?.user?.name ||
+        parentObj?.receiverEvent?.user?.name ||
+        "";
+
+      const receiverbrandName =
+        parentObj?.receiverBrand?.brandName || parentObj?.receiverEvent?.brand?.brandName;
+
+    return {
+      parentId: details?.id,
+      parentActivity: isSpacesChats
+        ? "space"
+        : isEventsChats || (isDirectChats && parentObj?.receiverEvent)
+        ? "event"
+        : "brand",
+      parentName:
+        details?.brandName || details?.spaceName || details?.eventName,
+      parentImage:
+        details?.brandImage || details?.spaceImage || details?.eventImage,
+      ownerDetails: details?.user,
+      directUserChat: isDirectChats
+        ? {
+            ...parentObj,
+            read: false,
+            reviews: 12345,
+            leases: 12345,
+            rating: 5,
+            members: matchingItem?.members,
+            chatGroup: {
+              receiverbrandName,
+              creator,
+              chatName: matchingItem?.name,
+              spaces,
+              followers,
+              saved,
+            },
+            messages: currentChatMessages.map((messageItem) => {
+              return {
+                ...messageItem,
+                id: messageItem?._id,
+                childName: details?.brandName || details?.eventName,
+                childImage: details?.brandImage || details?.eventImage,
+                activity: "brand",
+                creator: parentObj?.name,
+                date: formatDate(messageItem?.createdAt),
+                time: formatTime(messageItem?.createdAt),
+              };
+            }),
+          }
+        : null,
+    };
+  };
 
   const parentObject = getParentObject();
 
@@ -474,7 +542,8 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
 
         const isSpacesChats = parentObj?.spaceDetails;
         const isEventsChats = parentObj?.eventDetails;
-        
+        const isDirectChats = item?.userToUser;
+
         const spaces =
           isSpacesChats ||
           isEventsChats ||
@@ -500,46 +569,52 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
               matchingItem?.receiverEvent?.likedCount ||
               matchingItem?.receiverBrand?.likedCount;
 
-        const childName =
-          isSpacesChats ||
-          isEventsChats ||
-          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
-            ? item?.senderBrand?.brandName
-            : item?.receiverSpace?.spaceName ||
-              item?.receiverEvent?.eventName ||
-              item?.receiverBrand?.brandName;
+        const childName = isDirectChats
+          ? item?.name
+          : isSpacesChats ||
+            isEventsChats ||
+            (item?.isInquiryRole && item?.isInquiryRole === "receiver")
+          ? item?.senderBrand?.brandName
+          : item?.receiverSpace?.spaceName ||
+            item?.receiverEvent?.eventName ||
+            item?.receiverBrand?.brandName;
 
-        const childImage =
-          isSpacesChats ||
-          isEventsChats ||
-          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
-            ? item?.senderBrand?.brandImage
-            : item?.receiverSpace?.spaceImage ||
-              item?.receiverEvent?.eventImage ||
-              item?.receiverBrand?.brandImage;
+        const childImage = isDirectChats
+          ? item?.avatar[0]
+          : isSpacesChats ||
+            isEventsChats ||
+            (item?.isInquiryRole && item?.isInquiryRole === "receiver")
+          ? item?.senderBrand?.brandImage
+          : item?.receiverSpace?.spaceImage ||
+            item?.receiverEvent?.eventImage ||
+            item?.receiverBrand?.brandImage;
 
         const creator =
           isSpacesChats ||
           isEventsChats ||
           (item?.isInquiryRole && item?.isInquiryRole === "receiver")
             ? item?.senderBrand?.user?.name
-            : item?.receiverBrand?.user?.name || item?.receiverEvent?.user?.name;
+            : item?.receiverBrand?.user?.name ||
+              item?.receiverEvent?.user?.name;
 
-        const receiverbrandName = isSpacesChats || isEventsChats
-          ? item?.receiverBrand?.brandName || item?.receiverEvent?.brand?.brandName
-          : "";
+        const receiverbrandName =
+          isSpacesChats || isEventsChats
+            ? item?.receiverBrand?.brandName ||
+              item?.receiverEvent?.brand?.brandName
+            : "";
 
-        const activity =
-          isSpacesChats ||
-          isEventsChats ||
-          item?.isInquiryRole === "receiver" ||
-          (item?.isInquiryRole === "sender" &&
-            !item?.receiverEvent &&
-            !item?.receiverSpace)
-            ? "brand"
-            : item?.receiverEvent?.eventName
-            ? "event"
-            : "space";
+        const activity = isDirectChats
+          ? "profile"
+          : isSpacesChats ||
+            isEventsChats ||
+            item?.isInquiryRole === "receiver" ||
+            (item?.isInquiryRole === "sender" &&
+              !item?.receiverEvent &&
+              !item?.receiverSpace)
+          ? "brand"
+          : item?.receiverEvent?.eventName
+          ? "event"
+          : "space";
 
         return {
           ...item,
@@ -553,8 +628,8 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
           creator,
           chatName: matchingItem?.name,
           spaces: spaces || 0,
-          followers:followers|| 0,
-          saved: saved|| 0,
+          followers: followers || 0,
+          saved: saved || 0,
           activity,
           read: false,
           date: matchingItem?.createdAt
