@@ -658,7 +658,7 @@ const getMessages = TryCatch(async (req: any, res: any, next: any) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(resultPerPage)
-      .populate("sender", "name")
+      .populate("sender", "name avatar")
       .lean(),
     Message.countDocuments({ chat: chatId }),
   ]);
