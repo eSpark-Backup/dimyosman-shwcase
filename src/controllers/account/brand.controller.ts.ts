@@ -381,8 +381,9 @@ export class BrandController {
       newBrand.coverImages = (JSON.stringify(coverUrls) as Object) || null;
       newBrand.brandImage = (imageUrls[0]?.url as any) || null;
       newBrand.imageKey = imageUrls[0]?.public_id;
-      await this.brandRepo.save(newBrand);
-
+     const brand= await this.brandRepo.save(newBrand);
+      
+     parseCoverImages(brand);
       const uploadsPath = path.join(process.cwd(), "uploads");
 
       const files = fs.readdirSync(uploadsPath);
@@ -394,8 +395,8 @@ export class BrandController {
       });
       res
         .status(HTTP_STATUS.OK)
-        .json(handleResponse("Brand Created Successfully"));
-    } catch (error) {
+        .json(handleResponse("Brand Created Successfully", brand));
+      } catch (error) {
       const uploadsPath = path.join(process.cwd(), "uploads");
 
       const files = fs.readdirSync(uploadsPath);
