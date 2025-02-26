@@ -20,7 +20,8 @@ const initialState = {
   page: 1,
   isTyping: false,
   search_query: null,
-  shouldReturn: false
+  shouldReturn: false,
+  generalSearching: true,
 };
 
 const slice = createSlice({
@@ -95,6 +96,9 @@ const slice = createSlice({
     setShouldReturn: (state, action) => {
       state.shouldReturn = action.payload;
     },
+    setGeneralSearching:(state,action) => {
+      state.generalSearching = action.payload;
+    }
   },
 });
 
@@ -117,7 +121,8 @@ export const {
   setPageNumber,
   setIsTyping,
   setSearchQuery,
-  setShouldReturn
+  setShouldReturn,
+  setGeneralSearching
 } = slice.actions;
 
 export default slice.reducer;
