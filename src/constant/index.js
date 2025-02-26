@@ -129,22 +129,22 @@ export const sidebarRoutes = [
 ];
 
 export const getSmallSidebar = (currentLink) => {
-  const id = currentLink.split("/")[2];
+  const name = currentLink.split("/")[2];
   const smallSidebarLink = [
-    `/profile/${id}`,
-    `/profile/${id}/edit`,
-    `/brand/${id}`,
-    `/my-brands/${id}`,
-    `/my-brands/${id}/edit`,
+    `/profile/${name}`,
+    `/profile/${name}/edit`,
+    `/brand/${name}`,
+    `/my-brands/${name}`,
+    `/my-brands/${name}/edit`,
     "/new-brand",
-    `/event/${id}`,
-    `/my-events/${id}`,
-    `/my-events/${id}/edit`,
+    `/event/${name}`,
+    `/my-events/${name}`,
+    `/my-events/${name}/edit`,
     "/new-event",
-    `/space/${id}`,
-    `/my-spaces/${id}`,
+    `/space/${name}`,
+    `/my-spaces/${name}`,
     "/new-space",
-    `/my-spaces/${id}/edit`,
+    `/my-spaces/${name}/edit`,
     `/settings`,
     `/calendar`,
   ];
