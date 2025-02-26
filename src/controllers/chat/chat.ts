@@ -252,7 +252,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
 
         acc.events[eventKey].chats.push(chat);
       }
-      if (chat.userToUser && (chat.receiverBrand.user.userChatId !== req.socketUserId || chat.senderBrand.user.userChatId !== req.socketUserId)) {
+      if (chat.userToUser && (chat.receiverBrand?.user?.userChatId !== req.socketUserId || chat.senderBrand?.user?.userChatId !== req.socketUserId)) {
         acc.user[chat._id] = chat;
       }
 
