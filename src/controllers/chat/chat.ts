@@ -1,4 +1,11 @@
-import { ActionType, Brand, Events, SavedEntity, SavedEntityType, Spaces } from "../../entity";
+import {
+  ActionType,
+  Brand,
+  Events,
+  SavedEntity,
+  SavedEntityType,
+  Spaces,
+} from "../../entity";
 import {
   ALERT,
   NEW_MESSAGE,
@@ -25,7 +32,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
   if (chats.length < 1) {
     return res.status(200).json({
       success: true,
-      chats: { brands: [], spaces: [],events:[] },
+      chats: { brands: [], spaces: [], events: [] },
     });
   }
 
@@ -182,7 +189,11 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
             isInquiryRole: isSender ? "sender" : "unknown", // Inquiry role only applies for brands
           });
         }
-      } else if (isReceiver && !isSender && chat.directChat == true) {
+      } else if (
+        isReceiver &&
+        !isSender &&
+        (chat.directChat == true || chat.userToUser == true)
+      ) {
         if (!acc.brands[userRoleKey]) {
           acc.brands[userRoleKey] = {
             brandDetails: isReceiver
@@ -241,16 +252,13 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
 
         acc.events[eventKey].chats.push(chat);
       }
-      if(chat.userToUser){
-        acc.user[chat._id]=
-          chat
-        
-
+      if (chat.userToUser && (chat.receiverBrand.user.userChatId !== req.socketUserId || chat.senderBrand.user.userChatId !== req.socketUserId)) {
+        acc.user[chat._id] = chat;
       }
 
       return acc;
     },
-    { brands: {}, spaces: {}, events: {},user:{} }
+    { brands: {}, spaces: {}, events: {}, user: {} }
   );
 
   // Format the grouped data for response
@@ -264,7 +272,7 @@ const getMyChats = TryCatch(async (req: any, res: any, next: any) => {
     events: Object.values(groupedByUser.events).map((group: any) => ({
       ...group,
     })),
-    user:Object.values(groupedByUser.user).map((group: any) => ({
+    user: Object.values(groupedByUser.user).map((group: any) => ({
       ...group,
     })),
   };
@@ -366,7 +374,7 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
     const eventRepository = AppDataSource.getRepository(Events);
     const savedEntityRepository = AppDataSource.getRepository(SavedEntity);
     if (!chatDetails) return next(new ErrorHandler("chat not found", 404));
-    if(chatDetails.senderBrand){
+    if (chatDetails.senderBrand) {
       const singleBrand = await brandRepository
         .createQueryBuilder("brand")
         .where("brand.id = :id", { id: chatDetails.senderBrand })
@@ -380,7 +388,11 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
           "user.userChatId",
         ])
         .getOne();
-      const [getSenderBrandFollowedCount, getSenderBrandLikedCount,getSpaceCount] = await Promise.all([
+      const [
+        getSenderBrandFollowedCount,
+        getSenderBrandLikedCount,
+        getSpaceCount,
+      ] = await Promise.all([
         savedEntityRepository
           .createQueryBuilder("savedEntity")
           .where("savedEntity.ActionType = :actionType", {
@@ -392,7 +404,7 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
           .leftJoinAndSelect("savedEntity.brand", "brand")
           .andWhere("brand.id = :brandId", { brandId: singleBrand.id })
           .getCount(),
-          savedEntityRepository
+        savedEntityRepository
           .createQueryBuilder("savedEntity")
           .where("savedEntity.ActionType = :actionType", {
             actionType: ActionType.FAVORITE,
@@ -403,18 +415,21 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
           .leftJoinAndSelect("savedEntity.brand", "brand")
           .andWhere("brand.id = :brandId", { brandId: singleBrand.id })
           .getCount(),
-          spaceRepository.createQueryBuilder("space")
+        spaceRepository
+          .createQueryBuilder("space")
           .where("space.brand = :brandId", { brandId: singleBrand.id })
-          .getCount()
+          .getCount(),
       ]);
-      chat={...chatDetails._doc,
-        senderBrand:{
+      chat = {
+        ...chatDetails._doc,
+        senderBrand: {
           ...singleBrand,
-          followedCount:getSenderBrandFollowedCount,
-          likedCount:getSenderBrandLikedCount,
-          spaceCount:getSpaceCount
+          followedCount: getSenderBrandFollowedCount,
+          likedCount: getSenderBrandLikedCount,
+          spaceCount: getSpaceCount,
+        },
+      };
     }
-  }}
     if (chatDetails.receiverBrand) {
       const singleBrand = await brandRepository
         .createQueryBuilder("brand")
@@ -429,7 +444,11 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
           "user.userChatId",
         ])
         .getOne();
-      const [getReceiverBrandFollowedCount, getReceiverBrandLikedCount,getSpaceCount] = await Promise.all([
+      const [
+        getReceiverBrandFollowedCount,
+        getReceiverBrandLikedCount,
+        getSpaceCount,
+      ] = await Promise.all([
         savedEntityRepository
           .createQueryBuilder("savedEntity")
           .where("savedEntity.ActionType = :actionType", {
@@ -441,7 +460,7 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
           .leftJoinAndSelect("savedEntity.brand", "brand")
           .andWhere("brand.id = :brandId", { brandId: singleBrand.id })
           .getCount(),
-          savedEntityRepository
+        savedEntityRepository
           .createQueryBuilder("savedEntity")
           .where("savedEntity.ActionType = :actionType", {
             actionType: ActionType.FAVORITE,
@@ -453,22 +472,23 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
           .andWhere("brand.id = :brandId", { brandId: singleBrand.id })
           .getCount(),
 
-          spaceRepository.createQueryBuilder("space")
+        spaceRepository
+          .createQueryBuilder("space")
           .where("space.brand = :brandId", { brandId: singleBrand.id })
-          .getCount()
+          .getCount(),
       ]);
-      if(chatDetails._doc.userToUser){
-        chat={...chatDetails._doc,}
+      if (chatDetails._doc.userToUser) {
+        chat = { ...chatDetails._doc };
       }
-      chat={
-      ...chat,
-      receiverBrand:{
-        ...singleBrand,
-        followedCount:getReceiverBrandFollowedCount,
-        likedCount:getReceiverBrandLikedCount,
-        spaceCount:getSpaceCount
-      }
-     }
+      chat = {
+        ...chat,
+        receiverBrand: {
+          ...singleBrand,
+          followedCount: getReceiverBrandFollowedCount,
+          likedCount: getReceiverBrandLikedCount,
+          spaceCount: getSpaceCount,
+        },
+      };
     }
     if (chatDetails.receiverSpace) {
       const singleSpace = await spaceRepository
@@ -484,38 +504,39 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
           "user.userChatId",
         ])
         .getOne();
-      const [getReceiverSpaceFollowedCount, getReceiverSpaceLikedCount] = await Promise.all([
-        savedEntityRepository
-          .createQueryBuilder("savedEntity")
-          .where("savedEntity.ActionType = :actionType", {
-            actionType: ActionType.FOLLOW,
-          })
-          .andWhere("savedEntity.type = :type", {
-            type: SavedEntityType.SPACE,
-          })
-          .leftJoinAndSelect("savedEntity.space", "space")
-          .andWhere("space.id = :spaceId", { spaceId: singleSpace.id })
-          .getCount(),
+      const [getReceiverSpaceFollowedCount, getReceiverSpaceLikedCount] =
+        await Promise.all([
           savedEntityRepository
-          .createQueryBuilder("savedEntity")
-          .where("savedEntity.ActionType = :actionType", {
-            actionType: ActionType.FAVORITE,
-          })
-          .andWhere("savedEntity.type = :type", {
-            type: SavedEntityType.SPACE,
-          })
-          .leftJoinAndSelect("savedEntity.space", "space")
-          .andWhere("space.id = :spaceId", { spaceId: singleSpace.id })
-          .getCount(),
-      ]);
-      chat={
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FOLLOW,
+            })
+            .andWhere("savedEntity.type = :type", {
+              type: SavedEntityType.SPACE,
+            })
+            .leftJoinAndSelect("savedEntity.space", "space")
+            .andWhere("space.id = :spaceId", { spaceId: singleSpace.id })
+            .getCount(),
+          savedEntityRepository
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FAVORITE,
+            })
+            .andWhere("savedEntity.type = :type", {
+              type: SavedEntityType.SPACE,
+            })
+            .leftJoinAndSelect("savedEntity.space", "space")
+            .andWhere("space.id = :spaceId", { spaceId: singleSpace.id })
+            .getCount(),
+        ]);
+      chat = {
         ...chat,
-        receiverSpace:{
+        receiverSpace: {
           ...singleSpace,
-          followedCount:getReceiverSpaceFollowedCount,
-          likedCount:getReceiverSpaceLikedCount
-        }
-       }
+          followedCount: getReceiverSpaceFollowedCount,
+          likedCount: getReceiverSpaceLikedCount,
+        },
+      };
     }
     if (chatDetails.receiverEvent) {
       const singleEvent = await eventRepository
@@ -535,41 +556,42 @@ const getChatDetails = TryCatch(async (req: any, res: any, next: any) => {
           "user.userChatId",
         ])
         .getOne();
-      const [getReceiverEventFollowedCount, getReceiverEventLikedCount] = await Promise.all([
-        savedEntityRepository
-          .createQueryBuilder("savedEntity")
-          .where("savedEntity.ActionType = :actionType", {
-            actionType: ActionType.FOLLOW,
-          })
-          .andWhere("savedEntity.type = :type", {
-            type: SavedEntityType.EVENT,
-          })
-          .leftJoinAndSelect("savedEntity.event", "event")
-          .andWhere("event.id = :eventId", { eventId: singleEvent.id })
-          .getCount(),
+      const [getReceiverEventFollowedCount, getReceiverEventLikedCount] =
+        await Promise.all([
           savedEntityRepository
-          .createQueryBuilder("savedEntity")
-          .where("savedEntity.ActionType = :actionType", {
-            actionType: ActionType.FAVORITE,
-          })
-          .andWhere("savedEntity.type = :type", {
-            type: SavedEntityType.EVENT,
-          })
-          .leftJoinAndSelect("savedEntity.event", "event")
-          .andWhere("event.id = :eventId", { eventId: singleEvent.id })
-          .getCount(),
-      ]);
-      if(chatDetails._doc.userToUser){
-        chat={...chatDetails._doc,}
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FOLLOW,
+            })
+            .andWhere("savedEntity.type = :type", {
+              type: SavedEntityType.EVENT,
+            })
+            .leftJoinAndSelect("savedEntity.event", "event")
+            .andWhere("event.id = :eventId", { eventId: singleEvent.id })
+            .getCount(),
+          savedEntityRepository
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FAVORITE,
+            })
+            .andWhere("savedEntity.type = :type", {
+              type: SavedEntityType.EVENT,
+            })
+            .leftJoinAndSelect("savedEntity.event", "event")
+            .andWhere("event.id = :eventId", { eventId: singleEvent.id })
+            .getCount(),
+        ]);
+      if (chatDetails._doc.userToUser) {
+        chat = { ...chatDetails._doc };
       }
-      chat={
+      chat = {
         ...chat,
-        receiverEvent:{
+        receiverEvent: {
           ...singleEvent,
-          followedCount:getReceiverEventFollowedCount,
-          likedCount:getReceiverEventLikedCount
-        }
-       }
+          followedCount: getReceiverEventFollowedCount,
+          likedCount: getReceiverEventLikedCount,
+        },
+      };
     }
     return res.status(200).json({
       success: true,
