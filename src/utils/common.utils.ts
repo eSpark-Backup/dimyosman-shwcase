@@ -156,12 +156,14 @@ export const generateShareableLink = (
     configs.LINK_SECRET_KEY
   ).toString();
   const encoded = encodeURIComponent(encrypted);
+  const firstEntity = entitiesArray[0]; // Access the first entity
+
   if (entitiesArray.some((e) => e.type === "brand")) {
-    return `https://shwcase.esparkconsultants.com/brand/${e.typeName}/share?data=${encoded}`;
+    return `https://shwcase.esparkconsultants.com/brand/${firstEntity.typeName}/share?data=${encoded}`;
   } else if (entitiesArray.some((e) => e.type === "space")) {
-    return `https://shwcase.esparkconsultants.com/space/${e.typeName}/share?data=${encoded}`;
+    return `https://shwcase.esparkconsultants.com/space/${firstEntity.typeName}/share?data=${encoded}`;
   } else if (entitiesArray.some((e) => e.type === "event")) {
-    return `https://shwcase.esparkconsultants.com/event/${e.typeName}/share?data
+    return `https://shwcase.esparkconsultants.com/event/${firstEntity.typeName}/share?data
     =${encoded}`;
   }
 
