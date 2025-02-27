@@ -165,6 +165,9 @@ export const generateShareableLink = (
   } else if (entitiesArray.some((e) => e.type === "event")) {
     return `https://shwcase.esparkconsultants.com/event/${firstEntity.typeName}/share?data
     =${encoded}`;
+  }else if(entitiesArray.some((e) => e.type === "user")){
+    return `https://shwcase.esparkconsultants.com/user/${firstEntity.typeName}/share?data
+    =${encoded}`;
   }
 
   return `https://shwcase.esparkconsultants.com/share?data=${encoded}`;
