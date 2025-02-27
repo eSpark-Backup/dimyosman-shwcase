@@ -12,7 +12,7 @@ import {
   User,
 } from "../../entity";
 import { ApiError } from "../../errors";
-import { Repository } from "typeorm";
+import { Like, Repository } from "typeorm";
 import {
   generateShareableLink,
   handleResponse,
@@ -80,12 +80,38 @@ export class EventController {
 
       const checkName = await this.eventRepo.findOne({ where: { eventName } });
 
-      if (checkName) {
+      if (
+        checkName &&
+        status == EventStatus.PUBLISH &&
+        checkName.status == EventStatus.PUBLISH
+      ) {
         throw new ApiError(
           "Event with this name already exists",
           HTTP_STATUS.BAD_REQUEST
         );
       }
+      const similarEvents = await this.eventRepo.find({
+        where: { eventName: Like(`${eventName}%`) },
+      });
+
+      let maxSuffix = -1;
+
+      similarEvents.forEach((event) => {
+        if (event.eventName === eventName) {
+          maxSuffix = Math.max(maxSuffix, 0);
+        } else {
+          const regex = new RegExp(`^${eventName}\\s(\\d+)$`);
+          const match = event.eventName.match(regex);
+          if (match) {
+            const suffix = parseInt(match[1], 10);
+            maxSuffix = Math.max(maxSuffix, suffix);
+          }
+        }
+      });
+
+      const newEventName =
+        maxSuffix === -1 ? eventName : `${eventName} ${maxSuffix + 1}`;
+
       let leaseSpace: LeaseSpace;
       if (leaseId) {
         leaseSpace = await this.leaseSpaceRepo.findOne({
@@ -153,7 +179,7 @@ export class EventController {
       }
 
       const newEvent = new Events();
-      newEvent.eventName = eventName;
+      newEvent.eventName = newEventName;
       newEvent.eventCategory = eventCategory || null;
       newEvent.details = details || null;
       newEvent.status = status;
@@ -345,12 +371,38 @@ export class EventController {
         const checkName = await this.eventRepo.findOne({
           where: { eventName },
         });
-        if (checkName && checkName.eventName !== existingEvent.eventName) {
+        if (
+          checkName &&
+          status == EventStatus.PUBLISH &&
+          checkName.status == EventStatus.PUBLISH &&
+          checkName.eventName !== existingEvent.eventName
+        ) {
           throw new ApiError(
             "Event with this name already exists",
             HTTP_STATUS.BAD_REQUEST
           );
         }
+        const similarEvents = await this.eventRepo.find({
+          where: { eventName: Like(`${eventName}%`) },
+        });
+
+        let maxSuffix = -1;
+
+        similarEvents.forEach((event) => {
+          if (event.eventName === eventName) {
+            maxSuffix = Math.max(maxSuffix, 0);
+          } else {
+            const regex = new RegExp(`^${eventName}\\s(\\d+)$`);
+            const match = event.eventName.match(regex);
+            if (match) {
+              const suffix = parseInt(match[1], 10);
+              maxSuffix = Math.max(maxSuffix, suffix);
+            }
+          }
+        });
+
+        eventName =
+          maxSuffix === -1 ? eventName : `${eventName} ${maxSuffix + 1}`;
       }
       let oldCoverImages: UploadResult[] = [];
 
