@@ -111,8 +111,14 @@ const MapModal = ({
     useEffect(() => {
         let googleMap;
         const initializeMap = () => {
+            const validLat = typeof position[0] === 'number';
+            const validLng = typeof position[1] === 'number';
+
+            const initialLat = validLat ? position[0] : 0;
+            const initialLng = validLng ? position[1] : 0;
+
             googleMap = new window.google.maps.Map(mapRef.current, {
-                center: { lat: position[0], lng: position[1] },
+                center: { lat: initialLat, lng: initialLng},
                 zoom: 10, // Set the initial zoom level
             });
 
@@ -123,7 +129,7 @@ const MapModal = ({
             };
 
             const marker = new window.google.maps.Marker({
-                position: { lat: position[0], lng: position[1] },
+                position: { lat: initialLat, lng: initialLng },
                 map: googleMap,
                 draggable: false,
                 icon: customIcon,
@@ -132,7 +138,9 @@ const MapModal = ({
             markerRef.current = marker;
             setMap(googleMap);
 
-            fetchAddressFromCoordinates(position[0], position[1]);
+            if (validLat && validLng) {
+                fetchAddressFromCoordinates(initialLat, initialLng);
+            }
 
             if (!disabled) {
                 googleMap.addListener("click", (e) => {
@@ -159,7 +167,13 @@ const MapModal = ({
 
     useEffect(() => {
         if (map && markerRef.current) {
-            const newPosition = { lat: position[0], lng: position[1] };
+            const validLat = typeof position[0] === 'number';
+            const validLng = typeof position[1] === 'number';
+
+            const initialLat = validLat ? position[0] : 0;
+            const initialLng = validLng ? position[1] : 0;
+
+            const newPosition = { lat: initialLat, lng: initialLng };
             markerRef.current.setPosition(newPosition);
 
             // Optionally center the map on the new position

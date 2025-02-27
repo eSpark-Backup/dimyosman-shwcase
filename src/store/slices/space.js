@@ -6,6 +6,8 @@ const initialState = {
   activeTabForNotif: "Space",
   refetchTriggered: false,
   hasPaymentDone: false,
+  objectForNewSpace: null,
+  isSpace: false,
 };
 
 const slice = createSlice({
@@ -37,6 +39,12 @@ const slice = createSlice({
     setTabForNotification: (state, action) => {
       state.activeTabForNotif = action.payload;
     },
+    setObjectForNewSpace: (state, action) => {
+      state.objectForNewSpace = action.payload;
+    },
+    setIsSpace:(state,action) => {
+      state.isSpace = action.payload;
+    }
   },
 });
 
@@ -47,7 +55,8 @@ export const {
   setRefetchTriggered,
   setHasPaymentDone,
   setRedirectTab,
-  setTabForNotification
+  setTabForNotification,
+  setObjectForNewSpace, setIsSpace
 } = slice.actions;
 
 export default slice.reducer;

@@ -74,13 +74,13 @@ const SearchBar = ({
         flexDirection: "column",
         rowGap: "8px",
         // cursor: pathname !== "/search" ? "pointer" : "default",
-        cursor: !(searchQuery || search_query) ? "pointer" : "default",
+        cursor: !canType && !(searchQuery || search_query) ? "pointer" : "default",
       }}
       onClick={() => {
         // if (pathname !== "/search" || isLessThan1281) {
         //   handleFilterDrawer && handleFilterDrawer();
         // }
-        if (!(searchQuery || search_query) || isLessThan1281) {
+        if (!canType && !(searchQuery || search_query) || isLessThan1281) {
           navigate("/activity")
           setCookie("search_query", true);
           dispatch(setSearchQuery(true))
@@ -123,11 +123,11 @@ const SearchBar = ({
               fontWeight: "500",
               fontSize: "16px",
               // cursor: pathname !== "/search" ? "pointer" : "default",
-              cursor: !(searchQuery || search_query) ? "pointer" : "default",
+              cursor: !canType && !(searchQuery || search_query) ? "pointer" : canType ? 'text' : "default",
 
               "& input": {
                 // cursor: pathname !== "/search" ? "pointer" : "default",
-                cursor: !(searchQuery || search_query) ? "pointer" : "default",
+                cursor: !canType && !(searchQuery || search_query) ? "pointer" : canType ? 'text' : "default",
               },
             },
           },
