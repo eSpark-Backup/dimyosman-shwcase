@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 import { Box, LinearProgress } from "@mui/material";
-import { fetchAddressFromCoordinates } from "../../../../utils";
+import { fetchAddressFromCoordinates, getCookie } from "../../../../utils";
 
 import SpaceInquireModal from "../../../../components/SpaceInquireModal";
 import { BESProfile } from "../../../../components";
@@ -13,9 +13,9 @@ import { useGetAllSpaceQuery } from "../../../../services/space";
 import { updateSpace } from "../../../../store/slices/space";
 
 const SpaceDetails = () => {
-  const { name } = useParams()
   const { state } = useLocation();
-  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllSpaceQuery({ page: 1, pageSize: 7, id: state?.id }, { refetchOnMountOrArgChange: true });
+  const navId = getCookie("navId")
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllSpaceQuery({ page: 1, pageSize: 7, id: state?.id || navId }, { refetchOnMountOrArgChange: true });
   const { user } = useSelector((state) => state.auth)
 
   const dispatch = useDispatch()

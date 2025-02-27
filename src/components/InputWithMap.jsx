@@ -83,6 +83,7 @@ const InputWithMap = ({
 
   useEffect(() => { setTempDate(selectedDate) }, [selectedDate])
   const [priceToShow, setPriceToShow] = useState(defaultPrice);
+  const [minLease, setMinLease] = useState("minimum lease: X days");
 
   useEffect(() => {
     if (
@@ -123,9 +124,12 @@ const InputWithMap = ({
   useEffect(() => {
     if (activity === "space" && Array.isArray(defaultPrice)) {
       const dayItem = defaultPrice.filter((item) => item.term == "Day");
+
+      setMinLease(`minimum lease: ${dayItem[0]?.minimum} days`)
       setPriceToShow(dayItem[0]?.price + "/" + dayItem[0]?.term)
     }
     else {
+      setMinLease("minimum lease: X days")
       setPriceToShow(defaultPrice)
     }
   }, [defaultPrice])
@@ -368,7 +372,7 @@ const InputWithMap = ({
               fontWeight={600}
               sx={{ textAlign: "left", marginBottom: "10px" }}
             >
-              Starting from:
+              {activity === "event" ? 'Starting' : "Lease"} from:
             </Typography>
 
             <Box
@@ -398,7 +402,7 @@ const InputWithMap = ({
                 fontSize={12}
                 sx={{ textAlign: "left", color: theme.palette.primary.main }}
               >
-                until {endDate}
+                { activity === "event" ? `until ${endDate}` : minLease}
               </Typography>
             </Box>
 

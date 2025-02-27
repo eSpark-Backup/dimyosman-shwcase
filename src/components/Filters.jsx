@@ -59,6 +59,7 @@ import {
   setSkip,
   setSpaceSearchData,
   setIsTyping,
+  setGeneralSearching,
   // setAllLocations,
 } from "../store/slices/search";
 
@@ -117,6 +118,7 @@ const Filters = ({
     isTyping,
     search_query,
     shouldReturn,
+    generalSearching
   } = useSelector((state) => state.search);
   // const { allActivityData } = useSelector((state) => state.activity);
 
@@ -128,7 +130,6 @@ const Filters = ({
   const [suggestions, setSuggestions] = useState([]);
   const [isSelecting, setIsSelecting] = useState(false);
   const [value, setValue] = useState(parameters?.locaion || "");
-  const [generalSearching, setGeneralSearching] = useState(true);
   // const [currentLoc, setCurrentLoc] = useState(true);
   // const [askForLoc, setaskForLoc] = useState(false);
 
@@ -149,7 +150,9 @@ const Filters = ({
       entity: parameters.entity,
     },
     {
-      skip: parameters.entity.trim().length === 0 || !generalSearching,
+      skip:
+        parameters?.lat?.length !== 0 ||
+        parameters?.categoryNames?.trim() !== "",
       refetchOnMountOrArgChange: true,
     }
   );
@@ -228,8 +231,7 @@ const Filters = ({
     isFetching: isGeneralCategoryFetching,
   } = useGetGeneralCategoriesQuery(
     {
-      categoryType:
-        parameters?.entity?.length === 0 ? "" : `${parameters.entity}S`,
+      categoryType: `${parameters.entity}S`,
     },
     {
       skip: parameters?.entity?.length === 0,
@@ -241,16 +243,17 @@ const Filters = ({
     }
   );
 
-  useEffect(() => {
-    if (pathname !== "/search") {
-      if (allCategoriesNotSearch?.length > 0) {
-        dispatch(setAllFilterCategories(allCategoriesNotSearch));
-      }
-    }
-  }, [pathname]);
+  // useEffect(() => {
+  //   if (pathname !== "/search") {
+  //     if (allCategoriesNotSearch?.length > 0) {
+  //       dispatch(setAllFilterCategories(allCategoriesNotSearch));
+  //     }
+  //   }
+  // }, [pathname]);
 
   useEffect(() => {
-    if (pathname === "/search") {
+    // if (pathname === "/search") {
+    if (searchQuery || search_query) {
       if (generalCategories?.data?.length) {
         const updatedCategories = generalCategories?.data
           .map((category, index) => {
@@ -291,9 +294,9 @@ const Filters = ({
     }
 
     if (parameters.lat.length !== 0) {
-      setGeneralSearching(false);
+      dispatch(setGeneralSearching(false))
     } else {
-      setGeneralSearching(true);
+      dispatch(setGeneralSearching(true));
     }
 
     const updatedCategories = allFilterCategories.map((category) => {
@@ -354,9 +357,9 @@ const Filters = ({
       updatedCategories?.some((cate) => cate.selected === true) ||
       parameters.lat.length !== 0
     ) {
-      setGeneralSearching(false);
+      dispatch(setGeneralSearching(false));
     } else {
-      setGeneralSearching(true);
+      dispatch(setGeneralSearching(true));
     }
 
     dispatch(setAllFilterCategories(updatedCategories));
@@ -384,7 +387,7 @@ const Filters = ({
     setSuggestions([]);
     setIsSelecting(true);
     dispatch(setIsTyping(true));
-    setGeneralSearching(false);
+    dispatch(setGeneralSearching(false));
 
     // Fetch details for selected place
     fetch(
@@ -424,9 +427,9 @@ const Filters = ({
 
   const emptyInputs = () => {
     if (allCategoriesNotSearch?.some((cate) => cate.selected === true)) {
-      setGeneralSearching(false);
+      dispatch(setGeneralSearching(false));
     } else {
-      setGeneralSearching(true);
+      dispatch(setGeneralSearching(true));
     }
 
     setRadiusInput("");

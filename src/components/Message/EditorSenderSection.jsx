@@ -12,6 +12,14 @@ import { arrowDown } from "../../assets";
 const EditorSenderSection = ({ selectedGroup }) => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
 
+  const isDirect = selectedGroup?.group?.directUserChat?.userToUser;
+  const direct = selectedGroup?.group?.directUserChat;
+
+  const receiverbrandName = isDirect
+    ? direct?.chatGroup?.receiverbrandName
+    : selectedGroup?.chatGroup?.receiverbrandName;
+  const parentName = selectedGroup?.group?.parentName;
+
   return (
     <Stack
       sx={{
@@ -38,15 +46,15 @@ const EditorSenderSection = ({ selectedGroup }) => {
           alignItems: "center",
         }}
       >
-        {selectedGroup?.chatGroup?.receiverbrandName !== "" ? (
+        {receiverbrandName !== "" ? (
           <>
-            <span>{selectedGroup?.chatGroup?.receiverbrandName}</span>
+            <span>{receiverbrandName}</span>
             <img src={arrowDown} alt="arrow" style={{ marginLeft: "8px" }} />
           </>
         ) : (
-          selectedGroup?.group?.parentName && (
+          parentName && (
             <>
-              <span>{selectedGroup.group.parentName}</span>
+              <span>{parentName}</span>
               <img src={arrowDown} alt="arrow" style={{ marginLeft: "8px" }} />
             </>
           )

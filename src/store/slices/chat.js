@@ -2,6 +2,7 @@ import { createSlice, current } from "@reduxjs/toolkit";
 
 const initialState = {
   myChat: [],
+  directChats:[],
   chatDetails: [],
   messages: [],
   hasChats: "",
@@ -19,7 +20,7 @@ const slice = createSlice({
   reducers: {
     getMyChat: (state, action) => {
       const newChat = action.payload;
-
+      
       const gatherBrands = newChat?.brands?.flatMap((chat) =>
         chat.chats.map((c) => c)
       );
@@ -30,11 +31,18 @@ const slice = createSlice({
         chat.chats.map((c) => c)
       );
 
-      const mergeAll = [...gatherBrands, ...gatherSpaces, ...gatherEvents];
+      const mergeAll = [
+        ...gatherBrands,
+        ...gatherSpaces,
+        ...gatherEvents,
+        ...newChat.user,
+      ];
+
       const mergeAllChats = [
         ...newChat?.brands,
         ...newChat?.spaces,
         ...newChat?.events,
+        ...newChat.user
       ];
 
       const gatherAllIds = mergeAll.map((c) => c._id);

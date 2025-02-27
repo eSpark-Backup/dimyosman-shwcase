@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./sidebar";
 import { getFullSidebar, getSmallSidebar, sidebarRoutes } from "../constant";
-import { deleteCookie, getCookie, useClickOutside } from "../utils";
+import { addHyphenToName, deleteCookie, getCookie, useClickOutside } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setActivityPageNumber,
@@ -261,7 +261,7 @@ const DashboardLayout = ({ isTokenChecking }) => {
                     dispatch(setShouldReturn(false));
                     dispatch(emptyFilters());
                     if (item.title === "Profile") {
-                      navigate(`/profile/${user?.id}`);
+                      navigate(`/profile/${addHyphenToName(user?.name)}`, { state: { id: user?.id } });
                       setActive(false);
                       return;
                     }

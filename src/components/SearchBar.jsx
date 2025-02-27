@@ -46,7 +46,7 @@ const SearchBar = ({
   const {search_query} = useSelector(state => state.search)
 
   const { data } = useGetGeneralCategoriesQuery(undefined, {
-    skip: !token, // pathname === "/search",
+    skip: !token || searchQuery || search_query, // pathname === "/search",
   });
 
   useEffect(() => {
@@ -56,6 +56,7 @@ const SearchBar = ({
           id: index,
           name: category,
           selected: false,
+          entity: "BRAND",
         }))
         .filter(
           (value, index, self) =>

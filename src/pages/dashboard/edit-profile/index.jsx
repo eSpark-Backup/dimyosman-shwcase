@@ -8,7 +8,7 @@ import { useGetUserProfileQuery, useUserProfileUpdateMutation } from '../../../s
 import { updateUser } from "../../../store/slices/auth";
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 
@@ -25,13 +25,13 @@ const EditProfile = () => {
 
     const dispatch = useDispatch();
     const navigate = useNavigate()
-    const { id } = useParams()
+    const {state} = useLocation()
+    // const { id } = useParams()
     const { user } = useSelector((state) => state.auth);
-    const myProfile = id === user.id;
+    const myProfile = state?.id === user.id;
 
     const { data: myProfileData, isLoading: profileLoading, isSuccess: profileSuccess, isError: isProfileError, error: profileError, isFetching } = useGetUserProfileQuery(null, { refetchOnFocus: true, refetchOnMountOrArgChange: true })
     const [currentIndex, setCurrentIndex] = useState(-1);
-
 
     const [profileData, setProfileData] = useState({
         cover: [],
@@ -72,7 +72,6 @@ const EditProfile = () => {
 
     const [profile, { data, isSuccess, isError, error, isLoading }] = useUserProfileUpdateMutation()
 
-
     const handleMainFileInputClick = () => {
         mainImageRef.current.click();
     };
@@ -91,7 +90,6 @@ const EditProfile = () => {
         profileImageRef.current.click();
     }
 
-
     const HandleProfileImageChange = async (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -107,7 +105,6 @@ const EditProfile = () => {
             label: "About",
             component: <></>
         },
-
     ]
 
     const editorRef = useRef(null);
@@ -139,20 +136,13 @@ const EditProfile = () => {
     }, [isEditorVisible]);
 
     useEffect(() => {
-        console.log(profileData)
-    }, [profileData])
-
-    useEffect(() => {
         if (isSuccess) {
             toast.success(data?.message)
-            navigate(`/profile/${location?.pathname.split("/").at(-2)}`)
+            navigate(`/profile/${location?.pathname.split("/").at(-2)}`, {state: { id: state?.id }})
         }
     }, [isSuccess])
 
     const HandleEdit = () => {
-        console.log("HandleEdit function triggered"); // Check if function runs
-        console.log("profileData:", profileData); // Check the data before sending
-
         if (!profileData?.cover || profileData?.cover?.length <= 0) {
             toast?.error("Please upload cover photo of profile.");
             return false;

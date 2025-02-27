@@ -10,17 +10,19 @@ import Reviews from "./reviews";
 import Spaces from "./spaces";
 import Tenancy from "./teenacy";
 import { brandBadge, eventBadge, spaceBadge, star } from "../../assets";
+import { addHyphenToName } from "../../utils";
 
 const BESProfile = ({ spaceInquire, type, data}) => {
   const [openSliderModal, setOpenSliderModal] = useState(false);
   const handleCloseModal = () => setOpenSliderModal(false);
   const navigate = useNavigate();
   const { state } = useLocation();
+  const navId = localStorage?.getItem("navId")
   const { name } = useParams();
 
   const editProfile = () => {
     const updateType = `my-${type}s`;
-    navigate(`/${updateType}/${name}/edit`, { state: { id: state?.id } });
+    navigate(`/${updateType}/${name}/edit`, { state: { id: state?.id || navId } });
   };
 
   const addNewEvent = () => {
@@ -53,7 +55,7 @@ const BESProfile = ({ spaceInquire, type, data}) => {
       },
     }));
   };
-  const filteredProfile = data.find((profile) => (profile.id === state?.id) || profile);
+  const filteredProfile = data.find((profile) => (profile.id === state?.id || navId) || profile);
   const myProfile = {
     ...filteredProfile,
     tabs: mapTabsToComponents(filteredProfile, filteredProfile?.tabs),
@@ -62,7 +64,6 @@ const BESProfile = ({ spaceInquire, type, data}) => {
   const transformedSlides = Array.isArray(myProfile?.slides)
     ? myProfile.slides.map((slide) => slide.url)
     : [];
-
 
   if (!filteredProfile) {
     return (
@@ -251,12 +252,18 @@ const BESProfile = ({ spaceInquire, type, data}) => {
                         onClick={
                           myProfile?.by && key === "by"
                             ? () => {
-                              navigate(
-                                `/${type === "brand"? "profile" : "brand"}/${myProfile?.by
-                                }`
-                              );
-                            }
-                            : () => { }
+                                navigate(
+                                  `/${
+                                    type === "brand"
+                                      ? "profile"
+                                      : myProfile?.owned
+                                      ? "my-brands"
+                                      : "brand"
+                                  }/${addHyphenToName(myProfile?.details?.by)}`,
+                                  { state: { id: myProfile?.by } }
+                                );
+                              }
+                            : () => {}
                         }
                         key={ind}
                         fontSize={12}
