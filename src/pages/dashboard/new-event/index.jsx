@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, LinearProgress, Typography } from '@mui/material'
+import { Box, CircularProgress, LinearProgress, Typography } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import { flag } from '../../../assets'
 import { FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs } from '../../../components'
@@ -14,7 +14,11 @@ import { useGetAllSpaceQuery, useSpacesForEventQuery } from '../../../services/s
 import { LoadingButton } from '@mui/lab'
 import { toast } from 'react-toastify'
 import { useNewEventMutation } from '../../../services/events'
+import { useDispatch } from 'react-redux'
+import { setIsEvent, setObjectForNewEvent } from '../../../store/slices/event'
+import { isEqual } from 'lodash'
 
+const baseUrl = import.meta.env.VITE_BASE_URL;
 const NewEvent = () => {
     const defaultTemplate = `<h2><strong>Event Blog Post Title</strong></h2><p><strong>Main Features:</strong> Highlight the key aspects of the event. This could include exclusive offers, workshops, activities, or special guests. Be sure to describe what attendees can expect and why it’s valuable to them. Adding images to this section can make it more visually appealing.</p><br/><p><strong>Interactive Elements:</strong> If there are any interactive experiences, such as displays or hands-on activities, explain how they will enhance the overall event experience. Keep the description clear and focused on what attendees will gain.</p><br/><p><strong>Venue & Atmosphere:</strong> Give a brief mention of the venue and how it contributes to the event’s overall vibe. If the event has a theme like sustainability, mention how it aligns with the venue or event practices. Adding a relevant image can help set the tone.</p><br/><p><strong>Conclusion:</strong> Wrap up with a call to action, encouraging readers to attend, register, or follow for more updates. Reiterate what makes the event special and why it’s a must-attend.</p>`;
     const [eventData, setEventData] = useState({
@@ -35,6 +39,35 @@ const NewEvent = () => {
         toSendSpace: ''
     });
     const [bookedRanges, setBookedRanges] = useState([])
+
+    const blockNavigation =
+      eventData.cover.length > 0 ||
+      eventData.profileImage !== null ||
+      eventData.eventName.trim() !== "" ||
+      eventData.eventCategories.some((cate) => cate.selected) ||
+      eventData.eventOverview.trim() !== "" ||
+      eventData.eventTitle.trim() !== "" ||
+      eventData.mapInstructions.trim() !== "" ||
+      eventData.eventDate !== null ||
+      !eventData.selectedDate.includes(null) ||
+      eventData.brand.trim() !== "" ||
+      eventData.space.trim() !== "" ||
+      eventData.streetAddress.trim() !== "" ||
+      eventData.leaseId.trim() !== "" ||
+      eventData.toSendSpace.trim() !== "";
+
+    const [shouldBlockNavigation, setShouldBlockNavigation] = useState(false);
+    const [initialEventData, setInitialEventData] = useState(eventData);
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+      if (eventData.eventName.trim() !== "") {
+        setShouldBlockNavigation(blockNavigation);
+      } else {
+        setShouldBlockNavigation(false);
+      }
+    }, [eventData, eventData.eventName]);
+console.log(eventData)
     const { data: brandData, isError: isBrandError, isLoading: BrandLoading, isSuccess: isBrandSuccess, error: brandError, isFetching: isBrandFetching } = useGetAllBrandsQuery({}, {
         refetchOnMountOrArgChange: true,
     });
@@ -58,6 +91,10 @@ const NewEvent = () => {
                 ...prevState,
                 eventCategories: updatedCategories
             }));
+            setInitialEventData((prevState) => ({
+                ...prevState,
+                eventCategories: updatedCategories
+            }));
         }
     }, [GetCategorySuccess, GetCategoryData]);
 
@@ -74,6 +111,117 @@ const NewEvent = () => {
 
     const editorRef = useRef(null);
     const quillRef = useRef(null);
+    const eventDataRef = useRef(null);
+
+    useEffect(() => {
+        eventDataRef.current = eventData;
+      }, [eventData]);
+    
+      useEffect(() => {
+        const callFn = async () => {
+          const formData = new FormData();
+          const eData = eventDataRef.current;
+    
+          const token = localStorage.getItem("token");
+
+          if (eData?.brand?.id) formData.append("brandId", eData?.brand?.id)
+          if (eData?.toSendSpace && eData?.toSendSpace !== "None") formData.append("spaceId", eData?.toSendSpace)
+          formData.append("eventName", eData?.eventName)
+
+          const selectedCategories = eData?.eventCategories
+          ?.filter(item => item.selected)
+          ?.map(item => ({ name: item.name }));
+
+          formData.append('eventCategory', JSON.stringify(selectedCategories));
+
+          const formattedDates = eData.selectedDate[0] ? [{
+            startDate: eData.selectedDate[0].toISOString(),
+            endDate: eData.selectedDate[1].toISOString()
+          }] : [{
+            startDate: "string",
+            endDate: "string"
+          }];
+
+          if (formattedDates[0].startDate !== "string" && formattedDates[0].endDate !== "string") {
+            formData.append('eventDate', JSON.stringify(formattedDates));
+          }
+
+          const details = {
+            description: eData?.eventOverview,
+            htmlContent: eData?.eventTitle,
+          };
+          formData.append('details', JSON.stringify(details));
+
+          if (eData?.cover && Object.keys(eData?.cover).length > 0) {
+            const coverOrder = [];
+            eData.cover.forEach((file) => {
+                formData.append('cover', file);
+                coverOrder.push(file.name);
+            });
+
+            formData.append('coverOrder', JSON.stringify(coverOrder));
+          }
+
+          if (eData?.profileImage) {
+            formData.append('image', eData.profileImage);
+          }
+
+          if (eData?.leaseId !== "") {
+            formData.append('leaseId', eData.leaseId);
+          }
+    
+          formData.append("status", "DRAFT");
+    
+          try {
+            await fetch(`${baseUrl}/event`, {
+              method: "POST",
+              body: formData,
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              keepalive: true,
+            });
+          } catch (error) {
+            console.error("Error sending data before unload:", error);
+          }
+        };
+    
+        const handlePageHide = async () => {
+          if (shouldBlockNavigation) {
+            if (!isEqual(eventData, initialEventData)) {
+              if (eventDataRef.current.eventName.trim() !== "") {
+                dispatch(setObjectForNewEvent(null));
+                dispatch(setIsEvent(false));
+                await callFn();
+              }
+            }
+          }
+        };
+    
+        window.addEventListener("pagehide", handlePageHide);
+    
+        return () => {
+          window.removeEventListener("pagehide", handlePageHide);
+        };
+      }, [shouldBlockNavigation, eventDataRef.current, eventData]);
+    
+      useEffect(() => {
+        const makeNull = () => {
+          dispatch(setObjectForNewEvent(null));
+          dispatch(setIsEvent(false));
+        };
+    
+        if (shouldBlockNavigation) {
+          if (!isEqual(eventData, initialEventData)) {
+            if (eventData.eventName.trim() !== "") {
+              dispatch(setObjectForNewEvent(eventData));
+              dispatch(setIsEvent(true));
+            } else {
+              makeNull();
+            }
+          }
+        }
+      }, [eventData]);
 
     const options = [
         // ...(brandData?.data?.groupedBrands?.draftBrands || []),
@@ -432,6 +580,7 @@ const NewEvent = () => {
                 return;
             }
         }
+        setShouldBlockNavigation(false);
         setLoadingButton(status);
         try {
             await event({ ...eventData, status });

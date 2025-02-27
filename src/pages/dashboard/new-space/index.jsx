@@ -1,6 +1,6 @@
-import { Box, Button, CircularProgress, LinearProgress, Typography, useTheme } from '@mui/material'
+import { Box, CircularProgress, LinearProgress, Typography, useTheme } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
-import { accessibility, arrow, security, spaceIcon, storage, sun, wifi } from '../../../assets';
+import { spaceIcon } from '../../../assets';
 import { ChoiceSelectionModal, FullWidthImgInput, ImgInputWithCategories, InputWithMap, MapModal, OutlinedTabs, PriceModal } from '../../../components';
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
@@ -12,6 +12,11 @@ import { LoadingButton } from '@mui/lab';
 import { toast } from 'react-toastify';
 import { useNewSpaceMutation } from '../../../services/space';
 import { useNavigate } from 'react-router-dom';
+import { isEqual } from "lodash";
+import { setIsSpace, setObjectForNewSpace } from "../../../store/slices/space";
+import { useDispatch } from "react-redux";
+
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const NewSpace = () => {
     const theme = useTheme()
@@ -35,28 +40,157 @@ const NewSpace = () => {
         streetAddress: "Brand Address is displayed automatically"
     });
 
-    const mainImageRef = useRef(null)
-    const profileImageRef = useRef(null)
-    const [isEditorVisible, setIsEditorVisible] = useState(false);
+  const blockNavigation =
+    spaceData.cover.length > 0 ||
+    spaceData.profileImage !== null ||
+    spaceData.spaceName.trim() !== "" ||
+    spaceData.spaceCategories.some((cate) => cate.selected) ||
+    spaceData.spaceOverview.trim() !== "" ||
+    spaceData.spaceTitle.trim() !== "" ||
+    spaceData.location.lat.length === 0 ||
+    spaceData.selectedBrand.trim() !== "" ||
+    spaceData.price.length > 0 ||
+    spaceData.amenities.some((ame) => ame.selected) ||
+    spaceData.mapInstructions.trim() !== "" ||
+    spaceData.streetAddress.trim() !== "";
 
-    const editorRef = useRef(null);
-    const quillRef = useRef(null);
-    const [modalOpen, setModalOpen] = useState(false);
-    const [openMapModal, setMapModal] = useState(false);
-    const [address, setAddress] = useState("")
-    const [priceModal, setPriceModal] = useState(false)
-    const navigate = useNavigate()
+  const [shouldBlockNavigation, setShouldBlockNavigation] = useState(false);
+  const [initialSpaceData, setInitialSpaceData] = useState(spaceData);
+  const dispatch = useDispatch();
 
-    const { isError, isSuccess, error, data, isLoading } = useGetCategoriesQuery('SPACES')
-    const { isError: IsAmenitiesError, isSuccess: AmeitiesSuccess, error: AmenitiesError, data: AmenitiesData, isLoading: AmenitiesLoading } = useGetAmenitiesQuery()
-    const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
+  useEffect(() => {
+    if (spaceData.spaceName.trim() !== "") {
+      setShouldBlockNavigation(blockNavigation);
+    } else {
+      setShouldBlockNavigation(false);
+    }
+  }, [spaceData, spaceData.spaceName]);
 
+  const mainImageRef = useRef(null);
+  const profileImageRef = useRef(null);
+  const [isEditorVisible, setIsEditorVisible] = useState(false);
 
-    useEffect(() => {
-        if (isError) {
-            console.log(error);
+  const editorRef = useRef(null);
+  const quillRef = useRef(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [openMapModal, setMapModal] = useState(false);
+  const [address, setAddress] = useState("")
+  const [priceModal, setPriceModal] = useState(false)
+  const navigate = useNavigate()
+  const spaceDataRef = useRef(null);
+
+  const { isError, isSuccess, error, data, isLoading } = useGetCategoriesQuery('SPACES')
+  const { isError: IsAmenitiesError, isSuccess: AmeitiesSuccess, error: AmenitiesError, data: AmenitiesData, isLoading: AmenitiesLoading } = useGetAmenitiesQuery()
+  const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
+
+  useEffect(() => {
+    spaceDataRef.current = spaceData;
+  }, [spaceData]);
+
+  useEffect(() => {
+    const callFn = async () => {
+      const formData = new FormData();
+      const sData = spaceDataRef.current;
+
+      const token = localStorage.getItem("token");
+
+      if (sData?.selectedBrand)
+        formData.append("brandId", sData?.selectedBrand);
+      formData.append("spaceName", sData?.spaceName);
+
+      const pricing = sData?.price?.map((item) => ({
+        price: String(item?.price),
+        term: item?.term,
+        minimum: String(item?.minimum),
+      }));
+
+      if (pricing?.length > 0)
+        formData.append("pricing", JSON.stringify(pricing));
+
+      const selectedCategories = sData?.spaceCategories
+        ?.filter((item) => item.selected)
+        ?.map((item) => ({ name: item.name }));
+
+      formData.append("spaceCategory", JSON.stringify(selectedCategories));
+
+      const selectedAmenities = sData?.amenities
+        ?.filter((item) => item.selected)
+        ?.map((item) => ({ name: item.name, iconUrl: item?.icon }));
+
+      if (selectedAmenities?.length > 0)
+        formData.append("amenity", JSON.stringify(selectedAmenities));
+
+      const details = {
+        description: sData?.spaceOverview,
+        htmlContent: sData?.spaceTitle,
+      };
+      formData.append("details", JSON.stringify(details));
+
+      if (sData?.cover && Object.keys(sData?.cover).length > 0) {
+        const coverOrder = [];
+
+        sData.cover.forEach((file) => {
+          formData.append("cover", file);
+          coverOrder.push(file.name);
+        });
+
+      }
+      if (sData?.profileImage) {
+        formData.append("image", sData.profileImage);
+      }
+
+      formData.append("status", "DRAFT");
+
+      try {
+        await fetch(`${baseUrl}/space`, {
+          method: "POST",
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          keepalive: true,
+        });
+      } catch (error) {
+        console.error("Error sending data before unload:", error);
+      }
+    };
+
+    const handlePageHide = async () => {
+      if (shouldBlockNavigation) {
+        if(!isEqual(spaceData, initialSpaceData)) {
+          if (spaceDataRef.current.spaceName.trim() !== "") {
+            dispatch(setObjectForNewSpace(null));
+            dispatch(setIsSpace(false));
+              await callFn();
+          }
         }
-    }, [isError]);
+      }
+    };
+
+    window.addEventListener("pagehide", handlePageHide);
+
+    return () => {
+      window.removeEventListener("pagehide", handlePageHide);
+    };
+  }, [shouldBlockNavigation, spaceDataRef.current, spaceData]);
+
+  useEffect(() => {
+    const makeNull = () => {
+      dispatch(setObjectForNewSpace(null));
+      dispatch(setIsSpace(false));
+    };
+
+    if (shouldBlockNavigation) {
+      if (!isEqual(spaceData, initialSpaceData)) {
+        if (spaceData.spaceName.trim() !== "") {
+          dispatch(setObjectForNewSpace(spaceData));
+          dispatch(setIsSpace(true));
+        } else {
+          makeNull();
+        }
+      }
+    }
+  }, [spaceData]);
 
     useEffect(() => {
         if (isSuccess) {
@@ -71,6 +205,11 @@ const NewSpace = () => {
                 ...prevState,
                 spaceCategories: updatedCategories
             }));
+
+            setInitialSpaceData((prevState) => ({
+              ...prevState,
+              spaceCategories: updatedCategories,
+            }));
         }
     }, [isSuccess, data]);
 
@@ -84,6 +223,11 @@ const NewSpace = () => {
             }));
 
             setSpaceData((prevState) => ({
+                ...prevState,
+                amenities: updatedAmenities,
+            }));
+
+              setInitialSpaceData((prevState) => ({
                 ...prevState,
                 amenities: updatedAmenities,
             }));
@@ -377,6 +521,7 @@ const NewSpace = () => {
                 return;
             }
         }
+        setShouldBlockNavigation(false);
         setLoadingButton(status);
         try {
             await space({ ...spaceData, status });
