@@ -485,21 +485,21 @@ export class GeneralController {
       const updatedSpaces = spaces.map((space) => ({
         ...space,
         isFavourite: savedEntityIds.has(space.id),
-        shareableLink: generateShareableLink({ id: space.id, type: "space" }),
+        shareableLink: generateShareableLink({ id: space.id, type: "space",typeName:space.spaceName }),
         isFollowed: followedEntityIds.has(space.id),
       }));
 
       const updatedEvents = events.map((event) => ({
         ...event,
         isFavourite: savedEntityIds.has(event.id),
-        shareableLink: generateShareableLink({ id: event.id, type: "event" }),
+        shareableLink: generateShareableLink({ id: event.id, type: "event",typeName:event.eventName }),
         isFollowed: followedEntityIds.has(event.id),
       }));
 
       const updatedBrands = brands.map((brand) => ({
         ...brand,
         isFavourite: savedEntityIds.has(brand.id),
-        shareableLink: generateShareableLink({ id: brand.id, type: "brand" }),
+        shareableLink: generateShareableLink({ id: brand.id, type: "brand" ,typeName:brand.brandName}),
         isFollowed: followedEntityIds.has(brand.id),
       }));
       const totalResults = spaceCount + (totalEventsCount && 'entities' in totalEventsCount ? totalEventsCount.entities.length : 0) + brandCount;
@@ -827,19 +827,19 @@ export class GeneralController {
       const eventsWithType = formattedRsvpEvents.map((event: any) => ({
         ...event,
         type: "event",
-        shareableLink: generateShareableLink({ id: event.id, type: "event" }),
+        shareableLink: generateShareableLink({ id: event.id, type: "event",typeName:event.eventName }),
       }));
 
       const brandsWithType = brands.map((brand: any) => ({
         ...brand,
         type: "brand",
-        shareableLink: generateShareableLink({ id: brand.id, type: "brand" }),
+        shareableLink: generateShareableLink({ id: brand.id, type: "brand",typeName:brand.brandName }),
       }));
 
       const spacesWithType = spaces.map((space: any) => ({
         ...space,
         type: "space",
-        shareableLink: generateShareableLink({ id: space.id, type: "space" }),
+        shareableLink: generateShareableLink({ id: space.id, type: "space",typeName:space.spaceName }),
       }));
 
       const activity = [
@@ -1396,6 +1396,7 @@ export class GeneralController {
       const shareableLink = generateShareableLink({
         id: user.id,
         type: "user",
+        typeName:user.name
       });
       const { password: _, ...userProfile } = user as User & {
         shareableLink?: string;
@@ -1802,21 +1803,21 @@ export class GeneralController {
           const updatedSpaces = spaces.map((space) => ({
             ...space,
             isFavourite: savedEntityIds.has(space.id),
-            shareableLink: generateShareableLink({ id: space.id, type: "space" }),
+            shareableLink: generateShareableLink({ id: space.id, type: "space" ,typeName:space.spaceName}),
             isFollowed: followedEntityIds.has(space.id),
           }));
     
           const updatedEvents = events.map((event) => ({
             ...event,
             isFavourite: savedEntityIds.has(event.id),
-            shareableLink: generateShareableLink({ id: event.id, type: "event" }),
+            shareableLink: generateShareableLink({ id: event.id, type: "event" ,typeName:event.eventName}),
             isFollowed: followedEntityIds.has(event.id),
           }));
     
           const updatedBrands = brands.map((brand) => ({
             ...brand,
             isFavourite: savedEntityIds.has(brand.id),
-            shareableLink: generateShareableLink({ id: brand.id, type: "brand" }),
+            shareableLink: generateShareableLink({ id: brand.id, type: "brand",typeName:brand.brandName }),
             isFollowed: followedEntityIds.has(brand.id),
           }));
           const totalResults = spaceCount + updatedEvents.length + brandCount;
@@ -2080,17 +2081,17 @@ export class GeneralController {
     
           const updatedSpaces = spaces.map((space) => ({
             ...space,
-            shareableLink: generateShareableLink({ id: space.id, type: "space" }),
+            shareableLink: generateShareableLink({ id: space.id, type: "space" ,typeName:space.spaceName}),
           }));
     
           const updatedEvents = events.map((event) => ({
             ...event,
-            shareableLink: generateShareableLink({ id: event.id, type: "event" }),
+            shareableLink: generateShareableLink({ id: event.id, type: "event" ,typeName:event.eventName}),
           }));
     
           const updatedBrands = brands.map((brand) => ({
             ...brand,
-            shareableLink: generateShareableLink({ id: brand.id, type: "brand" }),
+            shareableLink: generateShareableLink({ id: brand.id, type: "brand",typeName:brand.brandName }),
           }));
           const totalResults = spaceCount + (totalEventsCount && 'entities' in totalEventsCount ? totalEventsCount.entities.length : 0) + brandCount;
     

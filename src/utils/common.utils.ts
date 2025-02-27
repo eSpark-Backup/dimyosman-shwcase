@@ -147,7 +147,7 @@ export const getTime = (
 };
 
 export const generateShareableLink = (
-  entity: { id: string; type: string } | { id: string; type: string }[]
+  entity: { id: string; type: string,typeName:string } | { id: string; type: string ,typeName:string}[]
 ) => {
   const entitiesArray = Array.isArray(entity) ? entity : [entity];
   const jsonString = JSON.stringify(entitiesArray);
@@ -157,11 +157,11 @@ export const generateShareableLink = (
   ).toString();
   const encoded = encodeURIComponent(encrypted);
   if (entitiesArray.some((e) => e.type === "brand")) {
-    return `https://shwcase.esparkconsultants.com/brand/share?data=${encoded}`;
+    return `https://shwcase.esparkconsultants.com/brand/${typeName}/share?data=${encoded}`;
   } else if (entitiesArray.some((e) => e.type === "space")) {
-    return `https://shwcase.esparkconsultants.com/space/share?data=${encoded}`;
+    return `https://shwcase.esparkconsultants.com/space/${typeName}/share?data=${encoded}`;
   } else if (entitiesArray.some((e) => e.type === "event")) {
-    return `https://shwcase.esparkconsultants.com/event/share?data
+    return `https://shwcase.esparkconsultants.com/event/${typeName}/share?data
     =${encoded}`;
   }
 

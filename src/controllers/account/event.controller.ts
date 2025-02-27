@@ -446,7 +446,7 @@ export class EventController {
         eventCategory || existingEvent.eventCategory;
       existingEvent.details = details || existingEvent.details;
       existingEvent.eventDate = eventDate || existingEvent.eventDate;
-      existingEvent.brand=brand || existingEvent.brand;
+      existingEvent.brand = brand || existingEvent.brand;
       existingEvent.space = space || existingEvent.space;
       existingEvent.status = status || existingEvent.status;
       existingEvent.coverImages = JSON.stringify(coverUrls) as Object;
@@ -716,6 +716,7 @@ export class EventController {
           shareableLink: generateShareableLink({
             id: activity.id,
             type: "event",
+            typeName: activity.eventName,
           }),
           likedCount: getSavedCount,
           isFollowing: followedEventIds.has(activity.id),
@@ -877,6 +878,7 @@ export class EventController {
               shareableLink: generateShareableLink({
                 id: event.id,
                 type: "event",
+                typeName: event.eventName,
               }),
             })),
           draftEvents: events.filter(
@@ -892,6 +894,7 @@ export class EventController {
                   shareableLink: generateShareableLink({
                     id: event.id,
                     type: "event",
+                    typeName: event.eventName,
                   }),
                 }
               : event

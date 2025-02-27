@@ -1216,6 +1216,8 @@ export class SpaceController {
           shareableLink: generateShareableLink({
             id: singleSpace.id,
             type: "space",
+            typeName:singleSpace.spaceName
+
           }),
           totalLeasSpace,
           likedCount: getLikedCount,
@@ -1361,6 +1363,8 @@ export class SpaceController {
               shareableLink: generateShareableLink({
                 id: space.id,
                 type: "space",
+                typeName:space.spaceName
+
               }),
             })),
           draftSpaces: spaces.filter(
@@ -1376,6 +1380,7 @@ export class SpaceController {
                   shareableLink: generateShareableLink({
                     id: space.id,
                     type: "space",
+                    typeName:space.spaceName
                   }),
                 }
               : space

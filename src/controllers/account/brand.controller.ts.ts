@@ -878,6 +878,7 @@ export class BrandController {
           shareableLink: generateShareableLink({
             id: singleBrand.id,
             type: "brand",
+            typeName:singleBrand.brandName
           }),
           likedCount: getLikedCount,
           totalEventsCount,
@@ -949,6 +950,7 @@ export class BrandController {
             shareableLink: generateShareableLink({
               id: brand.id,
               type: "brand",
+              typeName:brand.brandName
             }),
           })),
         draftBrands: updatedBrands.filter(
@@ -964,6 +966,7 @@ export class BrandController {
                 shareableLink: generateShareableLink({
                   id: brand.id,
                   type: "brand",
+                  typeName:brand.brandName
                 }),
               }
             : brand
