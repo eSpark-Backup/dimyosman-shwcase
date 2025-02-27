@@ -79,7 +79,6 @@ function App() {
     <>
       <Header isLogin={!!token} />
       <Routes>
-          <Route path="/share" element={<SharedPage />} />
           <Route path="/:type/:name/share" element={<SharedPage />} />
           
         <Route element={<PublicRoute />}>
