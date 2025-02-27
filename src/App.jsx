@@ -79,7 +79,9 @@ function App() {
     <>
       <Header isLogin={!!token} />
       <Routes>
-          <Route path="/:type/share" element={<SharedPage />} />
+          <Route path="/share" element={<SharedPage />} />
+          <Route path="/:type/:name/share" element={<SharedPage />} />
+          
         <Route element={<PublicRoute />}>
           <Route path="/" element={<Navigate to={"/auth?type=login"} />} />
           <Route path="/auth" element={<AuthBox />} />

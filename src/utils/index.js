@@ -1,7 +1,11 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { format } from "date-fns";
-import { emptyInquiryCount, emptyNotificationCount, setGoToMessage } from "../store/slices/notification";
+import {
+  emptyInquiryCount,
+  emptyNotificationCount,
+  setGoToMessage,
+} from "../store/slices/notification";
 import moment from "moment";
 
 export function useQuery() {
@@ -88,7 +92,7 @@ export const deleteAllCookiesExcept = (exceptions = []) => {
 export const logoutAuthUtils = (logout) => {
   logout({ returnTo: window.location.origin, openUrl: false });
   deleteAllCookiesExcept();
-}
+};
 
 // FOR PICKER
 export const addEmoji = (
@@ -263,9 +267,9 @@ export const spacesAction = (
   switch (type) {
     case "edit":
       // if (location?.pathname === "/space") {
-        navigate(`/my-spaces/${addHyphenToName(item?.eventName)}/edit`, {
-          state: { id: item?.id },
-        });
+      navigate(`/my-spaces/${addHyphenToName(item?.eventName)}/edit`, {
+        state: { id: item?.id },
+      });
       // }
       break;
 
@@ -325,7 +329,7 @@ export const keysForBrandsSapcesEvents = async (object, type, address) => {
 
   const coverObject = {
     profileId: object?.brand?.id,
-    shareableLink: object?.shareableLink,
+    shareableLink: processUrl(object?.shareableLink),
     isFavourite: object?.isFavourite,
     id: object?.id,
     activity: type,
@@ -362,7 +366,7 @@ export const keysForBrandsSapcesEvents = async (object, type, address) => {
         description: amenityItem?.name || "",
       })) || [];
 
-      const category = object?.spaceCategory;
+    const category = object?.spaceCategory;
 
     return {
       ...coverObject,
@@ -464,23 +468,26 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
       ? parentObj?.eventDetails
       : parentObj?.brandDetails;
 
-      const spaces = matchingItem?.receiverBrand?.spaceCount || 0;
+    const spaces = matchingItem?.receiverBrand?.spaceCount || 0;
 
-      const followers =
-        matchingItem?.receiverEvent?.followedCount ||
-        matchingItem?.receiverBrand?.followedCount || 0;
+    const followers =
+      matchingItem?.receiverEvent?.followedCount ||
+      matchingItem?.receiverBrand?.followedCount ||
+      0;
 
-      const saved =
-        matchingItem?.receiverEvent?.likedCount ||
-        matchingItem?.receiverBrand?.likedCount || 0;
+    const saved =
+      matchingItem?.receiverEvent?.likedCount ||
+      matchingItem?.receiverBrand?.likedCount ||
+      0;
 
-      const creator =
-        parentObj?.receiverBrand?.user?.name ||
-        parentObj?.receiverEvent?.user?.name ||
-        "";
+    const creator =
+      parentObj?.receiverBrand?.user?.name ||
+      parentObj?.receiverEvent?.user?.name ||
+      "";
 
-      const receiverbrandName =
-        parentObj?.receiverBrand?.brandName || parentObj?.receiverEvent?.brand?.brandName;
+    const receiverbrandName =
+      parentObj?.receiverBrand?.brandName ||
+      parentObj?.receiverEvent?.brand?.brandName;
 
     return {
       parentId: details?.id,
@@ -669,7 +676,9 @@ export const handleNotificationUpdate = (cookieName, action, dispatch) => {
 export const fetchAddressFromCoordinates = async (lat, lng) => {
   try {
     const response = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${
+        import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+      }`
     );
     const data = await response.json();
     if (data.results[0]) {
@@ -683,5 +692,17 @@ export const fetchAddressFromCoordinates = async (lat, lng) => {
 };
 
 export const addHyphenToName = (name) => {
-  return name?.toLowerCase()?.replace(/ /g, '-');
-}
+  return name?.toLowerCase()?.replace(/ /g, "-");
+};
+
+export const processUrl = (url) => {
+  if (url) {
+    url = url.replace(/(?<=data=)\s+/g, "");
+
+    url = url.replace(/([a-zA-Z]+(?: [a-zA-Z]+)*)\/share/, (match, group) => {
+      return group.toLowerCase().replace(/ /g, "-") + "/share";
+    });
+
+    return url;
+  }
+};
