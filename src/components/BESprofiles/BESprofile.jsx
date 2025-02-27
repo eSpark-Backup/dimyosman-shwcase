@@ -10,14 +10,14 @@ import Reviews from "./reviews";
 import Spaces from "./spaces";
 import Tenancy from "./teenacy";
 import { brandBadge, eventBadge, spaceBadge, star } from "../../assets";
-import { addHyphenToName } from "../../utils";
+import { addHyphenToName, getCookie } from "../../utils";
 
 const BESProfile = ({ spaceInquire, type, data}) => {
   const [openSliderModal, setOpenSliderModal] = useState(false);
   const handleCloseModal = () => setOpenSliderModal(false);
   const navigate = useNavigate();
   const { state } = useLocation();
-  const navId = localStorage?.getItem("navId")
+  const navId = getCookie("navId")
   const { name } = useParams();
 
   const editProfile = () => {

@@ -10,6 +10,7 @@ import { useGetAllEventsQuery } from "../../../services/events";
 import { useGetAllSpaceQuery } from "../../../services/space";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { processUrl } from "../../../utils";
 
 const Profile = () => {
   // const { name } = useParams()
@@ -70,7 +71,7 @@ const Profile = () => {
         id: item?.id,
         brandImage: item?.coverImages[0]?.url,
         status: item?.status,
-        shareableLink: item?.shareableLink,
+        shareableLink: processUrl(item?.shareableLink),
         isFavourite: item?.isFavourite,
         isFollowed: item?.isFollowed,
       }));
@@ -164,7 +165,7 @@ const Profile = () => {
         profile: data?.data?.profileImage,
         profileName: data?.data?.name,
         profileAbout: data?.data?.about?.about,
-        shareableLink: data?.data?.shareableLink,
+        shareableLink: processUrl(data?.data?.shareableLink),
         profileStats: [
           {
             name: "Brands:",

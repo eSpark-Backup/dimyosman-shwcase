@@ -12,6 +12,7 @@ import {
 import { useGetAllBrandsQuery } from "../../services/brands";
 import { useGetAllEventsQuery } from "../../services/events";
 import { useGetAllSpaceQuery } from "../../services/space";
+import { processUrl } from "../../utils";
 
 const SharedProfile = ({ user }) => {
   const [brands, setBrands] = useState([]);
@@ -54,7 +55,7 @@ const SharedProfile = ({ user }) => {
         id: item?.id,
         brandImage: item?.coverImages[0]?.url,
         status: item?.status,
-        shareableLink: item?.shareableLink,
+        shareableLink: processUrl(item?.shareableLink),
         isFavourite: item?.isFavourite,
         isFollowed: item?.isFollowed,
       }));
