@@ -30,7 +30,7 @@ const NewBrand = () => {
         brandCategories: [],
         brandOverview: "Add a brief brand overview that highlights the core aspects of the brand.\n\nClearly explain the brand’s mission, what makes it unique, and why it stands out in the market. Mention key products or services, emphasizing any unique selling points or values the brand embodies (e.g., sustainability, luxury, innovation).\n \nKeep it concise and informative, focusing on the brand’s identity and what customers can expect. \n\nThis description will be used as an excerpt.",
         brandTitle: defaultTemplate,
-        location: { lat: 30.188760426055236, long: 70.22460937500001 },
+        location: { lat: 40.0902, lng: -99.7129 },
         mapInstructions: "",
         streetAddress: "123 Williamsburg Ave, Brooklyn, NY 11211"
     });
@@ -42,7 +42,6 @@ const NewBrand = () => {
     brandData.brandCategories.some((cate) => cate.selected) ||
     brandData.brandOverview.trim() !== "" ||
     brandData.brandTitle.trim() !== "" ||
-    brandData.location.lat.length === 0 ||
     brandData.mapInstructions.trim() !== "" ||
     brandData.streetAddress.trim() !== "";
 

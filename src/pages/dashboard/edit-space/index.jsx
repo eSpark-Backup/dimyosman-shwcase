@@ -102,7 +102,7 @@ const EditSpace = () => {
 
                 const mergedAmenities = allAmenities.map((amenity) => ({
                     ...amenity,
-                    selected: selectedAmenity?.includes(amenity.name),
+                    selected: selectedAmenity?.includes(amenity.name) || false,
                 }));
 
                 let address = "";
@@ -114,7 +114,7 @@ const EditSpace = () => {
                 }
 
                 setSpaceData({
-                    cover: data?.data?.coverImages || [],
+                    cover: Array.isArray(data?.data?.coverImages) ? data?.data?.coverImages : [],
                     profileImage: data?.data?.spaceImage || null,
                     spaceName: data?.data?.spaceName || "",
                     spaceCategories: mergedCategories || [],

@@ -68,7 +68,7 @@ const icons = [
   { icon: brandIcon, bg: "rgba(196, 119, 127, 0.2)", activeBG: "rgba(196, 119, 127, 0.8)", type: "brand", },
   { icon: flag, bg: "rgba(148, 185, 134, 0.2)", activeBG: "rgba(148, 185, 134, 0.8)", type: "event", },
   { icon: spaceIcon, bg: "rgba(120, 150, 195, 0.2)", activeBG: "rgba(120, 150, 195, 0.8)", type: "space", },
-  { icon: profileIcon, bg: "rgba(0, 20, 28, 0.1)", activeBG: "rgba(0, 20, 28, 0.8)", type: "profile", },
+  // { icon: profileIcon, bg: "rgba(0, 20, 28, 0.1)", activeBG: "rgba(0, 20, 28, 0.8)", type: "profile", },
 ];
 
 const style = {
@@ -498,9 +498,12 @@ const Message = () => {
 
           unreadChat(chatId);
         } else {
-          const chatId = allGroups[0]?.chatGroups[0]?._id || allGroups[0]?.directUserChat?._id
+          const chatGroups = allGroups[0]?.chatGroups;
+          const directUserChat = allGroups[0]?.directUserChat;
 
-          selected.chatGroup = allGroups[0]?.chatGroups[0];
+          const chatId = chatGroups ? chatGroups?._id : directUserChat?._id
+
+          selected.chatGroup = chatGroups ? chatGroups[0] : null;
           selected.group = allGroups[0];
           initialId = chatId;
           const members = selected?.chatGroup?.members || selected?.group?.directUserChat?.members
@@ -546,7 +549,7 @@ const Message = () => {
             setSelectedGroup(selected);
           }
         }
-        const chatId = selected?.chatGroup?.id || selected?.group?.directUserChat?._id
+        const chatId = selected?.chatGroup?.id || (selectedChatId ? selected?.group?.directUserChat?._id : null)
 
         unreadChat(chatId);
         setInitialChatId(null);
@@ -589,9 +592,9 @@ const Message = () => {
       } else {
         msgTxt = "No Chats";
       }
-
+      const direct = filterGroups?.length && filterGroups[0]?.directUserChat
       const isChatGroup = filterGroups?.length && filterGroups[0]?.chatGroups
-      const chatId = isChatGroup ? isChatGroup[0]?.chatId : isChatGroup[0]?.directUserChat?._id;
+      const chatId = direct !== null ? direct?._id : isChatGroup ? isChatGroup[0]?.chatId : isChatGroup[0]?.directUserChat?._id;
 
       if (!isLessThan768) {
         setSelectedGroup(commonSelectedChatGroup(filterGroups, 0));
@@ -660,7 +663,8 @@ const Message = () => {
             sx={{
               display: "flex",
               margin: "0 auto 16px auto",
-              justifyContent: "center",
+              // justifyContent: "center",
+              justifyContent: "space-evenly",
               overflowX: "auto",
               gap: 2,
             }}
@@ -711,6 +715,8 @@ const Message = () => {
                       onlineUsers={onlineUsers}
                       setPage={setPage}
                       activeTab={activeTab}
+                      allMessages={allMessages}
+                      initialChatId={initialChatId}
                     />
                   ))
                 : null}

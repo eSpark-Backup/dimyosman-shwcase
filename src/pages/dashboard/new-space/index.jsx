@@ -32,7 +32,7 @@ const NewSpace = () => {
         spaceCategories: [],
         spaceOverview: "Add a brief overview of the space, highlighting its size, location, and key features.\n\nExplain what makes the space ideal for events, pop-ups, or other uses, focusing on its flexibility and amenities. Be sure to mention any standout aspects, such as design, accessibility, or additional services provided (e.g., security, Wi-Fi).\n\nKeep the description informative yet concise, ensuring it appeals to potential users by focusing on what they will benefit from. You can also include a brief note on the atmosphere or style of the space.",
         spaceTitle: defaultTemplate,
-        location: { lat: 30.188760426055236, long: 70.22460937500001 },
+        location: { lat: 40.0902, lng: -99.7129 },
         selectedBrand: "",
         price: [],
         amenities: [],
@@ -47,7 +47,6 @@ const NewSpace = () => {
     spaceData.spaceCategories.some((cate) => cate.selected) ||
     spaceData.spaceOverview.trim() !== "" ||
     spaceData.spaceTitle.trim() !== "" ||
-    spaceData.location.lat.length === 0 ||
     spaceData.selectedBrand.trim() !== "" ||
     spaceData.price.length > 0 ||
     spaceData.amenities.some((ame) => ame.selected) ||

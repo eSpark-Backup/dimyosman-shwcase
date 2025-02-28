@@ -32,7 +32,8 @@ const MessageItem = ({
   onlineUsers,
   setPage,
   activeTab,
-  selectedChatId
+  selectedChatId,
+  initialChatId
 }) => {
   const isLessThan768 = useMediaQuery("(max-width:768px)");
 
@@ -121,7 +122,7 @@ const MessageItem = ({
           position: "relative",
           backgroundColor:
             message?.directUserChat?.userToUser &&
-            selectedChatId === message?.directUserChat?._id
+            (initialChatId || selectedChatId) === message?.directUserChat?._id
               ? "rgba(209, 219, 215, 0.6)"
               : "#ffffff",
 
@@ -197,10 +198,26 @@ const MessageItem = ({
           {message.parentName}
         </Typography>
 
-        {getUnreadChatIds?.length
+        {getUnreadChatIds?.length && message?.chatGroups?.length
           ? message?.chatGroups?.some((msg) =>
               getUnreadChatIds?.includes(msg.chatId)
             ) && (
+              <Box
+                sx={{
+                  width: "10px",
+                  height: "10px",
+                  borderRadius: "50%",
+                  backgroundColor: theme.palette.error.danger,
+                  position: "absolute",
+                  top: "0px",
+                  right: "2px",
+                }}
+              />
+            )
+          : getUnreadChatIds?.length &&
+            message?.directUserChat &&
+            message?.directUserChat?.userToUser
+          ? getUnreadChatIds?.includes(message?.directUserChat?._id) && (
               <Box
                 sx={{
                   width: "10px",

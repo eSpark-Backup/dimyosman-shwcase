@@ -113,9 +113,9 @@ const MapModal = ({
         const initializeMap = () => {
             const validLat = typeof position[0] === 'number';
             const validLng = typeof position[1] === 'number';
-
-            const initialLat = validLat ? position[0] : 0;
-            const initialLng = validLng ? position[1] : 0;
+            
+            const initialLat = validLat ? position[0] : 40.0902;
+            const initialLng = validLng ? position[1] : -99.7129;
 
             googleMap = new window.google.maps.Map(mapRef.current, {
                 center: { lat: initialLat, lng: initialLng},
@@ -170,8 +170,8 @@ const MapModal = ({
             const validLat = typeof position[0] === 'number';
             const validLng = typeof position[1] === 'number';
 
-            const initialLat = validLat ? position[0] : 0;
-            const initialLng = validLng ? position[1] : 0;
+            const initialLat = validLat ? position[0] : 40.0902;
+            const initialLng = validLng ? position[1] : -99.7129;
 
             const newPosition = { lat: initialLat, lng: initialLng };
             markerRef.current.setPosition(newPosition);
