@@ -120,8 +120,8 @@ const EditBrand = () => {
           brandOverview: data?.data?.details?.description,
           brandTitle: data?.data?.details?.htmlContent,
           location: data?.data?.location,
-          cover: data?.data?.coverImages,
-          mapInstructions: data?.data?.location?.additional,
+          cover: Array.isArray(data?.data?.coverImages) ? data?.data?.coverImages : [],
+          mapInstructions: data?.data?.location?.additional || "",
           streetAddress: address,
         }));
       }

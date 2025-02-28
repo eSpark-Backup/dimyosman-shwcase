@@ -313,15 +313,15 @@ const Activity = () => {
             />
           ))}
 
-          {allActivityData.length && hasMore && (
+          {allActivityData?.length && hasMore ? (
             <div ref={ref} style={{ minHeight: 10, textAlign: "center" }}>
               {page !== 1 && <CircularProgress />}
             </div>
-          )}
+          ) : null}
 
           {!isFetching &&
             !isLoading &&
-            allActivityData.length >= total &&
+            allActivityData?.length >= total &&
             hasFetchedData && (
               <Typography fontWeight={700} fontSize={18} textAlign="center">
                 You have seen all!
