@@ -85,12 +85,12 @@ const icons = [
     activeBG: "rgba(120, 150, 195, 0.8)",
     type: "SPACE",
   },
-  {
-    icon: profileIcon,
-    bg: "rgba(0, 20, 28, 0.1)",
-    activeBG: "rgba(0, 20, 28, 0.8)",
-    type: "not",
-  },
+  // {
+  //   icon: profileIcon,
+  //   bg: "rgba(0, 20, 28, 0.1)",
+  //   activeBG: "rgba(0, 20, 28, 0.8)",
+  //   type: "not",
+  // },
 ];
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
