@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import { Box, LinearProgress } from "@mui/material";
 import { updateEvents } from "../../../../store/slices/event";
 import { useLocation } from "react-router-dom";
-import { fetchAddressFromCoordinates, getCookie } from "../../../../utils";
+import { fetchAddressFromCoordinates, getCookie, processUrl } from "../../../../utils";
 import moment from "moment";
 
 const EventDetails = () => {
@@ -27,7 +27,7 @@ const EventDetails = () => {
           );
         }
         const updatedEvents = {
-          shareableLink: data?.data?.shareableLink,
+          shareableLink: processUrl(data?.data?.shareableLink),
           isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
           by: data?.data?.brand?.status === "PUBLISH" && data?.data?.brand?.id,
