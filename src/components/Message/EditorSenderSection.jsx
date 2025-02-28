@@ -1,3 +1,5 @@
+import { useSelector } from "react-redux";
+
 import {
   Box,
   MenuItem,
@@ -12,12 +14,13 @@ import { arrowDown } from "../../assets";
 const EditorSenderSection = ({ selectedGroup }) => {
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
 
+  const { user } = useSelector((state) => state.auth);
+
   const isDirect = selectedGroup?.group?.directUserChat?.userToUser;
-  const direct = selectedGroup?.group?.directUserChat;
 
   const receiverbrandName = isDirect
-    ? direct?.chatGroup?.receiverbrandName
-    : selectedGroup?.chatGroup?.receiverbrandName;
+    ? user?.name
+    : selectedGroup?.chatGroup?.receiverbrandName || "";
   const parentName = selectedGroup?.group?.parentName;
 
   return (
@@ -48,13 +51,15 @@ const EditorSenderSection = ({ selectedGroup }) => {
       >
         {receiverbrandName !== "" ? (
           <>
-            <span>{receiverbrandName}</span>
+            <span style={{ textTransform: "capitalize" }}>
+              {receiverbrandName}
+            </span>
             <img src={arrowDown} alt="arrow" style={{ marginLeft: "8px" }} />
           </>
         ) : (
           parentName && (
             <>
-              <span>{parentName}</span>
+              <span style={{ textTransform: "capitalize" }}>{parentName}</span>
               <img src={arrowDown} alt="arrow" style={{ marginLeft: "8px" }} />
             </>
           )
