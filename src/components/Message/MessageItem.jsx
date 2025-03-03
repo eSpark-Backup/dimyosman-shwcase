@@ -66,18 +66,18 @@ const MessageItem = ({
 
     setSelectedChatId(el?.chatId);
     setSelectedGroup({ chatGroup: el, group: message });
-    // getUnreadChatIds && filterCount(el?.chatId);
+    getUnreadChatIds && filterCount(el?.chatId);
   };
 
-  // const filterCount = (chatId) => {
-  //   const ifChatIdExists = getUnreadChatIds?.filter((id) => id !== chatId);
+  const filterCount = (chatId) => {
+    const ifChatIdExists = getUnreadChatIds?.filter((id) => id !== chatId);
 
-  //   if (ifChatIdExists?.length > 0) {
-  //     setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
-  //   } else {
-  //     deleteCookie("unreadChatIds");
-  //   }
-  // };
+    if (ifChatIdExists?.length > 0) {
+      setCookie("unreadChatIds", JSON.stringify(ifChatIdExists));
+    } else {
+      deleteCookie("unreadChatIds");
+    }
+  };
 
   useEffect(() => {
     if (gotToMessage && messageRefs.current[gotToMessage?.chatId]) {
@@ -147,6 +147,7 @@ const MessageItem = ({
 
             setSelectedChatId(message?.directUserChat?._id);
             setSelectedGroup({ chatGroup: null, group: message });
+            getUnreadChatIds && filterCount(message?.directUserChat?._id);
           }
         }}
       >

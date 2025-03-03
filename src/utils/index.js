@@ -706,3 +706,29 @@ export const processUrl = (url) => {
     return url;
   }
 };
+
+export const cleanHTML = (htmlContent) => {
+  // Create a temporary container to parse HTML content
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = htmlContent;
+
+  // Step 1: Trim spaces inside paragraphs by removing leading/trailing spaces
+  const paragraphs = tempDiv.querySelectorAll('p');
+  paragraphs.forEach((p) => {
+    p.innerHTML = p.innerHTML.trim();
+  });
+
+  // Step 2: Remove all leading and trailing empty <p><br></p> tags
+  let cleanedHTML = tempDiv.innerHTML;
+
+  // Remove all leading empty <p><br></p> tags (before the first actual content)
+  cleanedHTML = cleanedHTML.replace(/^\s*(<p><br><\/p>\s*)+/g, '');
+
+  // Remove all trailing empty <p><br></p> tags (after the last actual content)
+  cleanedHTML = cleanedHTML.replace(/(<p><br><\/p>\s*)+$/g, '');
+
+  // Step 3: Ensure that <br> tags between actual text content remain intact
+  // After trimming and removing leading/trailing empty breaks, we return the cleaned HTML
+
+  return cleanedHTML;
+};

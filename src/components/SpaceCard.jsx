@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import SpaceInquireModal from "./SpaceInquireModal";
 import { toast } from "react-toastify";
+import { addHyphenToName } from "../utils";
 
 const SpaceCard = ({ myProfile, onClick, spaces, showBtn }) => {
   const token = window.localStorage.getItem("token");
@@ -141,7 +142,7 @@ const SpaceCard = ({ myProfile, onClick, spaces, showBtn }) => {
             }
           
             if (myProfile) {
-              navigate(`/space/${spaces?.id}/edit`)
+              navigate(`/my-spaces/${addHyphenToName(spaces?.spaceName)}/edit`)
             } else {
               const detail = activitySpaceData?.find(
                 (spc) => spc.id === spaces.id

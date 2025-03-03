@@ -32,18 +32,11 @@ const IconBadge = ({
   useEffect(() => {
     if (getUnreadChatIds?.length) {
       for (const unreadChatId of getUnreadChatIds) {
-        const isDirect = allGroups?.filter((mm) => mm.directUserChat !== null);
-
-        let matchingMessage = null;
-        if (isDirect.length) {
-          matchingMessage = allGroups?.find(
-            (message) => message.directUserChat?._id === unreadChatId
-          );
-        } else {
-          matchingMessage = allGroups?.find((message) =>
-            message.chatGroups.some((group) => group.id === unreadChatId)
-          );
-        }
+        const matchingMessage = allGroups?.find((message) =>
+          !message.chatGroups
+            ? message.directUserChat?._id === unreadChatId
+            : message.chatGroups.some((group) => group.id === unreadChatId)
+        );
 
         if (matchingMessage) {
           const matchingIcon = type === matchingMessage.parentActivity;

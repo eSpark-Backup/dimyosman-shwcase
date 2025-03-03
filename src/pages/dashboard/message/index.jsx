@@ -545,7 +545,7 @@ const Message = () => {
           selected.chatGroup = chatGroup;
           selected.group = group;
           
-          if (chatGroup || group?.directUserChat !== null) {
+          if (chatGroup || (group?.directUserChat !== null && group?.directUserChat === selectedChatId)) {
             setSelectedGroup(selected);
           }
         }

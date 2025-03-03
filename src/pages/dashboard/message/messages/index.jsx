@@ -25,7 +25,7 @@ import ReusableModal from "../../../../components/Modal";
 import AfterSignature from "../../../../components/AfterSignature";
 import ManageInquiry from "../../../../components/ManageInquiry";
 
-import { addEmoji, convertToSameKeys } from "../../../../utils";
+import { addEmoji, cleanHTML, convertToSameKeys } from "../../../../utils";
 
 import { useGetSingleChatQuery } from "../../../../services/chats";
 
@@ -305,7 +305,12 @@ const AllMesaages = ({
       return;
     }
 
-    emitEvent("NEW_MESSAGE", finalMessage);
+    const updateMessage = {
+      ...finalMessage,
+      message: cleanHTML(finalMessage.message),
+    };
+
+    emitEvent("NEW_MESSAGE", updateMessage);
 
     setFinalMessage((prevData) => ({
       ...prevData,

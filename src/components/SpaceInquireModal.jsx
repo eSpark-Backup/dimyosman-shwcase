@@ -28,7 +28,7 @@ import Dropdown from "./Dropdown";
 
 import { close, smile, spaceBadge } from "../assets";
 
-import { addEmoji, inquireInputStyles } from "../utils";
+import { addEmoji, cleanHTML, inquireInputStyles } from "../utils";
 
 import { useGetMyChatsQuery } from "../services/chats";
 import {
@@ -278,7 +278,7 @@ const SpaceInquireModal = ({
       "DD.MM.YYYY"
     )}</strong><br />Lease Total: <strong>$${totalPrice}</strong>`;
 
-    const fullMessage = `${inquiryInfo}<br /><br />${finalMessage.message}`;
+    const fullMessage = `${inquiryInfo}<br /><br />${cleanHTML(finalMessage.message)}`;
 
     const updateMessage = {
       ...finalMessage,
