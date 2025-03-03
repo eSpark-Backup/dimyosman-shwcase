@@ -501,7 +501,7 @@ const BrandCard = ({
                         token
                           ? myProfile
                             ? () =>
-                                navigate(`/my-brands/${item?.brandName}/edit`, {
+                                navigate(`/my-brands/${addHyphenToName(item?.brandName)}/edit`, {
                                   state: { id: item?.id },
                                 })
                             : !followLoading

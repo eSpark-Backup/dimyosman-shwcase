@@ -16,9 +16,9 @@ import {
   setSearchQuery,
   setShouldReturn,
 } from "../store/slices/search";
-import { setIsBrand, setObjectForNewBrand } from "../store/slices/brand";
-import { setIsSpace, setObjectForNewSpace } from "../store/slices/space";
-import { setIsEvent, setObjectForNewEvent } from "../store/slices/event";
+import { setIsBrand, setObjectForNewBrand, updateBrands } from "../store/slices/brand";
+import { setIsSpace, setObjectForNewSpace, updateSpace } from "../store/slices/space";
+import { setIsEvent, setObjectForNewEvent, updateEvents } from "../store/slices/event";
 import { useNewBrandMutation } from "../services/brands";
 import { useNewSpaceMutation } from "../services/space";
 import { useNewEventMutation } from "../services/events";
@@ -98,6 +98,20 @@ const DashboardLayout = ({ isTokenChecking }) => {
       console.error(`Failed to call API for ${type}:`, error);
     }
   };
+
+  useEffect(() => {
+    if (pathname==="/my-brands" || !pathname.includes("brand")) {
+      dispatch(updateBrands([]));
+    }
+
+    if (pathname==="/my-events" || !pathname.includes("event")) {
+      dispatch(updateEvents([]));
+    }
+
+    if (pathname==="/my-spaces" || !pathname.includes("space")) {
+      dispatch(updateSpace([]));
+    }
+  }, [pathname]);
 
   useEffect(() => {
     if (initialized.current) return;

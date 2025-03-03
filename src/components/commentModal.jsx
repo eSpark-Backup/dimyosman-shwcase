@@ -15,7 +15,7 @@ import Picker from "@emoji-mart/react";
 import MessageInput from "./Message/MessageInput";
 import Dropdown from "./Dropdown";
 import { useGetAllBrandsQuery } from "../services/brands";
-import { addEmoji, inquireInputStyles, useClickOutside } from "../utils";
+import { addEmoji, cleanHTML, inquireInputStyles, useClickOutside } from "../utils";
 import { close, smile } from "../assets";
 import { useSendDirectMessageMutation } from "../services/chats";
 
@@ -108,10 +108,13 @@ const CommentModal = ({ open, handleClose, handleSuccess, commentId }) => {
     
     if (finalMessage?.senderBrandId === "" || finalMessage?.senderBrandId === "none") {
       obj = {
-        message: finalMessage?.message,
+        message: cleanHTML(finalMessage.message),
       };
     } else {
-      obj = finalMessage;
+      obj = {
+        ...finalMessage,
+        message: cleanHTML(finalMessage.message),
+      };
     }
     
     sendDirectMessage({ id, credentials: obj })
