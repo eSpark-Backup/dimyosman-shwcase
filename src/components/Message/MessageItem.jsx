@@ -12,7 +12,7 @@ import {
 
 import ActivityType from "./ActivityType";
 
-import { isActiveMembers } from "../../store/slices/chat";
+import { isActiveMembers, setFromSidebar } from "../../store/slices/chat";
 import {
   emptyGoToMessage,
   setFromNotification,
@@ -135,6 +135,7 @@ const MessageItem = ({
           if (message?.directUserChat?.userToUser) {
             dispatch(emptyGoToMessage());
             dispatch(setFromNotification(false));
+            dispatch(setFromSidebar(false));
 
             setPage(1);
 
@@ -274,6 +275,7 @@ const MessageItem = ({
                   onClick={() => {
                     dispatch(emptyGoToMessage());
                     dispatch(setFromNotification(false));
+                    dispatch(setFromSidebar(false));
                     handleGroup(el, message?.parentActivity);
                   }}
                 >

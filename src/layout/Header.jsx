@@ -32,7 +32,7 @@ import {
 } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { logout as logoutFunc } from "../store/slices/auth";
-import { removeMychat } from "../store/slices/chat";
+import { removeMychat, setFromSidebar } from "../store/slices/chat";
 import Notification from "../components/Notification";
 import Filters from "../components/Filters";
 import { emptyGoToMessage, emptyNotification, setFromNotification } from "../store/slices/notification";
@@ -138,6 +138,7 @@ const Header = ({ isLogin }) => {
       if (clickedItemId !== "Messages") {
         dispatch(emptyGoToMessage());
         dispatch(setFromNotification(false));
+        dispatch(setFromSidebar(false));
       }
     };
 

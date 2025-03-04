@@ -2,7 +2,7 @@ import { createSlice, current } from "@reduxjs/toolkit";
 
 const initialState = {
   myChat: [],
-  directChats:[],
+  directChats: [],
   chatDetails: [],
   messages: [],
   hasChats: "",
@@ -12,6 +12,7 @@ const initialState = {
   allGroups: [],
   hasMessages: "",
   totalPagesOfMessage: [],
+  fromSideBar: false,
 };
 
 const slice = createSlice({
@@ -85,6 +86,9 @@ const slice = createSlice({
     getUnreadTypesSlice(state, action) {
       state.unreadTypes = action.payload;
     },
+    setFromSidebar: (state, action) => {
+      state.fromSideBar = action.payload;
+    },
   },
 });
 
@@ -99,7 +103,8 @@ export const {
   getAllMyGroups,
   changeMessageType,
   getTotalPages,
-  getUnreadTypesSlice
+  getUnreadTypesSlice,
+  setFromSidebar
 } = slice.actions;
 
 export default slice.reducer;

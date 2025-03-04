@@ -290,6 +290,11 @@ const DashboardLayout = ({ isTokenChecking }) => {
                     localStorage.removeItem("searchScrollPosition");
                     navigate(item.link);
                     setActive(false);
+                    if(item.title === "Messages"){
+                      dispatch(setFromSidebar(true))
+                    } else {
+                      dispatch(setFromSidebar(false))
+                    }
                   }}
                   direction="row"
                   justifyContent="flex-start"

@@ -43,6 +43,7 @@ import {
   getTotalPages,
   isActiveMembers,
   isUserHasChat,
+  setFromSidebar,
 } from "../../../store/slices/chat.js";
 import {
   emptyGoToMessage,
@@ -93,6 +94,7 @@ const Message = () => {
     allGroups,
     hasMessages,
     totalPagesOfMessage,
+    fromSideBar
   } = useSelector((state) => state.chat);
   const { user } = useSelector((state) => state.auth);
   const { gotToMessage, fromNotification } = useSelector(
@@ -210,6 +212,7 @@ const Message = () => {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [toShare, setToShare] = useState();
   const [activeTab, setActiveTab] = useState("all");
+  const [allreadyCurrent,setAllreadyCurrent] = useState(false)
 
   useEffect(() => {
     removeNewInquiry(dispatch);
@@ -296,7 +299,7 @@ const Message = () => {
             position: "bottom-right",
             onClick: () => {
               setActiveTab("all");
-              dispatch(setFromNotification(true));
+              setAllreadyCurrent(true)
 
               if (data?.receiverBrandName) {
                 dispatch(setGoToMessage(navigateBrandData));
@@ -438,8 +441,8 @@ const Message = () => {
   };
 
   const handleAccordionChange = (index) => (event, isExpanded) => {
-    const chatGroups = allGroups[index]?.chatGroups;
-    const directUserChat = allGroups[index]?.directUserChat;
+    const chatGroups = allMessages[index]?.chatGroups;
+    const directUserChat = allMessages[index]?.directUserChat;
 
     const members = chatGroups ? chatGroups[0]?.members : directUserChat?.members;
     const chatId = chatGroups ? chatGroups[0]?.chatId : directUserChat?._id;
@@ -447,8 +450,10 @@ const Message = () => {
     if (!isLessThan768) {
       dispatch(emptyGoToMessage());
       dispatch(setFromNotification(false));
+      dispatch(setFromSidebar(false));
+      setAllreadyCurrent(false)
 
-      setSelectedGroup(commonSelectedChatGroup(allGroups, index));
+      setSelectedGroup(commonSelectedChatGroup(allMessages, index));
       setSelectedChatId(chatId);
     }
 
@@ -467,6 +472,13 @@ const Message = () => {
 
     unreadChat(chatId);
   };
+  const cleanAll = () => {
+    setTimeout(() => {
+      dispatch(setFromNotification(false))
+      dispatch(setFromSidebar(false))
+      setAllreadyCurrent(false)
+    }, 800)
+  }
 
   useEffect(() => {
     if (allGroups?.length) {
@@ -497,14 +509,17 @@ const Message = () => {
           emitEvent("CHAT_JOINED", obj);
 
           unreadChat(chatId);
+          if (chatId) {
+            cleanAll();
+          }
         } else {
-          const chatGroups = allGroups[0]?.chatGroups;
-          const directUserChat = allGroups[0]?.directUserChat;
+          const chatGroups = allMessages[0]?.chatGroups;
+          const directUserChat = allMessages[0]?.directUserChat;
 
           const chatId = chatGroups ? chatGroups?._id : directUserChat?._id
 
           selected.chatGroup = chatGroups ? chatGroups[0] : null;
-          selected.group = allGroups[0];
+          selected.group = allMessages[0];
           initialId = chatId;
           const members = selected?.chatGroup?.members || selected?.group?.directUserChat?.members
 
@@ -520,15 +535,13 @@ const Message = () => {
           emitEvent("CHAT_JOINED", obj);
 
           unreadChat(selected?.chatGroup?.id || selected?.group?.directUserChat?._id);
+          if (members && members?.length) {
+            cleanAll();
+          }
         }
       }
 
       if (selectedChatId !== null && expanded !== null) {
-        const group = allGroups[expanded];
-        const chatGroup = group?.chatGroups?.find(
-          (msg) => msg.id === selectedChatId
-        );
-
         const selected = {
           chatGroup: {},
           group: {},
@@ -540,14 +553,19 @@ const Message = () => {
           
           const chatId = selected?.chatGroup?.id || selected?.group?.directUserChat?._id
           setSelectedChatId(chatId);
+          if (chatId) {
+            cleanAll();
+          }
         } else {
+          const group = allMessages[expanded];
+          const chatGroup = group?.chatGroups?.find(
+            (msg) => msg.id === selectedChatId
+          );
           
           selected.chatGroup = chatGroup;
           selected.group = group;
           
-          if (chatGroup || (group?.directUserChat !== null && group?.directUserChat === selectedChatId)) {
-            setSelectedGroup(selected);
-          }
+          setSelectedGroup(selected);
         }
         const chatId = selected?.chatGroup?.id || (selectedChatId ? selected?.group?.directUserChat?._id : null)
 
@@ -560,6 +578,9 @@ const Message = () => {
         setTimeout(() => {
           setToShare();
         }, 10);
+        if (chatId) {
+          cleanAll();
+        }
       }
     }
   }, [allGroups, expanded, messages, gotToMessage, activeTab, allMessages]);
@@ -621,7 +642,9 @@ const Message = () => {
   if (
     ((chatDetails?.length === 0 || messages.length === 0) &&
       hasChats != "empty") ||
-    (fromNotification && (isFetching || isFetchingMessage))
+    (fromNotification && (isFetching || isFetchingMessage)) ||
+    (fromSideBar && (isFetching || isFetchingMessage)) ||
+    allreadyCurrent
   ) {
     return (
       <Box sx={style}>

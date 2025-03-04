@@ -118,7 +118,7 @@ const Space = () => {
     data: notificationData,
     isSuccess: notificationSuccess,
     refetch: notificationRefetch,
-  } = useGetNotificationDataQuery(undefined, { skip: pathname !== "/space" });
+  } = useGetNotificationDataQuery(undefined, { skip: pathname !== "/my-spaces" });
 
   useEffect(() => {
     if (
