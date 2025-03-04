@@ -9,6 +9,7 @@ import {
 } from "../../store/slices/notification";
 
 import { getCookie } from "../../utils";
+import { setFromSidebar } from "../../store/slices/chat";
 
 const IconBadge = ({
   icon,
@@ -95,6 +96,7 @@ const IconBadge = ({
       onClick={() => {
         dispatch(emptyGoToMessage());
         dispatch(setFromNotification(false));
+        dispatch(setFromSidebar(false));
         onClick(type);
       }}
     >

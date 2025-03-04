@@ -6,6 +6,7 @@ import { getSmallSidebar, sidebarRoutes } from "../constant";
 import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../store/slices/activity";
 import { addHyphenToName, deleteCookie, getCookie } from "../utils";
 import { emptyFilters, setSearchQuery, setShouldReturn } from "../store/slices/search";
+import { setFromSidebar } from "../store/slices/chat";
 
 const Sidebar = () => {
   const searchQuery = getCookie("search_query")
@@ -69,6 +70,11 @@ const Sidebar = () => {
 
               localStorage.removeItem("searchScrollPosition");
               navigate(item.link);
+              if(item.title === "Messages"){
+                dispatch(setFromSidebar(true))
+              } else {
+                dispatch(setFromSidebar(false))
+              }
 
             }}
             onMouseOver={() => setHovered(ind)}

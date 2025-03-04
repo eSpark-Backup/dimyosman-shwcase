@@ -237,7 +237,7 @@ const SocketProvider = ({ children }) => {
 
       socket.current.on("PAYMENT_NOTIFICATION", (data) => {
         if (data?.receiverId === user?.userChatId) {
-          if (pathname !== "/space") {
+          if (pathname !== "/my-spaces") {
             notificationRefetch().then(() => {
               handleNotificationUpdate(
                 "newNotification",
@@ -251,8 +251,8 @@ const SocketProvider = ({ children }) => {
                 position: "bottom-right",
                 onClick: () => {
                   dispatch(setRedirectTab(redName));
-                  if (pathname !== "/space") {
-                    navigate("/space");
+                  if (pathname !== "/my-spaces") {
+                    navigate("/my-spaces");
                   }
                 },
               });
