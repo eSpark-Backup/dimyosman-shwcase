@@ -617,7 +617,7 @@ export class SpaceController {
 
       let maxSuffix = -1;
 
-      similarSpace.forEach(space => {
+      similarSpace.forEach((space) => {
         if (space.spaceName === spaceName) {
           maxSuffix = Math.max(maxSuffix, 0);
         } else {
@@ -629,9 +629,9 @@ export class SpaceController {
           }
         }
       });
-      
-      const newSpaceName = maxSuffix === -1 ? spaceName : `${spaceName} ${maxSuffix + 1}`;
-      
+
+      const newSpaceName =
+        maxSuffix === -1 ? spaceName : `${spaceName} ${maxSuffix + 1}`;
 
       const coverFileObjects: IFileObject[] = coverFiles.map((file) =>
         commonHelper.createFileObject(path.join(coverFilesPath, file), "cover")
@@ -826,33 +826,39 @@ export class SpaceController {
         const checkName = await this.spaceRepo.findOne({
           where: { spaceName },
         });
-        if (checkName && status==SpaceStatus.PUBLISH &&checkName.status==SpaceStatus.PUBLISH&&  checkName.spaceName !== existingSpace.spaceName) {
-              throw new ApiError(
-                "Space with this name already exists",
-                HTTP_STATUS.BAD_REQUEST
-              );
-            }
-            const similarSpace= await this.spaceRepo.find({
-              where: { spaceName: Like(`${spaceName}%`) }
-            });
+        if (
+          checkName &&
+          status == SpaceStatus.PUBLISH &&
+          checkName.status == SpaceStatus.PUBLISH &&
+          checkName.spaceName !== existingSpace.spaceName
+        ) {
+          throw new ApiError(
+            "Space with this name already exists",
+            HTTP_STATUS.BAD_REQUEST
+          );
+        }
+        if (status != SpaceStatus.PUBLISH) {
+          const similarSpace = await this.spaceRepo.find({
+            where: { spaceName: spaceName },
+          });
 
-            let maxSuffix = -1;
-            similarSpace.forEach(space => {
-              if (space.spaceName === spaceName) {
-                maxSuffix = Math.max(maxSuffix, 0);
-              } else {
-                const regex = new RegExp(`^${spaceName}\\s(\\d+)$`);
-                const match = space.spaceName.match(regex);
-                if (match) {
-                  const suffix = parseInt(match[1], 10);
-                  maxSuffix = Math.max(maxSuffix, suffix);
-                }
+          let maxSuffix = -1;
+          similarSpace.forEach((space) => {
+            if (space.spaceName === spaceName && space.id !== id) {
+              maxSuffix = Math.max(maxSuffix, 0);
+            } else {
+              const regex = new RegExp(`^${spaceName}\\s(\\d+)$`);
+              const match = space.spaceName.match(regex);
+              if (match) {
+                const suffix = parseInt(match[1], 10);
+                maxSuffix = Math.max(maxSuffix, suffix);
               }
-            });
-            
-             spaceName = maxSuffix === -1 ? spaceName : `${spaceName} ${maxSuffix + 1}`;
+            }
+          });
 
-
+          spaceName =
+            maxSuffix === -1 ? spaceName : `${spaceName} ${maxSuffix + 1}`;
+        }
       }
       let oldCoverImages: UploadResult[] = [];
 

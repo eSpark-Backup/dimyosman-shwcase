@@ -382,14 +382,15 @@ export class EventController {
             HTTP_STATUS.BAD_REQUEST
           );
         }
+        if(status != EventStatus.PUBLISH){
         const similarEvents = await this.eventRepo.find({
-          where: { eventName: Like(`${eventName}%`) },
+          where: { eventName: eventName }
         });
 
         let maxSuffix = -1;
 
         similarEvents.forEach((event) => {
-          if (event.eventName === eventName) {
+          if (event.eventName === eventName && event.id !== id) {
             maxSuffix = Math.max(maxSuffix, 0);
           } else {
             const regex = new RegExp(`^${eventName}\\s(\\d+)$`);
@@ -404,6 +405,7 @@ export class EventController {
         eventName =
           maxSuffix === -1 ? eventName : `${eventName} ${maxSuffix + 1}`;
       }
+    }
       let oldCoverImages: UploadResult[] = [];
 
       const FolderName = `${CLOUD_FOLDERS.EVENT}/${eventName}`;
