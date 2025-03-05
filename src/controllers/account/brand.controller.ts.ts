@@ -85,15 +85,15 @@ export class BrandController {
           return next();
         }
       }
-    
-      if (receiverBrand) {
 
-        if(!senderBrand){
+      if (receiverBrand) {
+        if (!senderBrand) {
           const members = [req.user?._id, receiverBrand.user.userChatId];
-          const sender = await this.userRepo.createQueryBuilder("user")
-          .where("user.id = :userId", { userId: req.user?.id })
-          .getOne();
-          if(!sender){
+          const sender = await this.userRepo
+            .createQueryBuilder("user")
+            .where("user.id = :userId", { userId: req.user?.id })
+            .getOne();
+          if (!sender) {
             res.status(200).json(handleResponse("Sender not found"));
             return next();
           }
@@ -104,7 +104,7 @@ export class BrandController {
             receiverBrand: receiverBrand.id,
             creator: req.user?._id,
           });
-  
+
           await this.notificationModel.create({
             user: receiverBrand.user.userChatId,
             title: `New message received for ${receiverBrand.brandName}`,
@@ -119,28 +119,27 @@ export class BrandController {
             type: "info",
           });
           const ChatId = chat.id.toString();
-  
+
           const messageForDB = {
             content: message,
             sender: req.user?._id,
             chat: ChatId,
           };
           await this.messageModel.create(messageForDB);
-  
+
           emitEvent(req, REFETCH_CHATS, members);
-  
+
           emitEvent(req, DIRECT_CHAT, [receiverBrand.user.userChatId], {
             name: `${sender.name} sent you a message on Brand ${receiverBrand.brandName}`,
             senderImage: sender.profileImage,
             senderName: sender.name,
             receiverBrandName: receiverBrand.brandName,
-            receiverId:receiverBrand.user.userChatId,
+            receiverId: receiverBrand.user.userChatId,
             chatId: ChatId,
           });
 
           res.status(200).json(handleResponse("Message Sent Successfully"));
           return next();
-  
         }
         const members = [req.user?._id, receiverBrand.user.userChatId];
 
@@ -182,16 +181,17 @@ export class BrandController {
           senderBrandImage: senderBrand.brandImage,
           senderBrandName: senderBrand.brandName,
           receiverBrandName: receiverBrand.brandName,
-          receiverId:receiverBrand.user.userChatId,
+          receiverId: receiverBrand.user.userChatId,
           chatId: ChatId,
         });
       } else if (receiverEvent) {
-        if(!senderBrand){
+        if (!senderBrand) {
           const members = [req.user?._id, receiverEvent.user.userChatId];
-          const sender = await this.userRepo.createQueryBuilder("user")
-          .where("user.id = :userId", { userId: req.user?.id })
-          .getOne();
-          if(!sender){
+          const sender = await this.userRepo
+            .createQueryBuilder("user")
+            .where("user.id = :userId", { userId: req.user?.id })
+            .getOne();
+          if (!sender) {
             res.status(200).json(handleResponse("Sender not found"));
             return next();
           }
@@ -202,7 +202,7 @@ export class BrandController {
             receiverEvent: receiverEvent.id,
             creator: req.user?._id,
           });
-  
+
           await this.notificationModel.create({
             user: receiverEvent.user.userChatId,
             title: `New message received for ${receiverEvent.eventName}`,
@@ -217,27 +217,26 @@ export class BrandController {
             type: "info",
           });
           const ChatId = chat.id.toString();
-  
+
           const messageForDB = {
             content: message,
             sender: req.user?._id,
             chat: ChatId,
           };
           await this.messageModel.create(messageForDB);
-  
+
           emitEvent(req, REFETCH_CHATS, members);
-  
+
           emitEvent(req, DIRECT_CHAT, [receiverEvent.user.userChatId], {
             name: `${sender.name} sent you a message on Event ${receiverEvent.eventName}`,
             senderImage: sender.profileImage,
             senderName: sender.name,
             receiverEventName: receiverEvent.eventName,
-            receiverId:receiverEvent.user.userChatId,
+            receiverId: receiverEvent.user.userChatId,
             chatId: ChatId,
           });
           res.status(200).json(handleResponse("Message Sent Successfully"));
           return next();
-  
         }
         const members = [req.user?._id, receiverEvent.user.userChatId];
 
@@ -276,7 +275,7 @@ export class BrandController {
           senderBrandImage: senderBrand.brandImage,
           senderBrandName: senderBrand.brandName,
           receiverEventName: receiverEvent.eventName,
-          receiverId:receiverEvent.user.userChatId,
+          receiverId: receiverEvent.user.userChatId,
           chatId: ChatId,
         });
       }
@@ -317,20 +316,23 @@ export class BrandController {
       }
 
       const checkName = await this.brandRepo.findOne({ where: { brandName } });
-      if (checkName && status==BrandStatus.PUBLISH&& checkName.status==BrandStatus.PUBLISH) {
+      if (
+        checkName &&
+        status == BrandStatus.PUBLISH &&
+        checkName.status == BrandStatus.PUBLISH
+      ) {
         throw new ApiError(
           "Brand with this name already exists",
           HTTP_STATUS.BAD_REQUEST
         );
       }
       const similarBrands = await this.brandRepo.find({
-        where: { brandName: Like(`${brandName}%`) }
+        where: { brandName: Like(`${brandName}%`) },
       });
-      
-      
+
       let maxSuffix = -1;
 
-      similarBrands.forEach(brand => {
+      similarBrands.forEach((brand) => {
         if (brand.brandName === brandName) {
           maxSuffix = Math.max(maxSuffix, 0);
         } else {
@@ -342,10 +344,10 @@ export class BrandController {
           }
         }
       });
-      
-      const newBrandName = maxSuffix === -1 ? brandName : `${brandName} ${maxSuffix + 1}`;
-      
-      
+
+      const newBrandName =
+        maxSuffix === -1 ? brandName : `${brandName} ${maxSuffix + 1}`;
+
       coverOrder = coverOrder || [];
       coverFiles = commonHelper.reorderCoverFiles(coverFiles, coverOrder);
 
@@ -381,9 +383,9 @@ export class BrandController {
       newBrand.coverImages = (JSON.stringify(coverUrls) as Object) || null;
       newBrand.brandImage = (imageUrls[0]?.url as any) || null;
       newBrand.imageKey = imageUrls[0]?.public_id;
-     const brand= await this.brandRepo.save(newBrand);
-      
-     parseCoverImages(brand);
+      const brand = await this.brandRepo.save(newBrand);
+
+      parseCoverImages(brand);
       const uploadsPath = path.join(process.cwd(), "uploads");
 
       const files = fs.readdirSync(uploadsPath);
@@ -396,7 +398,7 @@ export class BrandController {
       res
         .status(HTTP_STATUS.OK)
         .json(handleResponse("Brand Created Successfully", brand));
-      } catch (error) {
+    } catch (error) {
       const uploadsPath = path.join(process.cwd(), "uploads");
 
       const files = fs.readdirSync(uploadsPath);
@@ -475,40 +477,42 @@ export class BrandController {
         );
       }
       const checkName = await this.brandRepo.findOne({ where: { brandName } });
-      if (checkName && status==BrandStatus.PUBLISH &&checkName.status==BrandStatus.PUBLISH&&  checkName.brandName !== existingBrand.brandName) {
+      if (
+        checkName &&
+        status == BrandStatus.PUBLISH &&
+        checkName.status == BrandStatus.PUBLISH &&
+        checkName.brandName !== existingBrand.brandName
+      ) {
         throw new ApiError(
           "Brand with this name already exists",
           HTTP_STATUS.BAD_REQUEST
         );
       }
-    let newBrandName = brandName
+      let newBrandName = brandName;
 
-      if(status!=BrandStatus.PUBLISH){
-      const similarBrands = await this.brandRepo.find({
-        where: { brandName:brandName}
-      });
-      
-      
-      let maxSuffix = -1;
+      if (status != BrandStatus.PUBLISH) {
+        const similarBrands = await this.brandRepo.find({
+          where: { brandName: brandName },
+        });
 
+        let maxSuffix = -1;
 
-      similarBrands.forEach(brand => {
-        if (brand.brandName === brandName && brand.id !== id) {
-          maxSuffix = Math.max(maxSuffix, 0);
-        } else {
-          const regex = new RegExp(`^${brandName}\\s(\\d+)$`);
-          const match = brand.brandName.match(regex);
-          if (match) {
-            const suffix = parseInt(match[1], 10);
-            maxSuffix = Math.max(maxSuffix, suffix);
+        similarBrands.forEach((brand) => {
+          if (brand.brandName === brandName && brand.id !== id) {
+            maxSuffix = Math.max(maxSuffix, 0);
+          } else {
+            const regex = new RegExp(`^${brandName}\\s(\\d+)$`);
+            const match = brand.brandName.match(regex);
+            if (match) {
+              const suffix = parseInt(match[1], 10);
+              maxSuffix = Math.max(maxSuffix, suffix);
+            }
           }
-        }
-      });
-      
-       newBrandName = maxSuffix === -1 ? brandName : `${brandName} ${maxSuffix + 1}`;
-    }
+        });
 
-      
+        newBrandName =
+          maxSuffix === -1 ? brandName : `${brandName} ${maxSuffix + 1}`;
+      }
 
       if (status == BrandStatus.DRAFT || status == BrandStatus.ARCHIVE) {
         const events = await this.eventsRepo
@@ -687,7 +691,7 @@ export class BrandController {
   ): Promise<void> {
     try {
       const { id } = req.params;
-      const { page, take, skip } = req?.query;
+      const { page, take, skip, status } = req?.query;
       // Ensure skip and take are numbers
       const skipNumber = Number(skip);
       const takeNumber = Number(take);
@@ -725,14 +729,14 @@ export class BrandController {
             return space;
           });
         }
-     
+
         if (typeof singleBrand.coverImages === "string") {
           singleBrand.coverImages = JSON.parse(singleBrand.coverImages);
         }
         const singleEvent = await this.eventsRepo
           .createQueryBuilder("event")
           .leftJoinAndSelect("event.user", "user")
-      
+
           .andWhere("event.brand = :eventId", { eventId: singleBrand.id })
           .andWhere(
             new Brackets((qb) => {
@@ -884,7 +888,7 @@ export class BrandController {
           shareableLink: generateShareableLink({
             id: singleBrand.id,
             type: "brand",
-            typeName:singleBrand.brandName
+            typeName: singleBrand.brandName,
           }),
           likedCount: getLikedCount,
           totalEventsCount,
@@ -894,6 +898,102 @@ export class BrandController {
 
         res.status(200).json(handleResponse("Brand Found Successfully", brand));
         return next();
+      }
+      if (status == BrandStatus.PUBLISH) {
+        const [brands, totalItems] = await this.brandRepo
+          .createQueryBuilder("brand")
+          .where("brand.user = :userId", { userId: req.user?.id })
+          .leftJoinAndSelect("brand.user", "user")
+          .andWhere("brand.status = :status", { status: BrandStatus.PUBLISH })
+          .orderBy("brand.createdAt", "DESC")
+          .getManyAndCount();
+
+        if (brands.length === 0) {
+          res.status(200).json(handleResponse("No Brands Found"));
+          return next();
+        }
+
+        const updatedBrands = await Promise.all(
+          brands.map(async (brand) => {
+            const getEventCount = await this.eventsRepo
+              .createQueryBuilder("event")
+              .leftJoinAndSelect("event.user", "user")
+              .where("event.brand = :brandId", { brandId: brand.id })
+              .getCount();
+
+            const followedEntityQuery = this.savedEntity
+              .createQueryBuilder("savedEntity")
+              .where("savedEntity.ActionType = :actionType", {
+                actionType: ActionType.FOLLOW,
+              })
+              .andWhere("savedEntity.type = :type", {
+                type: SavedEntityType.BRAND,
+              })
+              .andWhere("brand.id = :brandId", { brandId: brand.id })
+              .leftJoinAndSelect("savedEntity.brand", "brand");
+
+            const [getFollowedCount] = await Promise.all([
+              followedEntityQuery.getCount(),
+            ]);
+
+            return {
+              ...brand,
+              eventCount: getEventCount,
+              followedCount: getFollowedCount,
+            };
+          })
+        );
+
+        updatedBrands.forEach((brand) => {
+          if (typeof brand.coverImages === "string") {
+            brand.coverImages = JSON.parse(brand.coverImages);
+          }
+        });
+
+        const groupedBrands = {
+          publishedBrands: updatedBrands
+            .filter((brand) => brand.status === BrandStatus.PUBLISH)
+            .map((brand) => ({
+              ...brand,
+              shareableLink: generateShareableLink({
+                id: brand.id,
+                type: "brand",
+                typeName: brand.brandName,
+              }),
+            })),
+          draftBrands: updatedBrands.filter(
+            (brand) => brand.status === BrandStatus.DRAFT
+          ),
+          archivedBrands: updatedBrands.filter(
+            (brand) => brand.status === BrandStatus.ARCHIVE
+          ),
+          allBrands: updatedBrands.map((brand) =>
+            brand.status === BrandStatus.PUBLISH
+              ? {
+                  ...brand,
+                  shareableLink: generateShareableLink({
+                    id: brand.id,
+                    type: "brand",
+                    typeName: brand.brandName,
+                  }),
+                }
+              : brand
+          ),
+
+          totalItems,
+        };
+
+        res.status(200).json(
+          handleResponse("Brands Fetched Successfully", {
+            groupedBrands,
+            pagination: {
+              totalItems,
+              currentPage: parseInt(page as string, 10),
+              pageSize: takeNumber,
+              totalPages: Math.ceil(totalItems / takeNumber),
+            },
+          })
+        );
       }
 
       const [brands, totalItems] = await this.brandRepo
@@ -956,7 +1056,7 @@ export class BrandController {
             shareableLink: generateShareableLink({
               id: brand.id,
               type: "brand",
-              typeName:brand.brandName
+              typeName: brand.brandName,
             }),
           })),
         draftBrands: updatedBrands.filter(
@@ -972,7 +1072,7 @@ export class BrandController {
                 shareableLink: generateShareableLink({
                   id: brand.id,
                   type: "brand",
-                  typeName:brand.brandName
+                  typeName: brand.brandName,
                 }),
               }
             : brand
