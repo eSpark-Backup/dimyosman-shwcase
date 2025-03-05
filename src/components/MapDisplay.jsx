@@ -22,6 +22,14 @@ const MapDisplay = React.memo(
     const markersRef = useRef([]);
     const [map, setMap] = useState(null);
 
+    const adjustPosition = (position, index) => {
+      const offset = 0.01 * index; // Small offset
+      return {
+        lat: position.lat + offset,
+        lng: position.lng + offset,
+      };
+    };
+
     const returnPosition = (obj) => {
       const navigationKeys = {
         BRAND: { lat: obj?.location?.lat, lng: obj?.location?.long },
@@ -75,9 +83,11 @@ const MapDisplay = React.memo(
           anchor: new window.google.maps.Point(16, 32),
         };
 
-        locations.forEach((loc) => {
+        locations.forEach((loc, index) => {
+          const adjustedPosition = adjustPosition(returnPosition(loc), index);
+
           const marker = new window.google.maps.Marker({
-            position: returnPosition(loc),
+            position: adjustedPosition,
             map: map,
             draggable: false,
             icon: customIcon,
