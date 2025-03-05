@@ -1,13 +1,15 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { addIcon } from "../../assets";
 import { useState } from "react";
 import EventCard from "../EventCard";
 import { toast } from "react-toastify";
+import { addHyphenToName } from "../../utils";
 
 const Events = ({ myProfile, addNewEvent, isMyProfile }) => {
   const token = localStorage.getItem("token")
   const navigate = useNavigate();
+  const {pathname} = useLocation()
   const filterEvents = isMyProfile ? ["All", "Publish", "Draft", "Archive", "Upcoming", "Past", "Ongoing"] : ["All", "Upcoming", "Past", "Ongoing"];
   const [activeFilter, setActiveFilter] = useState("All");
 
@@ -114,7 +116,7 @@ const Events = ({ myProfile, addNewEvent, isMyProfile }) => {
               marginTop={2}
               direction="row"
               alignItems="center"
-              justifyContent="space-between"
+              justifyContent="flex-start"
               flexWrap="wrap"
               rowGap={4}
               columnGap={2}
@@ -130,7 +132,7 @@ const Events = ({ myProfile, addNewEvent, isMyProfile }) => {
                     }}
                   >
                     <EventCard
-                      onClick={() => token ? navigate(`/event/${event?.id}`) : toast.error("You need to login first")}
+                      onClick={() => token ? navigate(`${pathname.includes('/brand') ? '/event' : '/my-events'}/${addHyphenToName(event?.profileName)}`, {state: {id: event?.id}}) : toast.error("You need to login first")}
                       event={event}
                       key={ind}
                     />

@@ -24,6 +24,7 @@ import { toast } from "react-toastify";
 import { useAddInFavouritesMutation, useGetFavouritesQuery } from "../../../services/favourite";
 import moment from "moment";
 import { useFollowMutation, useGetFollowBrandsQuery } from "../../../services/follower";
+import { addHyphenToName } from "../../../utils";
 
 const Brand = () => {
   const tabs = [
@@ -54,11 +55,21 @@ const Brand = () => {
     setActiveTab(newValue);
   };
 
-  const gotoDetail = (item) => {
+  const gotoDetail = (item, other = null) => {
     //go to detail page functionality
-    if (location?.pathname === "/brand") {
-      navigate(`/brand/${item?.id}`);
+    // if (location?.pathname === "/brand") {
+    let url = "";
+
+    if (other) {
+      url = "/brand";
+    } else {
+      url = "/my-brands";
     }
+
+    navigate(`${url}/${addHyphenToName(item?.brandName)}`, {
+      state: { id: item?.id },
+    });
+    // }
   };
 
   const {
@@ -101,9 +112,11 @@ const Brand = () => {
   const handleAction = async (item, type) => {
     if (type === "edit") {
       //edit functionality
-      if (location?.pathname === "/brand") {
-        navigate(`/brand/${item?.id}/edit`);
-      }
+      // if (location?.pathname === "/brand") {
+        navigate(`/my-brands/${addHyphenToName(item?.brandName)}/edit`, {
+          state: { id: item?.id },
+        });
+      // }
     } else if (type === "unfollow") {
       setFollowId(item?.id);
       await follow({ entityId: item?.id, entityType: item?.type?.toUpperCase() }).unwrap();
@@ -131,9 +144,9 @@ const Brand = () => {
 
   const handleAdd = () => {
     //add functionality
-    if (location?.pathname === "/brand") {
+    // if (location?.pathname === "/brand") {
       navigate("/new-brand");
-    }
+    // }
   };
   const [myBrandData, setMyBrandData] = useState([]);
   const [myBrandData2, setMyBrandData2] = useState([]);
@@ -165,13 +178,6 @@ const Brand = () => {
         status: brand.status || "N/A",
         savedDate: moment(new Date(createdAt)).format("DD.MM.YYYY.") || "-",
         followDate: moment(new Date(createdAt)).format("DD.MM.YYYY.") || "-",
-        colHeader1: "Table cell",
-        colHeader2: "Table cell",
-        colHeader3: "Table cell",
-        colHeader4: "Table cell",
-        colHeader5: "Table cell",
-        colHeader6: "Table cell",
-        colHeader7: "Table cell",
       })))
       : (newData = apiData.map((brand, index) => ({
         id: brand?.id,
@@ -185,13 +191,6 @@ const Brand = () => {
         events: brand.eventCount || "0",
         followers: brand.followedCount || "0",
         status: brand.status || "N/A",
-        colHeader1: "Table cell",
-        colHeader2: "Table cell",
-        colHeader3: "Table cell",
-        colHeader4: "Table cell",
-        colHeader5: "Table cell",
-        colHeader6: "Table cell",
-        colHeader7: "Table cell",
       })));
     return newData;
   };

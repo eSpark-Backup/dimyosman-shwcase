@@ -1,18 +1,39 @@
 import { Box, Typography, Stack } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import SplashScreen from "./splash";
+// import SplashScreen from "./splash";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./sidebar";
 import { getFullSidebar, getSmallSidebar, sidebarRoutes } from "../constant";
-import { useClickOutside } from "../utils";
+import { addHyphenToName, deleteCookie, getCookie, useClickOutside } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
-import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../store/slices/activity";
+import {
+  setActivityPageNumber,
+  setAllActivityData,
+  setSpaceData,
+} from "../store/slices/activity";
+import {
+  emptyFilters,
+  setSearchQuery,
+  setShouldReturn,
+} from "../store/slices/search";
+import { setIsBrand, setObjectForNewBrand, updateBrands } from "../store/slices/brand";
+import { setIsSpace, setObjectForNewSpace, updateSpace } from "../store/slices/space";
+import { setIsEvent, setObjectForNewEvent, updateEvents } from "../store/slices/event";
+import { useNewBrandMutation } from "../services/brands";
+import { useNewSpaceMutation } from "../services/space";
+import { useNewEventMutation } from "../services/events";
 
 const DashboardLayout = ({ isTokenChecking }) => {
   const { user } = useSelector((state) => state.auth);
+  const { search_query } = useSelector((state) => state.search);
+  const { objectForNewBrand, isBrand } = useSelector((state) => state.brand);
+  const { objectForNewSpace, isSpace } = useSelector((state) => state.space);
+  const { objectForNewEvent, isEvent } = useSelector((state) => state.event);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const token = window.localStorage.getItem("token");
+  const searchQuery = getCookie("search_query");
   const { pathname } = useLocation();
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -28,17 +49,126 @@ const DashboardLayout = ({ isTokenChecking }) => {
   const sidebarRef = useRef();
   useClickOutside(sidebarRef, () => setActive(false));
   const [active, setActive] = useState(false);
+  const initialized = useRef(false);
 
   const splittedPath = `/${pathname.split("/")[1]}`;
   const splittedSubPath = splittedPath.split("-");
   const currentPath =
     splittedSubPath.length > 1 ? `/${splittedSubPath[1]}` : splittedSubPath[0];
 
-  const activeIcon = sidebarRoutes.find((item) => (!item?.link && item.title === "Profile") || (item?.link === currentPath));
+  const activeIcon = sidebarRoutes.find(
+    (item) =>
+      (!item?.link && item.title === "Profile") || item?.link === currentPath
+  );
 
-  if (loading || isTokenChecking) {
-    return <SplashScreen />;
-  }
+  // if (loading || isTokenChecking) {
+  //   return <SplashScreen />;
+  // }
+  const [brand, {}] = useNewBrandMutation();
+  const [space, {}] = useNewSpaceMutation();
+  const [event, {}] = useNewEventMutation();
+
+  const callPostBrand = async (object, status, type) => {
+    const withType = {
+      brand: brand,
+      space: space,
+      event: event,
+    };
+
+    try {
+      if (object) {
+        if (type === "brand") {
+          dispatch(setObjectForNewBrand(null));
+        }
+
+        if (type === "space") {
+          dispatch(setObjectForNewSpace(null));
+        }
+
+        if (type === "event") {
+          dispatch(setObjectForNewEvent(null));
+        }
+
+        await withType[type]({ ...object, status });
+      }
+    } catch (error) {
+      console.error(`Failed to call API for ${type}:`, error);
+    }
+  };
+
+  useEffect(() => {
+    if (pathname==="/my-brands" || !pathname.includes("brand")) {
+      dispatch(updateBrands([]));
+    }
+
+    if (pathname==="/my-events" || !pathname.includes("event")) {
+      dispatch(updateEvents([]));
+    }
+
+    if (pathname==="/my-spaces" || !pathname.includes("space")) {
+      dispatch(updateSpace([]));
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    if (initialized.current) return;
+
+    initialized.current = true;
+
+    const handleClick = async (event) => {
+      if (event.target.closest(".sidebar-item")) {
+        if (isBrand && objectForNewBrand) {
+          dispatch(setIsBrand(false));
+          await callPostBrand(objectForNewBrand, "DRAFT", "brand");
+        }
+
+        if (isSpace && objectForNewSpace) {
+          dispatch(setIsSpace(false));
+          await callPostBrand(objectForNewSpace, "DRAFT", "space");
+        }
+
+        if (isEvent && objectForNewEvent) {
+          dispatch(setIsEvent(false));
+          await callPostBrand(objectForNewEvent, "DRAFT", "event");
+        }
+      }
+    };
+
+    const handlePopstate = async () => {
+      if (isBrand && objectForNewBrand) {
+        dispatch(setIsBrand(false));
+        await callPostBrand(objectForNewBrand, "DRAFT", "brand");
+      }
+
+      if (isSpace && objectForNewSpace) {
+        dispatch(setIsSpace(false));
+        await callPostBrand(objectForNewSpace, "DRAFT", "space");
+      }
+
+      if (isEvent && objectForNewEvent) {
+        dispatch(setIsEvent(false));
+        await callPostBrand(objectForNewEvent, "DRAFT", "event");
+      }
+      window.dispatchEvent(new CustomEvent("back-button-click"));
+    };
+
+    window.addEventListener("popstate", handlePopstate);
+    document.addEventListener("click", handleClick);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopstate);
+      document.removeEventListener("click", handleClick);
+      initialized.current = false;
+    };
+  }, [
+    isBrand,
+    isSpace,
+    isEvent,
+    objectForNewBrand,
+    objectForNewSpace,
+    objectForNewEvent,
+  ]);
+
   return (
     <Box
       sx={{
@@ -63,7 +193,9 @@ const DashboardLayout = ({ isTokenChecking }) => {
           padding:
             getSmallSidebar(pathname) ||
             getFullSidebar(pathname) ||
-            pathname === "/message"
+            pathname === "/message" ||
+            searchQuery ||
+            search_query
               ? { xs: "0px", sm: "0 0 0 105px" }
               : getSmallSidebar(pathname)
               ? "0"
@@ -136,12 +268,17 @@ const DashboardLayout = ({ isTokenChecking }) => {
             }}
           >
             {sidebarRoutes.map((item) => {
-              const activetab = (!item?.link && item.title === "Profile") || (item?.link === currentPath);
+              const activetab = item?.subLink?.includes(currentPath);
+              // const activetab = (!item?.link && item.title === "Profile") || (item?.subLink === currentPath);
               return (
                 <Stack
                   onClick={() => {
+                    deleteCookie("search_query");
+                    dispatch(setSearchQuery(null));
+                    dispatch(setShouldReturn(false));
+                    dispatch(emptyFilters());
                     if (item.title === "Profile") {
-                      navigate(`/profile/${user?.id}`);
+                      navigate(`/profile/${addHyphenToName(user?.name)}`, { state: { id: user?.id } });
                       setActive(false);
                       return;
                     }
@@ -156,6 +293,11 @@ const DashboardLayout = ({ isTokenChecking }) => {
                     localStorage.removeItem("searchScrollPosition");
                     navigate(item.link);
                     setActive(false);
+                    if(item.title === "Messages"){
+                      dispatch(setFromSidebar(true))
+                    } else {
+                      dispatch(setFromSidebar(false))
+                    }
                   }}
                   direction="row"
                   justifyContent="flex-start"

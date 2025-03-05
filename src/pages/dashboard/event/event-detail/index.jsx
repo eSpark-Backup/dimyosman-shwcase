@@ -5,16 +5,16 @@ import { useEffect } from "react";
 import dayjs from "dayjs";
 import { Box, LinearProgress } from "@mui/material";
 import { updateEvents } from "../../../../store/slices/event";
-import { eventMainImage } from "../../../../assets";
-import { useParams } from "react-router-dom";
-import { fetchAddressFromCoordinates } from "../../../../utils";
+import { useLocation } from "react-router-dom";
+import { fetchAddressFromCoordinates, getCookie, processUrl } from "../../../../utils";
 import moment from "moment";
 
 const EventDetails = () => {
-  const { id } = useParams();
-  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllEventsQuery({ page: 1, pageSize: 7, id }, { refetchOnMountOrArgChange: true });
+  const { state } = useLocation();
+  const navId = getCookie("navId")
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllEventsQuery({ page: 1, pageSize: 7, id: state?.id || navId }, { refetchOnMountOrArgChange: true });
   const dispatch = useDispatch()
-  const { user } = useSelector((state) => state.auth)
+  const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchAddress = async () => {
@@ -27,7 +27,7 @@ const EventDetails = () => {
           );
         }
         const updatedEvents = {
-          shareableLink: data?.data?.shareableLink,
+          shareableLink: processUrl(data?.data?.shareableLink),
           isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
           by: data?.data?.brand?.status === "PUBLISH" && data?.data?.brand?.id,
@@ -97,10 +97,10 @@ const EventDetails = () => {
                 },
               },
             },
-            {
-              label: "Stats",
-              props: null,
-            },
+            // {
+            //   label: "Stats",
+            //   props: null,
+            // },
             // {
             //   label: "Reviews",
             //   props: null,

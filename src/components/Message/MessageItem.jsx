@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
@@ -12,7 +12,7 @@ import {
 
 import ActivityType from "./ActivityType";
 
-import { isActiveMembers } from "../../store/slices/chat";
+import { isActiveMembers, setFromSidebar } from "../../store/slices/chat";
 import {
   emptyGoToMessage,
   setFromNotification,
@@ -31,7 +31,9 @@ const MessageItem = ({
   emitEvent,
   onlineUsers,
   setPage,
-  activeTab
+  activeTab,
+  selectedChatId,
+  initialChatId
 }) => {
   const isLessThan768 = useMediaQuery("(max-width:768px)");
 
@@ -103,7 +105,12 @@ const MessageItem = ({
         },
       }}
       expanded={message?.chatGroups?.length ? expanded : false}
-      onChange={message?.chatGroups?.length ? onChange : null}
+      onChange={
+        message?.chatGroups?.length ||
+        (message?.directUserChat && message?.directUserChat?.userToUser)
+          ? onChange
+          : null
+      }
     >
       <AccordionSummary
         sx={{
@@ -113,11 +120,36 @@ const MessageItem = ({
           alignItems: "center",
           margin: "0px !important",
           position: "relative",
+          backgroundColor:
+            message?.directUserChat?.userToUser &&
+            (initialChatId || selectedChatId) === message?.directUserChat?._id
+              ? "rgba(209, 219, 215, 0.6)"
+              : "#ffffff",
 
           "& .MuiAccordionSummary-content": {
             alignItems: "center",
             margin: "0px !important",
           },
+        }}
+        onClick={() => {
+          if (message?.directUserChat?.userToUser) {
+            dispatch(emptyGoToMessage());
+            dispatch(setFromNotification(false));
+            dispatch(setFromSidebar(false));
+
+            setPage(1);
+
+            const obj = {
+              userId: user.userChatId,
+              members: message?.directUserChat?.members,
+            };
+            dispatch(isActiveMembers(obj.members));
+            emitEvent("CHAT_JOINED", obj);
+
+            setSelectedChatId(message?.directUserChat?._id);
+            setSelectedGroup({ chatGroup: null, group: message });
+            getUnreadChatIds && filterCount(message?.directUserChat?._id);
+          }
         }}
       >
         <Box
@@ -162,15 +194,32 @@ const MessageItem = ({
             lineHeight: "22px",
             fontSize: "16px",
             textAlign: "left",
+            textTransform: "capitalize",
           }}
         >
           {message.parentName}
         </Typography>
 
-        {getUnreadChatIds?.length
+        {getUnreadChatIds?.length && message?.chatGroups?.length
           ? message?.chatGroups?.some((msg) =>
               getUnreadChatIds?.includes(msg.chatId)
             ) && (
+              <Box
+                sx={{
+                  width: "10px",
+                  height: "10px",
+                  borderRadius: "50%",
+                  backgroundColor: theme.palette.error.danger,
+                  position: "absolute",
+                  top: "0px",
+                  right: "2px",
+                }}
+              />
+            )
+          : getUnreadChatIds?.length &&
+            message?.directUserChat &&
+            message?.directUserChat?.userToUser
+          ? getUnreadChatIds?.includes(message?.directUserChat?._id) && (
               <Box
                 sx={{
                   width: "10px",
@@ -226,6 +275,7 @@ const MessageItem = ({
                   onClick={() => {
                     dispatch(emptyGoToMessage());
                     dispatch(setFromNotification(false));
+                    dispatch(setFromSidebar(false));
                     handleGroup(el, message?.parentActivity);
                   }}
                 >
@@ -277,7 +327,25 @@ const MessageItem = ({
                           bgcolor: "rgba(0, 28, 20, 0.4)",
                           borderRadius: "5px",
                         }}
-                      />
+                      >
+                        {onlineUsers?.length
+                          ? el.members?.some((member) =>
+                              onlineUsers?.includes(member)
+                            ) && (
+                              <Box
+                                sx={{
+                                  width: "10px",
+                                  height: "10px",
+                                  borderRadius: "50%",
+                                  backgroundColor: "#00FF00",
+                                  position: "absolute",
+                                  top: "-4px",
+                                  right: "-3px",
+                                }}
+                              />
+                            )
+                          : null}
+                      </Box>
                     )}
 
                     <ActivityType type={el.activity} theme={theme} />
@@ -298,6 +366,7 @@ const MessageItem = ({
                         lineHeight: "22px",
                         fontSize: "16px",
                         textAlign: "left",
+                        textTransform: "capitalize",
                       }}
                     >
                       {el?.childName}

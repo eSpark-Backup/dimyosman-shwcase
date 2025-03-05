@@ -15,7 +15,7 @@ import Picker from "@emoji-mart/react";
 import MessageInput from "./Message/MessageInput";
 import Dropdown from "./Dropdown";
 import { useGetAllBrandsQuery } from "../services/brands";
-import { addEmoji, inquireInputStyles, useClickOutside } from "../utils";
+import { addEmoji, cleanHTML, inquireInputStyles, useClickOutside } from "../utils";
 import { close, smile } from "../assets";
 import { useSendDirectMessageMutation } from "../services/chats";
 
@@ -89,10 +89,10 @@ const CommentModal = ({ open, handleClose, handleSuccess, commentId }) => {
   };
 
   const HandleMessageSend = () => {
-    if (finalMessage?.senderBrandId === "") {
-      toast.error("Please Select Brand First");
-      return;
-    }
+    // if (finalMessage?.senderBrandId === "") {
+    //   toast.error("Please Select Brand First");
+    //   return;
+    // }
     if (finalMessage?.message === "") {
       toast.error("Message can not be empty");
       return;
@@ -104,7 +104,20 @@ const CommentModal = ({ open, handleClose, handleSuccess, commentId }) => {
       toast?.error("Message can not be empty.");
       return false;
     }
-    sendDirectMessage({ id, credentials: finalMessage })
+    let obj = {};
+    
+    if (finalMessage?.senderBrandId === "" || finalMessage?.senderBrandId === "none") {
+      obj = {
+        message: cleanHTML(finalMessage.message),
+      };
+    } else {
+      obj = {
+        ...finalMessage,
+        message: cleanHTML(finalMessage.message),
+      };
+    }
+    
+    sendDirectMessage({ id, credentials: obj })
       .then((res) => {
         if (res?.data?.status) {
           resetALsStates();
@@ -211,7 +224,7 @@ const CommentModal = ({ open, handleClose, handleSuccess, commentId }) => {
                 Sender:
               </Typography>
               <Dropdown
-                options={brandOptions}
+                options={[...brandOptions, { label: "None", value: "none" }]}
                 onChange={handleSelectChange}
                 value={finalMessage?.senderBrandId}
                 placeholder={"Brand name"}

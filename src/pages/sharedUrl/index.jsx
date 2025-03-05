@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Box } from "@mui/material";
 
@@ -6,7 +6,7 @@ import { BESProfile } from "../../components";
 
 import SplashScreen from "../../layout/splash";
 
-import { fetchAddressFromCoordinates, useQuery } from "../../utils";
+import { addHyphenToName, fetchAddressFromCoordinates, processUrl, setCookie, useQuery } from "../../utils";
 
 import { useGetSharableLinkQuery } from "../../services/notifications";
 
@@ -53,7 +53,7 @@ const SharedPage = () => {
 
   const sharableParentData = (data) => {
     return {
-      shareableLink: data?.shareableLink,
+      shareableLink: processUrl(data?.shareableLink),
       isFavourite: data?.isFavourite,
       id: data?.id,
       type: data?.type,
@@ -73,11 +73,19 @@ const SharedPage = () => {
     };
   };
 
+  const returnURL = (role, type, mainName) => {
+    setCookie("navId", data?.data?.id);
+    return`${baseUrl}/${role === "user" ? "profile" : type}/${addHyphenToName(mainName)}`;
+  }
+
   useEffect(() => {
     if (token) {
       if(isSuccess) {
-        const url = `${baseUrl}/${data?.data?.role === "user" ? "profile" : data?.data?.type}/${data?.data?.id}`;
-        window.location.href = url;
+        const role = data?.data?.role;
+        const type = data?.data?.type;
+        const mainName = role ? data?.data?.name : type === "brand" ? data?.data?.brandName : type === "event" ? data?.data?.eventName : data?.data?.spaceName
+     
+        window.location.href = returnURL(role, type, mainName);
       }
     } else {
       const singleEventData = async () => {
@@ -157,7 +165,7 @@ const SharedPage = () => {
                 profile: data?.data?.profileImage,
                 profileName: data?.data?.name,
                 profileAbout: data?.data?.about?.about,
-                shareableLink: data?.data?.shareableLink,
+                shareableLink: processUrl(data?.data?.shareableLink),
                 profileStats: [
                   {
                     name: "Brands:",

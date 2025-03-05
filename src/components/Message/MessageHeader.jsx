@@ -2,7 +2,7 @@ import { useDispatch } from "react-redux";
 
 import { Box, Stack, Typography, useMediaQuery } from "@mui/material";
 
-import { star } from "../../assets";
+// import { star } from "../../assets";
 
 import { emptyGoToMessage } from "../../store/slices/notification";
 
@@ -15,13 +15,40 @@ const MessageHeader = ({
   setSelectedChatId,
   setInitialChatId,
 }) => {
-  const dispatch = useDispatch();
-
-  const { chatGroup, group } = selectedGroup;
-
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
   const isLessThan1100 = useMediaQuery("(max-width:1100px)");
   const isLessThan768 = useMediaQuery("(max-width:768px)");
+
+  const dispatch = useDispatch();
+
+  const { chatGroup, group } = selectedGroup;
+  const isDirect = group?.directUserChat?.userToUser;
+
+  const childImage = isDirect ? group?.parentImage : chatGroup?.childImage;
+
+  const members = isDirect
+    ? group?.directUserChat?.members
+    : chatGroup?.members;
+
+  const activity = isDirect ? group?.parentActivity : chatGroup?.activity;
+  const saved = isDirect ? group?.directUserChat?.chatGroup?.saved : chatGroup?.saved;
+  const spaces = isDirect ? group?.directUserChat?.chatGroup?.spaces : chatGroup?.spaces;
+
+  const followers = isDirect
+    ? group?.directUserChat?.chatGroup?.followers
+    : chatGroup?.followers;
+
+  const creator = isDirect
+    ? group?.directUserChat?.chatGroup?.creator
+    : chatGroup?.creator;
+
+  const brandName = isDirect
+    ? group?.directUserChat?.chatGroup?.brandName
+    : chatGroup?.receiverBrand?.brandName ||
+      chatGroup?.receiverEvent?.brand?.brandName;
+
+  const isInquiryRole = !isDirect ? chatGroup?.isInquiryRole : null;
+  const childName = isDirect ? group?.parentName : chatGroup?.childName;
 
   return (
     <Box
@@ -56,9 +83,9 @@ const MessageHeader = ({
               position: "relative",
             }}
           >
-            {chatGroup?.childImage ? (
+            {childImage ? (
               <img
-                src={chatGroup?.childImage}
+                src={childImage}
                 alt="Message Icon"
                 style={{
                   width: "100%",
@@ -79,12 +106,10 @@ const MessageHeader = ({
               />
             )}
 
-            <ActivityType type={chatGroup?.activity} theme={theme} />
+            <ActivityType type={activity} theme={theme} />
 
             {onlineUsers?.length
-              ? chatGroup?.members?.some((member) =>
-                  onlineUsers?.includes(member)
-                ) && (
+              ? members?.some((member) => onlineUsers?.includes(member)) && (
                   <Box
                     sx={{
                       width: "14px",
@@ -107,7 +132,9 @@ const MessageHeader = ({
               display: "flex",
               flexDirection: "column",
               justifyContent:
-              chatGroup?.isInquiryRole === "sender" && chatGroup?.activity !== "brand" ? "normal" : "center",
+                isInquiryRole === "sender" && activity !== "brand"
+                  ? "normal"
+                  : "center",
             }}
           >
             <Stack
@@ -126,9 +153,10 @@ const MessageHeader = ({
                     : "32px",
                   lineHeight: isLessThan1280 ? "34px" : "45px",
                   textAlign: "left",
+                  textTransform: "capitalize",
                 }}
               >
-                {chatGroup?.childName}
+                {childName}
               </Typography>
               {isLessThan768 && (
                 <Typography
@@ -149,7 +177,7 @@ const MessageHeader = ({
               )}
             </Stack>
 
-            {chatGroup?.isInquiryRole === "sender" && chatGroup?.activity !== "brand" && (
+            {isInquiryRole === "sender" && activity !== "brand" && (
               <Typography
                 sx={{
                   fontWeight: 300,
@@ -157,7 +185,7 @@ const MessageHeader = ({
                   lineHeight: isLessThan1100 ? "18px" : "28px",
                 }}
               >
-                {chatGroup?.receiverBrand?.brandName || chatGroup?.receiverEvent?.brand?.brandName}
+                {brandName}
               </Typography>
             )}
 
@@ -169,17 +197,15 @@ const MessageHeader = ({
                 columnGap: isLessThan1100 ? 1 : 2,
               }}
             >
-              {chatGroup?.creator && (
-                <GroupDetail withColon="By" text={chatGroup?.creator} />
-              )}
+              {creator && <GroupDetail withColon="By" text={creator} />}
 
-              {chatGroup?.activity === "brand" ? (
-                <GroupDetail withColon="Spaces" text={chatGroup?.spaces} />
+              {activity === "brand" ? (
+                <GroupDetail withColon="Spaces" text={spaces} />
               ) : null}
 
-              <GroupDetail withColon="Followers" text={chatGroup?.followers} />
+              <GroupDetail withColon="Followers" text={followers} />
 
-              <GroupDetail withColon="Saved" text={chatGroup?.saved} />
+              <GroupDetail withColon="Saved" text={saved} />
 
               {/* {isLessThan1100 ? (
                 <Box sx={{ display: "flex", alignItems: "center" }}>

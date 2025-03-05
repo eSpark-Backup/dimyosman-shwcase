@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, Typography, useTheme } from '@mui/material'
+import { Box, CircularProgress, Typography, useTheme } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import { brandIcon } from '../../../assets'
 import ReusableModal from '../../../components/Modal'
@@ -10,7 +10,11 @@ import { useGetCategoriesQuery } from '../../../services/categories'
 import { useNewBrandMutation } from '../../../services/brands'
 import { toast } from 'react-toastify'
 import { LoadingButton } from '@mui/lab'
+import { isEqual } from "lodash";
+import { useDispatch } from "react-redux";
+import { setIsBrand, setObjectForNewBrand } from "../../../store/slices/brand";
 
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const NewBrand = () => {
     const defaultTemplate = `<h2><strong>Brand Blog Post Title</strong></h2>
@@ -26,19 +30,136 @@ const NewBrand = () => {
         brandCategories: [],
         brandOverview: "Add a brief brand overview that highlights the core aspects of the brand.\n\nClearly explain the brand’s mission, what makes it unique, and why it stands out in the market. Mention key products or services, emphasizing any unique selling points or values the brand embodies (e.g., sustainability, luxury, innovation).\n \nKeep it concise and informative, focusing on the brand’s identity and what customers can expect. \n\nThis description will be used as an excerpt.",
         brandTitle: defaultTemplate,
-        location: { lat: 30.188760426055236, long: 70.22460937500001 },
+        location: { lat: 40.0902, lng: -99.7129 },
         mapInstructions: "",
         streetAddress: "123 Williamsburg Ave, Brooklyn, NY 11211"
     });
 
-    const { isError, isSuccess, error, data, isLoading } = useGetCategoriesQuery('BRANDS')
-    const [brand, { isSuccess: brandPostSuccess, isError: IsBrandPostError, error: brandPostError, data: brandPostData, isLoading: BrandPostingLoading }] = useNewBrandMutation()
+  const blockNavigation =
+    brandData.cover.length > 0 ||
+    brandData.profileImage !== null ||
+    brandData.brandName.trim() !== "" ||
+    brandData.brandCategories.some((cate) => cate.selected) ||
+    brandData.brandOverview.trim() !== "" ||
+    brandData.brandTitle.trim() !== "" ||
+    brandData.mapInstructions.trim() !== "" ||
+    brandData.streetAddress.trim() !== "";
 
-    useEffect(() => {
-        if (isError) {
-            console.log(error);
+  const [shouldBlockNavigation, setShouldBlockNavigation] = useState(false);
+  const [initialBrandData, setInitialBrandData] = useState(brandData);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (brandData.brandName.trim() !== "") {
+      setShouldBlockNavigation(blockNavigation);
+    } else {
+      setShouldBlockNavigation(false);
+    }
+  }, [brandData, brandData.brandName]);
+
+  const { isError, isSuccess, error, data, isLoading } = useGetCategoriesQuery('BRANDS')
+  const [brand, { isSuccess: brandPostSuccess, isError: IsBrandPostError, error: brandPostError, data: brandPostData, isLoading: BrandPostingLoading }] = useNewBrandMutation()
+
+  const brandDataRef = useRef(null);
+
+  useEffect(() => {
+    brandDataRef.current = brandData;
+  }, [brandData]);
+
+  useEffect(() => {
+    const callFn = async () => {
+      const formData = new FormData();
+      const bData = brandDataRef.current;
+
+      const token = localStorage.getItem("token");
+
+      formData.append("brandName", bData?.brandName);
+
+      const selectedCategories = bData?.brandCategories
+        ?.filter((item) => item.selected)
+        ?.map((item) => ({ name: item.name }));
+
+      formData.append("brandCategory", JSON.stringify(selectedCategories));
+
+      const details = {
+        description: bData?.brandOverview,
+        htmlContent: bData?.brandTitle,
+      };
+      formData.append("details", JSON.stringify(details));
+
+      const location = {
+        lat: bData?.location?.lat,
+        long: bData?.location?.long,
+        additional: bData?.mapInstructions,
+      };
+      if (bData?.mapInstructions)
+        formData.append("location", JSON.stringify(location));
+
+      if (bData?.cover && Object.keys(bData?.cover).length > 0) {
+        const coverOrder = [];
+
+        bData.cover.forEach((file) => {
+          formData.append("cover", file);
+          coverOrder.push(file.name);
+        });
+
+        formData.append("coverOrder", JSON.stringify(coverOrder));
+      }
+      if (bData?.profileImage) {
+        formData.append("image", bData.profileImage);
+      }
+      formData.append("status", "DRAFT");
+
+      try {
+        await fetch(`${baseUrl}/brand`, {
+          method: "POST",
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          keepalive: true,
+        });
+      } catch (error) {
+        console.error("Error sending data before unload:", error);
+      }
+    };
+
+    const handlePageHide = async () => {
+      if (shouldBlockNavigation) {
+        if (!isEqual(brandData, initialBrandData)) {
+          if (brandDataRef.current.brandName.trim() !== "") {
+            dispatch(setObjectForNewBrand(null));
+            dispatch(setIsBrand(false));
+            await callFn();
+          }
         }
-    }, [isError]);
+      }
+    };
+
+    window.addEventListener("pagehide", handlePageHide);
+
+    return () => {
+      window.removeEventListener("pagehide", handlePageHide);
+    };
+  }, [shouldBlockNavigation, brandDataRef.current, brandData]);
+
+  useEffect(() => {
+    const makeNull = () => {
+      dispatch(setObjectForNewBrand(null));
+      dispatch(setIsBrand(false));
+    };
+
+    if (shouldBlockNavigation) {
+      if (!isEqual(brandData, initialBrandData)) {
+        if (brandData.brandName.trim() !== "") {
+          dispatch(setObjectForNewBrand(brandData));
+          dispatch(setIsBrand(true));
+        } else {
+          makeNull();
+        }
+      }
+    }
+  }, [brandData]);
 
     useEffect(() => {
         if (isSuccess) {
@@ -52,6 +173,10 @@ const NewBrand = () => {
             setBrandData((prevState) => ({
                 ...prevState,
                 brandCategories: updatedCategories
+            }));
+            setInitialBrandData((prevState) => ({
+                ...prevState,
+                brandCategories: updatedCategories,
             }));
         }
     }, [isSuccess, data]);
@@ -115,6 +240,9 @@ const NewBrand = () => {
                 return;
             }
         }
+        dispatch(setObjectForNewBrand(null));
+        dispatch(setIsBrand(false));
+        setShouldBlockNavigation(false);
         setLoadingButton(status);
         try {
             await brand({ ...brandData, status });
@@ -131,9 +259,8 @@ const NewBrand = () => {
 
     useEffect(() => {
         if (brandPostSuccess) {
-            console.log(brandPostData)
             toast.success(brandPostData?.message)
-            navigate("/brand")
+            navigate("/my-brands")
         }
     }, [brandPostSuccess])
 

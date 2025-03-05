@@ -1,78 +1,134 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 
 import { Box } from "@mui/material";
 
-const MapDisplay = React.memo(({ locations, marker, mapRef }) => {
-  const { pathname } = useLocation();
-  const { parameters, allData, isTyping } = useSelector(
-    (state) => state.search
-  );
+import { addHyphenToName } from "../utils";
 
-  const markersRef = useRef([]);
-  const [map, setMap] = useState(null);
+import { setShouldReturn } from "../store/slices/search";
 
-  useEffect(() => {
-    if (!map) {
-      const googleMap = new window.google.maps.Map(mapRef.current, {
-        center: { lat: 28.40680267823096, lng: 68.2791477297778 },
-        zoom: 6,
-      });
-      setMap(googleMap);
-    }
-  }, []);
+const MapDisplay = React.memo(
+  ({ locations, marker, mapRef, handleCloseFilterDrawer }) => {
+    // const { pathname } = useLocation();
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (map && locations && locations.length > 0) {
-      // Clear previous markers to prevent duplication
-      markersRef.current.forEach((marker) => marker.setMap(null));
-      markersRef.current = [];
+    const {
+      parameters,
+      // , allData, isTyping
+    } = useSelector((state) => state.search);
 
-      const customIcon = {
-        url: marker,
-        scaledSize: new window.google.maps.Size(32, 32),
-        anchor: new window.google.maps.Point(16, 32),
+    const markersRef = useRef([]);
+    const [map, setMap] = useState(null);
+
+    const adjustPosition = (position, index) => {
+      const offset = 0.00001 * index; // Small offset
+      return {
+        lat: position.lat + offset,
+        lng: position.lng + offset,
       };
+    };
 
-      locations.forEach((location) => {
-        const marker = new window.google.maps.Marker({
-          position: { lat: location.lat, lng: location.long },
-          map: map,
-          draggable: false,
-          icon: customIcon,
+    const returnPosition = (obj) => {
+      const navigationKeys = {
+        BRAND: { lat: obj?.location?.lat, lng: obj?.location?.long },
+        SPACE: {
+          lat: obj?.brand?.location?.lat,
+          lng: obj?.brand?.location?.long,
+        },
+        EVENT: {
+          lat: obj?.space?.brand?.location?.lat,
+          lng: obj?.space?.brand?.location?.long,
+        },
+      };
+      return navigationKeys[parameters.entity];
+    };
+
+    const navigateTo = (id, details) => {
+      if (parameters.entity === "BRAND") {
+        navigate(`/brand/${addHyphenToName(details?.brandName)}`, {
+          state: { id },
+        });
+      } else if (parameters.entity === "SPACE") {
+        navigate(`/space/${addHyphenToName(details?.spaceName)}`, {
+          state: { id },
+        });
+      } else {
+        navigate(`/event/${addHyphenToName(details?.eventName)}`, {
+          state: { id },
+        });
+      }
+    };
+
+    useEffect(() => {
+      if (!map) {
+        const googleMap = new window.google.maps.Map(mapRef.current, {
+          center: { lat: 40.0902, lng: -99.7129 },
+          zoom: 5,
+        });
+        setMap(googleMap);
+      }
+    }, []);
+
+    useEffect(() => {
+      if (map && locations && locations.length > 0) {
+        // Clear previous markers to prevent duplication
+        markersRef.current.forEach((marker) => marker.setMap(null));
+        markersRef.current = [];
+
+        const customIcon = {
+          url: marker,
+          scaledSize: new window.google.maps.Size(32, 32),
+          anchor: new window.google.maps.Point(16, 32),
+        };
+
+        locations.forEach((loc, index) => {
+          const adjustedPosition = adjustPosition(returnPosition(loc), index);
+
+          const marker = new window.google.maps.Marker({
+            position: adjustedPosition,
+            map: map,
+            draggable: false,
+            icon: customIcon,
+          });
+
+          marker.addListener("click", () => {
+            handleCloseFilterDrawer();
+            dispatch(setShouldReturn(true));
+            navigateTo(loc.id, loc);
+          });
+
+          markersRef.current.push(marker);
         });
 
-        markersRef.current.push(marker);
-      });
+        // Optionally fit map to show all markers
+        const bounds = new window.google.maps.LatLngBounds();
+        locations.forEach((loc) => bounds.extend(returnPosition(loc)));
 
-      // Optionally fit map to show all markers
-      const bounds = new window.google.maps.LatLngBounds();
-      locations.forEach((loc) =>
-        bounds.extend({ lat: loc.lat, lng: loc.long })
-      );
-
-      map.fitBounds(bounds);
-    }
-  }, [map, locations]);
-
-  useEffect(() => {
-    if (pathname === "/search") {
-      if (isTyping && allData?.length === 0 && map && parameters?.lat) {
-        map.panTo({ lat: parameters?.lat, lng: parameters?.long });
+        map.fitBounds(bounds);
       }
-    }
-  }, [allData, isTyping, map, parameters, pathname]);
+    }, [map, locations]);
 
-  return <Box sx={{ height: "400px", width: "100%" }} ref={mapRef} />;
-});
+    // useEffect(() => {
+    //   if (pathname === "/search") {
+    //     if (isTyping && allData?.length === 0 && map && parameters?.lat) {
+    //       map.panTo({ lat: parameters?.lat, lng: parameters?.long });
+    //     }
+    //   }
+    // }, [allData, isTyping, map, parameters, pathname]);
 
-const MapWithKey = ({ locations, marker, mapRef }) => (
+    return <Box sx={{ height: "400px", width: "100%" }} ref={mapRef} />;
+  }
+);
+
+const MapWithKey = ({ locations, marker, mapRef, handleCloseFilterDrawer }) => (
   <MapDisplay
     key={JSON.stringify(locations)}
     locations={locations}
     marker={marker}
     mapRef={mapRef}
+    handleCloseFilterDrawer={handleCloseFilterDrawer}
   />
 );
 

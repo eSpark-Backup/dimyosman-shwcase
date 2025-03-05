@@ -43,10 +43,10 @@ export const fetchedSpaceData = (
           },
         },
       },
-      {
-        label: "Stats",
-        props: null,
-      },
+      // {
+      //   label: "Stats",
+      //   props: null,
+      // },
       {
         label: "Tenancy",
         props:

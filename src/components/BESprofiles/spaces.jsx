@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import SpaceCard from "../SpaceCard";
 import { addIcon } from "../../assets";
+import { addHyphenToName } from "../../utils";
 
 const Spaces = ({ brandSpaces, isMyProfile }) => {
   const token = localStorage.getItem("token")
     const navigate = useNavigate();
+    const { pathname } = useLocation();
     const filterEvents = ["All", "Publish", "Draft", "Archive"];
     const [activeFilter, setActiveFilter] = useState("All");
   
@@ -110,7 +112,7 @@ const Spaces = ({ brandSpaces, isMyProfile }) => {
               marginTop={2}
               direction="row"
               alignItems="center"
-              justifyContent="space-between"
+              justifyContent="flex-start"
               flexWrap="wrap"
               rowGap={4}
               columnGap={2}
@@ -126,7 +128,7 @@ const Spaces = ({ brandSpaces, isMyProfile }) => {
                     }}
                   >
                     <SpaceCard
-                      onClick={() => token ?  navigate(`/space/${space?.id}`) : toast.error("You need to login first")}
+                      onClick={() => token ?  navigate(`${pathname.includes("/brand") ? "/space" : "/my-spaces"}/${addHyphenToName(space?.spaceName)}`, { state: { id: space?.id }}) : toast.error("You need to login first")}
                       spaces={space}
                       key={ind}
                     />

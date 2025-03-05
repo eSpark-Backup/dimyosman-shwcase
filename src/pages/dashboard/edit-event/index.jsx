@@ -6,7 +6,7 @@ import Quill from 'quill'
 import 'quill/dist/quill.snow.css';
 import Reviews from '../../../components/BESprofiles/reviews'
 import { reviews as eventReviews } from '../../../constant'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import dayjs from 'dayjs'
 import { useEditEventMutation, useGetAllEventsQuery } from '../../../services/events'
 import { useGetCategoriesQuery } from '../../../services/categories'
@@ -22,7 +22,8 @@ const EditEvent = () => {
     const navigate = useNavigate();
     const theme = useTheme()
     const [currentIndex, setCurrentIndex] = useState(0);
-    const params = useParams();
+    // const params = useParams();
+    const { state } = useLocation();
     const [bookedRanges, setBookedRanges] = useState([])
 
     const { data: brandData, isError: isBrandError, isLoading: BrandLoading, isSuccess: isBrandSuccess, error: brandError, isFetching: isBrandFetching } = useGetAllBrandsQuery({}, {
@@ -32,7 +33,7 @@ const EditEvent = () => {
     const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading } = useGetCategoriesQuery('EVENTS')
 
     const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllEventsQuery({
-        page: 1, pageSize: 7, id: params?.eventId
+        page: 1, pageSize: 7, id: state?.id
     }, { refetchOnMountOrArgChange: true });
 
     useEffect(() => {
@@ -65,7 +66,7 @@ const EditEvent = () => {
         toSendSpace: ''
     });
 
-    const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useSpacesForEventQuery({ eventId: params?.eventId }, {
+    const { data: spaceData, isError: isSpaceError, isLoading: SpaceLoading, isSuccess: isSpaceSuccess, error: spaceError, isFetching: isSpaceFetching } = useSpacesForEventQuery({ eventId: state?.id }, {
         refetchOnMountOrArgChange: true,
     });
 
@@ -257,7 +258,6 @@ const EditEvent = () => {
 
     const handleBrandSelect = (value) => {
         const selectedItem = options.find((option) => option.value === value);
-        console.log(selectedItem)
         setEventData((prev) => ({
             ...prev,
             brand: selectedItem?.item,
@@ -448,7 +448,7 @@ const EditEvent = () => {
     useEffect(() => {
         if (eventPostSuccess) {
             toast.success(eventPostData?.message)
-            navigate("/event")
+            navigate("/my-events")
         }
     }, [eventPostSuccess])
 
@@ -501,9 +501,16 @@ const EditEvent = () => {
             return false;
         }
 
-        if (!eventData?.brand || eventData?.brand?.trim() === "") {
-            toast?.error("Please select brand");
-            return false;
+        if (!data?.data?.brand) {
+            if (!eventData?.brand || typeof eventData.brand !== "object" || Object.keys(eventData.brand).length === 0) {
+                toast?.error("Please select brand");
+                return false;
+            }
+        } else {
+            if (!eventData?.brand || eventData?.brand?.trim() === "") {
+                toast?.error("Please select brand");
+                return false;
+            }
         }
 
         if (
@@ -523,7 +530,6 @@ const EditEvent = () => {
 
     const handleSubmit = async (status) => {
         if (status === "PUBLISH") {
-            console.log(eventData)
             if (!validateEventData()) {
                 return;
             }
@@ -535,7 +541,7 @@ const EditEvent = () => {
         }
         setLoadingButton(status);
         try {
-            await event({ eventData: { ...eventData, status }, id: params?.eventId });
+            await event({ eventData: { ...eventData, status }, id: state?.id });
         } finally {
             setLoadingButton(null);
         }

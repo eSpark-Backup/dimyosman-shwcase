@@ -1,7 +1,11 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { format } from "date-fns";
-import { emptyInquiryCount, emptyNotificationCount, setGoToMessage } from "../store/slices/notification";
+import {
+  emptyInquiryCount,
+  emptyNotificationCount,
+  setGoToMessage,
+} from "../store/slices/notification";
 import moment from "moment";
 
 export function useQuery() {
@@ -88,7 +92,7 @@ export const deleteAllCookiesExcept = (exceptions = []) => {
 export const logoutAuthUtils = (logout) => {
   logout({ returnTo: window.location.origin, openUrl: false });
   deleteAllCookiesExcept();
-}
+};
 
 // FOR PICKER
 export const addEmoji = (
@@ -262,9 +266,11 @@ export const spacesAction = (
 ) => {
   switch (type) {
     case "edit":
-      if (location?.pathname === "/space") {
-        navigate(`/space/${item?.id}/edit`);
-      }
+      // if (location?.pathname === "/space") {
+      navigate(`/my-spaces/${addHyphenToName(item?.eventName)}/edit`, {
+        state: { id: item?.id },
+      });
+      // }
       break;
 
     case "Sign":
@@ -323,7 +329,7 @@ export const keysForBrandsSapcesEvents = async (object, type, address) => {
 
   const coverObject = {
     profileId: object?.brand?.id,
-    shareableLink: object?.shareableLink,
+    shareableLink: processUrl(object?.shareableLink),
     isFavourite: object?.isFavourite,
     id: object?.id,
     activity: type,
@@ -360,7 +366,7 @@ export const keysForBrandsSapcesEvents = async (object, type, address) => {
         description: amenityItem?.name || "",
       })) || [];
 
-      const category = object?.spaceCategory;
+    const category = object?.spaceCategory;
 
     return {
       ...coverObject,
@@ -431,21 +437,6 @@ export const removeNewInquiry = (dispatch) => {
 };
 
 export const messageBox = (parentObj, chatDetails, allMessages) => {
-  const getParentObject = () => {
-    const isSpacesChats = parentObj?.spaceDetails;
-    const isEventsChats = parentObj?.eventDetails;
-
-    const details = isSpacesChats ? parentObj?.spaceDetails : isEventsChats ? parentObj?.eventDetails : parentObj?.brandDetails;
-
-    return {
-      parentId: details?.id,
-      parentActivity: isSpacesChats ? "space" : isEventsChats ? "event" : "brand",
-      parentName: details?.brandName || details?.spaceName || details?.eventName,
-      parentImage: details?.brandImage || details?.spaceImage || details?.eventImage,
-      ownerDetails: details?.user,
-    };
-  };
-
   const getMatchingChatDetails = (chatId) => {
     return chatDetails?.find((item) => item?._id === chatId) || {};
   };
@@ -456,6 +447,92 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
 
   const formatDate = (date) => format(new Date(date), "MM/dd/yy");
   const formatTime = (date) => format(new Date(date), "h:mma");
+
+  const getParentObject = () => {
+    const isSpacesChats = parentObj?.spaceDetails;
+    const isEventsChats = parentObj?.eventDetails;
+    const isDirectChats = parentObj?.userToUser;
+
+    const matchingItem = isDirectChats
+      ? getMatchingChatDetails(parentObj?._id)
+      : null;
+    const currentChatMessages = isDirectChats
+      ? getMessagesForChat(parentObj?._id)
+      : null;
+
+    const details = isDirectChats
+      ? parentObj?.receiverEvent || parentObj?.receiverBrand
+      : isSpacesChats
+      ? parentObj?.spaceDetails
+      : isEventsChats
+      ? parentObj?.eventDetails
+      : parentObj?.brandDetails;
+
+    const spaces = matchingItem?.receiverBrand?.spaceCount || 0;
+
+    const followers =
+      matchingItem?.receiverEvent?.followedCount ||
+      matchingItem?.receiverBrand?.followedCount ||
+      0;
+
+    const saved =
+      matchingItem?.receiverEvent?.likedCount ||
+      matchingItem?.receiverBrand?.likedCount ||
+      0;
+
+    const creator =
+      parentObj?.receiverBrand?.user?.name ||
+      parentObj?.receiverEvent?.user?.name ||
+      "";
+
+    const receiverbrandName =
+      parentObj?.receiverBrand?.brandName ||
+      parentObj?.receiverEvent?.brand?.brandName;
+
+    return {
+      parentId: details?.id,
+      parentActivity: isSpacesChats
+        ? "space"
+        : isEventsChats || (isDirectChats && parentObj?.receiverEvent)
+        ? "event"
+        : "brand",
+      parentName:
+        details?.brandName || details?.spaceName || details?.eventName,
+      parentImage:
+        details?.brandImage || details?.spaceImage || details?.eventImage,
+      ownerDetails: details?.user,
+      directUserChat: isDirectChats
+        ? {
+            ...parentObj,
+            read: false,
+            reviews: 12345,
+            leases: 12345,
+            rating: 5,
+            members: matchingItem?.members,
+            chatGroup: {
+              receiverbrandName,
+              creator,
+              chatName: matchingItem?.name,
+              spaces,
+              followers,
+              saved,
+            },
+            messages: currentChatMessages.map((messageItem) => {
+              return {
+                ...messageItem,
+                id: messageItem?._id,
+                childName: details?.brandName || details?.eventName,
+                childImage: details?.brandImage || details?.eventImage,
+                activity: "brand",
+                creator: parentObj?.name,
+                date: formatDate(messageItem?.createdAt),
+                time: formatTime(messageItem?.createdAt),
+              };
+            }),
+          }
+        : null,
+    };
+  };
 
   const parentObject = getParentObject();
 
@@ -472,7 +549,8 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
 
         const isSpacesChats = parentObj?.spaceDetails;
         const isEventsChats = parentObj?.eventDetails;
-        
+        const isDirectChats = item?.userToUser;
+
         const spaces =
           isSpacesChats ||
           isEventsChats ||
@@ -498,46 +576,52 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
               matchingItem?.receiverEvent?.likedCount ||
               matchingItem?.receiverBrand?.likedCount;
 
-        const childName =
-          isSpacesChats ||
-          isEventsChats ||
-          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
-            ? item?.senderBrand?.brandName
-            : item?.receiverSpace?.spaceName ||
-              item?.receiverEvent?.eventName ||
-              item?.receiverBrand?.brandName;
+        const childName = isDirectChats
+          ? item?.name
+          : isSpacesChats ||
+            isEventsChats ||
+            (item?.isInquiryRole && item?.isInquiryRole === "receiver")
+          ? item?.senderBrand?.brandName
+          : item?.receiverSpace?.spaceName ||
+            item?.receiverEvent?.eventName ||
+            item?.receiverBrand?.brandName;
 
-        const childImage =
-          isSpacesChats ||
-          isEventsChats ||
-          (item?.isInquiryRole && item?.isInquiryRole === "receiver")
-            ? item?.senderBrand?.brandImage
-            : item?.receiverSpace?.spaceImage ||
-              item?.receiverEvent?.eventImage ||
-              item?.receiverBrand?.brandImage;
+        const childImage = isDirectChats
+          ? item?.avatar[0]
+          : isSpacesChats ||
+            isEventsChats ||
+            (item?.isInquiryRole && item?.isInquiryRole === "receiver")
+          ? item?.senderBrand?.brandImage
+          : item?.receiverSpace?.spaceImage ||
+            item?.receiverEvent?.eventImage ||
+            item?.receiverBrand?.brandImage;
 
         const creator =
           isSpacesChats ||
           isEventsChats ||
           (item?.isInquiryRole && item?.isInquiryRole === "receiver")
             ? item?.senderBrand?.user?.name
-            : item?.receiverBrand?.user?.name || item?.receiverEvent?.user?.name;
+            : item?.receiverBrand?.user?.name ||
+              item?.receiverEvent?.user?.name;
 
-        const receiverbrandName = isSpacesChats || isEventsChats
-          ? item?.receiverBrand?.brandName || item?.receiverEvent?.brand?.brandName
-          : "";
+        const receiverbrandName =
+          isSpacesChats || isEventsChats
+            ? item?.receiverBrand?.brandName ||
+              item?.receiverEvent?.brand?.brandName
+            : "";
 
-        const activity =
-          isSpacesChats ||
-          isEventsChats ||
-          item?.isInquiryRole === "receiver" ||
-          (item?.isInquiryRole === "sender" &&
-            !item?.receiverEvent &&
-            !item?.receiverSpace)
-            ? "brand"
-            : item?.receiverEvent?.eventName
-            ? "event"
-            : "space";
+        const activity = isDirectChats
+          ? "profile"
+          : isSpacesChats ||
+            isEventsChats ||
+            item?.isInquiryRole === "receiver" ||
+            (item?.isInquiryRole === "sender" &&
+              !item?.receiverEvent &&
+              !item?.receiverSpace)
+          ? "brand"
+          : item?.receiverEvent?.eventName
+          ? "event"
+          : "space";
 
         return {
           ...item,
@@ -551,8 +635,8 @@ export const messageBox = (parentObj, chatDetails, allMessages) => {
           creator,
           chatName: matchingItem?.name,
           spaces: spaces || 0,
-          followers:followers|| 0,
-          saved: saved|| 0,
+          followers: followers || 0,
+          saved: saved || 0,
           activity,
           read: false,
           date: matchingItem?.createdAt
@@ -592,7 +676,9 @@ export const handleNotificationUpdate = (cookieName, action, dispatch) => {
 export const fetchAddressFromCoordinates = async (lat, lng) => {
   try {
     const response = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${
+        import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+      }`
     );
     const data = await response.json();
     if (data.results[0]) {
@@ -603,4 +689,46 @@ export const fetchAddressFromCoordinates = async (lat, lng) => {
     console.error("Error fetching address:", error);
     return "";
   }
+};
+
+export const addHyphenToName = (name) => {
+  return name?.toLowerCase()?.replace(/ /g, "-");
+};
+
+export const processUrl = (url) => {
+  if (url) {
+    url = url.replace(/(?<=data=)\s+/g, "");
+
+    url = url.replace(/([a-zA-Z]+(?: [a-zA-Z]+)*)\/share/, (match, group) => {
+      return group.toLowerCase().replace(/ /g, "-") + "/share";
+    });
+
+    return url;
+  }
+};
+
+export const cleanHTML = (htmlContent) => {
+  // Create a temporary container to parse HTML content
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = htmlContent;
+
+  // Step 1: Trim spaces inside paragraphs by removing leading/trailing spaces
+  const paragraphs = tempDiv.querySelectorAll('p');
+  paragraphs.forEach((p) => {
+    p.innerHTML = p.innerHTML.trim();
+  });
+
+  // Step 2: Remove all leading and trailing empty <p><br></p> tags
+  let cleanedHTML = tempDiv.innerHTML;
+
+  // Remove all leading empty <p><br></p> tags (before the first actual content)
+  cleanedHTML = cleanedHTML.replace(/^\s*(<p><br><\/p>\s*)+/g, '');
+
+  // Remove all trailing empty <p><br></p> tags (after the last actual content)
+  cleanedHTML = cleanedHTML.replace(/(<p><br><\/p>\s*)+$/g, '');
+
+  // Step 3: Ensure that <br> tags between actual text content remain intact
+  // After trimming and removing leading/trailing empty breaks, we return the cleaned HTML
+
+  return cleanedHTML;
 };

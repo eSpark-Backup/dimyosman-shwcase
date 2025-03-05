@@ -1,17 +1,17 @@
 import { useDispatch, useSelector } from "react-redux";
 import { BESProfile } from "../../../../components";
-import { useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { useGetAllBrandsQuery } from "../../../../services/brands";
 import { updateBrands } from "../../../../store/slices/brand";
-import { brandMain } from "../../../../assets";
 import { Box, LinearProgress } from "@mui/material";
-import { fetchAddressFromCoordinates } from "../../../../utils";
+import { fetchAddressFromCoordinates, getCookie, processUrl } from "../../../../utils";
 import dayjs from "dayjs";
 
 const BrandDetails = () => {
-  const params = useParams()
-  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({ page: 1, pageSize: 7, id: params?.id }, { refetchOnMountOrArgChange: true });
+  const { state } = useLocation();
+  const navId = getCookie("navId")
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({ page: 1, pageSize: 7, id: state?.id || navId }, { refetchOnMountOrArgChange: true });
   const dispatch = useDispatch()
   const { user } = useSelector((state) => state.auth)
 
@@ -66,7 +66,7 @@ const BrandDetails = () => {
 
 
         const brandData = {
-          shareableLink: data?.data?.shareableLink,
+          shareableLink: processUrl(data?.data?.shareableLink),
           isFollowed: data?.data?.isFollowed,
           isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
@@ -112,10 +112,10 @@ const BrandDetails = () => {
               label: "Spaces",
               props: brandSpaces?.length > 0 ? { brandSpaces, isMyProfile: data?.data?.user?.id === user?.id } : false
             },
-            {
-              label: "Stats",
-              props: null,
-            },
+            // {
+            //   label: "Stats",
+            //   props: null,
+            // },
             // {
             //   label: "Reviews",
             //   props: null,
@@ -127,7 +127,7 @@ const BrandDetails = () => {
       }
     }
     fetchAddress()
-  }, [isSuccess, data, dispatch, params])
+  }, [isSuccess, data, dispatch, state])
 
 
   const { brands } = useSelector((state) => state.brand);
@@ -138,7 +138,9 @@ const BrandDetails = () => {
       </Box>
     )
   }
-  return <BESProfile type="brand" data={brands} />;
+  return (
+    <BESProfile type="brand" data={brands} />
+  );
 };
 
 export default BrandDetails;

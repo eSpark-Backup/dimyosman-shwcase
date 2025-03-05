@@ -4,8 +4,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getSmallSidebar, sidebarRoutes } from "../constant";
 import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../store/slices/activity";
+import { addHyphenToName, deleteCookie, getCookie } from "../utils";
+import { emptyFilters, setSearchQuery, setShouldReturn } from "../store/slices/search";
+import { setFromSidebar } from "../store/slices/chat";
 
 const Sidebar = () => {
+  const searchQuery = getCookie("search_query")
+  
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const dispatch = useDispatch()
@@ -15,6 +20,7 @@ const Sidebar = () => {
     splittedSubPath.length > 1 ? `/${splittedSubPath[1]}` : splittedSubPath[0];
   const [hovered, setHovered] = useState(false);
   const { user } = useSelector((state) => state.auth);
+  const {search_query} = useSelector(state => state.search)
 
   return (
     <Stack
@@ -37,15 +43,20 @@ const Sidebar = () => {
       }}
     >
       {sidebarRoutes.map((item, ind) => {
-        const active = item?.link === currentPath;
+        const active = item?.subLink?.includes(currentPath);
         const hover = hovered === ind;
         return (
           <Stack
             className="sidebar-item"
             id={item.title}
             onClick={() => {
+              deleteCookie("search_query")
+              dispatch(setSearchQuery(null))
+              dispatch(setShouldReturn(false))
+              dispatch(emptyFilters());
+
               if (item.title === "Profile") {
-                navigate(`/profile/${user?.id}`);
+                navigate(`/profile/${addHyphenToName(user?.name)}`, { state: { id: user?.id } });
                 return;  // <== Stops further execution
               }
               
@@ -59,6 +70,11 @@ const Sidebar = () => {
 
               localStorage.removeItem("searchScrollPosition");
               navigate(item.link);
+              if(item.title === "Messages"){
+                dispatch(setFromSidebar(true))
+              } else {
+                dispatch(setFromSidebar(false))
+              }
 
             }}
             onMouseOver={() => setHovered(ind)}
@@ -89,7 +105,7 @@ const Sidebar = () => {
                 width: "196px",
                 color: (theme) => theme.palette.primary.main,
                 display:
-                  getSmallSidebar(pathname) || pathname === "/message"
+                  getSmallSidebar(pathname) || pathname === "/message" || (searchQuery || search_query)
                     ? "none"
                     : { xs: "none", lg: "block" },
               }}

@@ -5,6 +5,7 @@ import EventCard from './EventCard';
 import { addGrey } from '../assets';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { addHyphenToName } from '../utils';
 
 const ProfileEvents = ({ myProfile, filter1, filter2, filter3, filter4, filter5, filter6, filter7, cardsData, loading }) => {
     const token = localStorage.getItem("token");
@@ -89,14 +90,14 @@ const ProfileEvents = ({ myProfile, filter1, filter2, filter3, filter4, filter5,
                 marginTop={2}
                 direction={{ xs: "column", md: "row" }}
                 alignItems="center"
-                justifyContent="space-between"
+                justifyContent="flex-start"
                 flexWrap="wrap"
                 rowGap={4}
-                columnGap={0}
+                columnGap={2}
             >
                 {filteredItems?.length > 0 ? filteredItems?.map((event, ind) => (
                     <Box key={ind} sx={{ width: { xs: "100%", md: "328px" } }}>
-                        <EventCard onClick={() => token ? navigate(`/event/${event?.id}`) : toast.error("You need to login first")} event={event} showBtn={true} edit={myProfile} />
+                        <EventCard onClick={() => token ? navigate(`${myProfile ? "/my-events" : "/event"}/${addHyphenToName(event?.profileName)}`, { state: { id: event?.id } }) : toast.error("You need to login first")} event={event} showBtn={true} edit={myProfile} />
                     </Box>
                 ))
                 :

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 import { Box, LinearProgress } from "@mui/material";
-import { fetchAddressFromCoordinates } from "../../../../utils";
+import { fetchAddressFromCoordinates, getCookie, processUrl } from "../../../../utils";
 
 import SpaceInquireModal from "../../../../components/SpaceInquireModal";
 import { BESProfile } from "../../../../components";
@@ -13,8 +13,9 @@ import { useGetAllSpaceQuery } from "../../../../services/space";
 import { updateSpace } from "../../../../store/slices/space";
 
 const SpaceDetails = () => {
-  const { id: spaceId } = useParams()
-  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllSpaceQuery({ page: 1, pageSize: 7, id: spaceId }, { refetchOnMountOrArgChange: true });
+  const { state } = useLocation();
+  const navId = getCookie("navId")
+  const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllSpaceQuery({ page: 1, pageSize: 7, id: state?.id || navId }, { refetchOnMountOrArgChange: true });
   const { user } = useSelector((state) => state.auth)
 
   const dispatch = useDispatch()
@@ -22,6 +23,8 @@ const SpaceDetails = () => {
   useEffect(() => {
     const fetchAddress = async () => {
       if (isSuccess) {
+        const filterPrice =
+        data?.data?.pricing?.filter((pricingItem) => pricingItem?.term === "Day") || [];
         const amenities = data?.data?.amenity?.map((item) => ({
           description: item?.name,
           icon: item?.iconUrl
@@ -34,7 +37,7 @@ const SpaceDetails = () => {
           );
         }
         const updatedSpace = {
-          shareableLink: data?.data?.shareableLink,
+          shareableLink: processUrl(data?.data?.shareableLink),
           isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
           type: "space",
@@ -63,32 +66,45 @@ const SpaceDetails = () => {
                   },
                   location: address,
                   space: data?.data?.brand?.brandName,
-                  spaceCategory: data?.data?.brand?.brandCategory?.map(item => item.name),
-                  startingDate: "28.02.2025.",
-                  endingDate: "15.4.2025.",
+                  spaceCategory: data?.data?.brand?.brandCategory?.map(
+                    (item) => item.name
+                  ),
+                  startingDate: filterPrice[0]?.price
+                    ? `$${filterPrice[0]?.price}/day`
+                    : "N/A",
+                  endingDate: filterPrice[0]?.minimum
+                    ? `minimum lease: ${filterPrice[0]?.minimum} days`
+                    : "N/A",
                   expectedPoint: {
                     title: "What to Expect:",
                     points: [data?.data?.details?.htmlContent || ""],
                   },
-                  mapLocation: { lat: data?.data?.brand?.location?.lat, long: data?.data?.brand?.location?.long, additional: data?.data?.brand?.location?.additional },
+                  mapLocation: {
+                    lat: data?.data?.brand?.location?.lat,
+                    long: data?.data?.brand?.location?.long,
+                    additional: data?.data?.brand?.location?.additional,
+                  },
                   status: data?.data?.status,
                 },
               },
             },
-            {
-              label: "Stats",
-              props: null,
-            },
+            // {
+            //   label: "Stats",
+            //   props: null,
+            // },
             {
               label: "Tenancy",
-              props: data?.data?.tenantSpaceDetail?.length > 0 ? { tenancy: data?.data?.tenantSpaceDetail } : false,
+              props:
+                data?.data?.tenantSpaceDetail?.length > 0
+                  ? { tenancy: data?.data?.tenantSpaceDetail }
+                  : false,
             },
             // {
             //   label: "Reviews",
             //   props: null,
             // },
           ],
-        }
+        };
         dispatch(updateSpace([updatedSpace]));
       }
     }

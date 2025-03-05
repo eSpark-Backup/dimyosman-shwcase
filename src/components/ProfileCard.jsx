@@ -35,7 +35,6 @@ const ProfileCard = ({ myProfile, userRole = "account", isEdit, handleProfileImg
     // };
 
     const handleImageChange = (event) => {
-        console.log("Hello")
         handleProfileChange(event);
         const file = event.target.files[0];
         if (file) {
@@ -188,7 +187,7 @@ const ProfileCard = ({ myProfile, userRole = "account", isEdit, handleProfileImg
                                 onClick();
                             }
                         } else {
-                            navigate(`/profile/${location?.pathname.split("/").at(-1)}/edit`);
+                            navigate(`/profile/${location?.pathname.split("/").at(-1)}/edit`, { state: { id: location.state.id }});
                         }
                     }}
                     loading={loading}

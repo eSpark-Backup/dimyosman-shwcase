@@ -12,6 +12,7 @@ import {
   setFromNotification,
   setGoToMessage,
 } from "../store/slices/notification";
+import { setFromSidebar } from "../store/slices/chat";
 
 const Notification = ({ open, theme, setShowNotification }) => {
   const notifRef = useRef();
@@ -27,7 +28,7 @@ const Notification = ({ open, theme, setShowNotification }) => {
     if (item?.metadata?.redirect) {
       let redName = item.metadata.redirect;
 
-      if (pathname === "/space") {
+      if (pathname === "/my-spaces") {
         if (
           item.metadata?.redirect === "Lease" &&
           activeTabForNotif !== "Lease"
@@ -42,11 +43,12 @@ const Notification = ({ open, theme, setShowNotification }) => {
         dispatch(setRedirectTab(redName));
       } else {
         dispatch(setRedirectTab(redName));
-        navigate("/space");
+        navigate("/my-spaces");
       }
     } else {
       dispatch(emptyGoToMessage());
       dispatch(setFromNotification(false));
+      dispatch(setFromSidebar(false));
 
       if (item?.metadata?.receiverSpaceName) {
         const navigateData = {
@@ -188,7 +190,8 @@ const Notification = ({ open, theme, setShowNotification }) => {
                     <>
                       <strong style={{ textTransform: "capitalize" }}>
                         {item?.metadata?.senderBrandUserName ||
-                          item?.metadata?.senderBrandName}
+                          item?.metadata?.senderBrandName ||
+                          item?.metadata?.senderName}
                       </strong>{" "}
                       sent a{" "}
                       {item.title

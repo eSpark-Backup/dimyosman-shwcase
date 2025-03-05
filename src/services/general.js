@@ -70,6 +70,24 @@ export const generalCategoriesApi = api.injectEndpoints({
         };
       },
     }),
+    getLocationSearch: builder.query({
+      query: ({ page, pageSize, entity } = {}) => {
+        const baseUrl = "/general/locationSearch";
+        const queryParams = new URLSearchParams();
+
+        if (pageSize) queryParams.append("pageSize", pageSize);
+        if (page) queryParams.append("page", page);
+        if (entity) queryParams.append("entity", entity);
+
+        const queryString = queryParams.toString()
+          ? `?${queryParams.toString()}`
+          : "";
+        return {
+          url: `${baseUrl}${queryString}`,
+          method: "GET",
+        };
+      },
+    }),
   }),
 });
 
@@ -77,4 +95,5 @@ export const {
   useGetGeneralCategoriesQuery,
   useGetGeneralSearchQuery,
   useGetGeneralLocationQuery,
+  useGetLocationSearchQuery,
 } = generalCategoriesApi;

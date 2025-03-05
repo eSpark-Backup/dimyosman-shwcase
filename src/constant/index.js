@@ -75,65 +75,76 @@ export const sidebarRoutes = [
     hoverIcon: activityHover,
     title: "Activity",
     link: "/activity",
+    subLink: ["/activity"],
   },
   {
     icon: brand,
     hoverIcon: brandHover,
     title: "Brands",
-    link: "/brand",
+    link: "/my-brands",
+    subLink: ["/brands", "/brand"],
   },
   {
     icon: event,
     hoverIcon: eventHover,
     title: "Events",
-    link: "/event",
+    link: "/my-events",
+    subLink: ["/events", "/event"],
   },
   {
     icon: space,
     hoverIcon: spaceHover,
     title: "Spaces",
-    link: "/space",
+    link: "/my-spaces",
+    subLink: ["/spaces", "/space"],
   },
   {
     icon: profile,
     hoverIcon: profileHover,
     title: "Profile",
     link: null,
+    subLink: ["/profile"],
   },
   {
     icon: calendar,
     hoverIcon: calendarHover,
     title: "Calendar",
     link: "/calendar",
+    subLink: ["/calendar"],
   },
   {
     icon: message,
     hoverIcon: messageHover,
     title: "Messages",
     link: "/message",
+    subLink: ["/message"],
   },
   {
     icon: settings,
     hoverIcon: settingsHover,
     title: "Settings",
     link: "/settings",
+    subLink: ["/settings"],
   },
 ];
 
 export const getSmallSidebar = (currentLink) => {
-  const id = currentLink.split("/")[2];
+  const name = currentLink.split("/")[2];
   const smallSidebarLink = [
-    `/profile/${id}`,
-    `/profile/${id}/edit`,
-    `/brand/${id}`,
-    `/brand/${id}/edit`,
+    `/profile/${name}`,
+    `/profile/${name}/edit`,
+    `/brand/${name}`,
+    `/my-brands/${name}`,
+    `/my-brands/${name}/edit`,
     "/new-brand",
-    `/event/${id}`,
-    `/event/${id}/edit`,
+    `/event/${name}`,
+    `/my-events/${name}`,
+    `/my-events/${name}/edit`,
     "/new-event",
-    `/space/${id}`,
+    `/space/${name}`,
+    `/my-spaces/${name}`,
     "/new-space",
-    `/space/${id}/edit`,
+    `/my-spaces/${name}/edit`,
     `/settings`,
     `/calendar`,
   ];
@@ -745,7 +756,7 @@ export const eventTableData = (gotoDetail, handleAction, myEventData, myEventDat
   {
     data: myEventData2,
     column: likedEventColumns(likeLoading, savedId, gotoDetail, (item) =>
-      handleAction(item, "remove"), gotoSpace
+      handleAction(item, "remove"), gotoBrand, gotoSpace
     ),
   },
 ];
@@ -770,7 +781,7 @@ export const spaceTableData = (gotoDetail, handleAction, mySpaceData, mySpaceDat
   {
     data: mySpaceData2,
     column: likedSpaceColumns(likeLoading, savedId, gotoDetail, (item) =>
-      handleAction(item, "remove")
+      handleAction(item, "remove"), gotoBrand
     ),
   },
   {
@@ -1078,10 +1089,10 @@ export const profileContent = [
             },
           },
         },
-        {
-          label: "Stats",
-          props: null,
-        },
+        // {
+        //   label: "Stats",
+        //   props: null,
+        // },
         {
           label: "Reviews",
           props: null,

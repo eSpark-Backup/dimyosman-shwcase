@@ -4,7 +4,6 @@ export const userApi = api.injectEndpoints({
     endpoints: (builder) => ({
         userProfileUpdate: builder.mutation({
             query: (profileData) => {
-                console.log(profileData)
                 const formData = new FormData();
                 formData.append("about", JSON.stringify({ about: profileData?.profileAbout }));
                 if (profileData?.profileImage) {

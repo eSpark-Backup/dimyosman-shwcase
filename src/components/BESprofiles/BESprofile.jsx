@@ -5,21 +5,24 @@ import DynamicPaginationSwiper from "../Slider";
 import OutlinedTabs from "../outlinedTabs";
 import Details from "./details";
 import Events from "./events";
-import Stats from "./stats";
+// import Stats from "./stats";
 import Reviews from "./reviews";
 import Spaces from "./spaces";
 import Tenancy from "./teenacy";
 import { brandBadge, eventBadge, spaceBadge, star } from "../../assets";
+import { addHyphenToName, getCookie } from "../../utils";
 
-const BESProfile = ({ spaceInquire, type, data }) => {
+const BESProfile = ({ spaceInquire, type, data}) => {
   const [openSliderModal, setOpenSliderModal] = useState(false);
   const handleCloseModal = () => setOpenSliderModal(false);
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { id } = useParams();
+  const navId = getCookie("navId")
+  const { name } = useParams();
 
   const editProfile = () => {
-    navigate(`/${type}/${id}/edit`);
+    const updateType = `my-${type}s`;
+    navigate(`/${updateType}/${name}/edit`, { state: { id: state?.id || navId } });
   };
 
   const addNewEvent = () => {
@@ -29,7 +32,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
   const componentsMap = {
     Details,
     Events,
-    Stats,
+    // Stats,
     Reviews,
     Spaces,
     Tenancy,
@@ -52,8 +55,7 @@ const BESProfile = ({ spaceInquire, type, data }) => {
       },
     }));
   };
-
-  const filteredProfile = data.find((profile) => (profile.id === id) || profile);
+  const filteredProfile = data.find((profile) => (profile.id === state?.id || navId) || profile);
   const myProfile = {
     ...filteredProfile,
     tabs: mapTabsToComponents(filteredProfile, filteredProfile?.tabs),
@@ -63,9 +65,6 @@ const BESProfile = ({ spaceInquire, type, data }) => {
     ? myProfile.slides.map((slide) => slide.url)
     : [];
 
-  console.log(transformedSlides)
-
-
   if (!filteredProfile) {
     return (
       <Box sx={{ width: "100%" }}>
@@ -73,8 +72,6 @@ const BESProfile = ({ spaceInquire, type, data }) => {
       </Box>
     )
   }
-
-  console.log(myProfile.profilePic)
 
   return (
     <>
@@ -255,12 +252,18 @@ const BESProfile = ({ spaceInquire, type, data }) => {
                         onClick={
                           myProfile?.by && key === "by"
                             ? () => {
-                              navigate(
-                                `/${type === "brand"? "profile" : "brand"}/${myProfile?.by
-                                }`
-                              );
-                            }
-                            : () => { }
+                                navigate(
+                                  `/${
+                                    type === "brand"
+                                      ? "profile"
+                                      : myProfile?.owned
+                                      ? "my-brands"
+                                      : "brand"
+                                  }/${addHyphenToName(myProfile?.details?.by)}`,
+                                  { state: { id: myProfile?.by } }
+                                );
+                              }
+                            : () => {}
                         }
                         key={ind}
                         fontSize={12}

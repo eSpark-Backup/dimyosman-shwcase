@@ -41,6 +41,8 @@ import { useDebounce } from "../helper/useDebounce";
 import {
   useGetGeneralCategoriesQuery,
   useGetGeneralLocationQuery,
+  useGetGeneralSearchQuery,
+  useGetLocationSearchQuery,
 } from "../services/general";
 
 import {
@@ -57,7 +59,11 @@ import {
   setSkip,
   setSpaceSearchData,
   setIsTyping,
+  setGeneralSearching,
+  // setAllLocations,
 } from "../store/slices/search";
+
+import { getCookie } from "../utils";
 
 const icons = [
   // { icon: allIconLight, type: "not" },
@@ -79,35 +85,42 @@ const icons = [
     activeBG: "rgba(120, 150, 195, 0.8)",
     type: "SPACE",
   },
-  {
-    icon: profileIcon,
-    bg: "rgba(0, 20, 28, 0.1)",
-    activeBG: "rgba(0, 20, 28, 0.8)",
-    type: "not",
-  },
+  // {
+  //   icon: profileIcon,
+  //   bg: "rgba(0, 20, 28, 0.1)",
+  //   activeBG: "rgba(0, 20, 28, 0.8)",
+  //   type: "not",
+  // },
 ];
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const Filters = ({
+  handleCloseFilterDrawer = () => {},
   setOpenFilterDrawer = null,
   setHasMore = null,
   setLoadingStart = null,
-  loadingStart = false,
+  // loadingStart = false,
 }) => {
   const isLessThan1281 = useMediaQuery("(max-width:1281px)");
 
+  const searchQuery = getCookie("search_query");
+
   const { pathname } = useLocation();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const {
     parameters,
     allFilterCategories,
     allCategoriesNotSearch,
-    allLocations,
+    // allLocations,
     isTyping,
+    search_query,
+    shouldReturn,
+    generalSearching
   } = useSelector((state) => state.search);
+  // const { allActivityData } = useSelector((state) => state.activity);
 
   const mapRef = useRef(null);
 
@@ -127,6 +140,36 @@ const Filters = ({
     }
   );
 
+  const {
+    data: locations,
+    isSuccess: isLocationSuccess,
+    isLoading: isLocationLoading,
+    isFetching: isLocationFetching,
+  } = useGetLocationSearchQuery(
+    {
+      entity: parameters.entity,
+    },
+    {
+      skip:
+        parameters?.lat?.length !== 0 ||
+        parameters?.categoryNames?.trim() !== "",
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  const {
+    data: generalData,
+    isSuccess: isGeneralDataSuccess,
+    isLoading: isGeneralDataLoading,
+    isFetching: isGeneralDataFetching,
+  } = useGetGeneralSearchQuery(
+    { parameters },
+    {
+      skip: generalSearching,
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (mapRef.current && !mapRef.current.contains(event.target)) {
@@ -142,29 +185,33 @@ const Filters = ({
     };
   }, []);
 
-  useEffect(() => {
-    if (pathname !== "/search") {
-      resetDebouncedRadius();
-      dispatch(emptyFilters());
+  // useEffect(() => {
+  //   if (pathname !== "/search") {
+  //       resetDebouncedRadius();
+  //       dispatch(emptyFilters());
 
-      emptyInputs();
+  //       emptyInputs();
 
-      dispatch(emptyAllLocations());
-      dispatch(setSkip(true));
+  //       dispatch(emptyAllLocations());
+  //       dispatch(setSkip(true));
 
-      dispatch(setAllSearchData([]));
-      dispatch(setSpaceSearchData([]));
-    }
+  //       dispatch(setAllSearchData([]));
+  //       dispatch(setSpaceSearchData([]));
+  //   }
 
-    if (pathname === "/search" && !isLessThan1281) {
-      setOpenFilterDrawer?.(false);
-    }
-  }, [pathname, isLessThan1281]);
+  //   if (pathname === "/search" && !isLessThan1281) {
+  //     setOpenFilterDrawer?.(false);
+  //   }
+  // }, [pathname, isLessThan1281]);
 
   const [searchCategory, setSearchCategory] = useState("");
 
   useEffect(() => {
-    if (pathname === "/search" && debouncedRadius !== parameters.radius) {
+    // if (pathname === "/search" && debouncedRadius !== parameters.radius) {
+    if (
+      (searchQuery || search_query) &&
+      debouncedRadius !== parameters.radius
+    ) {
       dispatch(setRadius(debouncedRadius));
 
       commonReset();
@@ -173,7 +220,7 @@ const Filters = ({
       setHasMore?.(true);
       setLoadingStart?.(false);
 
-      setOpenFilterDrawer?.(false);
+      // setOpenFilterDrawer?.(false);
     }
   }, [debouncedRadius, dispatch, parameters.radius]);
 
@@ -184,11 +231,10 @@ const Filters = ({
     isFetching: isGeneralCategoryFetching,
   } = useGetGeneralCategoriesQuery(
     {
-      categoryType:
-        parameters?.entity?.length === 0 ? "" : `${parameters.entity}S`,
+      categoryType: `${parameters.entity}S`,
     },
     {
-      skip: pathname !== "/search",
+      skip: parameters?.entity?.length === 0,
       refetchOnMountOrArgChange: allFilterCategories?.some(
         (cat) => cat.entity === parameters?.entity
       )
@@ -197,16 +243,17 @@ const Filters = ({
     }
   );
 
-  useEffect(() => {
-    if (pathname !== "/search") {
-      if (allCategoriesNotSearch?.length > 0) {
-        dispatch(setAllFilterCategories(allCategoriesNotSearch));
-      }
-    }
-  }, [pathname]);
+  // useEffect(() => {
+  //   if (pathname !== "/search") {
+  //     if (allCategoriesNotSearch?.length > 0) {
+  //       dispatch(setAllFilterCategories(allCategoriesNotSearch));
+  //     }
+  //   }
+  // }, [pathname]);
 
   useEffect(() => {
-    if (pathname === "/search") {
+    // if (pathname === "/search") {
+    if (searchQuery || search_query) {
       if (generalCategories?.data?.length) {
         const updatedCategories = generalCategories?.data
           .map((category, index) => {
@@ -236,14 +283,20 @@ const Filters = ({
     category.name.toLowerCase().includes(searchCategory.toLowerCase())
   );
 
-  const actionAsDrawer = () => {
-    setOpenFilterDrawer?.(false);
-    navigate("/search");
-  };
+  // const actionAsDrawer = () => {
+  //   setOpenFilterDrawer?.(false);
+  //   navigate("/search");
+  // };
 
   const filterClick = (entity) => {
     if (entity.type === parameters.entity) {
       return;
+    }
+
+    if (parameters.lat.length !== 0) {
+      dispatch(setGeneralSearching(false))
+    } else {
+      dispatch(setGeneralSearching(true));
     }
 
     const updatedCategories = allFilterCategories.map((category) => {
@@ -261,10 +314,10 @@ const Filters = ({
     dispatch(emptyCategoryNames());
     dispatch(setEntity(entity.type));
 
-    if (pathname !== "/search") {
-      actionAsDrawer();
-    }
-    setOpenFilterDrawer?.(false);
+    // if (pathname !== "/search") {
+    //   actionAsDrawer();
+    // }
+    // setOpenFilterDrawer?.(false);
   };
 
   const handleSearch = (e) => {
@@ -300,6 +353,15 @@ const Filters = ({
       return category;
     });
 
+    if (
+      updatedCategories?.some((cate) => cate.selected === true) ||
+      parameters.lat.length !== 0
+    ) {
+      dispatch(setGeneralSearching(false));
+    } else {
+      dispatch(setGeneralSearching(true));
+    }
+
     dispatch(setAllFilterCategories(updatedCategories));
 
     const selectedNames = updatedCategories
@@ -314,10 +376,10 @@ const Filters = ({
     dispatch(setCategoryNames(selectedNames));
     dispatch(setSkip(false));
 
-    if (pathname !== "/search") {
-      actionAsDrawer();
-    }
-    setOpenFilterDrawer?.(false);
+    // if (pathname !== "/search") {
+    //   actionAsDrawer();
+    // }
+    // setOpenFilterDrawer?.(false);
   };
 
   const handleSelectPlace = (place) => {
@@ -325,6 +387,7 @@ const Filters = ({
     setSuggestions([]);
     setIsSelecting(true);
     dispatch(setIsTyping(true));
+    dispatch(setGeneralSearching(false));
 
     // Fetch details for selected place
     fetch(
@@ -345,7 +408,7 @@ const Filters = ({
 
           if (parameters?.lat !== lat || parameters?.long !== lng) {
             commonReset();
-            setOpenFilterDrawer?.(false);
+            // setOpenFilterDrawer?.(false);
             dispatch(setPageNumber(1));
           }
         }
@@ -363,13 +426,19 @@ const Filters = ({
   };
 
   const emptyInputs = () => {
+    if (allCategoriesNotSearch?.some((cate) => cate.selected === true)) {
+      dispatch(setGeneralSearching(false));
+    } else {
+      dispatch(setGeneralSearching(true));
+    }
+
     setRadiusInput("");
     dispatch(setLocation({ lat: "", long: "", location: "" }));
     setValue("");
     dispatch(setRadius(""));
     dispatch(setIsTyping(false));
     dispatch(setPageNumber(1));
-    resetDebouncedRadius()
+    resetDebouncedRadius();
   };
 
   const inputStyles = {
@@ -382,13 +451,41 @@ const Filters = ({
     },
   };
 
-  if (isGeneralCategoryLoading || isGeneralCategoryFetching) {
-    return (
-      <Box sx={{ width: "100%" }}>
-        <LinearProgress />
-      </Box>
-    );
-  }
+  const filterOutActivity = () => {
+    const locationKeys = {
+      BRAND: locations?.data?.brands,
+      SPACE: locations?.data?.spaces,
+      EVENT: locations?.data?.events,
+    };
+
+    const generalKeys = {
+      BRAND: generalData?.data?.brands,
+      SPACE: generalData?.data?.spaces,
+      EVENT: generalData?.data?.events,
+    };
+
+    if (generalSearching) {
+      return locationKeys[parameters.entity];
+    } else {
+      return generalKeys[parameters.entity];
+    }
+  };
+
+  const loaderOnMap = () => {
+    if (generalSearching) {
+      return isLocationLoading || isLocationFetching;
+    } else {
+      return isGeneralDataLoading || isGeneralDataFetching;
+    }
+  };
+
+  // if (isGeneralCategoryLoading || isGeneralCategoryFetching) {
+  //   return (
+  //     <Box sx={{ width: "100%" }}>
+  //       <LinearProgress />
+  //     </Box>
+  //   );
+  // }
 
   return (
     <Box
@@ -406,7 +503,7 @@ const Filters = ({
           display: { xs: "block", sm: "none" },
           textAlign: "end",
         }}
-        onClick={() => setOpenFilterDrawer?.(false)}
+        // onClick={() => setOpenFilterDrawer?.(false)}
       >
         <img src={close} alt="Close Icon" />
       </Box>
@@ -541,58 +638,58 @@ const Filters = ({
           />
 
           {/* {askForLoc ? (
-            <Box
-              sx={{
-                maxHeight: 200,
-                overflowY: "auto",
-                position: "absolute",
-                zIndex: 1,
-                width: "calc(100% - 8px)",
-                backgroundColor: "white",
-                border: "1px solid #ddd",
-                marginRight: 2,
-                textAlign: "center",
-                padding: "16px 0px",
-              }}
-            >
-              <Typography>
-                Do you want search with your current location
-              </Typography>
-
-              <Stack
-                flexDirection={"row"}
-                justifyContent={"center"}
-                gap={2}
-                mt={2}
+              <Box
+                sx={{
+                  maxHeight: 200,
+                  overflowY: "auto",
+                  position: "absolute",
+                  zIndex: 1,
+                  width: "calc(100% - 8px)",
+                  backgroundColor: "white",
+                  border: "1px solid #ddd",
+                  marginRight: 2,
+                  textAlign: "center",
+                  padding: "16px 0px",
+                }}
               >
-                <Button
-                  sx={{
-                    textTransform: "inherit",
-                    padding: "0px !important",
-                    fontSize: "16px",
-                    height: "28px",
-                  }}
-                  onClick={() => {}}
+                <Typography>
+                  Do you want search with your current location
+                </Typography>
+  
+                <Stack
+                  flexDirection={"row"}
+                  justifyContent={"center"}
+                  gap={2}
+                  mt={2}
                 >
-                  Yes
-                </Button>
-                <Button
-                  sx={{
-                    textTransform: "inherit",
-                    padding: "0px !important",
-                    fontSize: "16px",
-                    height: "28px",
-                  }}
-                  onClick={() => {
-                    setCurrentLoc(false);
-                    setaskForLoc(false);
-                  }}
-                >
-                  No
-                </Button>
-              </Stack>
-            </Box>
-          ) : null} */}
+                  <Button
+                    sx={{
+                      textTransform: "inherit",
+                      padding: "0px !important",
+                      fontSize: "16px",
+                      height: "28px",
+                    }}
+                    onClick={() => {}}
+                  >
+                    Yes
+                  </Button>
+                  <Button
+                    sx={{
+                      textTransform: "inherit",
+                      padding: "0px !important",
+                      fontSize: "16px",
+                      height: "28px",
+                    }}
+                    onClick={() => {
+                      setCurrentLoc(false);
+                      setaskForLoc(false);
+                    }}
+                  >
+                    No
+                  </Button>
+                </Stack>
+              </Box>
+            ) : null} */}
 
           {/* Suggestions List */}
           {suggestions.length > 0 && (
@@ -665,98 +762,107 @@ const Filters = ({
         </Grid>
       </Grid>
 
-      <Box sx={{ width: "100%", height: "411px", mt: 2, mb: 4 }}>
-        {loadingStart ? (
-          <Box sx={{ width: "100%" }}>
-            <LinearProgress />
-          </Box>
-        ) : (
-          <MapDisplay
-            locations={allLocations}
-            marker={
-              parameters?.entity === "SPACE"
-                ? mapMarkerSpace
-                : parameters?.entity === "BRAND"
-                ? mapMarkerBrand
-                : mapMarker
-            }
-            mapRef={mapRef}
-          />
-        )}
-      </Box>
-
-      {allFilterCategories?.length === 0 ? (
-        <Box>
-          <h6 style={{ textAlign: "center" }}>No Categories found</h6>
+      {isGeneralCategoryLoading || isGeneralCategoryFetching ? (
+        <Box sx={{ width: "100%", mt: 2 }}>
+          <LinearProgress />
         </Box>
       ) : (
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: { xs: "start", sm: "center" },
-            gap: { xs: 0.5, sm: 2 },
-            flexDirection: { xs: "column", sm: "row" },
-          }}
-        >
-          <Typography
-            component="label"
-            sx={{
-              fontWeight: 300,
-              display: "block",
-            }}
-          >
-            Include Categories:
-          </Typography>
-          <Input
-            width="100%"
-            sx={{
-              ...inputStyles,
-              height: "32px",
-              "& input": {
-                padding: "10.5px 14px",
-              },
-            }}
-            value={searchCategory}
-            onInputChange={(e) => setSearchCategory(e.target.value)}
-            type="text"
-            placeholder="search Interests..."
-            flex={1}
-          />
-        </Box>
-      )}
-
-      {filteredCategories?.length === 0 ? null : (
-        <Box
-          sx={{
-            maxHeight: "200px",
-            overflowY: "auto",
-            border: "1px solid rgba(209, 219, 215, 0.5)",
-            borderRadius: "5px",
-            padding: 2,
-            mt: 2,
-          }}
-        >
-          {filteredCategories?.map((category) => (
-            <Box
-              display="flex"
-              alignItems="center"
-              sx={{ width: "100%", marginBottom: "10px", columnGap: 1 }}
-              key={category.id}
-            >
-              <CheckBox
-                checked={category.selected}
-                onChange={() => handleCategoryChange(category?.id)}
+        <>
+          <Box sx={{ width: "100%", height: "411px", mt: 2, mb: 4 }}>
+            {loaderOnMap() ? (
+              <Box sx={{ width: "100%" }}>
+                <LinearProgress />
+              </Box>
+            ) : (
+              <MapDisplay
+                locations={filterOutActivity()}
+                marker={
+                  parameters?.entity === "SPACE"
+                    ? mapMarkerSpace
+                    : parameters?.entity === "BRAND"
+                    ? mapMarkerBrand
+                    : mapMarker
+                }
+                mapRef={mapRef}
+                handleCloseFilterDrawer={handleCloseFilterDrawer}
               />
+            )}
+          </Box>
+
+          {allFilterCategories?.length === 0 ? (
+            <Box>
+              <h6 style={{ textAlign: "center" }}>No Categories found</h6>
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: { xs: "start", sm: "center" },
+                gap: { xs: 0.5, sm: 2 },
+                flexDirection: { xs: "column", sm: "row" },
+              }}
+            >
               <Typography
+                component="label"
                 sx={{
-                  fontWeight: 600,
+                  fontWeight: 300,
+                  display: "block",
                 }}
               >
-                {category.name}
+                Include Categories:
               </Typography>
+              <Input
+                width="100%"
+                sx={{
+                  ...inputStyles,
+                  height: "32px",
+                  "& input": {
+                    padding: "10.5px 14px",
+                  },
+                }}
+                value={searchCategory}
+                onInputChange={(e) => setSearchCategory(e.target.value)}
+                type="text"
+                placeholder="search Interests..."
+                flex={1}
+              />
             </Box>
-          ))}
-        </Box>
+          )}
+
+          {filteredCategories?.length === 0 ? null : (
+            <Box
+              sx={{
+                maxHeight: "200px",
+                overflowY: "auto",
+                border: "1px solid rgba(209, 219, 215, 0.5)",
+                borderRadius: "5px",
+                padding: 2,
+                mt: 2,
+              }}
+            >
+              {filteredCategories?.map((category) => (
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  sx={{ width: "100%", marginBottom: "10px", columnGap: 1 }}
+                  key={category.id}
+                >
+                  <CheckBox
+                    checked={category.selected}
+                    onChange={() => handleCategoryChange(category?.id)}
+                  />
+                  <Typography
+                    sx={{
+                      fontWeight: 600,
+                    }}
+                  >
+                    {category.name}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
+        </>
       )}
     </Box>
   );

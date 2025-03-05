@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Box, Button, Drawer, Stack, Typography, useTheme } from "@mui/material";
+import { Box, Button, Drawer, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 import FilterListIcon from '@mui/icons-material/FilterList';
 import LoginIcon from '@mui/icons-material/Login';
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
@@ -28,22 +28,28 @@ import {
   removeNewInquiry,
   useClickOutside,
   logoutAuthUtils,
+  deleteCookie,
 } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { logout as logoutFunc } from "../store/slices/auth";
-import { removeMychat } from "../store/slices/chat";
+import { removeMychat, setFromSidebar } from "../store/slices/chat";
 import Notification from "../components/Notification";
 import Filters from "../components/Filters";
 import { emptyGoToMessage, emptyNotification, setFromNotification } from "../store/slices/notification";
 import { useAuth0 } from "@auth0/auth0-react";
+import { emptyFilters, setSearchQuery, setShouldReturn } from "../store/slices/search";
 
 const Header = ({ isLogin }) => {
+  const isLessThan1281 = useMediaQuery("(max-width:1281px)");
+  
   const getInquiryCount = getCookie("newInquiry") || 0;
   const getNotificationCount = getCookie("newNotification") || 0;
   const token = localStorage.getItem("token")
+  const searchQuery = getCookie("search_query");
 
   const { count, countInquiry } = useSelector((state) => state.notification);
   const userData = useSelector((state) => state.auth);
+  const { search_query } = useSelector((state) => state.search);
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -64,6 +70,11 @@ const Header = ({ isLogin }) => {
 
   const { logout: logoutAuth } = useAuth0();
 
+  // useEffect(() => {
+  //   if ((searchQuery || search_query) && isLessThan1281) {
+  //     setOpenFilterDrawer(true);
+  //   }
+  // }, [searchQuery, search_query, isLessThan1281]);
 
   const handleLogout = () => {
     setCookie("logout", true);
@@ -85,8 +96,17 @@ const Header = ({ isLogin }) => {
     setAddPopup(false);
   };
 
-  const handleFilterDrawer = (link) => {
+  const handleFilterDrawer = () => {
+    setCookie("search_query")
+    dispatch(setSearchQuery(true))
     setOpenFilterDrawer(true);
+  };
+
+  const handleCloseFilterDrawer = () => {
+    deleteCookie("search_query")
+    dispatch(setSearchQuery(null))
+    dispatch(emptyFilters())
+    setOpenFilterDrawer(false)
   };
 
   const iconClick = (type) => {
@@ -118,6 +138,7 @@ const Header = ({ isLogin }) => {
       if (clickedItemId !== "Messages") {
         dispatch(emptyGoToMessage());
         dispatch(setFromNotification(false));
+        dispatch(setFromSidebar(false));
       }
     };
 
@@ -254,7 +275,15 @@ const Header = ({ isLogin }) => {
     <>
       <div className="header">
         <nav>
-          <div className="logo">
+          <div
+            className="logo"
+            style={{ cursor: isLogin ? "pointer" : "default" }}
+            onClick={() => {
+              handleCloseFilterDrawer()
+
+              isLogin && navigate("/activity");
+            }}
+          >
             <img width={42} height={42} src={logoIcon} alt="Icon" />
             <img
               className="text-icon"
@@ -269,7 +298,7 @@ const Header = ({ isLogin }) => {
                 <SearchBar
                   name={"query"}
                   placeholder={"Search..."}
-                  handleFilterDrawer={handleFilterDrawer}
+                  // handleFilterDrawer={handleFilterDrawer}
                 />
               </div>
             </div>
@@ -369,7 +398,9 @@ const Header = ({ isLogin }) => {
               <hr className="nav-items-breaker" />
               <li>Help</li>
               <Button
-                onClick={() => {pathname === "/share" ? setOpenGuestProfilePopup(true) : null} }
+                onClick={() => {
+                  pathname === "/share" ? setOpenGuestProfilePopup(true) : null;
+                }}
                 className="user-btn1"
                 sx={{
                   minWidth: "32px",
@@ -379,11 +410,13 @@ const Header = ({ isLogin }) => {
                     backgroundColor: "rgba(0, 20, 28, 0.8)",
                   },
                 }}
-                
               >
                 <img src={user} alt="User" />
               </Button>
-              <Popup open={openGuestProfilePopup} data={guestProfilePopuptabs} />
+              <Popup
+                open={openGuestProfilePopup}
+                data={guestProfilePopuptabs}
+              />
             </ul>
           )}
         </nav>
@@ -391,15 +424,19 @@ const Header = ({ isLogin }) => {
 
       <Drawer
         anchor="right"
-        open={openFilterDrawer}
-        onClose={() => setOpenFilterDrawer(false)}
+        open={
+          (searchQuery || search_query) && isLessThan1281
+            ? true
+            : openFilterDrawer
+        }
+        onClose={() => handleCloseFilterDrawer()}
         sx={{
           "& .MuiPaper-root": {
             padding: 0,
           },
         }}
       >
-        <Filters setOpenFilterDrawer={setOpenFilterDrawer} />
+        <Filters handleCloseFilterDrawer={handleCloseFilterDrawer} />
       </Drawer>
     </>
   );

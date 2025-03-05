@@ -9,6 +9,7 @@ import {
 } from "../../store/slices/notification";
 
 import { getCookie } from "../../utils";
+import { setFromSidebar } from "../../store/slices/chat";
 
 const IconBadge = ({
   icon,
@@ -33,7 +34,9 @@ const IconBadge = ({
     if (getUnreadChatIds?.length) {
       for (const unreadChatId of getUnreadChatIds) {
         const matchingMessage = allGroups?.find((message) =>
-          message.chatGroups.some((group) => group.id === unreadChatId)
+          !message.chatGroups
+            ? message.directUserChat?._id === unreadChatId
+            : message.chatGroups.some((group) => group.id === unreadChatId)
         );
 
         if (matchingMessage) {
@@ -93,6 +96,7 @@ const IconBadge = ({
       onClick={() => {
         dispatch(emptyGoToMessage());
         dispatch(setFromNotification(false));
+        dispatch(setFromSidebar(false));
         onClick(type);
       }}
     >

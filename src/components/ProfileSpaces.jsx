@@ -4,6 +4,7 @@ import SpaceCard from './SpaceCard';
 import { addGrey } from '../assets';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { addHyphenToName } from '../utils';
 
 const ProfileSpaces = ({ myProfile, filter1, filter2, filter3, filter4, cardsData, loading }) => {
     const token = localStorage.getItem("token")
@@ -82,14 +83,14 @@ const ProfileSpaces = ({ myProfile, filter1, filter2, filter3, filter4, cardsDat
                 marginTop={2}
                 direction={{ xs: "column", md: "row" }}
                 alignItems="center"
-                justifyContent="space-between"
+                justifyContent="flex-start"
                 flexWrap="wrap"
                 rowGap={4}
-                columnGap={0}
+                columnGap={2}
             >
                 {filteredItems?.length > 0 ? filteredItems.map((space, ind) => (
                     <Box key={ind} sx={{ width: { xs: "100%", md: "328px" } }}>
-                        <SpaceCard onClick={() => token ?  navigate(`/space/${space?.id}`) : toast.error("You need to login first")} myProfile={myProfile} spaces={space} showBtn={true} />
+                        <SpaceCard onClick={() => token ?  navigate(`${myProfile ? "/my-spaces" : "/space"}/${addHyphenToName(space?.spaceName)}`, { state: { id:space?.id } }) : toast.error("You need to login first")} myProfile={myProfile} spaces={space} showBtn={true} />
                     </Box>
                 ))
                 :

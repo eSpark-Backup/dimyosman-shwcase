@@ -83,6 +83,7 @@ const InputWithMap = ({
 
   useEffect(() => { setTempDate(selectedDate) }, [selectedDate])
   const [priceToShow, setPriceToShow] = useState(defaultPrice);
+  const [minLease, setMinLease] = useState("minimum lease: X days");
 
   useEffect(() => {
     if (
@@ -93,28 +94,23 @@ const InputWithMap = ({
       !dayjs(defaultDate[1]).isValid()
     ) {
       // Only reset if selectedDate is not already [null, null]
-      setSelectedDate(prev => 
-        JSON.stringify(prev) !== JSON.stringify([null, null]) ? [null, null] : prev
-      );
-      onDateChange && onDateChange([null, null]);
+      if (JSON.stringify(selectedDate) !== JSON.stringify([null, null])) {
+        setSelectedDate([null, null]);
+        onDateChange && onDateChange([null, null]);
+      }
       return;
     }
   
     const parsedDates = defaultDate.map(date => (date ? dayjs(date) : null));
     const isValidDefault = isRangeValid(parsedDates, bookedRanges);
   
-    setSelectedDate(prev => {
-      const newDate = isValidDefault ? parsedDates : [null, null];
-      return JSON.stringify(prev) !== JSON.stringify(newDate) ? newDate : prev;
-    });
-  
-    onDateChange(isValidDefault ? parsedDates : [null, null]);
+    const newSelectedDate = isValidDefault ? parsedDates : [null, null];
+    if (JSON.stringify(selectedDate) !== JSON.stringify(newSelectedDate)) {
+      setSelectedDate(newSelectedDate);
+      onDateChange && onDateChange(newSelectedDate);
+    }
   }, [defaultDate, bookedRanges]);
   
-
-
-
-
   const formatStartDate = (dateRange) =>
     dateRange && dateRange[0] ? dayjs(dateRange[0]).format("DD.MM.YYYY") : "dd.mm.yyyy";
 
@@ -128,9 +124,12 @@ const InputWithMap = ({
   useEffect(() => {
     if (activity === "space" && Array.isArray(defaultPrice)) {
       const dayItem = defaultPrice.filter((item) => item.term == "Day");
+
+      setMinLease(`minimum lease: ${dayItem[0]?.minimum} days`)
       setPriceToShow(dayItem[0]?.price + "/" + dayItem[0]?.term)
     }
     else {
+      setMinLease("minimum lease: X days")
       setPriceToShow(defaultPrice)
     }
   }, [defaultPrice])
@@ -373,7 +372,7 @@ const InputWithMap = ({
               fontWeight={600}
               sx={{ textAlign: "left", marginBottom: "10px" }}
             >
-              Starting from:
+              {activity === "event" ? 'Starting' : "Lease"} from:
             </Typography>
 
             <Box
@@ -403,7 +402,7 @@ const InputWithMap = ({
                 fontSize={12}
                 sx={{ textAlign: "left", color: theme.palette.primary.main }}
               >
-                until {endDate}
+                { activity === "event" ? `until ${endDate}` : minLease}
               </Typography>
             </Box>
 

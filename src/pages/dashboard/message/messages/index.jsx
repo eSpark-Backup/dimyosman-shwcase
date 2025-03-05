@@ -25,7 +25,7 @@ import ReusableModal from "../../../../components/Modal";
 import AfterSignature from "../../../../components/AfterSignature";
 import ManageInquiry from "../../../../components/ManageInquiry";
 
-import { addEmoji, convertToSameKeys } from "../../../../utils";
+import { addEmoji, cleanHTML, convertToSameKeys } from "../../../../utils";
 
 import { useGetSingleChatQuery } from "../../../../services/chats";
 
@@ -103,7 +103,7 @@ const AllMesaages = ({
     isLoading,
   } = useGetSingleChatQuery(
     {
-      id: selectedGroup?.chatGroup?.chatId,
+      id: selectedGroup?.chatGroup?.chatId || selectedGroup?.group?.directUserChat?._id,
       page: totalPageOfMessage?.currentPage,
       pageSize: 10,
     },
@@ -131,7 +131,10 @@ const AllMesaages = ({
           )
         ) {
           const update = totalPagesOfMessage?.map((p) => {
-            if (p.chat === selectedGroup?.chatGroup?.chatId) {
+            if (
+              p.chat === selectedGroup?.chatGroup?.chatId ||
+              selectedGroup?.group?.directUserChat?._id
+            ) {
               return {
                 ...p,
                 hasMore: totalPageOfMessage?.currentPage < messageD?.totalPages,
@@ -151,7 +154,7 @@ const AllMesaages = ({
     isSuccess,
     isLoading,
     isFetching,
-    selectedGroup?.chatGroup?.chatId,
+    selectedGroup,
     page,
     messages,
   ]);
@@ -181,7 +184,10 @@ const AllMesaages = ({
         if (entries[0].isIntersecting) {
           if (!isFetching) {
             const update = totalPagesOfMessage?.map((p) => {
-              if (p.chat === selectedGroup?.chatGroup?.chatId) {
+              if (
+                p.chat === selectedGroup?.chatGroup?.chatId ||
+                selectedGroup?.group?.directUserChat?._id
+              ) {
                 return {
                   ...p,
                   currentPage: totalPageOfMessage?.currentPage + 1,
@@ -207,22 +213,17 @@ const AllMesaages = ({
         observer.unobserve(observerRef.current);
       }
     };
-  }, [
-    isFetching,
-    selectedGroup?.chatGroup?.messages?.length,
-    selectedGroup?.chatGroup?.chatId,
-    totalPagesOfMessage?.length,
-  ]);
+  }, [isFetching, selectedGroup, totalPagesOfMessage?.length]);
 
   useEffect(() => {
     scrollToBottom();
-  }, [selectedGroup?.chatGroup?.messages]);
+  }, [selectedGroup]);
 
   const [sender, setSender] = useState("");
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
   const [finalMessage, setFinalMessage] = useState({
-    chatId: selectedGroup?.chatGroup?.id,
-    members: selectedGroup?.chatGroup?.members,
+    chatId: selectedGroup?.chatGroup?.id || selectedGroup?.group?.directUserChat?._id,
+    members: selectedGroup?.chatGroup?.members || selectedGroup?.group?.directUserChat?.members,
     message: "",
   });
   const [buttonDisabled, setButtonDisabled] = useState(true);
@@ -234,10 +235,10 @@ const AllMesaages = ({
       setSender(selectedGroup.group.parentName);
     }
 
-    if (selectedGroup?.chatGroup?.id) {
+    if (selectedGroup?.chatGroup?.id || selectedGroup?.group?.directUserChat?._id) {
       setFinalMessage({
-        chatId: selectedGroup?.chatGroup?.id,
-        members: selectedGroup?.chatGroup?.members,
+        chatId: selectedGroup?.chatGroup?.id || selectedGroup?.group?.directUserChat?._id,
+        members: selectedGroup?.chatGroup?.members || selectedGroup?.group?.directUserChat?.members,
         message: "",
       });
     }
@@ -259,8 +260,8 @@ const AllMesaages = ({
   const selectedGroupData = useRef(null);
 
   useEffect(() => {
-    if (selectedGroup?.chatGroup?.members && selectedGroup?.chatGroup?.chatId) {
-      selectedGroupData.current = selectedGroup?.chatGroup;
+    if ((selectedGroup?.chatGroup?.members && selectedGroup?.chatGroup?.chatId) || (selectedGroup?.group?.directUserChat?.members && selectedGroup?.group?.directUserChat?._id)) {
+      selectedGroupData.current = selectedGroup?.chatGroup || selectedGroup?.group?.directUserChat;
     }
   }, [selectedGroup]);
 
@@ -268,7 +269,7 @@ const AllMesaages = ({
     const newMessage = text.trim();
     const dataToSend = {
       members: selectedGroupData.current?.members,
-      chatId: selectedGroupData.current?.chatId,
+      chatId: selectedGroupData.current?.chatId || selectedGroupData.current?._id,
     };
 
     setFinalMessage((prevData) => ({
@@ -304,7 +305,12 @@ const AllMesaages = ({
       return;
     }
 
-    emitEvent("NEW_MESSAGE", finalMessage);
+    const updateMessage = {
+      ...finalMessage,
+      message: cleanHTML(finalMessage.message),
+    };
+
+    emitEvent("NEW_MESSAGE", updateMessage);
 
     setFinalMessage((prevData) => ({
       ...prevData,
@@ -409,10 +415,69 @@ const AllMesaages = ({
               flexDirection: "column-reverse",
             }}
           >
-            {selectedGroup?.chatGroup?.messages
+            {(selectedGroup?.group?.directUserChat?.userToUser
+              ? selectedGroup?.group?.directUserChat?.messages
+              : selectedGroup?.chatGroup?.messages
+            )
               ?.slice()
               .reverse()
               ?.map((message, i) => {
+                const brandSenderCreator =
+                  selectedGroup?.chatGroup?.senderBrand?.user?.name;
+                const brandSendor = selectedGroup?.chatGroup?.senderBrand;
+                const brandReciever = selectedGroup?.chatGroup?.receiverBrand;
+                const eventRecieverBrandName =
+                  selectedGroup?.chatGroup?.receiverEvent;
+                const eventRecieverBrandImg =
+                  selectedGroup?.chatGroup?.receiverEvent;
+                const isDirect =
+                  selectedGroup?.group?.directUserChat?.userToUser ||
+                  selectedGroup?.chatGroup?.userToUser;
+
+                const dC = selectedGroup?.group?.directUserChat;
+                const recEvent = dC?.receiverEvent?.brand;
+                const recBrand = dC?.receiverBrand;
+                const grRecBrand = selectedGroup?.chatGroup?.receiverBrand;
+                const grRecEvent =
+                  selectedGroup?.chatGroup?.receiverEvent?.brand;
+
+                const bName = !selectedGroup?.chatGroup
+                  ? message?.sender?.name ===
+                    selectedGroup?.group?.ownerDetails?.name
+                    ? recEvent?.brandName || recBrand?.brandName
+                    : user?.name
+                  : message?.sender?.name === selectedGroup?.chatGroup?.name
+                  ? selectedGroup?.chatGroup?.name
+                  : grRecEvent?.brandName || grRecBrand?.brandName;
+
+                  const chatActivity = !selectedGroup?.chatGroup
+                  ? message?.sender?.name ===
+                    selectedGroup?.group?.ownerDetails?.name
+                    ? "brand"
+                    : "profile"
+                  : message?.sender?.name === selectedGroup?.chatGroup?.name
+                  ? "profile"
+                  : "brand";
+
+                  const shortName = !selectedGroup?.chatGroup
+                  ? message?.sender?.name ===
+                    selectedGroup?.group?.ownerDetails?.name
+                    ? recEvent?.user?.name || recBrand?.user?.name
+                    : ""
+                  : message?.sender?.name === selectedGroup?.chatGroup?.name
+                  ? ""
+                  : grRecEvent?.user?.name || grRecBrand?.user?.name;
+
+                const bAvatar = !selectedGroup?.chatGroup
+                  ? message?.sender?.name ===
+                    selectedGroup?.group?.ownerDetails?.name
+                    ? recEvent?.brandImage || recBrand?.brandImage
+                    : user?.profileImage
+                  : message?.sender?.name === selectedGroup?.chatGroup?.name
+                  ? selectedGroup?.chatGroup?.avatar[0]
+                  : grRecEvent?.brandImage || grRecBrand?.brandImage;
+         
+
                 return (
                   <Fragment key={i}>
                     {message.content ? (
@@ -421,31 +486,31 @@ const AllMesaages = ({
                         theme={theme}
                         index={0}
                         message={message}
+                        chatActivity={isDirect ? chatActivity : message?.activity}
+                        shortName={shortName}
+                        isDirect={isDirect}
                         sender={{
-                          brandName:
-                            message?.sender?.name ===
-                            selectedGroup?.chatGroup?.senderBrand?.user?.name
-                              ? selectedGroup?.chatGroup?.senderBrand?.brandName
-                              : selectedGroup?.chatGroup?.receiverBrand
-                                  ?.brandName ||
-                                selectedGroup?.chatGroup?.receiverEvent?.brand
-                                  ?.brandName,
-                          brandImage:
-                            message?.sender?.name ===
-                            selectedGroup?.chatGroup?.senderBrand?.user?.name
-                              ? selectedGroup?.chatGroup?.senderBrand
-                                  ?.brandImage
-                              : selectedGroup?.chatGroup?.receiverBrand
-                                  ?.brandImage ||
-                                selectedGroup?.chatGroup?.receiverEvent?.brand
-                                  ?.brandImage,
+                          brandName: isDirect
+                            ? bName
+                            : message?.sender?.name === brandSenderCreator
+                            ? brandSendor?.brandName
+                            : brandReciever?.brandName ||
+                              eventRecieverBrandName?.brand?.brandName,
+                          brandImage: isDirect
+                            ? bAvatar || ""
+                            : message?.sender?.name === brandSenderCreator
+                            ? brandSendor?.brandImage
+                            : brandReciever?.brandImage ||
+                              eventRecieverBrandImg?.brand?.brandImage,
                         }}
                       />
                     ) : null}
                   </Fragment>
                 );
               })}
-            {selectedGroup?.chatGroup?.messages?.length > 0 &&
+            {(selectedGroup?.group?.directUserChat
+              ? selectedGroup?.group?.directUserChat?.message?.length > 0
+              : selectedGroup?.chatGroup?.messages?.length > 0) &&
               totalPageOfMessage?.hasMore && (
                 <div
                   ref={observerRef}
@@ -468,7 +533,8 @@ const AllMesaages = ({
           </Box>
 
           {isTypingUser?.userId === user?.id &&
-            selectedGroup?.chatGroup?.chatId === isTypingUser?.chatId && (
+            (selectedGroup?.group?.directUserChat?._id ||
+              selectedGroup?.chatGroup?.chatId) === isTypingUser?.chatId && (
               <span className="typing-indicator">
                 <span className="dots">...</span>
               </span>

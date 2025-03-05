@@ -59,10 +59,10 @@ export const fetchedEventData = (
           },
         },
       },
-      {
-        label: "Stats",
-        props: null,
-      },
+      // {
+      //   label: "Stats",
+      //   props: null,
+      // },
     ],
   };
 };

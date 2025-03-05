@@ -117,7 +117,8 @@ const SocketProvider = ({ children }) => {
         (Array.isArray(data.chats) ||
           (data?.chats?.brands?.length === 0 &&
             data?.chats?.spaces?.length === 0 &&
-            data?.chats?.events?.length === 0))
+            data?.chats?.events?.length === 0 && 
+            data?.chats?.user?.length === 0))
       ) {
         dispatch(isUserHasChat("empty"));
       }
@@ -126,7 +127,8 @@ const SocketProvider = ({ children }) => {
         data.chats &&
         (data?.chats?.brands?.length > 0 ||
           data?.chats?.spaces?.length > 0 ||
-          data?.chats?.events?.length > 0)
+          data?.chats?.events?.length > 0 ||  
+          data?.chats?.user?.length > 0)
       ) {
         dispatch(getMyChat(data.chats));
         dispatch(isUserHasChat(""));
@@ -235,7 +237,7 @@ const SocketProvider = ({ children }) => {
 
       socket.current.on("PAYMENT_NOTIFICATION", (data) => {
         if (data?.receiverId === user?.userChatId) {
-          if (pathname !== "/space") {
+          if (pathname !== "/my-spaces") {
             notificationRefetch().then(() => {
               handleNotificationUpdate(
                 "newNotification",
@@ -249,8 +251,8 @@ const SocketProvider = ({ children }) => {
                 position: "bottom-right",
                 onClick: () => {
                   dispatch(setRedirectTab(redName));
-                  if (pathname !== "/space") {
-                    navigate("/space");
+                  if (pathname !== "/my-spaces") {
+                    navigate("/my-spaces");
                   }
                 },
               });

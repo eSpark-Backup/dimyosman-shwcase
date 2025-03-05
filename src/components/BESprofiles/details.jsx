@@ -84,8 +84,6 @@ const Details = ({ spaceInquire, details, myProfile }) => {
   const modalRef = useRef();
   useClickOutside(modalRef, () => setOpenCalendar(false));
 
-  console.log(details)
-
   return (
     <Box>
       <Stack
@@ -317,7 +315,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   color: (theme) => theme.palette.primary.dark,
                 }}
               >
-                Staring from:
+                {activity === "event" ? "Starting" : "Lease"} from:
               </Typography>
               <Typography
                 style={{
@@ -336,7 +334,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
                   textAlign: "left",
                 }}
               >
-                until {details?.endingDate}
+                {activity === "event" ? 'until' : ""} {details?.endingDate}
               </Typography>
               <Divider sx={{ marginTop: 1 }} />
             </>

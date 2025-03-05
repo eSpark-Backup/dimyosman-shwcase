@@ -14,7 +14,7 @@ import { LoadingButton } from '@mui/lab'
 import { profileContent } from '../../../constant'
 import { useGetMyChatsQuery } from '../../../services/chats'
 import { removeMychat } from '../../../store/slices/chat'
-import { fetchAddressFromCoordinates } from '../../../utils'
+import { addHyphenToName, fetchAddressFromCoordinates } from '../../../utils'
 import dayjs from 'dayjs'
 
 const EditBrand = () => {
@@ -39,13 +39,14 @@ const EditBrand = () => {
     streetAddress: ""
   });
   const [currentIndex, setCurrentIndex] = useState(0);
-  const params = useParams();
+  // const params = useParams();
+  const { state } = useLocation();
   const [eventsData, setEventsData] = useState([])
   const { user } = useSelector((state) => state.auth);
 
   const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading } = useGetCategoriesQuery('BRANDS')
   const { data, isError, isLoading, isSuccess, error, isFetching } = useGetAllBrandsQuery({
-    page: 1, pageSize: 7, id: params?.brandId
+    page: 1, pageSize: 7, id: state?.id
   }, { refetchOnMountOrArgChange: true });
   const { refetch } = useGetMyChatsQuery(undefined);
 
@@ -119,8 +120,8 @@ const EditBrand = () => {
           brandOverview: data?.data?.details?.description,
           brandTitle: data?.data?.details?.htmlContent,
           location: data?.data?.location,
-          cover: data?.data?.coverImages,
-          mapInstructions: data?.data?.location?.additional,
+          cover: Array.isArray(data?.data?.coverImages) ? data?.data?.coverImages : [],
+          mapInstructions: data?.data?.location?.additional || "",
           streetAddress: address,
         }));
       }
@@ -293,7 +294,7 @@ const EditBrand = () => {
       dispatch(removeMychat())
       refetch()
       toast.success(brandPostData?.message)
-      navigate("/brand")
+      navigate("/my-brands")
     }
   }, [brandPostSuccess])
 
@@ -364,7 +365,7 @@ const EditBrand = () => {
     }
     setLoadingButton(status);
     try {
-      await brand({ brandData: { ...brandData, status }, id: params?.brandId });
+      await brand({ brandData: { ...brandData, status }, id: state?.id });
     } finally {
       setLoadingButton(null);
     }
@@ -631,10 +632,23 @@ const EditBrand = () => {
                             <Box
                               key={`event-${ind + 1}`}
                               sx={{
-                                width: { xs: "100%", md: "328px" }
+                                width: { xs: "100%", md: "328px" },
                               }}
                             >
-                              <EventCard edit event={event} key={ind} showBtn={event?.owner} onClick={() => navigate(`/event/${event?.id}`)} />
+                              <EventCard
+                                edit
+                                event={event}
+                                key={ind}
+                                showBtn={event?.owner}
+                                onClick={() =>
+                                  navigate(
+                                    `/my-events/${addHyphenToName(
+                                      event?.profileName
+                                    )}`,
+                                    { state: { id: event?.id } }
+                                  )
+                                }
+                              />
                             </Box>
                           );
                         })
