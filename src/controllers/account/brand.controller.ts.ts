@@ -485,7 +485,7 @@ export class BrandController {
 
       if(status!=BrandStatus.PUBLISH){
       const similarBrands = await this.brandRepo.find({
-        where: { brandName: Like(`${brandName}%`) }
+        where: { brandName:brandName}
       });
       
       
@@ -493,7 +493,7 @@ export class BrandController {
 
 
       similarBrands.forEach(brand => {
-        if (brand.brandName === brandName) {
+        if (brand.brandName === brandName && brand.id !== id) {
           maxSuffix = Math.max(maxSuffix, 0);
         } else {
           const regex = new RegExp(`^${brandName}\\s(\\d+)$`);
