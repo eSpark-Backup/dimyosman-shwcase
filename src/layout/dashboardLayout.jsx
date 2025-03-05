@@ -78,17 +78,14 @@ const DashboardLayout = ({ isTokenChecking }) => {
     try {
       if (object) {
         if (type === "brand") {
-          dispatch(setIsBrand(false));
           dispatch(setObjectForNewBrand(null));
         }
 
         if (type === "space") {
-          dispatch(setIsSpace(false));
           dispatch(setObjectForNewSpace(null));
         }
 
         if (type === "event") {
-          dispatch(setIsEvent(false));
           dispatch(setObjectForNewEvent(null));
         }
 
@@ -121,14 +118,17 @@ const DashboardLayout = ({ isTokenChecking }) => {
     const handleClick = async (event) => {
       if (event.target.closest(".sidebar-item")) {
         if (isBrand && objectForNewBrand) {
+          dispatch(setIsBrand(false));
           await callPostBrand(objectForNewBrand, "DRAFT", "brand");
         }
 
         if (isSpace && objectForNewSpace) {
+          dispatch(setIsSpace(false));
           await callPostBrand(objectForNewSpace, "DRAFT", "space");
         }
 
         if (isEvent && objectForNewEvent) {
+          dispatch(setIsEvent(false));
           await callPostBrand(objectForNewEvent, "DRAFT", "event");
         }
       }
@@ -136,14 +136,17 @@ const DashboardLayout = ({ isTokenChecking }) => {
 
     const handlePopstate = async () => {
       if (isBrand && objectForNewBrand) {
+        dispatch(setIsBrand(false));
         await callPostBrand(objectForNewBrand, "DRAFT", "brand");
       }
 
       if (isSpace && objectForNewSpace) {
+        dispatch(setIsSpace(false));
         await callPostBrand(objectForNewSpace, "DRAFT", "space");
       }
 
       if (isEvent && objectForNewEvent) {
+        dispatch(setIsEvent(false));
         await callPostBrand(objectForNewEvent, "DRAFT", "event");
       }
       window.dispatchEvent(new CustomEvent("back-button-click"));
