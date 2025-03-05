@@ -520,6 +520,8 @@ const NewSpace = () => {
                 return;
             }
         }
+        dispatch(setObjectForNewSpace(null));
+        dispatch(setIsSpace(false));
         setShouldBlockNavigation(false);
         setLoadingButton(status);
         try {

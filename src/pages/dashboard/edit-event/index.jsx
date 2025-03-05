@@ -501,9 +501,16 @@ const EditEvent = () => {
             return false;
         }
 
-        if (!eventData?.brand || eventData?.brand?.trim() === "") {
-            toast?.error("Please select brand");
-            return false;
+        if (!data?.data?.brand) {
+            if (!eventData?.brand || typeof eventData.brand !== "object" || Object.keys(eventData.brand).length === 0) {
+                toast?.error("Please select brand");
+                return false;
+            }
+        } else {
+            if (!eventData?.brand || eventData?.brand?.trim() === "") {
+                toast?.error("Please select brand");
+                return false;
+            }
         }
 
         if (

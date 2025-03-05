@@ -101,7 +101,7 @@ export const eventApi = api.injectEndpoints({
                     ?.map(item => ({ name: item.name }));
 
                 formData.append('eventCategory', JSON.stringify(selectedCategories));
-                console.log(eventData.selectedDate)
+
                 const isValidDate = (date) => date instanceof Date && !isNaN(date.getTime());
 
                 const formattedDates = eventData.selectedDate[0] ? [{

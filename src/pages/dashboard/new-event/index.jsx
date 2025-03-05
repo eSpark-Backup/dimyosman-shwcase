@@ -67,7 +67,7 @@ const NewEvent = () => {
         setShouldBlockNavigation(false);
       }
     }, [eventData, eventData.eventName]);
-console.log(eventData)
+
     const { data: brandData, isError: isBrandError, isLoading: BrandLoading, isSuccess: isBrandSuccess, error: brandError, isFetching: isBrandFetching } = useGetAllBrandsQuery({}, {
         refetchOnMountOrArgChange: true,
     });
@@ -580,6 +580,8 @@ console.log(eventData)
                 return;
             }
         }
+        dispatch(setObjectForNewEvent(null));
+        dispatch(setIsEvent(false));
         setShouldBlockNavigation(false);
         setLoadingButton(status);
         try {

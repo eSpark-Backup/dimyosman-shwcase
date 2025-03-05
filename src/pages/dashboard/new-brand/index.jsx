@@ -240,6 +240,8 @@ const NewBrand = () => {
                 return;
             }
         }
+        dispatch(setObjectForNewBrand(null));
+        dispatch(setIsBrand(false));
         setShouldBlockNavigation(false);
         setLoadingButton(status);
         try {
