@@ -6,7 +6,7 @@ import { BESProfile } from "../../components";
 
 import SplashScreen from "../../layout/splash";
 
-import { addHyphenToName, fetchAddressFromCoordinates, processUrl, setCookie, useQuery } from "../../utils";
+import { addHyphenToName, fetchAddressFromCoordinates, setCookie, useQuery } from "../../utils";
 
 import { useGetSharableLinkQuery } from "../../services/notifications";
 
@@ -53,7 +53,7 @@ const SharedPage = () => {
 
   const sharableParentData = (data) => {
     return {
-      shareableLink: processUrl(data?.shareableLink),
+      shareableLink: data?.shareableLink,
       isFavourite: data?.isFavourite,
       id: data?.id,
       type: data?.type,
@@ -165,7 +165,7 @@ const SharedPage = () => {
                 profile: data?.data?.profileImage,
                 profileName: data?.data?.name,
                 profileAbout: data?.data?.about?.about,
-                shareableLink: processUrl(data?.data?.shareableLink),
+                shareableLink: data?.data?.shareableLink,
                 profileStats: [
                   {
                     name: "Brands:",

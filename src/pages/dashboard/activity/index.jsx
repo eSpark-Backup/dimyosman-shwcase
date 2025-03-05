@@ -11,7 +11,7 @@ import { ActivityCard } from "../../../components";
 import SpaceInquireModal from "../../../components/SpaceInquireModal";
 import Filters from "../../../components/Filters";
 
-import { fetchAddressFromCoordinates, getCookie, processUrl } from "../../../utils";
+import { fetchAddressFromCoordinates, getCookie } from "../../../utils";
 
 import { useGetActivityDataQuery } from "../../../services/activity";
 import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../../../store/slices/activity";
@@ -80,7 +80,7 @@ const Activity = () => {
             }
 
             return {
-              shareableLink: processUrl(item?.shareableLink),
+              shareableLink: item?.shareableLink,
               profileId:
                 item?.type === "brand" ? item?.user?.id : item?.brand?.id,
               activity: item?.type,
