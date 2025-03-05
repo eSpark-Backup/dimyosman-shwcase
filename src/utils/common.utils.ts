@@ -157,7 +157,8 @@ export const generateShareableLink = (
   ).toString();
   const encoded = encodeURIComponent(encrypted);
   const firstEntity = entitiesArray[0];
-  const sanitizedTypeName = firstEntity.typeName.replace(/\s+/g, "-"); 
+  const sanitizedTypeName = firstEntity.typeName.replace(/\s+/g, "-").toLowerCase();
+
 
   if (entitiesArray.some((e) => e.type === "brand")) {
     return `https://shwcase.esparkconsultants.com/brand/${sanitizedTypeName}/share?data=${encoded}`;
