@@ -23,10 +23,11 @@ const MapDisplay = React.memo(
     const [map, setMap] = useState(null);
 
     const adjustPosition = (position, index) => {
-      const offset = 0.00001 * index; // Small offset
+      const angle = (index * 360) / locations.length; // Spread evenly
+      const radius = 0.0001 * (index + 1); // Small offset per marker
       return {
-        lat: position.lat + offset,
-        lng: position.lng + offset,
+        lat: position.lat + radius * Math.cos(angle),
+        lng: position.lng + radius * Math.sin(angle),
       };
     };
 

@@ -696,16 +696,19 @@ export const addHyphenToName = (name) => {
 };
 
 export const processUrl = (url) => {
-  if (url) {
-    url = url.replace(/(?<=data=)\s+/g, "");
+  if (!url) return "";
 
-    url = url.replace(/([a-zA-Z]+(?: [a-zA-Z]+)*)\/share/, (match, group) => {
-      return group.toLowerCase().replace(/ /g, "-") + "/share";
-    });
+  // Remove any spaces after `data=`
+  url = url.replace(/data=\s+/g, "data=");
 
-    return url;
-  }
+  // Convert event name to lowercase with hyphens
+  url = url.replace(/([^\/]+)\/share/, (match, group) => {
+    return group.toLowerCase().replace(/\s+/g, "-") + "/share";
+  });
+
+  return url;
 };
+
 
 export const cleanHTML = (htmlContent) => {
   // Create a temporary container to parse HTML content
