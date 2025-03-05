@@ -23,7 +23,7 @@ const MapDisplay = React.memo(
     const [map, setMap] = useState(null);
 
     const adjustPosition = (position, index) => {
-      const offset = 0.01 * index; // Small offset
+      const offset = 0.00001 * index; // Small offset
       return {
         lat: position.lat + offset,
         lng: position.lng + offset,
