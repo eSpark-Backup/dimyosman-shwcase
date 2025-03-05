@@ -80,7 +80,7 @@ const NewSpace = () => {
 
   const { isError, isSuccess, error, data, isLoading } = useGetCategoriesQuery('SPACES')
   const { isError: IsAmenitiesError, isSuccess: AmeitiesSuccess, error: AmenitiesError, data: AmenitiesData, isLoading: AmenitiesLoading } = useGetAmenitiesQuery()
-  const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
+  const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError } = useGetAllBrandsQuery({status: "PUBLISH"}, { refetchOnMountOrArgChange: true });
 
   useEffect(() => {
     spaceDataRef.current = spaceData;

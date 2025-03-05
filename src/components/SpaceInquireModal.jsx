@@ -83,7 +83,7 @@ const SpaceInquireModal = ({
     isSuccess: IsBrandSuccess,
     error: BrandError,
     isFetching: IsBrandFetching,
-  } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true, skip: !token });
+  } = useGetAllBrandsQuery({ status: "PUBLISH" }, { refetchOnMountOrArgChange: true, skip: !token });
 
   useEffect(() => {
     if (isError) {

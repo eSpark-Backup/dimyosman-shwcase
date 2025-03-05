@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 
 import { Box, LinearProgress } from "@mui/material";
-import { fetchAddressFromCoordinates, getCookie, processUrl } from "../../../../utils";
+import { fetchAddressFromCoordinates, getCookie } from "../../../../utils";
 
 import SpaceInquireModal from "../../../../components/SpaceInquireModal";
 import { BESProfile } from "../../../../components";
@@ -37,7 +37,7 @@ const SpaceDetails = () => {
           );
         }
         const updatedSpace = {
-          shareableLink: processUrl(data?.data?.shareableLink),
+          shareableLink: data?.data?.shareableLink,
           isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,
           type: "space",

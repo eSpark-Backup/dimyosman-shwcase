@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useGetAllBrandsQuery } from "../../../../services/brands";
 import { updateBrands } from "../../../../store/slices/brand";
 import { Box, LinearProgress } from "@mui/material";
-import { fetchAddressFromCoordinates, getCookie, processUrl } from "../../../../utils";
+import { fetchAddressFromCoordinates, getCookie } from "../../../../utils";
 import dayjs from "dayjs";
 
 const BrandDetails = () => {
@@ -66,7 +66,7 @@ const BrandDetails = () => {
 
 
         const brandData = {
-          shareableLink: processUrl(data?.data?.shareableLink),
+          shareableLink: data?.data?.shareableLink,
           isFollowed: data?.data?.isFollowed,
           isFavourite: data?.data?.isFavourite,
           id: data?.data?.id,

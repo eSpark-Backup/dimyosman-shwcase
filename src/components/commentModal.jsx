@@ -30,7 +30,7 @@ const CommentModal = ({ open, handleClose, handleSuccess, commentId }) => {
     isLoading: IsBrandLoading,
     isSuccess: IsBrandSuccess,
     isFetching: IsBrandFetching,
-  } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true, skip: !localStorage.getItem("token") });
+  } = useGetAllBrandsQuery({ status: "PUBLISH"}, { refetchOnMountOrArgChange: true, skip: !localStorage.getItem("token") });
   const [sendDirectMessage, { isLoading }] = useSendDirectMessageMutation();
 
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");

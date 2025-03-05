@@ -7,7 +7,7 @@ import { ActivityCard } from "../../../components";
 import Filters from "../../../components/Filters";
 import SpaceInquireModal from "../../../components/SpaceInquireModal";
 
-import { keysForBrandsSapcesEvents, processUrl } from "../../../utils";
+import { keysForBrandsSapcesEvents } from "../../../utils";
 
 import { useGetGeneralSearchQuery } from "../../../services/general";
 
@@ -193,7 +193,7 @@ const Search = () => {
 
     return {
       isFollowed: el?.isFollowed,
-      shareableLink: processUrl(el?.shareableLink),
+      shareableLink: el?.shareableLink,
       isFavourite: el?.isFavourite,
       id: el?.id,
       profileId: el?.user?.id,
