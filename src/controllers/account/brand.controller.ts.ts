@@ -481,12 +481,16 @@ export class BrandController {
           HTTP_STATUS.BAD_REQUEST
         );
       }
+    let newBrandName = brandName
+
+      if(status!=BrandStatus.PUBLISH){
       const similarBrands = await this.brandRepo.find({
         where: { brandName: Like(`${brandName}%`) }
       });
       
       
       let maxSuffix = -1;
+
 
       similarBrands.forEach(brand => {
         if (brand.brandName === brandName) {
@@ -501,7 +505,9 @@ export class BrandController {
         }
       });
       
-      const newBrandName = maxSuffix === -1 ? brandName : `${brandName} ${maxSuffix + 1}`;
+       newBrandName = maxSuffix === -1 ? brandName : `${brandName} ${maxSuffix + 1}`;
+    }
+
       
 
       if (status == BrandStatus.DRAFT || status == BrandStatus.ARCHIVE) {

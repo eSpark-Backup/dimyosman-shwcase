@@ -147,7 +147,7 @@ export const getTime = (
 };
 
 export const generateShareableLink = (
-  entity: { id: string; type: string,typeName:string } | { id: string; type: string ,typeName:string}[]
+  entity: { id: string; type: string, typeName: string } | { id: string; type: string, typeName: string }[]
 ) => {
   const entitiesArray = Array.isArray(entity) ? entity : [entity];
   const jsonString = JSON.stringify(entitiesArray);
@@ -156,18 +156,17 @@ export const generateShareableLink = (
     configs.LINK_SECRET_KEY
   ).toString();
   const encoded = encodeURIComponent(encrypted);
-  const firstEntity = entitiesArray[0]; // Access the first entity
+  const firstEntity = entitiesArray[0];
+  const sanitizedTypeName = firstEntity.typeName.replace(/\s+/g, "-"); 
 
   if (entitiesArray.some((e) => e.type === "brand")) {
-    return `https://shwcase.esparkconsultants.com/brand/${firstEntity.typeName}/share?data=${encoded}`;
+    return `https://shwcase.esparkconsultants.com/brand/${sanitizedTypeName}/share?data=${encoded}`;
   } else if (entitiesArray.some((e) => e.type === "space")) {
-    return `https://shwcase.esparkconsultants.com/space/${firstEntity.typeName}/share?data=${encoded}`;
+    return `https://shwcase.esparkconsultants.com/space/${sanitizedTypeName}/share?data=${encoded}`;
   } else if (entitiesArray.some((e) => e.type === "event")) {
-    return `https://shwcase.esparkconsultants.com/event/${firstEntity.typeName}/share?data
-    =${encoded}`;
-  }else if(entitiesArray.some((e) => e.type === "user")){
-    return `https://shwcase.esparkconsultants.com/profile/${firstEntity.typeName}/share?data
-    =${encoded}`;
+    return `https://shwcase.esparkconsultants.com/event/${sanitizedTypeName}/share?data=${encoded}`;
+  } else if (entitiesArray.some((e) => e.type === "user")) {
+    return `https://shwcase.esparkconsultants.com/profile/${sanitizedTypeName}/share?data=${encoded}`;
   }
 
   return `https://shwcase.esparkconsultants.com/share?data=${encoded}`;
