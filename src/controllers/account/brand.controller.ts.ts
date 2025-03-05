@@ -994,6 +994,9 @@ export class BrandController {
             },
           })
         );
+        return next();
+
+
       }
 
       const [brands, totalItems] = await this.brandRepo
@@ -1092,6 +1095,7 @@ export class BrandController {
           },
         })
       );
+      
     } catch (error) {
       next(error);
     }
