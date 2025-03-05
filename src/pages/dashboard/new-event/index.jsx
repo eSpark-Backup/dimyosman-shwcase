@@ -68,7 +68,7 @@ const NewEvent = () => {
       }
     }, [eventData, eventData.eventName]);
 
-    const { data: brandData, isError: isBrandError, isLoading: BrandLoading, isSuccess: isBrandSuccess, error: brandError, isFetching: isBrandFetching } = useGetAllBrandsQuery({}, {
+    const { data: brandData, isError: isBrandError, isLoading: BrandLoading, isSuccess: isBrandSuccess, error: brandError, isFetching: isBrandFetching } = useGetAllBrandsQuery({status: "PUBLISH"}, {
         refetchOnMountOrArgChange: true,
     });
 

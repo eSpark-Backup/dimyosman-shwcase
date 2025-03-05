@@ -54,7 +54,7 @@ const EditSpace = () => {
     const { isError: IsGetCategoryError, isSuccess: GetCategorySuccess, error: GetCategoryError, data: GetCategoryData, isLoading: GetCategoryLoading, isFetching: CategoryFetching } = useGetCategoriesQuery('SPACES')
 
     const { isError: IsAmenitiesError, isSuccess: AmeitiesSuccess, error: AmenitiesError, data: AmenitiesData, isLoading: AmenitiesLoading, isFetching: AmenitiesFetching } = useGetAmenitiesQuery()
-    const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError, isFetching: IsBrandFetching } = useGetAllBrandsQuery({}, { refetchOnMountOrArgChange: true });
+    const { data: brandData, isError: IsBrandError, isLoading: IsBrandLoading, isSuccess: IsBrandSuccess, error: BrandError, isFetching: IsBrandFetching } = useGetAllBrandsQuery({ status: "PUBLISH" }, { refetchOnMountOrArgChange: true });
 
     useEffect(() => {
         if (isError) {

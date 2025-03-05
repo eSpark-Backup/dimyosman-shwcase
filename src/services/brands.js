@@ -55,13 +55,14 @@ export const brandApi = api.injectEndpoints({
             invalidatesTags: ['brand'],
         }),
         getAllBrands: builder.query({
-            query: ({ publicProfile, id, entity, page, pageSize } = {}) => {
+            query: ({ publicProfile, id, entity, status ,page, pageSize } = {}) => {
                 const baseUrl = publicProfile ? `/general/public/entity/profile/${id}` : id ? `/brand/${id}` : `/brand`;
                 const queryParams = new URLSearchParams();
 
                 if (pageSize) queryParams.append('pageSize', pageSize);
                 if (page) queryParams.append('page', page);
                 if (entity) queryParams.append('entity', entity);
+                if (status) queryParams.append('status', status);
 
                 const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
                 return {
@@ -96,7 +97,7 @@ export const brandApi = api.injectEndpoints({
                     long: brandData?.location?.long,
                     additional: brandData?.mapInstructions
                 };
-                formData.append('location', JSON.stringify(location));
+                if (brandData?.mapInstructions) formData.append('location', JSON.stringify(location));
 
 
                 if (brandData?.cover && Object.keys(brandData?.cover).length > 0) {
