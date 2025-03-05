@@ -142,7 +142,10 @@ const SpaceCard = ({ myProfile, onClick, spaces, showBtn }) => {
             }
           
             if (myProfile) {
-              navigate(`/my-spaces/${addHyphenToName(spaces?.spaceName)}/edit`)
+              navigate(
+                `/my-spaces/${addHyphenToName(spaces?.spaceName)}/edit`,
+                { state: { id: spaces.id } }
+              );
             } else {
               const detail = activitySpaceData?.find(
                 (spc) => spc.id === spaces.id
