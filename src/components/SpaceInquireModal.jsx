@@ -192,6 +192,7 @@ const SpaceInquireModal = ({
   };
 
   const handleDateChange = (newValue) => {
+    setIsValidation(false)
     if (newValue === null) {
       setSelectedDate([]);
       selectedDateRef.current = [];
