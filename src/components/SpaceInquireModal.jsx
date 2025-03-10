@@ -28,7 +28,7 @@ import Dropdown from "./Dropdown";
 
 import { close, smile, spaceBadge } from "../assets";
 
-import { addEmoji, cleanHTML, inquireInputStyles } from "../utils";
+import { addEmoji, cleanHTML, inquireInputStyles, validateLeaseTerm } from "../utils";
 
 import { useGetMyChatsQuery } from "../services/chats";
 import {
@@ -63,6 +63,8 @@ const SpaceInquireModal = ({
   const [totalPrice, setTotalPrice] = useState(null);
   const [brandOptions, setBrandOptions] = useState([]);
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
+  const [daysError, setDaysError] = useState("");
+  const [isvalidation, setIsValidation] = useState(false)
 
   const [price, { data: spaceData, isLoading, isError, error, isSuccess }] =
     useSpacePriceMutation();
@@ -85,14 +87,21 @@ const SpaceInquireModal = ({
     isFetching: IsBrandFetching,
   } = useGetAllBrandsQuery({ status: "PUBLISH" }, { refetchOnMountOrArgChange: true, skip: !token });
 
+  // useEffect(() => {
+  //   if (isError) {
+  //     toast.error(error?.data?.error)
+  //     setSelectedDate([]);
+  //     setTotalPrice("0")
+  //     return
+  //   }
+  // }, [isError, error])
   useEffect(() => {
-    if (isError) {
-      toast.error(error?.data?.error)
+    if (isvalidation) {
       setSelectedDate([]);
       setTotalPrice("0")
       return
     }
-  }, [isError, error])
+  }, [isvalidation])
 
   const isLessThan1400 = useMediaQuery("(max-width:1400px)");
   const isLessThan1280 = useMediaQuery("(max-width:1280px)");
@@ -147,6 +156,11 @@ const SpaceInquireModal = ({
     return true;
   };
 
+  const resetPriceValidation = () => {
+    setDaysError("")
+    setIsValidation(false)
+  }
+
   const handleOk = () => {
     if (selectedDateRef.current?.length > 0) {
       const start = dayjs(selectedDateRef.current[0]);
@@ -166,8 +180,14 @@ const SpaceInquireModal = ({
         days: totalDays,
       };
 
-      setBookingDetails(updatedBookingDetails);
-      price({ priceData: updatedBookingDetails });
+      if(validateLeaseTerm(totalDays, pricing)){
+        setIsValidation(true)
+        setDaysError(validateLeaseTerm(totalDays, pricing))
+      } else {
+        resetPriceValidation()
+        setBookingDetails(updatedBookingDetails);
+        price({ priceData: updatedBookingDetails });
+      }
     }
   };
 
@@ -182,6 +202,9 @@ const SpaceInquireModal = ({
     if (isRangeValid(newValue, bookedRanges)) {
       setSelectedDate(newValue);
       selectedDateRef.current = newValue;
+      if(!newValue.includes(null)){
+        handleOk()
+      }
     } else {
       toast.error(
         "Selected range includes disabled dates. Please choose a valid range."
@@ -290,6 +313,7 @@ const SpaceInquireModal = ({
 
   const resetALsStates = () => {
     handleClose();
+    resetPriceValidation()
     setSelectedDate([]);
     selectedDateRef.current = [];
     quillInstance.current = null;
@@ -427,11 +451,12 @@ const SpaceInquireModal = ({
                   <StaticDateRangePicker
                     value={selectedDate}
                     onChange={handleDateChange}
-                    onAccept={handleOk}
+                    // onAccept={handleOk}
                     shouldDisableDate={(date) =>
                       isDateInRanges(date, bookedRanges)
                     }
                     disableHighlightToday={true}
+                    slotProps={{ actionBar: { actions: [] } }}
                     sx={{
                       ".MuiPickersToolbar-root": {
                         display: "none"
@@ -500,14 +525,9 @@ const SpaceInquireModal = ({
                       : "End Date"}
                   </time>
                 </Box>
-                {pricing?.map((item, index) => {
-                  return (
-                    <Typography key={index}>
-                      {/* Minimum Lease {item?.term}: {item?.minimum} {item?.term} */}
-                      {`Minimum Lease ${item?.term}${Number(item?.minimum) > 1 ? "s" : ""}: ${item?.minimum} ${item?.term}${Number(item?.minimum) > 1 ? "s" : ""}`}
-                    </Typography>
-                  )
-                })}
+                {daysError && (
+                  <Typography sx={{ color: "#e74c3c" }}>{daysError}</Typography>
+                )}
                 <Box>
                   <Typography textAlign="left" fontWeight={600} fontSize={12}>
                     Selected lease total:
