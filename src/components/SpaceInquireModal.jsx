@@ -356,7 +356,7 @@ const SpaceInquireModal = ({
         :
         <Box
           sx={{
-            width: { xs: "95vw", sm: "max-content" },
+            width: { xs: "95vw", sm: "600px" },
             // maxWidth: "max-content",
             maxHeight: "90vh",
             overflowY: "auto",
@@ -490,7 +490,7 @@ const SpaceInquireModal = ({
                 justifyContent="space-between"
                 alignItems="flex-start"
                 gap="10px"
-                sx={{ height: "399px" }}
+                sx={{ height: "399px", flex: 1 }}
               >
                 <Box sx={{ display: "flex", flexDirection:"column" }}>
                   <Typography textAlign="left" fontWeight={600} fontSize={12}>
