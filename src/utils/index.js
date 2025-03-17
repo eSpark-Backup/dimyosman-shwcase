@@ -735,3 +735,31 @@ export const cleanHTML = (htmlContent) => {
 
   return cleanedHTML;
 };
+
+export const validateLeaseTerm = (selectedDays, terms) => {
+  let termObj;
+  let unit;
+  let convertedValue;
+
+  if (selectedDays < 7) {
+    termObj = terms.find((t) => t.term === "Day");
+    unit = "Days";
+    convertedValue = selectedDays;
+  } else if (selectedDays >= 7 && selectedDays <= 29) {
+    termObj = terms.find((t) => t.term === "Week");
+    unit = "Weeks";
+    convertedValue = selectedDays / 7; // Convert days to weeks
+  } else if (selectedDays >= 30 && selectedDays <= 364) {
+    termObj = terms.find((t) => t.term === "Month");
+    unit = "Months";
+    convertedValue = selectedDays / 30; // Convert days to months
+  } else {
+    termObj = terms.find((t) => t.term === "Year");
+    unit = "Years";
+    convertedValue = selectedDays / 365; // Convert days to years
+  }
+
+  if (convertedValue < termObj.minimum) {
+    return `Minimum Lease ${unit}: ${termObj.minimum} ${unit}`;
+  }
+};
