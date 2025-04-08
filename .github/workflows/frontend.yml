@@ -6,7 +6,7 @@ on:
 
 
 jobs:
-  deploy:
+  deploy-internal:
     runs-on: shwcase-runner
 
     steps:
@@ -28,3 +28,27 @@ jobs:
         docker rm shwcase-fe || true
         docker build . -t shwcase-frontend:latest
         docker run -d -p 3022:8081 --name shwcase-fe shwcase-frontend:latest
+
+
+  deploy-client:
+    runs-on: shwcase-runner-dimy
+
+    steps:
+
+    - name: Checkout source repository
+      uses: actions/checkout@v4
+
+    - name: Create .env File
+      run: |
+        touch .env
+        echo "VITE_BASE_URL=${{ secrets.VITE_BASE_URL }}" >> .env
+        echo "VITE_AUTH0_APP_DOMAIN=${{ secrets.VITE_AUTH0_APP_DOMAIN }}" >> .env
+        echo "VITE_AUTH0_GOOGLE_APP_CLIENT_ID=${{ secrets.VITE_AUTH0_GOOGLE_APP_CLIENT_ID }}" >> .env
+        echo "VITE_GOOGLE_MAPS_API_KEY=${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}" >> .env
+
+    - name: Deploy Docker Container     
+      run: |
+        docker stop shwcase-live || true
+        docker rm shwcase-live || true
+        docker build . -t shwcase-live-image:latest
+        docker run -d -p 3022:8081 --name shwcase-live shwcase-live-image:latest
