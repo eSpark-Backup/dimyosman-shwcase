@@ -45,6 +45,8 @@ const corsOptions = {
     "https://shwcase-stg.esparkconsultants.com",
     "https://shwcase.co/",
     "https://staging.shwcase.co/",
+    "https://shwcase.co",
+    "https://staging.shwcase.co",
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   credentials: true,
