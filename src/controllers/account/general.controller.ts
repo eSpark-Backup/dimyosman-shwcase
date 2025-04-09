@@ -11,6 +11,7 @@ import {
   ActionType,
   SavedEntityType,
   BrandStatus,
+  EventStatus,
 } from "../../entity";
 import {
   decryptShareableLink,
@@ -790,7 +791,9 @@ export class GeneralController {
       for (const space of spaces) {
         const events = await this.eventsRepo
           .createQueryBuilder("event")
-          .where("event.space = :spaceId", { spaceId: space.id })
+          .where("event.status= :status",{status:EventStatus.PUBLISH})
+          .andWhere("event.space = :spaceId", { spaceId: space.id })
+          
           .getMany();
 
         const calendarEvents = events.flatMap((event) => {
