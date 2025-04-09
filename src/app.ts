@@ -43,6 +43,8 @@ const corsOptions = {
     "http://localhost", // Allow localhost if needed
     "https://shwcase.esparkconsultants.com", // Corrected staging URL
     "https://shwcase-stg.esparkconsultants.com",
+    "https://shwcase.co/",
+    "https://staging.shwcase.co/",
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   credentials: true,
@@ -165,7 +167,7 @@ AppDataSource.initialize()
             .filter((id: string) => id !== socket.id);
 
           if (sockets.length === 0) {
-            userSocketIDs.delete(userId); 
+            userSocketIDs.delete(userId);
           } else {
             userSocketIDs.set(userId, sockets);
           }
@@ -179,10 +181,10 @@ AppDataSource.initialize()
   })
   .catch(async (error: any) => {
     const message = error.message || ERROR_MESSAGES.SOMETHING_WRONG;
-    const level = error?.statusCode === HTTP_STATUS.SERVER_ERROR ? "error" : "warning"; 
-    
+    const level =
+      error?.statusCode === HTTP_STATUS.SERVER_ERROR ? "error" : "warning";
+
     await logToDatabase(message, level);
     console.error("❌ Error connecting to the database:", error);
-     
   });
 export { server, app, envMode, userSocketIDs };

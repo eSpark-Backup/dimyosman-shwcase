@@ -692,7 +692,7 @@ export class BrandController {
     try {
       const { id } = req.params;
       const { page, take, skip, status } = req?.query;
-      // Ensure skip and take are numbers
+    
       const skipNumber = Number(skip);
       const takeNumber = Number(take);
       if (id && id !== "{id}") {
