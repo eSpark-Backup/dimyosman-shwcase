@@ -518,7 +518,6 @@ export class UserController {
       const shareableLink = generateShareableLink({
         id: user.id,
         type: "user",
-        typeName:user.name
       });
 
       const { password: _, ...userProfile } = user as User & {

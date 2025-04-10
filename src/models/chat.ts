@@ -44,11 +44,6 @@ const schema = new Schema(
       default: false,
       required: false,
     },
-    userToUser: {
-      type: Boolean,
-      default: false,
-      required: false,
-    },
 
     members: [
       {

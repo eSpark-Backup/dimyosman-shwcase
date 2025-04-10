@@ -12,7 +12,7 @@ import {
   SpaceStatus,
 } from "../../entity";
 import { ApiError } from "../../errors";
-import { Like, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import {
   calculatePricing,
   emitEvent,
@@ -74,7 +74,7 @@ export class SpaceController {
         .createQueryBuilder("space")
         .leftJoinAndSelect("space.brand", "brand")
         .leftJoinAndSelect("space.user", "user")
-        .where("space.status = :status", { status: SpaceStatus.PUBLISH })
+        .where("space.status = :status",{status:SpaceStatus.PUBLISH})
         .andWhere("space.user = :userId", { userId })
 
         .skip(Number(skipNumber) || 0)
@@ -601,37 +601,12 @@ export class SpaceController {
       }
 
       const checkName = await this.spaceRepo.findOne({ where: { spaceName } });
-      if (
-        checkName &&
-        status == SpaceStatus.PUBLISH &&
-        checkName.status == SpaceStatus.PUBLISH
-      ) {
+      if (checkName) {
         throw new ApiError(
           "Space with this name already exists",
           HTTP_STATUS.BAD_REQUEST
         );
       }
-      const similarSpace = await this.spaceRepo.find({
-        where: { spaceName: Like(`${spaceName}%`) },
-      });
-
-      let maxSuffix = -1;
-
-      similarSpace.forEach((space) => {
-        if (space.spaceName === spaceName) {
-          maxSuffix = Math.max(maxSuffix, 0);
-        } else {
-          const regex = new RegExp(`^${spaceName}\\s(\\d+)$`);
-          const match = space.spaceName.match(regex);
-          if (match) {
-            const suffix = parseInt(match[1], 10);
-            maxSuffix = Math.max(maxSuffix, suffix);
-          }
-        }
-      });
-
-      const newSpaceName =
-        maxSuffix === -1 ? spaceName : `${spaceName} ${maxSuffix + 1}`;
 
       const coverFileObjects: IFileObject[] = coverFiles.map((file) =>
         commonHelper.createFileObject(path.join(coverFilesPath, file), "cover")
@@ -667,7 +642,7 @@ export class SpaceController {
       }
 
       const newSpace = new Spaces();
-      newSpace.spaceName = newSpaceName;
+      newSpace.spaceName = spaceName;
       newSpace.spaceCategory = spaceCategory || null;
       newSpace.details = details || null;
       // newSpace.location = location;
@@ -780,35 +755,38 @@ export class SpaceController {
           HTTP_STATUS.BAD_REQUEST
         );
       }
-      if (status == SpaceStatus.DRAFT || status == SpaceStatus.ARCHIVE) {
+      if(status==SpaceStatus.DRAFT || status==SpaceStatus.ARCHIVE){
         const events = await this.eventsRepo
-          .createQueryBuilder("event")
-          .where("event.space = :spaceId", { spaceId: existingSpace.id })
-          .getMany();
+        .createQueryBuilder("event")
+        .where("event.space = :spaceId", { spaceId: existingSpace.id })
+        .getMany();
 
-        if (events.length > 0) {
-          events.map((event) => {
-            const eventDate =
-              event.eventDate &&
-              (event.eventDate as [{ startDate: string; endDate: string }]);
+      if (events.length > 0) {
+        events.map( (event) => {
+          const eventDate =
+          event.eventDate &&
+          (event.eventDate as [{ startDate: string; endDate: string }]);
             const startDate = new Date(eventDate[0].startDate);
             const endDate = new Date(eventDate[0].endDate);
             const currentDate = new Date();
-            //also add for ongoing
-            if (startDate > currentDate) {
-              throw new ApiError(
-                "You can't draft/archive a space with upcoming events",
-                HTTP_STATUS.BAD_REQUEST
-              );
-            }
-            if (endDate > currentDate) {
-              throw new ApiError(
-                "You can't draft/archive a space with ongoing events",
-                HTTP_STATUS.BAD_REQUEST
-              );
-            }
-          });
-        }
+          //also add for ongoing 
+          if (startDate > currentDate) {
+            throw new ApiError(
+              "You can't draft/archive a space with upcoming events",
+              HTTP_STATUS.BAD_REQUEST
+            );
+          }
+          if(endDate>currentDate){
+            throw new ApiError(
+              "You can't draft/archive a space with ongoing events",
+              HTTP_STATUS.BAD_REQUEST
+            );
+          }
+
+        })
+      }
+
+
       }
       let brand = null;
       if (brandId) {
@@ -826,38 +804,11 @@ export class SpaceController {
         const checkName = await this.spaceRepo.findOne({
           where: { spaceName },
         });
-        if (
-          checkName &&
-          status == SpaceStatus.PUBLISH &&
-          checkName.status == SpaceStatus.PUBLISH &&
-          checkName.spaceName !== existingSpace.spaceName
-        ) {
+        if (checkName && checkName.spaceName !== existingSpace.spaceName) {
           throw new ApiError(
             "Space with this name already exists",
             HTTP_STATUS.BAD_REQUEST
           );
-        }
-        if (status != SpaceStatus.PUBLISH) {
-          const similarSpace = await this.spaceRepo.find({
-            where: { spaceName: spaceName },
-          });
-
-          let maxSuffix = -1;
-          similarSpace.forEach((space) => {
-            if (space.spaceName === spaceName && space.id !== id) {
-              maxSuffix = Math.max(maxSuffix, 0);
-            } else {
-              const regex = new RegExp(`^${spaceName}\\s(\\d+)$`);
-              const match = space.spaceName.match(regex);
-              if (match) {
-                const suffix = parseInt(match[1], 10);
-                maxSuffix = Math.max(maxSuffix, suffix);
-              }
-            }
-          });
-
-          spaceName =
-            maxSuffix === -1 ? spaceName : `${spaceName} ${maxSuffix + 1}`;
         }
       }
       let oldCoverImages: UploadResult[] = [];
@@ -997,12 +948,12 @@ export class SpaceController {
     next: NextFunction
   ): Promise<void> {
     const { pricing, days } = req.body;
-
+  
     if (!pricing || !days) {
       res.status(400).json({ error: "Pricing array and days are required." });
       return next();
     }
-
+  
     try {
       const calculateAdditionalDays = (
         termPrice: any,
@@ -1012,23 +963,23 @@ export class SpaceController {
         const dailyRate = parseFloat(termPrice) / divisor;
         return Math.round(dailyRate * additionalDays * 100) / 100;
       };
-
+  
       const termOrder = { Day: 1, Week: 2, Month: 3, Year: 4 };
       pricing.sort(
         (a: PricingTerm, b: PricingTerm) =>
           termOrder[a.term] - termOrder[b.term]
       );
-
+  
       let totalPrice = 0;
       let termDetails = {};
       let failedTerm = null;
       let requiredDays = null;
-
+  
       for (const term of pricing) {
         const { term: termName, price, minimum } = term;
         const termPrice = parseFloat(price);
         const minTerm = parseInt(minimum, 10);
-
+  
         switch (termName) {
           case "Day":
             if (days <= 6) {
@@ -1042,7 +993,7 @@ export class SpaceController {
               }
             }
             break;
-
+  
           case "Week":
             if (days >= 7 && days <= 29) {
               const weeks = Math.floor(days / 7);
@@ -1064,7 +1015,7 @@ export class SpaceController {
               }
             }
             break;
-
+  
           case "Month":
             if (days >= 30 && days <= 364) {
               const months = Math.floor(days / 30);
@@ -1086,7 +1037,7 @@ export class SpaceController {
               }
             }
             break;
-
+  
           case "Year":
             if (days >= 365) {
               const years = Math.floor(days / 365);
@@ -1111,17 +1062,17 @@ export class SpaceController {
           default:
             break;
         }
-
+  
         if (totalPrice > 0) break;
       }
-
+  
       if (totalPrice === 0) {
         res.status(400).json({
           error: `Number of days (${days}) is below the minimum required for term ${failedTerm}. Required: ${requiredDays} days.`,
         });
         return next();
       }
-
+  
       res.status(200).json({ totalPrice: totalPrice.toFixed(2), termDetails });
       return next();
     } catch (error) {
@@ -1131,6 +1082,7 @@ export class SpaceController {
       return next();
     }
   }
+  
 
   async getAllSpaces(
     req: ICustomRequest,
@@ -1176,12 +1128,12 @@ export class SpaceController {
           }));
         });
         (singleSpace as any).calendarEvents = calendarEvents;
-        if (singleSpace.pricing != null) {
-          const totalPricing = calculatePricing(
-            singleSpace.pricing as PricingTerm[],
-            1
-          );
-        }
+          if(singleSpace.pricing !=null){
+        const totalPricing = calculatePricing(
+          singleSpace.pricing as PricingTerm[],
+          1
+        );
+      }
 
         let [tenantSpaceDetail, totalLeasSpace] = await this.leaseSpaceRepo
           .createQueryBuilder("leaseSpace")
@@ -1264,7 +1216,6 @@ export class SpaceController {
           shareableLink: generateShareableLink({
             id: singleSpace.id,
             type: "space",
-            typeName: singleSpace.spaceName,
           }),
           totalLeasSpace,
           likedCount: getLikedCount,
@@ -1321,17 +1272,16 @@ export class SpaceController {
         }
 
         spaces = spaces.map((space) => {
-          if (space.pricing != null) {
-            const totalPricing = calculatePricing(
-              space.pricing as PricingTerm[],
-              1
-            );
+          if(space.pricing !=null){
+          const totalPricing = calculatePricing(
+            space.pricing as PricingTerm[],
+            1
+          );
 
-            return {
-              ...space,
-              totalPricing,
-            };
-          }
+          return {
+            ...space,
+            totalPricing,
+          }}
           return space;
         });
 
@@ -1390,17 +1340,17 @@ export class SpaceController {
         }
 
         spaces = spaces.map((space) => {
-          if (space.pricing != null) {
-            const totalPricing = calculatePricing(
-              space.pricing as PricingTerm[],
-              1
-            );
-            return {
-              ...space,
-              totalPricing,
-            };
+          if(space.pricing !=null){
+          const totalPricing = calculatePricing(
+            space.pricing as PricingTerm[],
+            1
+          );
+          return {
+            ...space,
+            totalPricing,
           }
-          return space;
+        }
+        return space
         });
 
         const groupedSpaces = {
@@ -1411,7 +1361,6 @@ export class SpaceController {
               shareableLink: generateShareableLink({
                 id: space.id,
                 type: "space",
-                typeName: space.spaceName,
               }),
             })),
           draftSpaces: spaces.filter(
@@ -1427,7 +1376,6 @@ export class SpaceController {
                   shareableLink: generateShareableLink({
                     id: space.id,
                     type: "space",
-                    typeName: space.spaceName,
                   }),
                 }
               : space

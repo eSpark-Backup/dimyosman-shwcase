@@ -18,8 +18,8 @@ import { Chat, Message, Notification } from "../../models";
 const router = Router();
 const brandRepository = AppDataSource.getRepository(Brand);
 const userRepository = AppDataSource.getRepository(User);
-const savedEntityRepository = AppDataSource.getRepository(SavedEntity);
-const eventEntityRepository = AppDataSource.getRepository(Events);
+const savedEntityRepository=AppDataSource.getRepository(SavedEntity)
+const eventEntityRepository=AppDataSource.getRepository(Events)
 const spaceRepository = AppDataSource.getRepository(Spaces);
 
 const brandController = new BrandController(
@@ -31,6 +31,7 @@ const brandController = new BrandController(
   spaceRepository,
   Message,
   savedEntityRepository
+
 );
 
 /**
@@ -252,6 +253,7 @@ router.put(
  *       - in: query
  *         name: pageSize
  *         required: false
+ *         description: Number of items per page (for paginated results).
  *         schema:
  *           type: integer
  *           example: 10
@@ -262,13 +264,6 @@ router.put(
  *         schema:
  *           type: integer
  *           example: 1
- *       - in: query
- *         name: status
- *         required: false
- *         description: Status should be PUBLISH.
- *         schema:
- *           type: string
- *           example: PUBLISH
  *     responses:
  *       200:
  *         description: Brand found by ID or all brands for the authenticated user.
@@ -388,6 +383,7 @@ router.delete("/:id", checkJwt, validateRoles([ROLES.USER]), (req, res, next) =>
   brandController.deleteBrand(req, res, next)
 );
 
+
 /**
  * @swagger
  * /brand/{id}:
@@ -401,12 +397,11 @@ router.delete("/:id", checkJwt, validateRoles([ROLES.USER]), (req, res, next) =>
  *     parameters:
  *       - in: path
  *         name: id
- *         required: false
+ *         required: true
  *         description: ID of the brand to delete
  *         schema:
  *           type: string
  *     requestBody:
- *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -427,12 +422,10 @@ router.delete("/:id", checkJwt, validateRoles([ROLES.USER]), (req, res, next) =>
  *       500:
  *         description: Server error.
  */
-router.post(
-  "/:id?",
-  checkJwt,
-  validateRoles([ROLES.USER]),
-  validate(BrandValidation.sendMessage, "body"),
-  (req, res, next) => brandController.sendMessage(req, res, next)
+router.post("/:id", checkJwt, validateRoles([ROLES.USER]),
+validate(BrandValidation.sendMessage, "body"),
+(req, res, next) =>
+  brandController.sendMessage(req, res, next)
 );
 
 export { router };

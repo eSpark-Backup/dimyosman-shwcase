@@ -146,41 +146,21 @@ export const getTime = (
   }
 };
 
-export const generateShareableLink = (
-  entity: { id: string; type: string, typeName: string } | { id: string; type: string, typeName: string }[]
-) => {
+export const generateShareableLink = (entity: { id: string; type: string } | { id: string; type: string }[]) => {
   const entitiesArray = Array.isArray(entity) ? entity : [entity];
   const jsonString = JSON.stringify(entitiesArray);
-  const encrypted = CryptoJS.AES.encrypt(
-    jsonString,
-    configs.LINK_SECRET_KEY
-  ).toString();
+  const encrypted = CryptoJS.AES.encrypt(jsonString, configs.LINK_SECRET_KEY).toString();
   const encoded = encodeURIComponent(encrypted);
-  const firstEntity = entitiesArray[0];
-  const sanitizedTypeName = firstEntity.typeName.replace(/\s+/g, "-").toLowerCase();
-
-
-  if (entitiesArray.some((e) => e.type === "brand")) {
-    return `https://shwcase.esparkconsultants.com/brand/${sanitizedTypeName}/share?data=${encoded}`;
-  } else if (entitiesArray.some((e) => e.type === "space")) {
-    return `https://shwcase.esparkconsultants.com/space/${sanitizedTypeName}/share?data=${encoded}`;
-  } else if (entitiesArray.some((e) => e.type === "event")) {
-    return `https://shwcase.esparkconsultants.com/event/${sanitizedTypeName}/share?data=${encoded}`;
-  } else if (entitiesArray.some((e) => e.type === "user")) {
-    return `https://shwcase.esparkconsultants.com/profile/${sanitizedTypeName}/share?data=${encoded}`;
-  }
 
   return `https://shwcase.esparkconsultants.com/share?data=${encoded}`;
 };
+
 
 export const decryptShareableLink = (encryptedData: string) => {
   try {
     const decodedData = decodeURIComponent(encryptedData);
 
-    const decrypted = CryptoJS.AES.decrypt(
-      decodedData,
-      configs.LINK_SECRET_KEY
-    ).toString(CryptoJS.enc.Utf8);
+    const decrypted = CryptoJS.AES.decrypt(decodedData, configs.LINK_SECRET_KEY).toString(CryptoJS.enc.Utf8);
 
     if (!decrypted) {
       throw new Error("Decryption failed");
@@ -189,7 +169,7 @@ export const decryptShareableLink = (encryptedData: string) => {
     return JSON.parse(decrypted);
   } catch (error) {
     console.error("Error decrypting data:", error);
-    return null;
+    return null; 
   }
 };
 export const generateToken = (

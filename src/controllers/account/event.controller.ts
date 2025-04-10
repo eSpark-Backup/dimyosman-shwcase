@@ -12,7 +12,7 @@ import {
   User,
 } from "../../entity";
 import { ApiError } from "../../errors";
-import { Like, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import {
   generateShareableLink,
   handleResponse,
@@ -80,38 +80,12 @@ export class EventController {
 
       const checkName = await this.eventRepo.findOne({ where: { eventName } });
 
-      if (
-        checkName &&
-        status == EventStatus.PUBLISH &&
-        checkName.status == EventStatus.PUBLISH
-      ) {
+      if (checkName) {
         throw new ApiError(
           "Event with this name already exists",
           HTTP_STATUS.BAD_REQUEST
         );
       }
-      const similarEvents = await this.eventRepo.find({
-        where: { eventName: Like(`${eventName}%`) },
-      });
-
-      let maxSuffix = -1;
-
-      similarEvents.forEach((event) => {
-        if (event.eventName === eventName) {
-          maxSuffix = Math.max(maxSuffix, 0);
-        } else {
-          const regex = new RegExp(`^${eventName}\\s(\\d+)$`);
-          const match = event.eventName.match(regex);
-          if (match) {
-            const suffix = parseInt(match[1], 10);
-            maxSuffix = Math.max(maxSuffix, suffix);
-          }
-        }
-      });
-
-      const newEventName =
-        maxSuffix === -1 ? eventName : `${eventName} ${maxSuffix + 1}`;
-
       let leaseSpace: LeaseSpace;
       if (leaseId) {
         leaseSpace = await this.leaseSpaceRepo.findOne({
@@ -179,7 +153,7 @@ export class EventController {
       }
 
       const newEvent = new Events();
-      newEvent.eventName = newEventName;
+      newEvent.eventName = eventName;
       newEvent.eventCategory = eventCategory || null;
       newEvent.details = details || null;
       newEvent.status = status;
@@ -371,41 +345,13 @@ export class EventController {
         const checkName = await this.eventRepo.findOne({
           where: { eventName },
         });
-        if (
-          checkName &&
-          status == EventStatus.PUBLISH &&
-          checkName.status == EventStatus.PUBLISH &&
-          checkName.eventName !== existingEvent.eventName
-        ) {
+        if (checkName && checkName.eventName !== existingEvent.eventName) {
           throw new ApiError(
             "Event with this name already exists",
             HTTP_STATUS.BAD_REQUEST
           );
         }
-        if(status != EventStatus.PUBLISH){
-        const similarEvents = await this.eventRepo.find({
-          where: { eventName: eventName }
-        });
-
-        let maxSuffix = -1;
-
-        similarEvents.forEach((event) => {
-          if (event.eventName === eventName && event.id !== id) {
-            maxSuffix = Math.max(maxSuffix, 0);
-          } else {
-            const regex = new RegExp(`^${eventName}\\s(\\d+)$`);
-            const match = event.eventName.match(regex);
-            if (match) {
-              const suffix = parseInt(match[1], 10);
-              maxSuffix = Math.max(maxSuffix, suffix);
-            }
-          }
-        });
-
-        eventName =
-          maxSuffix === -1 ? eventName : `${eventName} ${maxSuffix + 1}`;
       }
-    }
       let oldCoverImages: UploadResult[] = [];
 
       const FolderName = `${CLOUD_FOLDERS.EVENT}/${eventName}`;
@@ -500,7 +446,7 @@ export class EventController {
         eventCategory || existingEvent.eventCategory;
       existingEvent.details = details || existingEvent.details;
       existingEvent.eventDate = eventDate || existingEvent.eventDate;
-      existingEvent.brand = brand || existingEvent.brand;
+      existingEvent.brand=brand || existingEvent.brand;
       existingEvent.space = space || existingEvent.space;
       existingEvent.status = status || existingEvent.status;
       existingEvent.coverImages = JSON.stringify(coverUrls) as Object;
@@ -770,7 +716,6 @@ export class EventController {
           shareableLink: generateShareableLink({
             id: activity.id,
             type: "event",
-            typeName: activity.eventName,
           }),
           likedCount: getSavedCount,
           isFollowing: followedEventIds.has(activity.id),
@@ -932,7 +877,6 @@ export class EventController {
               shareableLink: generateShareableLink({
                 id: event.id,
                 type: "event",
-                typeName: event.eventName,
               }),
             })),
           draftEvents: events.filter(
@@ -948,7 +892,6 @@ export class EventController {
                   shareableLink: generateShareableLink({
                     id: event.id,
                     type: "event",
-                    typeName: event.eventName,
                   }),
                 }
               : event
