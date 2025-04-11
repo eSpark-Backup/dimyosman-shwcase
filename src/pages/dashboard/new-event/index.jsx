@@ -580,12 +580,20 @@ const NewEvent = () => {
                 return;
             }
         }
+        let updateObj = { ...eventData };
+        if(eventData.selectedDate.includes(null)){
+            updateObj = {
+              ...updateObj,
+              selectedDate: [dayjs(), dayjs().add(1, "day")],
+            };
+        }
+
         dispatch(setObjectForNewEvent(null));
         dispatch(setIsEvent(false));
         setShouldBlockNavigation(false);
         setLoadingButton(status);
         try {
-            await event({ ...eventData, status });
+            await event({ ...updateObj, status });
         } finally {
             setLoadingButton(null);
         }
