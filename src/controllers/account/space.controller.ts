@@ -10,6 +10,7 @@ import {
   SavedEntityType,
   ActionType,
   SpaceStatus,
+  EventStatus,
 } from "../../entity";
 import { ApiError } from "../../errors";
 import { Like, Repository } from "typeorm";
@@ -140,6 +141,7 @@ export class SpaceController {
           const events = await this.eventsRepo
             .createQueryBuilder("event")
             .where("event.space = :spaceId", { spaceId: space.id })
+            .andWhere("event.status = :status",{status:EventStatus.PUBLISH})
             .getMany();
 
           const calendarEvents = events.flatMap((event) => {
