@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
-
 import { useNavigate } from "react-router-dom";
+
+import { toast } from "react-toastify";
 
 import { useAuth0 } from "@auth0/auth0-react";
 
@@ -42,14 +43,14 @@ const GoogleButton = ({
   }, [isAuthenticated, user]);
 
   useEffect(() => {
-    if (isErrorRegister) {
+    if (isErrorRegister && isAuthenticated) {
       deleteCookie("social_type");
       toast.error(errorRegister?.data?.message);
     }
-    if (isSuccessRegister) {
+    if (isSuccessRegister && isAuthenticated) {
       navigate("/activity");
     }
-  }, [isErrorRegister, isSuccessRegister, navigate, errorRegister]);
+  }, [isErrorRegister, isSuccessRegister, navigate, errorRegister, isAuthenticated]);
 
   const handleLogin = async () => {
     try {
