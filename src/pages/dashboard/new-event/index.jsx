@@ -138,8 +138,8 @@ const NewEvent = () => {
             startDate: eData.selectedDate[0].toISOString(),
             endDate: eData.selectedDate[1].toISOString()
           }] : [{
-            startDate: "string",
-            endDate: "string"
+            startDate: dayjs(),
+            endDate: dayjs().add(1, "month")
           }];
 
           if (formattedDates[0].startDate !== "string" && formattedDates[0].endDate !== "string") {
@@ -214,7 +214,14 @@ const NewEvent = () => {
         if (shouldBlockNavigation) {
           if (!isEqual(eventData, initialEventData)) {
             if (eventData.eventName.trim() !== "") {
-              dispatch(setObjectForNewEvent(eventData));
+              let updateObj = { ...eventData };
+              if (eventData.selectedDate.includes(null)) {
+                updateObj = {
+                  ...updateObj,
+                  selectedDate: [dayjs(), dayjs().add(1, "month")],
+                };
+              }
+              dispatch(setObjectForNewEvent(updateObj));
               dispatch(setIsEvent(true));
             } else {
               makeNull();
@@ -584,7 +591,7 @@ const NewEvent = () => {
         if(eventData.selectedDate.includes(null)){
             updateObj = {
               ...updateObj,
-              selectedDate: [dayjs(), dayjs().add(1, "day")],
+              selectedDate: [dayjs(), dayjs().add(1, "month")],
             };
         }
 
