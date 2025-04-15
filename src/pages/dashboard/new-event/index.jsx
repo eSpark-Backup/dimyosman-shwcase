@@ -138,8 +138,8 @@ const NewEvent = () => {
             startDate: eData.selectedDate[0].toISOString(),
             endDate: eData.selectedDate[1].toISOString()
           }] : [{
-            startDate: dayjs(),
-            endDate: dayjs().add(1, "month")
+            startDate: dayjs().startOf("day").toISOString(),
+            endDate: dayjs().startOf("day").add(1, "day").toISOString()
           }];
 
           if (formattedDates[0].startDate !== "string" && formattedDates[0].endDate !== "string") {
@@ -218,7 +218,13 @@ const NewEvent = () => {
               if (eventData.selectedDate.includes(null)) {
                 updateObj = {
                   ...updateObj,
-                  selectedDate: [dayjs(), dayjs().add(1, "month")],
+                  selectedDate: [
+                    dayjs().startOf("day"),
+                    dayjs().startOf("day").add(1, "day"),
+                  ],
+                  eventDate: `${dayjs().format("DD.MM.YYYY")} - ${dayjs()
+                    .add(1, "day")
+                    .format("DD.MM.YYYY")}`,
                 };
               }
               dispatch(setObjectForNewEvent(updateObj));
@@ -588,11 +594,17 @@ const NewEvent = () => {
             }
         }
         let updateObj = { ...eventData };
-        if(eventData.selectedDate.includes(null)){
-            updateObj = {
-              ...updateObj,
-              selectedDate: [dayjs(), dayjs().add(1, "month")],
-            };
+        if (eventData.selectedDate.includes(null)) {
+          updateObj = {
+            ...updateObj,
+            selectedDate: [
+              dayjs().startOf("day"),
+              dayjs().startOf("day").add(1, "day"),
+            ],
+            eventDate: `${dayjs().format("DD.MM.YYYY")} - ${dayjs()
+              .add(1, "day")
+              .format("DD.MM.YYYY")}`,
+          };
         }
 
         dispatch(setObjectForNewEvent(null));
