@@ -69,9 +69,9 @@ const EventDetails = () => {
                     !moment(data?.data?.eventDate[0]?.endDate).isValid()
                     ? "DD.MM.YYYY"
                     : moment.utc(data?.data?.eventDate[0]?.endDate).add(1, 'day').format("DD.MM.YYYY"),
-                  rsvpDates: data?.data?.event_rsvp?.attendanceDates?.rsvpDates
+                    rsvpDates: data?.data?.event_rsvp?.attendanceDates?.rsvpDates
                     ? data?.data?.event_rsvp?.attendanceDates?.rsvpDates.map(item =>
-                      moment.utc(item.dateTime).add(1, 'day').format()
+                      moment.utc(item.dateTime).format()
                     )
                     : [],
                   startDate: !data?.data?.eventDate ||
