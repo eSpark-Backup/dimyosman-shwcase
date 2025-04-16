@@ -32,15 +32,17 @@ const SpaceCard = ({ myProfile, onClick, spaces, showBtn }) => {
         cursor: !openInquiryModal && onClick ? "pointer" : "default",
       }}
     >
-      {spaces?.spacePic && <figure style={{ width: "100%", height: "100%" }} role="img">
-        <img
+      <figure style={{ width: "100%", height: "100%" }} role="space-image" aria-labelledby="space-image-figcaption">
+        {spaces?.spacePic ? (
+          <img
           style={{ borderRadius: "5px 5px 0 0 " }}
           width="100%"
           height="170px"
           src={spaces?.spacePic}
           alt="space-img"
-        />
-      </figure>}
+          />
+        ) : <Box sx={{ height: "170px", background: "rgb(209, 219, 215,0.4)" }}></Box>}
+      </figure>
       <Box
         sx={{
           background: "rgb(120, 150, 195)",
@@ -74,7 +76,7 @@ const SpaceCard = ({ myProfile, onClick, spaces, showBtn }) => {
       </Box>
       <Box
         padding={2}
-        sx={{ display: "flex", flexDirection: "column", rowGap: "5px" }}
+        sx={{ display: "flex", flexDirection: "column", rowGap: "5px", height: "300px", overflow: "auto", width: "100%" }}
       >
         <Typography textAlign="left" fontSize={20} fontWeight={600}>
           {spaces?.spaceName}
