@@ -1,12 +1,14 @@
 import React, { useEffect } from "react";
-
 import { useNavigate } from "react-router-dom";
+
+import { toast } from "react-toastify";
 
 import { useAuth0 } from "@auth0/auth0-react";
 
 import { Button } from "@mui/material";
 
 import { facebook } from "../../assets";
+
 import { deleteCookie, getCookie, setCookie } from "../../utils";
 
 const FacebookButton = ({
@@ -42,14 +44,14 @@ const FacebookButton = ({
   }, [isAuthenticated, user]);
 
   useEffect(() => {
-    if (isErrorRegister) {
+    if (isErrorRegister && isAuthenticated) {
       deleteCookie("social_type");
       toast.error(errorRegister?.data?.message);
     }
-    if (isSuccessRegister) {
+    if (isSuccessRegister && isAuthenticated) {
       navigate("/activity");
     }
-  }, [isErrorRegister, isSuccessRegister, navigate, errorRegister]);
+  }, [isErrorRegister, isSuccessRegister, navigate, errorRegister, isAuthenticated]);
 
   return (
     <Button

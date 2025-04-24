@@ -75,7 +75,7 @@ const EventCard = ({ edit, onClick, event, showBtn }) => {
           alt="event-badge"
         />
       </figure>
-      <Box component="section" padding={2} sx={{ display: "flex", flexDirection: "column", rowGap: "5px" }}>
+      <Box component="section" padding={2} sx={{ display: "flex", flexDirection: "column", rowGap: "5px", height: "300px", overflow: "auto", width: "100%" }}>
         <Typography textAlign="left" fontSize={20} fontWeight={600}>
           {event?.profileName}
         </Typography>
