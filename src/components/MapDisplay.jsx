@@ -26,21 +26,21 @@ const MapDisplay = React.memo(
       const angle = (index * 360) / locations.length; // Spread evenly
       const radius = 0.0001 * (index + 1); // Small offset per marker
       return {
-        lat: position.lat + radius * Math.cos(angle),
-        lng: position.lng + radius * Math.sin(angle),
+        lat: position?.lat + radius * Math.cos(angle),
+        lng: position?.lng + radius * Math.sin(angle),
       };
     };
 
     const returnPosition = (obj) => {
       const navigationKeys = {
-        BRAND: { lat: obj?.location?.lat, lng: obj?.location?.long },
+        BRAND: { lat: obj?.location?.lat || 0, lng: obj?.location?.long || 0 },
         SPACE: {
-          lat: obj?.brand?.location?.lat,
-          lng: obj?.brand?.location?.long,
+          lat: obj?.brand?.location?.lat || 0,
+          lng: obj?.brand?.location?.long || 0,
         },
         EVENT: {
-          lat: obj?.space?.brand?.location?.lat,
-          lng: obj?.space?.brand?.location?.long,
+          lat: obj?.space?.brand?.location?.lat || 0,
+          lng: obj?.space?.brand?.location?.long || 0,
         },
       };
       return navigationKeys[parameters.entity];
