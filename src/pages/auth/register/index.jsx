@@ -16,6 +16,7 @@ import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
 import GoogleButton from "../../../components/SocialButtons/GoogleButton";
 import { deleteCookie, getCookie, logoutAuthUtils, removeActiveNotifications, removeNewInquiry } from "../../../utils";
 import { emptyNotification } from '../../../store/slices/notification';
+import { setSearchQuery } from '../../../store/slices/search';
 
 const AUTH0_APP_DOMAIN = import.meta.env.VITE_AUTH0_APP_DOMAIN;
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_AUTH0_GOOGLE_APP_CLIENT_ID;
@@ -29,6 +30,7 @@ const Register = () => {
 
   const { logout } = useAuth0();
   const [authLoading, setAuthLoading] = useState(false)
+  const dispatch = useDispatch();
   
   const logoutSession = getCookie("logout");
   const socialType = getCookie("social_type");
@@ -39,6 +41,8 @@ const Register = () => {
 
       setTimeout(() => {
         deleteCookie("logout");
+        deleteCookie("search_query");
+        dispatch(setSearchQuery(null));
         deleteCookie("social_type");
       }, 10);
     }
@@ -46,7 +50,6 @@ const Register = () => {
 
   const theme = useTheme();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const formik = useFormik({
     initialValues: {
       fName: "",
