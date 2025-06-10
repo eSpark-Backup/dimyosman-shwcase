@@ -10,6 +10,8 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { apple } from "../../assets";
 
 import { deleteCookie, getCookie, setCookie } from "../../utils";
+import { useDispatch } from "react-redux";
+import { setSearchQuery } from "../../store/slices/search";
 
 const AppleButton = ({
   authBtnStyle,
@@ -19,6 +21,7 @@ const AppleButton = ({
   errorRegister,
 }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch()
   const logoutSession = getCookie("logout");
 
   const { loginWithPopup, user, isAuthenticated } = useAuth0();
@@ -46,6 +49,8 @@ const AppleButton = ({
   useEffect(() => {
     if (isErrorRegister && isAuthenticated) {
       deleteCookie("social_type");
+      deleteCookie("search_query");
+      dispatch(setSearchQuery(null));
       toast.error(errorRegister?.data?.message);
     }
     if (isSuccessRegister && isAuthenticated) {

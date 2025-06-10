@@ -293,7 +293,7 @@ const Filters = ({
       return;
     }
 
-    if (parameters.lat.length !== 0) {
+    if (parameters?.lat?.length !== 0) {
       dispatch(setGeneralSearching(false))
     } else {
       dispatch(setGeneralSearching(true));
@@ -355,7 +355,7 @@ const Filters = ({
 
     if (
       updatedCategories?.some((cate) => cate.selected === true) ||
-      parameters.lat.length !== 0
+      parameters?.lat?.length !== 0
     ) {
       dispatch(setGeneralSearching(false));
     } else {
@@ -504,6 +504,7 @@ const Filters = ({
           textAlign: "end",
         }}
         // onClick={() => setOpenFilterDrawer?.(false)}
+        onClick={() => handleCloseFilterDrawer?.()}
       >
         <img src={close} alt="Close Icon" />
       </Box>

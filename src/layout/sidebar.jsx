@@ -50,7 +50,7 @@ const Sidebar = () => {
             className="sidebar-item"
             id={item.title}
             onClick={() => {
-              deleteCookie("search_query")
+              deleteCookie("search_query");
               dispatch(setSearchQuery(null))
               dispatch(setShouldReturn(false))
               dispatch(emptyFilters());
