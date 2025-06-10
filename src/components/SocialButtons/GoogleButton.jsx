@@ -10,6 +10,8 @@ import { Button } from "@mui/material";
 import { google } from "../../assets";
 
 import { deleteCookie, getCookie, setCookie } from "../../utils";
+import { useDispatch } from "react-redux";
+import { setSearchQuery } from "../../store/slices/search";
 
 const GoogleButton = ({
   authBtnStyle,
@@ -20,6 +22,7 @@ const GoogleButton = ({
   setAuthLoading,
 }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch()
   const logoutSession = getCookie("logout");
 
   const { loginWithPopup, user, isAuthenticated } = useAuth0();
@@ -45,6 +48,8 @@ const GoogleButton = ({
   useEffect(() => {
     if (isErrorRegister && isAuthenticated) {
       deleteCookie("social_type");
+      deleteCookie("search_query");
+      dispatch(setSearchQuery(null));
       toast.error(errorRegister?.data?.message);
     }
     if (isSuccessRegister && isAuthenticated) {

@@ -32,10 +32,13 @@ import { useVerifyTokenQuery } from './services/auth';
 import { useAuth0 } from '@auth0/auth0-react';
 import { logoutAuthUtils } from './utils';
 import SplashScreen from './layout/splash';
+import { useDispatch } from 'react-redux';
+import { setSearchQuery } from './store/slices/search';
 
 function App() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch()
   const token = window.localStorage.getItem("token");
 
   const { isLoading, isError, isFetching } = useVerifyTokenQuery(undefined, { skip: !token });
@@ -48,6 +51,8 @@ function App() {
       if (pathname !== "/auth" && pathname !== "/forgot-password" && pathname !== "/reset-password" && !pathname.includes("share")) {
         logoutAuthUtils(logout)
         navigate("/auth?type=login");
+        deleteCookie("search_query");
+        dispatch(setSearchQuery(null));
       }
     } else if (pathname === "/auth") {
 
@@ -61,6 +66,8 @@ function App() {
       window.localStorage.removeItem("token");
       logoutAuthUtils(logout)
       navigate("/auth?type=login");
+      deleteCookie("search_query");
+      dispatch(setSearchQuery(null));
     }
   }, [isError, navigate]);
 

@@ -80,6 +80,9 @@ const Header = ({ isLogin }) => {
     setCookie("logout", true);
     logoutAuthUtils(logoutAuth)
     
+    deleteCookie("search_query");
+    dispatch(setSearchQuery(null));
+
     dispatch(logoutFunc());
     dispatch(removeMychat());
     dispatch(emptyNotification());
