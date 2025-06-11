@@ -75,6 +75,7 @@ export class GeneralController {
   ): Promise<void> {
     try {
       const {
+        keyword,
         name,
         page = 1,
         take = 10,
@@ -135,7 +136,7 @@ export class GeneralController {
         .skip(skipNumber)
         .take(takeNumber);
 
-        let eventCountQuery =this.eventsRepo
+      let eventCountQuery = this.eventsRepo
         .createQueryBuilder("event")
         .leftJoinAndSelect("event.brand", "brand")
         .leftJoinAndSelect("event.space", "space")
@@ -159,8 +160,7 @@ export class GeneralController {
             .where("rsvp.event = event.id")
             .andWhere("rsvp.user = :userId", { userId })
             .limit(1);
-        }, "event_rsvp")
-  
+        }, "event_rsvp");
 
       let brandQuery = this.brandRepo
         .createQueryBuilder("brand")
@@ -293,19 +293,37 @@ export class GeneralController {
         );
       }
 
+      if (keyword) {
+        const amenityArray: string[] =
+          typeof keyword === "string"
+            ? keyword.split(",").map((item) => item.trim())
+            : Array.isArray(keyword)
+            ? (keyword as Array<string | object>).map((item) =>
+                String(item).trim()
+              )
+            : [];
+
+        const amenityFilter = amenityArray
+          .map((amenity: string) => {
+            return `JSON_CONTAINS(space.amenity, '{"name": "${amenity}"}')`;
+          })
+          .join(" OR ");
+
+        spaceQuery.andWhere(`(${amenityFilter})`);
+      }
+
       if (entity !== "All") {
         if (entity === "SPACE") {
           eventQuery = null;
           brandQuery = null;
-          eventCountQuery=null;
+          eventCountQuery = null;
         } else if (entity === "EVENT") {
           spaceQuery = null;
           brandQuery = null;
         } else if (entity === "BRAND") {
           spaceQuery = null;
           eventQuery = null;
-          eventCountQuery=null;
-
+          eventCountQuery = null;
         }
       }
 
@@ -313,8 +331,7 @@ export class GeneralController {
       if (spaceQuery) queries.push(spaceQuery.getManyAndCount());
       if (eventQuery) queries.push(eventQuery.getRawAndEntities());
       if (brandQuery) queries.push(brandQuery.getManyAndCount());
-      if(eventCountQuery) queries.push(eventCountQuery.getRawAndEntities());
-
+      if (eventCountQuery) queries.push(eventCountQuery.getRawAndEntities());
 
       const results = await Promise.all(queries);
 
@@ -329,7 +346,6 @@ export class GeneralController {
       };
       const totalEventsCount = results ? results[1] : 0;
       delete results[1];
-      
 
       results.forEach((result, index) => {
         if (entity === "SPACE") {
@@ -387,6 +403,7 @@ export class GeneralController {
         const events = await this.eventsRepo
           .createQueryBuilder("event")
           .where("event.space = :spaceId", { spaceId: space.id })
+          .andWhere("event.eventDate IS NOT NULL")
           .getMany();
 
         const calendarEvents = events.flatMap((event) => {
@@ -486,24 +503,41 @@ export class GeneralController {
       const updatedSpaces = spaces.map((space) => ({
         ...space,
         isFavourite: savedEntityIds.has(space.id),
-        shareableLink: generateShareableLink({ id: space.id, type: "space",typeName:space.spaceName }),
+        shareableLink: generateShareableLink({
+          id: space.id,
+          type: "space",
+          typeName: space.spaceName,
+        }),
         isFollowed: followedEntityIds.has(space.id),
       }));
 
       const updatedEvents = events.map((event) => ({
         ...event,
         isFavourite: savedEntityIds.has(event.id),
-        shareableLink: generateShareableLink({ id: event.id, type: "event",typeName:event.eventName }),
+        shareableLink: generateShareableLink({
+          id: event.id,
+          type: "event",
+          typeName: event.eventName,
+        }),
         isFollowed: followedEntityIds.has(event.id),
       }));
 
       const updatedBrands = brands.map((brand) => ({
         ...brand,
         isFavourite: savedEntityIds.has(brand.id),
-        shareableLink: generateShareableLink({ id: brand.id, type: "brand" ,typeName:brand.brandName}),
+        shareableLink: generateShareableLink({
+          id: brand.id,
+          type: "brand",
+          typeName: brand.brandName,
+        }),
         isFollowed: followedEntityIds.has(brand.id),
       }));
-      const totalResults = spaceCount + (totalEventsCount && 'entities' in totalEventsCount ? totalEventsCount.entities.length : 0) + brandCount;
+      const totalResults =
+        spaceCount +
+        (totalEventsCount && "entities" in totalEventsCount
+          ? totalEventsCount.entities.length
+          : 0) +
+        brandCount;
 
       const response = {
         spaces: updatedSpaces,
@@ -736,7 +770,7 @@ export class GeneralController {
         .where("space.user != :userId", { userId: req.user?.id })
         .andWhere("space.status = :STATUS", { STATUS: SPACE_STATUS.PUBLISH })
         .leftJoinAndSelect("space.user", "user")
-        .leftJoinAndSelect("brand.user","brandUser")
+        .leftJoinAndSelect("brand.user", "brandUser")
         .orderBy("space.createdAt", "DESC")
         .getManyAndCount();
 
@@ -791,9 +825,9 @@ export class GeneralController {
       for (const space of spaces) {
         const events = await this.eventsRepo
           .createQueryBuilder("event")
-          .where("event.status= :status",{status:EventStatus.PUBLISH})
+          .where("event.status= :status", { status: EventStatus.PUBLISH })
           .andWhere("event.space = :spaceId", { spaceId: space.id })
-          
+
           .getMany();
 
         const calendarEvents = events.flatMap((event) => {
@@ -813,36 +847,47 @@ export class GeneralController {
       }
 
       spaces = spaces.map((space) => {
-        if(space.pricing !=null){
-        const totalPricing = calculatePricing(
-          space.pricing as PricingTerm[],
-          1
-        );
-        return {
-          ...space,
-          totalPricing,
-        };
-      }
-      return space;
-
+        if (space.pricing != null) {
+          const totalPricing = calculatePricing(
+            space.pricing as PricingTerm[],
+            1
+          );
+          return {
+            ...space,
+            totalPricing,
+          };
+        }
+        return space;
       });
 
       const eventsWithType = formattedRsvpEvents.map((event: any) => ({
         ...event,
         type: "event",
-        shareableLink: generateShareableLink({ id: event.id, type: "event",typeName:event.eventName }),
+        shareableLink: generateShareableLink({
+          id: event.id,
+          type: "event",
+          typeName: event.eventName,
+        }),
       }));
 
       const brandsWithType = brands.map((brand: any) => ({
         ...brand,
         type: "brand",
-        shareableLink: generateShareableLink({ id: brand.id, type: "brand",typeName:brand.brandName }),
+        shareableLink: generateShareableLink({
+          id: brand.id,
+          type: "brand",
+          typeName: brand.brandName,
+        }),
       }));
 
       const spacesWithType = spaces.map((space: any) => ({
         ...space,
         type: "space",
-        shareableLink: generateShareableLink({ id: space.id, type: "space",typeName:space.spaceName }),
+        shareableLink: generateShareableLink({
+          id: space.id,
+          type: "space",
+          typeName: space.spaceName,
+        }),
       }));
 
       const activity = [
@@ -941,8 +986,8 @@ export class GeneralController {
       const { id, type } = entities[0];
 
       let entity;
-      if(type === "user") {
-        const userId=id
+      if (type === "user") {
+        const userId = id;
         const user = (await this.userRepo
           .createQueryBuilder("user")
           .where("user.id = :userId", { userId })
@@ -951,43 +996,47 @@ export class GeneralController {
           throw new ApiError("User profile not found", HTTP_STATUS.NOT_FOUND);
         }
         if (!user.profile) {
-          throw new ApiError("User profile is not Public", HTTP_STATUS.NOT_FOUND);
+          throw new ApiError(
+            "User profile is not Public",
+            HTTP_STATUS.NOT_FOUND
+          );
         }
 
         const [getBrandsCount, getEventsCount, getSpacesCount] =
-        await Promise.all([
-          this.brandRepo
-            .createQueryBuilder("brand")
-            .where("brand.status = :status", { status: BRAND_STATUS.PUBLISH })
-            .andWhere("brand.user = :userId", { userId })
-            .getCount(),
-          this.eventsRepo
-            .createQueryBuilder("event")
-            .where("event.status = :status", { status: EVENT_STATUS.PUBLISH })
-            .andWhere("event.user = :userId", { userId })
-            .getCount(),
-          this.spaceRepo
-            .createQueryBuilder("space")
-            .where("space.status = :status", { status: SPACE_STATUS.PUBLISH })
-            .andWhere("space.user = :userId", { userId })
-            .getCount(),
-        ]);
+          await Promise.all([
+            this.brandRepo
+              .createQueryBuilder("brand")
+              .where("brand.status = :status", { status: BRAND_STATUS.PUBLISH })
+              .andWhere("brand.user = :userId", { userId })
+              .getCount(),
+            this.eventsRepo
+              .createQueryBuilder("event")
+              .where("event.status = :status", { status: EVENT_STATUS.PUBLISH })
+              .andWhere("event.user = :userId", { userId })
+              .getCount(),
+            this.spaceRepo
+              .createQueryBuilder("space")
+              .where("space.status = :status", { status: SPACE_STATUS.PUBLISH })
+              .andWhere("space.user = :userId", { userId })
+              .getCount(),
+          ]);
 
-         const { password: _, ...userProfile } = user as User & {
-        brandsCount?: number;
-        eventsCount?: number;
-        spacesCount?: number;
-      };
-      userProfile.coverImages = JSON.parse(
-        userProfile.coverImages as Object as string
-      );
-      userProfile.brandsCount = getBrandsCount;
-      userProfile.eventsCount = getEventsCount;
-      userProfile.spacesCount = getSpacesCount;
-      res.status(200).json(handleResponse("User Found Successfully", userProfile));
-      return next();
-      }
-     else  if (type === "space") {
+        const { password: _, ...userProfile } = user as User & {
+          brandsCount?: number;
+          eventsCount?: number;
+          spacesCount?: number;
+        };
+        userProfile.coverImages = JSON.parse(
+          userProfile.coverImages as Object as string
+        );
+        userProfile.brandsCount = getBrandsCount;
+        userProfile.eventsCount = getEventsCount;
+        userProfile.spacesCount = getSpacesCount;
+        res
+          .status(200)
+          .json(handleResponse("User Found Successfully", userProfile));
+        return next();
+      } else if (type === "space") {
         entity = await this.spaceRepo
           .createQueryBuilder("space")
           .leftJoinAndSelect("space.brand", "brand")
@@ -1015,12 +1064,12 @@ export class GeneralController {
           }));
         });
         (entity as any).calendarEvents = calendarEvents;
-        if(entity.pricing !=null){
-        const totalPricing = calculatePricing(
-          entity.pricing as PricingTerm[],
-          1
-        );
-      }
+        if (entity.pricing != null) {
+          const totalPricing = calculatePricing(
+            entity.pricing as PricingTerm[],
+            1
+          );
+        }
 
         const savedEntities = await this.savedEntity
           .createQueryBuilder("savedEntity")
@@ -1186,64 +1235,64 @@ export class GeneralController {
         );
 
         let brandSpaces = await this.spaceRepo
-        .createQueryBuilder("space")
-        .where("space.brand = :brandId", { brandId: entity.id })
-        .andWhere(
-          new Brackets((qb) => {
-            qb.where("space.user = :userId", {
-              userId: req.user?.id,
-            }).orWhere("space.status = :status", {
-              status: BRAND_STATUS.PUBLISH,
-            });
-          })
-        )
-        .getMany();
+          .createQueryBuilder("space")
+          .where("space.brand = :brandId", { brandId: entity.id })
+          .andWhere(
+            new Brackets((qb) => {
+              qb.where("space.user = :userId", {
+                userId: req.user?.id,
+              }).orWhere("space.status = :status", {
+                status: BRAND_STATUS.PUBLISH,
+              });
+            })
+          )
+          .getMany();
 
-      if (brandSpaces.length > 0) {
-        brandSpaces = brandSpaces.map((space) => {
-          if (typeof space.coverImages === "string") {
-            space.coverImages = JSON.parse(space.coverImages);
-          }
-          return space;
-        });
-      }
-
-      const singleEvent = await this.eventsRepo
-      .createQueryBuilder("event")
-      .leftJoinAndSelect("event.user", "user")
-  
-      .andWhere("event.brand = :eventId", { eventId: entity.id })
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where("event.user = :userId", {
-            userId: req.user?.id,
-          }).orWhere("event.status = :status", {
-            status: EVENT_STATUS.PUBLISH,
+        if (brandSpaces.length > 0) {
+          brandSpaces = brandSpaces.map((space) => {
+            if (typeof space.coverImages === "string") {
+              space.coverImages = JSON.parse(space.coverImages);
+            }
+            return space;
           });
-        })
-      )
-      .leftJoinAndSelect("event.space", "space")
-      .leftJoinAndSelect("event.leaseSpace", "leaseSpace")
-      .leftJoinAndSelect("space.brand", "spaceBrand")
-      .leftJoin(
-        (qb) => {
-          return qb
-            .select("rsvp_sub.event", "eventId")
-            .addSelect("COUNT(rsvp_sub.id)", "rsvpCount")
-            .from("rsvp", "rsvp_sub")
-            .groupBy("rsvp_sub.event");
-        },
-        "rsvpCountSubquery",
-        "rsvpCountSubquery.eventId = event.id"
-      )
-      .addSelect(
-        "COALESCE(rsvpCountSubquery.rsvpCount, 0)",
-        "event_rsvpCount"
-      )
-      .addSelect((subQuery) => {
-        return subQuery
-          .select(
-            `COALESCE(
+        }
+
+        const singleEvent = await this.eventsRepo
+          .createQueryBuilder("event")
+          .leftJoinAndSelect("event.user", "user")
+
+          .andWhere("event.brand = :eventId", { eventId: entity.id })
+          .andWhere(
+            new Brackets((qb) => {
+              qb.where("event.user = :userId", {
+                userId: req.user?.id,
+              }).orWhere("event.status = :status", {
+                status: EVENT_STATUS.PUBLISH,
+              });
+            })
+          )
+          .leftJoinAndSelect("event.space", "space")
+          .leftJoinAndSelect("event.leaseSpace", "leaseSpace")
+          .leftJoinAndSelect("space.brand", "spaceBrand")
+          .leftJoin(
+            (qb) => {
+              return qb
+                .select("rsvp_sub.event", "eventId")
+                .addSelect("COUNT(rsvp_sub.id)", "rsvpCount")
+                .from("rsvp", "rsvp_sub")
+                .groupBy("rsvp_sub.event");
+            },
+            "rsvpCountSubquery",
+            "rsvpCountSubquery.eventId = event.id"
+          )
+          .addSelect(
+            "COALESCE(rsvpCountSubquery.rsvpCount, 0)",
+            "event_rsvpCount"
+          )
+          .addSelect((subQuery) => {
+            return subQuery
+              .select(
+                `COALESCE(
               JSON_OBJECT(
                   'id', rsvp.id,
                   'attendanceDates', rsvp.attendanceDates,
@@ -1251,83 +1300,83 @@ export class GeneralController {
                   'review', rsvp.review,
                   'rating', rsvp.rating
               ), '{}')`, // Ensure null values don't break the JSON
-            "event_rsvp"
-          )
-          .from("RSVP", "rsvp")
-          .where("rsvp.event = event.id")
-          .andWhere("rsvp.user = :userId", { userId: req.user?.id })
-          .limit(1);
-      }, "event_rsvp")
+                "event_rsvp"
+              )
+              .from("RSVP", "rsvp")
+              .where("rsvp.event = event.id")
+              .andWhere("rsvp.user = :userId", { userId: req.user?.id })
+              .limit(1);
+          }, "event_rsvp")
 
-      .getRawAndEntities();
-      const [getFollowedCount, getLikedCount] = await Promise.all([
-        this.savedEntity
-          .createQueryBuilder("savedEntity")
-          .where("savedEntity.ActionType = :actionType", {
-            actionType: ActionType.FOLLOW,
-          })
-          .andWhere("savedEntity.type = :type", {
-            type: SavedEntityType.BRAND,
-          })
-          .leftJoinAndSelect("savedEntity.brand", "brand")
-          .andWhere("brand.id = :brandId", { brandId: entity.id })
-          .getCount(),
-        this.savedEntity
-          .createQueryBuilder("savedEntity")
-          .where("savedEntity.ActionType = :actionType", {
-            actionType: ActionType.FAVORITE,
-          })
-          .andWhere("savedEntity.type = :type", {
-            type: SavedEntityType.BRAND,
-          })
-          .leftJoinAndSelect("savedEntity.brand", "brand")
-          .andWhere("brand.id = :brandId", { brandId: entity.id })
-          .getCount(),
-      ]);
+          .getRawAndEntities();
+        const [getFollowedCount, getLikedCount] = await Promise.all([
+          this.savedEntity
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FOLLOW,
+            })
+            .andWhere("savedEntity.type = :type", {
+              type: SavedEntityType.BRAND,
+            })
+            .leftJoinAndSelect("savedEntity.brand", "brand")
+            .andWhere("brand.id = :brandId", { brandId: entity.id })
+            .getCount(),
+          this.savedEntity
+            .createQueryBuilder("savedEntity")
+            .where("savedEntity.ActionType = :actionType", {
+              actionType: ActionType.FAVORITE,
+            })
+            .andWhere("savedEntity.type = :type", {
+              type: SavedEntityType.BRAND,
+            })
+            .leftJoinAndSelect("savedEntity.brand", "brand")
+            .andWhere("brand.id = :brandId", { brandId: entity.id })
+            .getCount(),
+        ]);
 
-      const { entities: rsvpEvents, raw } = singleEvent;
-      const totalEventsCount = rsvpEvents.length;
+        const { entities: rsvpEvents, raw } = singleEvent;
+        const totalEventsCount = rsvpEvents.length;
 
-      const brandEvents = rsvpEvents.map((rsvp, index) => {
-        const rawData = raw[index];
-        parseCoverImages(rsvp);
-        parseCoverImages(rsvp.brand);
-        parseCoverImages(rsvp.space);
-        let event_rsvp;
-        if (rawData.event_rsvp) {
-          event_rsvp = JSON.parse(rawData.event_rsvp);
-        }
-        const eventDate =
-          rsvp.eventDate &&
-          (rsvp.eventDate as [{ startDate: string; endDate: string }]);
+        const brandEvents = rsvpEvents.map((rsvp, index) => {
+          const rawData = raw[index];
+          parseCoverImages(rsvp);
+          parseCoverImages(rsvp.brand);
+          parseCoverImages(rsvp.space);
+          let event_rsvp;
+          if (rawData.event_rsvp) {
+            event_rsvp = JSON.parse(rawData.event_rsvp);
+          }
+          const eventDate =
+            rsvp.eventDate &&
+            (rsvp.eventDate as [{ startDate: string; endDate: string }]);
 
-        if (eventDate) {
-          const currentDate = new Date();
+          if (eventDate) {
+            const currentDate = new Date();
 
-          let eventStatus = "Ended";
-          if (currentDate < new Date(eventDate[0].startDate)) {
-            eventStatus = "Upcoming";
-          } else if (
-            currentDate >= new Date(eventDate[0].startDate) &&
-            currentDate <= new Date(eventDate[0].endDate)
-          ) {
-            eventStatus = "Ongoing";
+            let eventStatus = "Ended";
+            if (currentDate < new Date(eventDate[0].startDate)) {
+              eventStatus = "Upcoming";
+            } else if (
+              currentDate >= new Date(eventDate[0].startDate) &&
+              currentDate <= new Date(eventDate[0].endDate)
+            ) {
+              eventStatus = "Ongoing";
+            }
+
+            return {
+              ...rsvp,
+              rsvpCount: Number(rawData.event_rsvpCount) || 0,
+              event_rsvp,
+              eventStatus,
+            };
           }
 
           return {
             ...rsvp,
-            rsvpCount: Number(rawData.event_rsvpCount) || 0,
             event_rsvp,
-            eventStatus,
+            rsvpCount: Number(rawData.event_rsvpCount) || 0,
           };
-        }
-
-        return {
-          ...rsvp,
-          event_rsvp,
-          rsvpCount: Number(rawData.event_rsvpCount) || 0,
-        };
-      });
+        });
 
         const isFavourite = savedEventIds.has(entity.id);
         const brand = {
@@ -1399,7 +1448,7 @@ export class GeneralController {
       const shareableLink = generateShareableLink({
         id: user.id,
         type: "user",
-        typeName:user.name
+        typeName: user.name,
       });
       const { password: _, ...userProfile } = user as User & {
         shareableLink?: string;
@@ -1429,132 +1478,119 @@ export class GeneralController {
     }
   }
 
-     async getAllPublicBrands(
-        req: ICustomRequest,
-        res: Response,
-        next: NextFunction
-      ): Promise<void> {
-        try {
-          const userId = req.params?.id;
-          const findUser= await this.userRepo.createQueryBuilder("user")
-          .where("user.id = :userId", { userId })
-          .getOne()as User;
-          if (!findUser) {
-            throw new ApiError("User not found", HTTP_STATUS.NOT_FOUND);
-          }
-          if (!findUser.profile) {
-            throw new ApiError("User profile is not Public", HTTP_STATUS.NOT_FOUND);
-          }
-          const { page, take, skip } = req?.query;
-          const skipNumber = Number(skip);
-          const takeNumber = Number(take);
-         
-    
-          const [brands, totalItems] = await this.brandRepo
-            .createQueryBuilder("brand")
-            .where("brand.user = :userId", { userId: req.user?.id })
-            .leftJoinAndSelect("brand.user", "user")
-            .andWhere("brand.status = :STATUS", { STATUS: BRAND_STATUS.PUBLISH })
-            .orderBy("brand.createdAt", "DESC")
-            .skip(skipNumber)
-            .take(takeNumber)
-            .getManyAndCount();
-    
-          if (brands.length === 0) {
-            res.status(200).json(handleResponse("No Brands Found"));
-            return next();
-          }
-    
-          brands.forEach((brand) => {
-            if (typeof brand.coverImages === "string") {
-              brand.coverImages = JSON.parse(brand.coverImages);
-            }
-          });
+  async getAllPublicBrands(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = req.params?.id;
+      const findUser = (await this.userRepo
+        .createQueryBuilder("user")
+        .where("user.id = :userId", { userId })
+        .getOne()) as User;
+      if (!findUser) {
+        throw new ApiError("User not found", HTTP_STATUS.NOT_FOUND);
+      }
+      if (!findUser.profile) {
+        throw new ApiError("User profile is not Public", HTTP_STATUS.NOT_FOUND);
+      }
+      const { page, take, skip } = req?.query;
+      const skipNumber = Number(skip);
+      const takeNumber = Number(take);
 
+      const [brands, totalItems] = await this.brandRepo
+        .createQueryBuilder("brand")
+        .where("brand.user = :userId", { userId: req.user?.id })
+        .leftJoinAndSelect("brand.user", "user")
+        .andWhere("brand.status = :STATUS", { STATUS: BRAND_STATUS.PUBLISH })
+        .orderBy("brand.createdAt", "DESC")
+        .skip(skipNumber)
+        .take(takeNumber)
+        .getManyAndCount();
 
-          
-    
-       
-    
-          res.status(200).json(
-            handleResponse("User Public Brands Fetched Successfully", {
-              brands,
-              pagination: {
-                totalItems,
-                currentPage: parseInt(page as string, 10),
-                pageSize: takeNumber,
-                totalPages: Math.ceil(totalItems / takeNumber),
-              },
-            })
-          );
-        } catch (error) {
-          next(error);
-        }
+      if (brands.length === 0) {
+        res.status(200).json(handleResponse("No Brands Found"));
+        return next();
       }
 
+      brands.forEach((brand) => {
+        if (typeof brand.coverImages === "string") {
+          brand.coverImages = JSON.parse(brand.coverImages);
+        }
+      });
 
+      res.status(200).json(
+        handleResponse("User Public Brands Fetched Successfully", {
+          brands,
+          pagination: {
+            totalItems,
+            currentPage: parseInt(page as string, 10),
+            pageSize: takeNumber,
+            totalPages: Math.ceil(totalItems / takeNumber),
+          },
+        })
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
 
+  async publicEntityProfile(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { page = 1, take = 10, entity = "All" } = req.query;
+      const skipNumber = (Number(page) - 1) * Number(take);
+      const takeNumber = Number(take);
 
-      async publicEntityProfile(
-        req: ICustomRequest,
-        res: Response,
-        next: NextFunction
-      ): Promise<void> {
-        try {
-          const {
-            page = 1,
-            take = 10,
-            entity = "All",
-          } = req.query;
-          const skipNumber = (Number(page) - 1) * Number(take);
-          const takeNumber = Number(take);
-    
-          const userId = req.params?.id;
-          const user = (await this.userRepo
-            .createQueryBuilder("user")
-            .where("user.id = :userId", { userId })
-            .getOne()) as User;
-          if (!user) {
-            throw new ApiError("User profile not found", HTTP_STATUS.NOT_FOUND);
-          }
-          if (!user.profile) {
-            throw new ApiError("User profile is not Public", HTTP_STATUS.NOT_FOUND);
-          }
+      const userId = req.params?.id;
+      const user = (await this.userRepo
+        .createQueryBuilder("user")
+        .where("user.id = :userId", { userId })
+        .getOne()) as User;
+      if (!user) {
+        throw new ApiError("User profile not found", HTTP_STATUS.NOT_FOUND);
+      }
+      if (!user.profile) {
+        throw new ApiError("User profile is not Public", HTTP_STATUS.NOT_FOUND);
+      }
 
-    
-          // Initialize base queries
-          let spaceQuery = this.spaceRepo
-            .createQueryBuilder("space")
-            .leftJoinAndSelect("space.brand", "brand")
-            .andWhere("space.user = :userId", { userId })
-            .andWhere("space.status = :STATUS", { STATUS: SPACE_STATUS.PUBLISH })
-            .skip(skipNumber)
-            .take(takeNumber);
-    
-          let eventQuery = this.eventsRepo
-            .createQueryBuilder("event")
-            .leftJoinAndSelect("event.brand", "brand")
-            .leftJoinAndSelect("event.space", "space")
-            .leftJoinAndSelect("space.brand", "spaceBrand")
-            .where("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
-            .andWhere("event.user = :userId", { userId }) // Get events created by other users
-            .leftJoin(
-              (qb) => {
-                return qb
-                  .select("rsvp_sub.event", "eventId")
-                  .addSelect("COUNT(rsvp_sub.id)", "rsvpCount")
-                  .from("rsvp", "rsvp_sub")
-                  .groupBy("rsvp_sub.event");
-              },
-              "rsvpCountSubquery",
-              "rsvpCountSubquery.eventId = event.id"
-            )
-            .addSelect(
-              "COALESCE(rsvpCountSubquery.rsvpCount, 0)",
-              "event_rsvpCount"
-            )
-            .addSelect(
-              `(SELECT 
+      // Initialize base queries
+      let spaceQuery = this.spaceRepo
+        .createQueryBuilder("space")
+        .leftJoinAndSelect("space.brand", "brand")
+        .andWhere("space.user = :userId", { userId })
+        .andWhere("space.status = :STATUS", { STATUS: SPACE_STATUS.PUBLISH })
+        .skip(skipNumber)
+        .take(takeNumber);
+
+      let eventQuery = this.eventsRepo
+        .createQueryBuilder("event")
+        .leftJoinAndSelect("event.brand", "brand")
+        .leftJoinAndSelect("event.space", "space")
+        .leftJoinAndSelect("space.brand", "spaceBrand")
+        .where("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
+        .andWhere("event.user = :userId", { userId }) // Get events created by other users
+        .leftJoin(
+          (qb) => {
+            return qb
+              .select("rsvp_sub.event", "eventId")
+              .addSelect("COUNT(rsvp_sub.id)", "rsvpCount")
+              .from("rsvp", "rsvp_sub")
+              .groupBy("rsvp_sub.event");
+          },
+          "rsvpCountSubquery",
+          "rsvpCountSubquery.eventId = event.id"
+        )
+        .addSelect(
+          "COALESCE(rsvpCountSubquery.rsvpCount, 0)",
+          "event_rsvpCount"
+        )
+        .addSelect(
+          `(SELECT 
                   COALESCE(JSON_OBJECT(
                       'id', rsvp.id,
                       'attendanceDates', rsvp.attendanceDates,
@@ -1567,558 +1603,560 @@ export class GeneralController {
                 AND rsvp.user = :loggedInUserId 
                 LIMIT 1
               )`,
-              "event_rsvp"
-            )
-            .setParameter("loggedInUserId", req.user?.id) // Get RSVP for logged-in user
-            .setParameter("userId", userId)// Filter events from other users
+          "event_rsvp"
+        )
+        .setParameter("loggedInUserId", req.user?.id) // Get RSVP for logged-in user
+        .setParameter("userId", userId) // Filter events from other users
 
-            .skip(skipNumber)
-            .take(takeNumber);
-    
-          let brandQuery = this.brandRepo
-            .createQueryBuilder("brand")
-            .andWhere("brand.status = :STATUS", { STATUS: BRAND_STATUS.PUBLISH })
-            .andWhere("brand.user = :userId", { userId })
-            .leftJoinAndSelect("brand.user", "user")
-            .skip(skipNumber)
-            .take(takeNumber);
-    
-     
-    
- 
-    
-    
-    
-     
-    
-        
-            if (entity === "SPACE") {
-              eventQuery = null;
-              brandQuery = null;
-            } else if (entity === "EVENT") {
-              spaceQuery = null;
-              brandQuery = null;
-            } else if (entity === "BRAND") {
-              spaceQuery = null;
-              eventQuery = null;
-            }
-    
-          const queries = [];
-          if (spaceQuery) queries.push(spaceQuery.getManyAndCount());
-          if (eventQuery) queries.push(eventQuery.getRawAndEntities());
-          if (brandQuery) queries.push(brandQuery.getManyAndCount());
-    
-          const results = await Promise.all(queries);
-    
-          const entityMap: {
-            Space: [Spaces[], number] | null;
-            Event: [Events[], number] | null;
-            Brand: [Brand[], number] | null;
-          } = {
-            Space: null,
-            Event: null,
-            Brand: null,
-          };
-    
-          results.forEach((result, index) => {
-            if (entity === "SPACE") {
-              entityMap.Space = result as [Spaces[], number];
-            } else if (entity === "EVENT") {
-              if (result && "entities" in result && "raw" in result) {
-                const { entities: rsvpEvents, raw } = result;
-    
-                const events = rsvpEvents.map((eventRaw, index) => {
-                  const rawData = raw[index];
-                  const event = eventRaw as any;
-                  const eventDate =
-                  event.eventDate &&
-                  (event.eventDate as [
-                    { startDate: string; endDate: string }
-                  ]);
+        .skip(skipNumber)
+        .take(takeNumber);
 
+      let brandQuery = this.brandRepo
+        .createQueryBuilder("brand")
+        .andWhere("brand.status = :STATUS", { STATUS: BRAND_STATUS.PUBLISH })
+        .andWhere("brand.user = :userId", { userId })
+        .leftJoinAndSelect("brand.user", "user")
+        .skip(skipNumber)
+        .take(takeNumber);
 
-    
-                  // Parse the RSVP data if needed
-                  if (rawData.event_rsvp) {
-                    event.event_rsvp = JSON.parse(rawData.event_rsvp);
-                  }
-    
-                  if (event.brand) {
-                    event.brand = {
-                      ...event.brand,
-                    };
-                  }
-
-                  if (eventDate) {
-                    const currentDate = new Date();
-      
-                    let eventStatus = "Ended";
-                    if (currentDate < new Date(eventDate[0].startDate)) {
-                      eventStatus = "Upcoming";
-                    } else if (
-                      currentDate >= new Date(eventDate[0].startDate) &&
-                      currentDate <= new Date(eventDate[0].endDate)
-                    ) {
-                      eventStatus = "Ongoing";
-                    }
-      
-                    return {
-                      
-                      ...event,
-                      eventStatus,
-                      rsvpCount: Number(rawData.event_rsvpCount) || 0,
-                    };
-                  }
-    
-                });
-                
-    
-                entityMap.Event = [events, raw] as unknown as [Events[], number];
-              }
-            } else if (entity === "BRAND") {
-              entityMap.Brand = result as [Brand[], number];
-            }
-          });
-    
-          const [spaces, spaceCount] = entityMap.Space || [[], 0];
-          const [events, eventCount] = entityMap.Event || [[], 0];
-          const [brands, brandCount] = entityMap.Brand || [[], 0];
-    
-          if (events.length > 0) {
-            events.forEach((event) => {
-              parseCoverImages(event);
-              if ("brand" in event) {
-                parseCoverImages(event.brand);
-              }
-            });
-          }
-          if (spaces && spaces.length > 0) {
-            spaces.forEach((space) => {
-              parseCoverImages(space);
-              if ("brand" in space) {
-                parseCoverImages(space.brand);
-              }
-            });
-          }
-          for (const space of spaces) {
-            const events = await this.eventsRepo
-              .createQueryBuilder("event")
-              .where("event.space = :spaceId", { spaceId: space.id })
-              .getMany();
-    
-            const calendarEvents = events.flatMap((event) => {
-              const eventDates: EventDate[] = Array.isArray(event.eventDate)
-                ? event.eventDate
-                : JSON.parse(event.eventDate as unknown as string);
-    
-              return eventDates.map((dateRange) => ({
-                eventId: event.id,
-                title: event.eventName,
-                start: new Date(dateRange.startDate),
-                end: new Date(dateRange.endDate),
-              }));
-            });
-    
-            (space as any).calendarEvents = calendarEvents;
-          }
-          spaces.map((space) => {
-            if(space.pricing !=null){
-            const totalPricing = calculatePricing(
-              space.pricing as PricingTerm[],
-              1
-            );
-            return {
-              ...space,
-              totalPricing,
-            };
-          }
-          return space;
-          });
-          if (brands.length > 0) {
-            brands.forEach((brand) => {
-              parseCoverImages(brand);
-            });
-          }
-    
-          let saveQuery;
-          let savedEntitiesQuery = this.savedEntity
-            .createQueryBuilder("savedEntity")
-            .where("savedEntity.ActionType = :actionType", {
-              actionType: ActionType.FAVORITE,
-            })
-            .andWhere("savedEntity.user = :userId", { userId: req.user?.id });
-          let followedEntitiesQuery = this.savedEntity
-            .createQueryBuilder("savedEntity")
-            .where("savedEntity.ActionType = :actionType", {
-              actionType: ActionType.FOLLOW,
-            })
-            .andWhere("savedEntity.user = :userId", { userId: req.user?.id });
-    
-          if (entity === "SPACE") {
-            savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect(
-              "savedEntity.space",
-              "space"
-            );
-            followedEntitiesQuery = followedEntitiesQuery.leftJoinAndSelect(
-              "savedEntity.space",
-              "space"
-            );
-          } else if (entity === "EVENT") {
-            savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect(
-              "savedEntity.event",
-              "event"
-            );
-            followedEntitiesQuery = followedEntitiesQuery.leftJoinAndSelect(
-              "savedEntity.event",
-              "event"
-            );
-          } else if (entity === "BRAND") {
-            savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect(
-              "savedEntity.brand",
-              "brand"
-            );
-            followedEntitiesQuery = followedEntitiesQuery.leftJoinAndSelect(
-              "savedEntity.brand",
-              "brand"
-            );
-          } else {
-            throw new ApiError("Invalid entity type", HTTP_STATUS.BAD_REQUEST);
-          }
-    
-          const savedEntities = await savedEntitiesQuery.getMany();
-          const followedEntities = await followedEntitiesQuery.getMany();
-    
-          const savedEntityIds = new Set(
-            savedEntities
-              .map(
-                (entity) => entity.space?.id || entity.event?.id || entity.brand?.id
-              )
-              .filter(Boolean)
-          );
-          const followedEntityIds = new Set(
-            followedEntities
-              .map(
-                (entity) => entity.space?.id || entity.event?.id || entity.brand?.id
-              )
-              .filter(Boolean)
-          );
-    
-          const updatedSpaces = spaces.map((space) => ({
-            ...space,
-            isFavourite: savedEntityIds.has(space.id),
-            shareableLink: generateShareableLink({ id: space.id, type: "space" ,typeName:space.spaceName}),
-            isFollowed: followedEntityIds.has(space.id),
-          }));
-    
-          const updatedEvents = events.map((event) => ({
-            ...event,
-            isFavourite: savedEntityIds.has(event.id),
-            shareableLink: generateShareableLink({ id: event.id, type: "event" ,typeName:event.eventName}),
-            isFollowed: followedEntityIds.has(event.id),
-          }));
-    
-          const updatedBrands = brands.map((brand) => ({
-            ...brand,
-            isFavourite: savedEntityIds.has(brand.id),
-            shareableLink: generateShareableLink({ id: brand.id, type: "brand",typeName:brand.brandName }),
-            isFollowed: followedEntityIds.has(brand.id),
-          }));
-          const totalResults = spaceCount + updatedEvents.length + brandCount;
-    
-          const response = {
-            spaces: updatedSpaces,
-            events: updatedEvents,
-            brands: updatedBrands,
-            totalResults,
-            pagination: {
-              currentPage: parseInt(page as string, 10),
-              pageSize: takeNumber,
-              totalPages: Math.ceil(totalResults / takeNumber),
-            },
-          };
-    
-          res
-            .status(200)
-            .json(handleResponse("Public Entities fetched successfully", response));
-          return next();
-        } catch (error) {
-          logger.error(
-            `GeneralController :: General Get All For Public :: ${(error as Error)?.message}`
-          );
-          return next(error);
-        }
+      if (entity === "SPACE") {
+        eventQuery = null;
+        brandQuery = null;
+      } else if (entity === "EVENT") {
+        spaceQuery = null;
+        brandQuery = null;
+      } else if (entity === "BRAND") {
+        spaceQuery = null;
+        eventQuery = null;
       }
 
+      const queries = [];
+      if (spaceQuery) queries.push(spaceQuery.getManyAndCount());
+      if (eventQuery) queries.push(eventQuery.getRawAndEntities());
+      if (brandQuery) queries.push(brandQuery.getManyAndCount());
 
-      async generalLocationSearch(
-        req: ICustomRequest,
-        res: Response,
-        next: NextFunction
-      ): Promise<void> {
-        try {
-          const {
-            page = 1,
-            take = 1000,
-            lat,
-            radius = 10,
-            long,
-            entity = "All",
-          } = req.query;
-          const skipNumber = (Number(page) - 1) * Number(take);
-          const takeNumber = Number(take);
-    
-          const userId = req.user?.id;
-          const earthRadius = 6371;
-    
-          // Initialize base queries
-          let spaceQuery = this.spaceRepo
-            .createQueryBuilder("space")
-            .leftJoinAndSelect("space.brand", "brand")
-            .leftJoinAndSelect("brand.user", "brandUser")
-    
-            .andWhere("space.user != :userId", { userId })
-            .andWhere("space.status = :STATUS", { STATUS: SPACE_STATUS.PUBLISH })
-            .orderBy("space.createdAt", "DESC")
-            .select([
-              "space.id",
-              "space.spaceName",
-              "brand.location",
-              "space.createdAt",
-            ])
-            .skip(skipNumber)
-            .take(takeNumber);
-    
-          let eventQuery = this.eventsRepo
-            .createQueryBuilder("event")
-            .leftJoinAndSelect("event.brand", "brand")
-            .leftJoinAndSelect("brand.user", "brandUser")
-    
-            .leftJoinAndSelect("event.space", "space")
-            .leftJoinAndSelect("space.user", "spaceUser")
-            .leftJoinAndSelect("space.brand", "spaceBrand")
-            .andWhere("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
-            .andWhere("event.user != :userId", { userId })
-            .orderBy("event.createdAt", "DESC")
-            .select([
-              "event.id",
-              "event.eventName",
-              "space.spaceName",
-              "spaceBrand.location",
-              "event.createdAt",
-            ])
-            .skip(skipNumber)
-            .take(takeNumber);
-    
-            let eventCountQuery =this.eventsRepo
-            .createQueryBuilder("event")
-            .leftJoinAndSelect("event.brand", "brand")
-            .leftJoinAndSelect("event.space", "space")
-            .leftJoinAndSelect("space.brand", "spaceBrand")
-            .andWhere("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
-            .andWhere("event.user != :userId", { userId })
-      
-    
-          let brandQuery = this.brandRepo
-            .createQueryBuilder("brand")
-            .andWhere("brand.status = :STATUS", { STATUS: BRAND_STATUS.PUBLISH })
-            .andWhere("brand.user != :userId", { userId })
-            .leftJoinAndSelect("brand.user", "user")
-            .orderBy("brand.createdAt", "DESC")
-            .select(
-              [
-                "brand.id",
-                "brand.brandName",
-                "brand.location",
-                "brand.createdAt",
-              ]
-            )
-            .skip(skipNumber)
-            .take(takeNumber);
-    
-          // Apply name filter if provided
-     
-    
-       
-    
-          if (lat && long) {
-            const newlat = parseFloat(lat as string);
-            const newlong = parseFloat(long as string);
-            const searchRadius = parseFloat(radius as string); // Ensure radius is float
-    
-            brandQuery.andWhere(
-              new Brackets((qb) => {
-                qb.where(
-                  `(${earthRadius} * acos(
+      const results = await Promise.all(queries);
+
+      const entityMap: {
+        Space: [Spaces[], number] | null;
+        Event: [Events[], number] | null;
+        Brand: [Brand[], number] | null;
+      } = {
+        Space: null,
+        Event: null,
+        Brand: null,
+      };
+
+      results.forEach((result, index) => {
+        if (entity === "SPACE") {
+          entityMap.Space = result as [Spaces[], number];
+        } else if (entity === "EVENT") {
+          if (result && "entities" in result && "raw" in result) {
+            const { entities: rsvpEvents, raw } = result;
+
+            const events = rsvpEvents.map((eventRaw, index) => {
+              const rawData = raw[index];
+              const event = eventRaw as any;
+              const eventDate =
+                event.eventDate &&
+                (event.eventDate as [{ startDate: string; endDate: string }]);
+
+              // Parse the RSVP data if needed
+              if (rawData.event_rsvp) {
+                event.event_rsvp = JSON.parse(rawData.event_rsvp);
+              }
+
+              if (event.brand) {
+                event.brand = {
+                  ...event.brand,
+                };
+              }
+
+              if (eventDate) {
+                const currentDate = new Date();
+
+                let eventStatus = "Ended";
+                if (currentDate < new Date(eventDate[0].startDate)) {
+                  eventStatus = "Upcoming";
+                } else if (
+                  currentDate >= new Date(eventDate[0].startDate) &&
+                  currentDate <= new Date(eventDate[0].endDate)
+                ) {
+                  eventStatus = "Ongoing";
+                }
+
+                return {
+                  ...event,
+                  eventStatus,
+                  rsvpCount: Number(rawData.event_rsvpCount) || 0,
+                };
+              }
+            });
+
+            entityMap.Event = [events, raw] as unknown as [Events[], number];
+          }
+        } else if (entity === "BRAND") {
+          entityMap.Brand = result as [Brand[], number];
+        }
+      });
+
+      const [spaces, spaceCount] = entityMap.Space || [[], 0];
+      const [events, eventCount] = entityMap.Event || [[], 0];
+      const [brands, brandCount] = entityMap.Brand || [[], 0];
+
+      if (events.length > 0) {
+        events.forEach((event) => {
+          parseCoverImages(event);
+          if ("brand" in event) {
+            parseCoverImages(event.brand);
+          }
+        });
+      }
+      if (spaces && spaces.length > 0) {
+        spaces.forEach((space) => {
+          parseCoverImages(space);
+          if ("brand" in space) {
+            parseCoverImages(space.brand);
+          }
+        });
+      }
+      for (const space of spaces) {
+        const events = await this.eventsRepo
+          .createQueryBuilder("event")
+          .where("event.space = :spaceId", { spaceId: space.id })
+          .getMany();
+
+        const calendarEvents = events.flatMap((event) => {
+          const eventDates: EventDate[] = Array.isArray(event.eventDate)
+            ? event.eventDate
+            : JSON.parse(event.eventDate as unknown as string);
+
+          return eventDates.map((dateRange) => ({
+            eventId: event.id,
+            title: event.eventName,
+            start: new Date(dateRange.startDate),
+            end: new Date(dateRange.endDate),
+          }));
+        });
+
+        (space as any).calendarEvents = calendarEvents;
+      }
+      spaces.map((space) => {
+        if (space.pricing != null) {
+          const totalPricing = calculatePricing(
+            space.pricing as PricingTerm[],
+            1
+          );
+          return {
+            ...space,
+            totalPricing,
+          };
+        }
+        return space;
+      });
+      if (brands.length > 0) {
+        brands.forEach((brand) => {
+          parseCoverImages(brand);
+        });
+      }
+
+      let saveQuery;
+      let savedEntitiesQuery = this.savedEntity
+        .createQueryBuilder("savedEntity")
+        .where("savedEntity.ActionType = :actionType", {
+          actionType: ActionType.FAVORITE,
+        })
+        .andWhere("savedEntity.user = :userId", { userId: req.user?.id });
+      let followedEntitiesQuery = this.savedEntity
+        .createQueryBuilder("savedEntity")
+        .where("savedEntity.ActionType = :actionType", {
+          actionType: ActionType.FOLLOW,
+        })
+        .andWhere("savedEntity.user = :userId", { userId: req.user?.id });
+
+      if (entity === "SPACE") {
+        savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect(
+          "savedEntity.space",
+          "space"
+        );
+        followedEntitiesQuery = followedEntitiesQuery.leftJoinAndSelect(
+          "savedEntity.space",
+          "space"
+        );
+      } else if (entity === "EVENT") {
+        savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect(
+          "savedEntity.event",
+          "event"
+        );
+        followedEntitiesQuery = followedEntitiesQuery.leftJoinAndSelect(
+          "savedEntity.event",
+          "event"
+        );
+      } else if (entity === "BRAND") {
+        savedEntitiesQuery = savedEntitiesQuery.leftJoinAndSelect(
+          "savedEntity.brand",
+          "brand"
+        );
+        followedEntitiesQuery = followedEntitiesQuery.leftJoinAndSelect(
+          "savedEntity.brand",
+          "brand"
+        );
+      } else {
+        throw new ApiError("Invalid entity type", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      const savedEntities = await savedEntitiesQuery.getMany();
+      const followedEntities = await followedEntitiesQuery.getMany();
+
+      const savedEntityIds = new Set(
+        savedEntities
+          .map(
+            (entity) => entity.space?.id || entity.event?.id || entity.brand?.id
+          )
+          .filter(Boolean)
+      );
+      const followedEntityIds = new Set(
+        followedEntities
+          .map(
+            (entity) => entity.space?.id || entity.event?.id || entity.brand?.id
+          )
+          .filter(Boolean)
+      );
+
+      const updatedSpaces = spaces.map((space) => ({
+        ...space,
+        isFavourite: savedEntityIds.has(space.id),
+        shareableLink: generateShareableLink({
+          id: space.id,
+          type: "space",
+          typeName: space.spaceName,
+        }),
+        isFollowed: followedEntityIds.has(space.id),
+      }));
+
+      const updatedEvents = events.map((event) => ({
+        ...event,
+        isFavourite: savedEntityIds.has(event.id),
+        shareableLink: generateShareableLink({
+          id: event.id,
+          type: "event",
+          typeName: event.eventName,
+        }),
+        isFollowed: followedEntityIds.has(event.id),
+      }));
+
+      const updatedBrands = brands.map((brand) => ({
+        ...brand,
+        isFavourite: savedEntityIds.has(brand.id),
+        shareableLink: generateShareableLink({
+          id: brand.id,
+          type: "brand",
+          typeName: brand.brandName,
+        }),
+        isFollowed: followedEntityIds.has(brand.id),
+      }));
+      const totalResults = spaceCount + updatedEvents.length + brandCount;
+
+      const response = {
+        spaces: updatedSpaces,
+        events: updatedEvents,
+        brands: updatedBrands,
+        totalResults,
+        pagination: {
+          currentPage: parseInt(page as string, 10),
+          pageSize: takeNumber,
+          totalPages: Math.ceil(totalResults / takeNumber),
+        },
+      };
+
+      res
+        .status(200)
+        .json(handleResponse("Public Entities fetched successfully", response));
+      return next();
+    } catch (error) {
+      logger.error(
+        `GeneralController :: General Get All For Public :: ${
+          (error as Error)?.message
+        }`
+      );
+      return next(error);
+    }
+  }
+
+  async generalLocationSearch(
+    req: ICustomRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const {
+        page = 1,
+        take = 1000,
+        lat,
+        radius = 10,
+        long,
+        entity = "All",
+      } = req.query;
+      const skipNumber = (Number(page) - 1) * Number(take);
+      const takeNumber = Number(take);
+
+      const userId = req.user?.id;
+      const earthRadius = 6371;
+
+      // Initialize base queries
+      let spaceQuery = this.spaceRepo
+        .createQueryBuilder("space")
+        .leftJoinAndSelect("space.brand", "brand")
+        .leftJoinAndSelect("brand.user", "brandUser")
+
+        .andWhere("space.user != :userId", { userId })
+        .andWhere("space.status = :STATUS", { STATUS: SPACE_STATUS.PUBLISH })
+        .orderBy("space.createdAt", "DESC")
+        .select([
+          "space.id",
+          "space.spaceName",
+          "brand.location",
+          "space.createdAt",
+        ])
+        .skip(skipNumber)
+        .take(takeNumber);
+
+      let eventQuery = this.eventsRepo
+        .createQueryBuilder("event")
+        .leftJoinAndSelect("event.brand", "brand")
+        .leftJoinAndSelect("brand.user", "brandUser")
+
+        .leftJoinAndSelect("event.space", "space")
+        .leftJoinAndSelect("space.user", "spaceUser")
+        .leftJoinAndSelect("space.brand", "spaceBrand")
+        .andWhere("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
+        .andWhere("event.user != :userId", { userId })
+        .orderBy("event.createdAt", "DESC")
+        .select([
+          "event.id",
+          "event.eventName",
+          "space.spaceName",
+          "spaceBrand.location",
+          "event.createdAt",
+        ])
+        .skip(skipNumber)
+        .take(takeNumber);
+
+      let eventCountQuery = this.eventsRepo
+        .createQueryBuilder("event")
+        .leftJoinAndSelect("event.brand", "brand")
+        .leftJoinAndSelect("event.space", "space")
+        .leftJoinAndSelect("space.brand", "spaceBrand")
+        .andWhere("event.status = :STATUS", { STATUS: EVENT_STATUS.PUBLISH })
+        .andWhere("event.user != :userId", { userId });
+
+      let brandQuery = this.brandRepo
+        .createQueryBuilder("brand")
+        .andWhere("brand.status = :STATUS", { STATUS: BRAND_STATUS.PUBLISH })
+        .andWhere("brand.user != :userId", { userId })
+        .leftJoinAndSelect("brand.user", "user")
+        .orderBy("brand.createdAt", "DESC")
+        .select([
+          "brand.id",
+          "brand.brandName",
+          "brand.location",
+          "brand.createdAt",
+        ])
+        .skip(skipNumber)
+        .take(takeNumber);
+
+      // Apply name filter if provided
+
+      if (lat && long) {
+        const newlat = parseFloat(lat as string);
+        const newlong = parseFloat(long as string);
+        const searchRadius = parseFloat(radius as string); // Ensure radius is float
+
+        brandQuery.andWhere(
+          new Brackets((qb) => {
+            qb.where(
+              `(${earthRadius} * acos(
                             cos(radians(:lat)) *
                             cos(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.lat')) * 1)) *
                             cos(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.long')) * 1) - radians(:long)) +
                             sin(radians(:lat)) *
                             sin(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.lat')) * 1))
                         )) <= :radius`,
-                  { lat: newlat, long: newlong, radius: searchRadius }
-                );
-              })
+              { lat: newlat, long: newlong, radius: searchRadius }
             );
-    
-            spaceQuery.andWhere(
-              new Brackets((qb) => {
-                qb.where(
-                  `(${earthRadius} * acos(
+          })
+        );
+
+        spaceQuery.andWhere(
+          new Brackets((qb) => {
+            qb.where(
+              `(${earthRadius} * acos(
                             cos(radians(:lat)) *
                             cos(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.lat')) * 1)) *
                             cos(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.long')) * 1) - radians(:long)) +
                             sin(radians(:lat)) *
                             sin(radians(JSON_UNQUOTE(JSON_EXTRACT(brand.location, '$.lat')) * 1))
                         )) <= :radius`,
-                  { lat: newlat, long: newlong, radius: searchRadius }
-                );
-              })
+              { lat: newlat, long: newlong, radius: searchRadius }
             );
-            eventQuery.andWhere(
-              new Brackets((qb) => {
-                qb.where(
-                  `(${earthRadius} * acos(
+          })
+        );
+        eventQuery.andWhere(
+          new Brackets((qb) => {
+            qb.where(
+              `(${earthRadius} * acos(
                             cos(radians(:lat)) *
                             cos(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.lat')) * 1)) *
                             cos(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.long')) * 1) - radians(:long)) +
                             sin(radians(:lat)) *
                             sin(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.lat')) * 1))
                         )) <= :radius`,
-                  { lat: newlat, long: newlong, radius: searchRadius }
-                );
-              })
+              { lat: newlat, long: newlong, radius: searchRadius }
             );
-    
-            eventCountQuery.andWhere(
-              new Brackets((qb) => {
-                qb.where(
-                  `(${earthRadius} * acos(
+          })
+        );
+
+        eventCountQuery.andWhere(
+          new Brackets((qb) => {
+            qb.where(
+              `(${earthRadius} * acos(
                             cos(radians(:lat)) *
                             cos(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.lat')) * 1)) *
                             cos(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.long')) * 1) - radians(:long)) +
                             sin(radians(:lat)) *
                             sin(radians(JSON_UNQUOTE(JSON_EXTRACT(spaceBrand.location, '$.lat')) * 1))
                         )) <= :radius`,
-                  { lat: newlat, long: newlong, radius: searchRadius }
-                );
-              })
+              { lat: newlat, long: newlong, radius: searchRadius }
             );
-          }
-    
-       
-    
-          if (entity !== "All") {
-            if (entity === "SPACE") {
-              eventQuery = null;
-              brandQuery = null;
-              eventCountQuery=null;
-            } else if (entity === "EVENT") {
-              spaceQuery = null;
-              brandQuery = null;
-            } else if (entity === "BRAND") {
-              spaceQuery = null;
-              eventQuery = null;
-              eventCountQuery=null;
-    
-            }
-          }
-    
-          const queries = [];
-          if (spaceQuery) queries.push(spaceQuery.getManyAndCount());
-          if (eventQuery) queries.push(eventQuery.getRawAndEntities());
-          if (brandQuery) queries.push(brandQuery.getManyAndCount());
-          if(eventCountQuery) queries.push(eventCountQuery.getRawAndEntities());
-    
-    
-          const results = await Promise.all(queries);
-    
-          const entityMap: {
-            Space: [Spaces[], number] | null;
-            Event: [Events[], number] | null;
-            Brand: [Brand[], number] | null;
-          } = {
-            Space: null,
-            Event: null,
-            Brand: null,
-          };
-          const totalEventsCount = results ? results[1] : 0;
-          delete results[1];
-          
-    
-          results.forEach((result, index) => {
-            if (entity === "SPACE") {
-              entityMap.Space = result as [Spaces[], number];
-            } else if (entity === "EVENT") {
-              if (result && "entities" in result && "raw" in result) {
-                const { entities: rsvpEvents, raw } = result;
-    
-                const events = rsvpEvents.map((eventRaw, index) => {
-                  const rawData = raw[index];
-                  const event = eventRaw as any;
-    
-                  // Parse the RSVP data if needed
-                  if (rawData.event_rsvp) {
-                    event.event_rsvp = JSON.parse(rawData.event_rsvp);
-                  }
-    
-                  if (event.brand) {
-                    event.brand = {
-                      ...event.brand,
-                    };
-                  }
-    
-                  return event;
-                });
-    
-                entityMap.Event = [events, raw] as unknown as [Events[], number];
-              }
-            } else if (entity === "BRAND") {
-              entityMap.Brand = result as [Brand[], number];
-            }
-          });
-    
-          const [spaces, spaceCount] = entityMap.Space || [[], 0];
-          const [events, eventCount] = entityMap.Event || [[], 0];
-          const [brands, brandCount] = entityMap.Brand || [[], 0];
-    
-    
-          const updatedSpaces = spaces.map((space) => ({
-            ...space,
-            shareableLink: generateShareableLink({ id: space.id, type: "space" ,typeName:space.spaceName}),
-          }));
-    
-          const updatedEvents = events.map((event) => ({
-            ...event,
-            shareableLink: generateShareableLink({ id: event.id, type: "event" ,typeName:event.eventName}),
-          }));
-    
-          const updatedBrands = brands.map((brand) => ({
-            ...brand,
-            shareableLink: generateShareableLink({ id: brand.id, type: "brand",typeName:brand.brandName }),
-          }));
-          const totalResults = spaceCount + (totalEventsCount && 'entities' in totalEventsCount ? totalEventsCount.entities.length : 0) + brandCount;
-    
-          const response = {
-            spaces: updatedSpaces,
-            events: updatedEvents,
-            brands: updatedBrands,
-            totalResults,
-            pagination: {
-              currentPage: parseInt(page as string, 10),
-              pageSize: takeNumber,
-              totalPages: Math.ceil(totalResults / takeNumber),
-            },
-          };
-    
-          res
-            .status(200)
-            .json(handleResponse("Search completed successfully", response));
-          return next();
-        } catch (error) {
-          logger.error(
-            `GeneralController :: General Search :: ${(error as Error)?.message}`
-          );
-          return next(error);
+          })
+        );
+      }
+
+      if (entity !== "All") {
+        if (entity === "SPACE") {
+          eventQuery = null;
+          brandQuery = null;
+          eventCountQuery = null;
+        } else if (entity === "EVENT") {
+          spaceQuery = null;
+          brandQuery = null;
+        } else if (entity === "BRAND") {
+          spaceQuery = null;
+          eventQuery = null;
+          eventCountQuery = null;
         }
       }
+
+      const queries = [];
+      if (spaceQuery) queries.push(spaceQuery.getManyAndCount());
+      if (eventQuery) queries.push(eventQuery.getRawAndEntities());
+      if (brandQuery) queries.push(brandQuery.getManyAndCount());
+      if (eventCountQuery) queries.push(eventCountQuery.getRawAndEntities());
+
+      const results = await Promise.all(queries);
+
+      const entityMap: {
+        Space: [Spaces[], number] | null;
+        Event: [Events[], number] | null;
+        Brand: [Brand[], number] | null;
+      } = {
+        Space: null,
+        Event: null,
+        Brand: null,
+      };
+      const totalEventsCount = results ? results[1] : 0;
+      delete results[1];
+
+      results.forEach((result, index) => {
+        if (entity === "SPACE") {
+          entityMap.Space = result as [Spaces[], number];
+        } else if (entity === "EVENT") {
+          if (result && "entities" in result && "raw" in result) {
+            const { entities: rsvpEvents, raw } = result;
+
+            const events = rsvpEvents.map((eventRaw, index) => {
+              const rawData = raw[index];
+              const event = eventRaw as any;
+
+              // Parse the RSVP data if needed
+              if (rawData.event_rsvp) {
+                event.event_rsvp = JSON.parse(rawData.event_rsvp);
+              }
+
+              if (event.brand) {
+                event.brand = {
+                  ...event.brand,
+                };
+              }
+
+              return event;
+            });
+
+            entityMap.Event = [events, raw] as unknown as [Events[], number];
+          }
+        } else if (entity === "BRAND") {
+          entityMap.Brand = result as [Brand[], number];
+        }
+      });
+
+      const [spaces, spaceCount] = entityMap.Space || [[], 0];
+      const [events, eventCount] = entityMap.Event || [[], 0];
+      const [brands, brandCount] = entityMap.Brand || [[], 0];
+
+      const updatedSpaces = spaces.map((space) => ({
+        ...space,
+        shareableLink: generateShareableLink({
+          id: space.id,
+          type: "space",
+          typeName: space.spaceName,
+        }),
+      }));
+
+      const updatedEvents = events.map((event) => ({
+        ...event,
+        shareableLink: generateShareableLink({
+          id: event.id,
+          type: "event",
+          typeName: event.eventName,
+        }),
+      }));
+
+      const updatedBrands = brands.map((brand) => ({
+        ...brand,
+        shareableLink: generateShareableLink({
+          id: brand.id,
+          type: "brand",
+          typeName: brand.brandName,
+        }),
+      }));
+      const totalResults =
+        spaceCount +
+        (totalEventsCount && "entities" in totalEventsCount
+          ? totalEventsCount.entities.length
+          : 0) +
+        brandCount;
+
+      const response = {
+        spaces: updatedSpaces,
+        events: updatedEvents,
+        brands: updatedBrands,
+        totalResults,
+        pagination: {
+          currentPage: parseInt(page as string, 10),
+          pageSize: takeNumber,
+          totalPages: Math.ceil(totalResults / takeNumber),
+        },
+      };
+
+      res
+        .status(200)
+        .json(handleResponse("Search completed successfully", response));
+      return next();
+    } catch (error) {
+      logger.error(
+        `GeneralController :: General Search :: ${(error as Error)?.message}`
+      );
+      return next(error);
+    }
+  }
 }

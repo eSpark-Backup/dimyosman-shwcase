@@ -31,7 +31,7 @@ const brandRepository = AppDataSource.getRepository(Brand);
 const eventRepository = AppDataSource.getRepository(Events);
 const leaseSpaceRepository = AppDataSource.getRepository(LeaseSpace);
 const categoryRepository = AppDataSource.getRepository(Category);
-const savedEntityRepository=AppDataSource.getRepository(SavedEntity)
+const savedEntityRepository = AppDataSource.getRepository(SavedEntity);
 
 const generalController = new GeneralController(
   spaceRepository,
@@ -46,7 +46,6 @@ const generalController = new GeneralController(
   Notification,
   Message,
   savedEntityRepository
-
 );
 
 /**
@@ -85,6 +84,13 @@ const generalController = new GeneralController(
  *            - SPACE
  *            - EVENT
  *            - BRAND
+ *       - in: query
+ *         name: keyword
+ *         required: false
+ *         description: keyword to filter the All Ameneties of Space.
+ *         schema:
+ *          type: string
+ *          example: Eco Lux
  *       - in: query
  *         name: name
  *         required: false
@@ -216,7 +222,6 @@ router.get(
   (req, res, next) => generalController.generalSearch(req, res, next)
 );
 
-
 /**
  * @swagger
  * /general/locationSearch/{id}:
@@ -341,7 +346,6 @@ router.get(
   setPagination,
   (req, res, next) => generalController.generalLocationSearch(req, res, next)
 );
-
 
 /**
  * @swagger
@@ -499,7 +503,6 @@ router.get(
  *         description: Server error.
  */
 
-
 router.get(
   "/activity",
   checkJwt,
@@ -507,8 +510,6 @@ router.get(
   setPagination,
   (req, res, next) => generalController.getActivity(req, res, next)
 );
-
-
 
 /**
  * @swagger
@@ -590,13 +591,9 @@ router.get(
  *       500:
  *         description: Server error.
  */
-router.get(
-  "/share/:data",
-  (req, res, next) => generalController.getSharedEntity(req, res, next)
+router.get("/share/:data", (req, res, next) =>
+  generalController.getSharedEntity(req, res, next)
 );
-
-
-
 
 /**
  * @swagger
@@ -697,14 +694,12 @@ router.get(
  *         description: Server error.
  */
 
-router.post
-( "/location",
+router.post(
+  "/location",
   checkJwt,
   validateRoles([ROLES.USER]),
   (req, res, next) => generalController.getSuggestion(req, res, next)
 );
-
-
 
 /**
  * @swagger
@@ -753,13 +748,12 @@ router.post
  *       500:
  *         description: Server error.
  */
-router.get
-("/public/profile/:id",
+router.get(
+  "/public/profile/:id",
   checkJwt,
   validateRoles([ROLES.USER]),
   (req, res, next) => generalController.getPublicUserProfile(req, res, next)
-)
-
+);
 
 /**
  * @swagger
@@ -892,7 +886,5 @@ router.get(
   setPagination,
   (req, res, next) => generalController.publicEntityProfile(req, res, next)
 );
-
-
 
 export { router };
