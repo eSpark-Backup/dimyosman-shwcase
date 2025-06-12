@@ -4,10 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./sidebar";
 import { getFullSidebar, getSmallSidebar, sidebarRoutes } from "../constant";
-import { addHyphenToName, deleteCookie, getCookie, useClickOutside } from "../utils";
+import { addHyphenToName, deleteCookie, getCookie, setCookie, useClickOutside } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setActivityPageNumber,
+  setActivityRecall,
   setAllActivityData,
   setSpaceData,
 } from "../store/slices/activity";
@@ -27,6 +28,7 @@ import { setIsEvent, setObjectForNewEvent, updateEvents } from "../store/slices/
 import { useNewBrandMutation } from "../services/brands";
 import { useNewSpaceMutation } from "../services/space";
 import { useNewEventMutation } from "../services/events";
+import { setFromSidebar } from "../store/slices/chat";
 
 const DashboardLayout = ({ isTokenChecking }) => {
   const { user } = useSelector((state) => state.auth);
@@ -287,7 +289,9 @@ const DashboardLayout = ({ isTokenChecking }) => {
                     dispatch(setName(""));
                     dispatch(setShouldReturn(false));
                     dispatch(emptyFilters());
+                    
                     if (item.title === "Profile") {
+                      deleteCookie("isCalled");
                       navigate(`/profile/${addHyphenToName(user?.name)}`, { state: { id: user?.id } });
                       setActive(false);
                       return;
@@ -298,6 +302,13 @@ const DashboardLayout = ({ isTokenChecking }) => {
                       dispatch(setAllActivityData([]));
                       dispatch(setSpaceData([]));
                       dispatch(setActivityPageNumber(1));
+                      deleteCookie("isCalled");
+                    }
+
+                    if (item.title === "Activity" && !getCookie("isCalled")) {
+                      dispatch(setActivityRecall(Date.now()));
+
+                      setCookie("isCalled", true);
                     }
 
                     localStorage.removeItem("searchScrollPosition");

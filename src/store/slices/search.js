@@ -26,7 +26,8 @@ const initialState = {
   searchName: "",
   generalData: [],
   search: "",
-  locationStart:false
+  locationStart:false,
+  recallSearch: null,
 };
 
 const slice = createSlice({
@@ -113,12 +114,15 @@ const slice = createSlice({
     setShouldReturn: (state, action) => {
       state.shouldReturn = action.payload;
     },
-    setGeneralSearching:(state,action) => {
+    setGeneralSearching: (state, action) => {
       state.generalSearching = action.payload;
     },
-    setSearchName:(state,action) => {
+    setSearchName: (state, action) => {
       state.searchName = action.payload;
-    }
+    },
+    setSearchRecall: (state, action) => {
+      state.recallSearch = action.payload;
+    },
   },
 });
 
@@ -148,6 +152,7 @@ export const {
   setShouldReturn,
   setGeneralSearching,
   setSearchName,
+  setSearchRecall
 } = slice.actions;
 
 export default slice.reducer;

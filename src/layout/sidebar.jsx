@@ -3,8 +3,8 @@ import { Stack, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getSmallSidebar, sidebarRoutes } from "../constant";
-import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../store/slices/activity";
-import { addHyphenToName, deleteCookie, getCookie } from "../utils";
+import { setActivityPageNumber, setActivityRecall, setAllActivityData, setSpaceData } from "../store/slices/activity";
+import { addHyphenToName, deleteCookie, getCookie, setCookie } from "../utils";
 import { emptyFilters, setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setShouldReturn, setSpaceSearchData } from "../store/slices/search";
 import { setFromSidebar } from "../store/slices/chat";
 
@@ -61,24 +61,33 @@ const Sidebar = () => {
               dispatch(emptyFilters());
 
               if (item.title === "Profile") {
-                navigate(`/profile/${addHyphenToName(user?.name)}`, { state: { id: user?.id } });
-                return;  // <== Stops further execution
+                deleteCookie("isCalled");
+                navigate(`/profile/${addHyphenToName(user?.name)}`, {
+                  state: { id: user?.id },
+                });
+                return; // <== Stops further execution
               }
-              
+
               if (item.title !== "Activity") {
                 localStorage.removeItem("scrollPosition");
                 dispatch(setAllActivityData([]));
                 dispatch(setSpaceData([]));
                 dispatch(setActivityPageNumber(1));
+                deleteCookie("isCalled");
               }
 
+              if (item.title === "Activity" && !getCookie("isCalled")) {
+                dispatch(setActivityRecall(Date.now()));
+
+                setCookie("isCalled", true);
+              }
 
               localStorage.removeItem("searchScrollPosition");
               navigate(item.link);
-              if(item.title === "Messages"){
-                dispatch(setFromSidebar(true))
+              if (item.title === "Messages") {
+                dispatch(setFromSidebar(true));
               } else {
-                dispatch(setFromSidebar(false))
+                dispatch(setFromSidebar(false));
               }
 
             }}

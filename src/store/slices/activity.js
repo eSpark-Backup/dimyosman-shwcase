@@ -4,6 +4,7 @@ const initialState = {
   allActivityData: [],
   activitySpaceData: [],
   page: 1,
+  recallActivity: null,
 };
 
 const slice = createSlice({
@@ -18,10 +19,18 @@ const slice = createSlice({
     },
     setActivityPageNumber: (state, action) => {
       state.page = action.payload;
+    },
+    setActivityRecall: (state, action) => {
+      state.recallActivity = action.payload;
     }
   },
 });
 
-export const { setAllActivityData, setSpaceData, setActivityPageNumber } = slice.actions;
+export const {
+  setAllActivityData,
+  setSpaceData,
+  setActivityPageNumber,
+  setActivityRecall,
+} = slice.actions;
 
 export default slice.reducer;

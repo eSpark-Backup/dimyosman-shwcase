@@ -50,6 +50,7 @@ const AppleButton = ({
     if (isErrorRegister && isAuthenticated) {
       deleteCookie("social_type");
       deleteCookie("search_query");
+      deleteCookie("isCalled");
       dispatch(setSearchQuery(null));
       dispatch(setAllSearchData([]));
       dispatch(setSpaceSearchData([]));
