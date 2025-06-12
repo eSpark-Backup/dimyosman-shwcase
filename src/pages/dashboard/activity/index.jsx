@@ -64,7 +64,7 @@ const Activity = () => {
   const [inquiredDetail, setInquiredDetail] = useState({});
   const scrollContainerRef = useRef(null);
   const [hasMore, setHasMore] = useState(true);
-const [showNoData, setShowNoData] = useState(false);
+  const [showNoData, setShowNoData] = useState(false);
 
   const andLoadingState = () => {
     if (searchQuery || search_query) {
@@ -79,14 +79,6 @@ const [showNoData, setShowNoData] = useState(false);
       return isGeneralDataLoading || isGeneralDataFetching;
     } else {
       return isLoading || isFetching;
-    }
-  };
-
-  const loadingState = () => {
-    if (searchQuery || search_query) {
-      return isGeneralDataLoading;
-    } else {
-      return isLoading;
     }
   };
 
