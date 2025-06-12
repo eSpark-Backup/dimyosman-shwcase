@@ -37,7 +37,6 @@ import { useDebounce } from "../helper/useDebounce";
 import {
   useGetGeneralCategoriesQuery,
   useGetGeneralLocationQuery,
-  useGetGeneralSearchQuery,
 } from "../services/general";
 
 import {
@@ -52,11 +51,10 @@ import {
   setSkip,
   setSpaceSearchData,
   setIsTyping,
-  setSearch,
   setName,
-  setAllGeneralSearchLoading,
   setAllGeneralData,
   setLocationStart,
+  setSearch,
 } from "../store/slices/search";
 
 import { getCookie } from "../utils";
@@ -88,8 +86,7 @@ const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
   const searchQuery = getCookie("search_query");
-    const isLessThan1281 = useMediaQuery("(max-width:1281px)");
-  
+  const isLessThan769 = useMediaQuery("(max-width:768px)");
 
   const dispatch = useDispatch();
 
@@ -100,8 +97,8 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
     search_query,
     allData,
     search,
+    generalSearchLoading
   } = useSelector((state) => state.search);
-  const { page } = useSelector((state) => state.activity);
 
   const mapRef = useRef(null);
 
@@ -110,7 +107,6 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
 
   const [suggestions, setSuggestions] = useState([]);
   const [isSelecting, setIsSelecting] = useState(false);
-  const [searchName,setSearch] = useState("")
   const [value, setValue] = useState(parameters?.locaion || "");
 
   const { data: getLocationData, error } = useGetGeneralLocationQuery(
@@ -119,31 +115,6 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
       skip: !value || value.length < 3 || isSelecting,
     }
   );
-
-  const { data, isSuccess, isFetching, isLoading } = useGetGeneralSearchQuery(
-    { parameters },
-    {
-      skip: !isLessThan1281,
-    },
-    { refetchOnMountOrArgChange: true }
-  );
-
-  useEffect(() => {
-    if (isLessThan1281) {
-      if (isSuccess) {
-        if (data?.data) {
-          const generalKeys = {
-            BRAND: data?.data?.brands,
-            SPACE: data?.data?.spaces,
-            EVENT: data?.data?.events,
-          };
-
-          dispatch(setAllGeneralSearchLoading(isFetching));
-          dispatch(setAllSearchData(generalKeys[parameters.entity]));
-        }
-      }
-    }
-  }, [isLessThan1281, data, isSuccess, isFetching]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -165,6 +136,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
       (searchQuery || search_query) &&
       debouncedRadius !== parameters.radius
     ) {
+      isLessThan769 && handleCloseFilterDrawer?.();
       dispatch(setRadius(debouncedRadius));
 
       commonReset();
@@ -224,14 +196,14 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
   );
 
   const filterClick = (entity) => {
-    const item = isLessThan1281 ? searchName : search;
-
     if (
       entity.type === parameters.entity &&
-      item.toLowerCase() === parameters.name.toLowerCase()
+      search.toLowerCase() === parameters.name.toLowerCase()
     ) {
       return;
     }
+
+    isLessThan769 && handleCloseFilterDrawer?.();
 
     const updatedCategories = allFilterCategories.map((category) => {
       return { ...category, selected: false };
@@ -244,7 +216,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
 
     dispatch(emptyCategoryNames());
     dispatch(setEntity(entity.type));
-    dispatch(setName(isLessThan1281 ? searchName : search));
+    dispatch(setName(search));
   };
 
   const handleSearch = (e) => {
@@ -294,7 +266,8 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
   };
 
   const handleSelectPlace = (place) => {
-    dispatch(setLocationStart(true))
+    isLessThan769 && handleCloseFilterDrawer?.();
+    dispatch(setLocationStart(true));
     setValue(place.description);
     setSuggestions([]);
     setIsSelecting(true);
@@ -356,8 +329,9 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
 
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
+      isLessThan769 && handleCloseFilterDrawer?.();
       filterClick({ type: "BRAND" });
-      dispatch(setName(searchName));
+      dispatch(setName(search));
     }
   };
 
@@ -395,13 +369,13 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
         </strong>
       </Typography>
 
-      {isLessThan1281 && (
+      {isLessThan769 && (
         <div className="search-box" style={{ marginTop: "10px" }}>
           <SearchBar
             name={"query"}
             placeholder={"Search..."}
-            onInputChange={(e) => setSearch(e.target.value)}
-            value={searchName}
+            onInputChange={(e) => dispatch(setSearch(e.target.value))}
+            value={search}
             handleKeyDown={handleKeyDown}
             filterClick={filterClick}
           />
@@ -592,7 +566,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
       ) : (
         <>
           <Box sx={{ width: "100%", height: "411px", mt: 2, mb: 4 }}>
-            {isLoading || isFetching ? (
+            {generalSearchLoading ? (
               <Box sx={{ width: "100%" }}>
                 <LinearProgress />
               </Box>

@@ -55,6 +55,7 @@ const Login = () => {
         deleteCookie("logout");
         deleteCookie("social_type");
         deleteCookie("search_query");
+        deleteCookie("isCalled");
         removeForSearch();
       }, 10);
     }
@@ -62,6 +63,7 @@ const Login = () => {
 
   useEffect(() => {
     deleteCookie("search_query");
+    deleteCookie("isCalled");
     removeForSearch();
 
     dispatch(logoutFunc());

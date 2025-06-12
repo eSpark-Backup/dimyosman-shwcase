@@ -48,12 +48,14 @@ import {
   setPageNumber,
   setSearch,
   setSearchQuery,
+  setSearchRecall,
   setSkip,
   setSpaceSearchData,
 } from "../store/slices/search";
 
 const Header = ({ isLogin }) => {
   const isLessThan1281 = useMediaQuery("(max-width:1281px)");
+  const isLessThanEqual768 = useMediaQuery("(max-width:768px)");
   
   const getInquiryCount = getCookie("newInquiry") || 0;
   const getNotificationCount = getCookie("newNotification") || 0;
@@ -62,7 +64,7 @@ const Header = ({ isLogin }) => {
 
   const { count, countInquiry } = useSelector((state) => state.notification);
   const userData = useSelector((state) => state.auth);
-  const { search_query, parameters, allFilterCategories, search } = useSelector(
+  const { search_query, parameters, allFilterCategories, search,allData } = useSelector(
     (state) => state.search
   );
   const theme = useTheme();
@@ -90,6 +92,7 @@ const Header = ({ isLogin }) => {
     logoutAuthUtils(logoutAuth)
     
     deleteCookie("search_query");
+    deleteCookie("isCalled");
     removeForSearch();
 
     dispatch(logoutFunc());
@@ -109,15 +112,12 @@ const Header = ({ isLogin }) => {
   };
 
   const handleFilterDrawer = () => {
-    setCookie("search_query")
+    setCookie("search_query", true);
     dispatch(setSearchQuery(true))
     setOpenFilterDrawer(true);
   };
 
   const handleCloseFilterDrawer = () => {
-    deleteCookie("search_query")
-    removeForSearch()
-    dispatch(emptyFilters())
     setOpenFilterDrawer(false)
   };
 
@@ -200,10 +200,10 @@ const Header = ({ isLogin }) => {
     };
 
     useEffect(() => {
-      if(!isLessThan1281) {
+      if (!isLessThan1281 && openFilterDrawer) {
         handleCloseFilterDrawer();
       }
-    },[isLessThan1281])
+    }, [isLessThan1281, openFilterDrawer]);
 
     const addPopuptabs = [
       {
@@ -363,7 +363,7 @@ const Header = ({ isLogin }) => {
                   placeholder={"Search..."}
                   onInputChange={(e) => {
                     const value = e.target.value;
-                    if(value.length === 0) {
+                    if (value.length === 0) {
                       dispatch(setName(""));
                     }
                     dispatch(setSearch(value));
@@ -378,28 +378,49 @@ const Header = ({ isLogin }) => {
           )}
           {isLogin ? (
             <ul style={{ position: "relative" }} className="nav-links2">
-              <li className="add_filter">
-                <Button
-                  sx={{
-                    backgroundColor: "rgb(0, 20, 28, 0.4)",
-                    width: "32px",
-                    height: "32px",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    borderRadius: "5px",
-                    cursor: "pointer",
-                    display: "flex",
-                    position: "relative",
-                    minWidth: "auto",
-                  }}
-                >
-                  <FilterListIcon
-                    onClick={() => {
-                      handleFilterDrawer();
+              {(isLessThanEqual768 ||
+                (pathname === "/activity" &&
+                  (searchQuery || search_query))) && (
+                <li className="add_filter">
+                  <Button
+                    sx={{
+                      backgroundColor: allData?.length
+                        ? "#00141C"
+                        : "rgb(0, 20, 28, 0.4)",
+                      width: "32px",
+                      height: "32px",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      borderRadius: "5px",
+                      cursor: "pointer",
+                      display: "flex",
+                      position: "relative",
+                      minWidth: "auto",
                     }}
-                  />
-                </Button>
-              </li>
+                  >
+                    <FilterListIcon
+                      onClick={() => {
+                        navigate("/activity");
+                        setCookie("search_query", true);
+                        dispatch(setSearchQuery(true));
+                        handleFilterDrawer();
+                        deleteCookie("isCalled");
+                        
+                        if (pathname !== "/activity" && isLessThanEqual768) {
+                          dispatch(setSearchRecall(Date.now()));
+                        }
+
+                        if (
+                          !(searchQuery || search_query) &&
+                          isLessThanEqual768
+                        ) {
+                          dispatch(setSearchRecall(Date.now()));
+                        }
+                      }}
+                    />
+                  </Button>
+                </li>
+              )}
 
               <li ref={addRef}>
                 <BadgeComp
@@ -501,11 +522,7 @@ const Header = ({ isLogin }) => {
 
       <Drawer
         anchor="right"
-        open={
-          (searchQuery || search_query) && isLessThan1281
-            ? true
-            : openFilterDrawer
-        }
+        open={openFilterDrawer}
         onClose={() => handleCloseFilterDrawer()}
         sx={{
           "& .MuiPaper-root": {
@@ -513,7 +530,10 @@ const Header = ({ isLogin }) => {
           },
         }}
       >
-        <Filters handleCloseFilterDrawer={handleCloseFilterDrawer} handleFilterDrawer={handleFilterDrawer} />
+        <Filters
+          handleCloseFilterDrawer={handleCloseFilterDrawer}
+          handleFilterDrawer={handleFilterDrawer}
+        />
       </Drawer>
     </>
   );

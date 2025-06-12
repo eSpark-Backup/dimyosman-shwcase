@@ -42,6 +42,7 @@ const Register = () => {
       setTimeout(() => {
         deleteCookie("logout");
         deleteCookie("search_query");
+        deleteCookie("isCalled");
         dispatch(setSearchQuery(null));
         dispatch(setAllSearchData([]));
         dispatch(setSpaceSearchData([]));

@@ -52,6 +52,7 @@ function App() {
         logoutAuthUtils(logout)
         navigate("/auth?type=login");
         deleteCookie("search_query");
+        deleteCookie("isCalled");
         dispatch(setSearchQuery(null));
       }
     } else if (pathname === "/auth") {
@@ -67,6 +68,7 @@ function App() {
       logoutAuthUtils(logout)
       navigate("/auth?type=login");
       deleteCookie("search_query");
+      deleteCookie("isCalled");
       dispatch(setSearchQuery(null));
       dispatch(setAllSearchData([]));
       dispatch(setSpaceSearchData([]));

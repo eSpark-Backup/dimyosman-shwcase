@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import {
   Box,
@@ -17,9 +17,10 @@ import SearchIconBox from "./SearchIconBox";
 import {
   setAllCategoriesNotSearch,
   setSearchQuery,
+  setSearchRecall,
 } from "../store/slices/search";
 
-import { getCookie, setCookie } from "../utils";
+import { deleteCookie, getCookie, setCookie } from "../utils";
 
 import { useGetGeneralCategoriesQuery } from "../services/general";
 import { brandIcon, flag, search, spaceIcon } from "../assets";
@@ -58,7 +59,7 @@ const SearchBar = ({
   canType,
   handleKeyDown,
   filterClick,
-  handleFilterDrawer = () => {},
+  handleFilterDrawer
 }) => {
   const theme = useTheme();
 
@@ -69,6 +70,8 @@ const SearchBar = ({
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const { pathname } = useLocation();
 
   const { search_query, generalSearchLoading } = useSelector(
     (state) => state.search
@@ -105,14 +108,20 @@ const SearchBar = ({
         cursor: !canType && !(searchQuery || search_query) ? "pointer" : "text",
       }}
       onClick={() => {
-        if (!isLessThan1281) {
-          if (!canType && !(searchQuery || search_query)) {
-            navigate("/activity");
-            setCookie("search_query", true);
-            dispatch(setSearchQuery(true));
+        if (!canType) {
+          navigate("/activity");
+          setCookie("search_query", true);
+          dispatch(setSearchQuery(true));
+          deleteCookie("isCalled");
+          
+          if (isLessThan1281 && pathname !== "/activity") {
+              handleFilterDrawer?.();
+              dispatch(setSearchRecall(Date.now()));
           }
-        } else {
-          handleFilterDrawer();
+
+          if (!(searchQuery || search_query)) {
+            dispatch(setSearchRecall(Date.now()));
+          }
         }
       }}
     >

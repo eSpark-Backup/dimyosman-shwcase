@@ -15,13 +15,14 @@ import { ActivityCard } from "../../../components";
 import SpaceInquireModal from "../../../components/SpaceInquireModal";
 import Filters from "../../../components/Filters";
 
-import { getCookie } from "../../../utils";
+import { getCookie, setCookie } from "../../../utils";
 
 import { useGetActivityDataQuery } from "../../../services/activity";
-import { setActivityPageNumber } from "../../../store/slices/activity";
-import useGeneralSearch from "../../../helper/useGeneralSearch";
+import { setActivityPageNumber, setActivityRecall } from "../../../store/slices/activity";
 import { fetchActivityData } from "../../../helper/fetchActivityData";
 import { fetchSearchData } from "../../../helper/fetchSearchData";
+import { useGetGeneralSearchQuery } from "../../../services/general";
+import { setAllGeneralData, setAllGeneralSearchLoading, setSearchRecall } from "../../../store/slices/search";
 
 const Activity = () => {
   const searchQuery = getCookie("search_query");
@@ -30,34 +31,55 @@ const Activity = () => {
 
   const {
     search_query,
-    generalData,
     parameters,
     allData,
     spaceData,
     locationStart,
+    recallSearch
   } = useSelector((state) => state.search);
-  const { allActivityData, activitySpaceData, page } = useSelector(
-    (state) => state.activity
-  );
+  const { allActivityData, activitySpaceData, page, recallActivity } =
+    useSelector((state) => state.activity);
 
   const [total, setTotal] = useState(0);
 
-  const { data, isSuccess, isError, error, isFetching, isLoading } =
+  const { data, isSuccess, isError, error, isFetching, isLoading} =
     useGetActivityDataQuery(
       {
         page,
         pageSize: 10,
+        recallActivity,
       },
+      { skip: !!(searchQuery || search_query) },
       {
-        refetchOnMountOrArgChange: searchQuery || search_query ? false : true,
+        refetchOnMountOrArgChange: !(searchQuery || search_query),
       }
     );
 
-  const { isGeneralDataLoading, isGeneralDataSuccess, isGeneralDataFetching } =
-    useGeneralSearch({
-      page,
-      searchQuery,
-    });
+  const {
+    data: generalData,
+    isSuccess: isGeneralDataSuccess,
+    isLoading: isGeneralDataLoading,
+    isFetching: isGeneralDataFetching,
+  } = useGetGeneralSearchQuery(
+    { parameters, page, pageSize: 10, recallSearch },
+    { skip: !(searchQuery || search_query) },
+    {
+      refetchOnMountOrArgChange: searchQuery || search_query,
+    }
+  );
+
+  useEffect(() => {
+    dispatch(setAllGeneralSearchLoading(isGeneralDataFetching));
+    if (isGeneralDataSuccess) {
+      dispatch(setAllGeneralData(generalData?.data));
+    }
+  }, [isGeneralDataSuccess, isGeneralDataFetching, generalData]);
+
+  useEffect(() => {
+    if (!(searchQuery || search_query)) {
+      setCookie("isCalled", true);
+    }
+  }, [searchQuery, search_query]);
 
   const [hasFetchedData, setHasFetchedData] = useState(false);
   const [openInquiryModal, setOpenInquiryModal] = useState(false);
@@ -123,25 +145,33 @@ const Activity = () => {
     };
 
     handleFetch(); // Call the async function
-  }, [page, data?.data, generalData, searchQuery, search_query, parameters]);
+  }, [page, data?.data, generalData?.data, searchQuery, search_query, parameters]);
 
   useEffect(() => {
     // Reset the timer if loading starts
-    if (isFetching || isGeneralDataFetching) {
+    if ((searchQuery || search_query) && isGeneralDataFetching) {
+      setShowNoData(false);
+      return;
+    }
+
+    if (!(searchQuery || search_query) && isFetching) {
       setShowNoData(false);
       return;
     }
 
     const timer = setTimeout(() => {
       setShowNoData(true);
-    }, 1000); 
+    }, 1000);
 
-    return () => clearTimeout(timer); 
+    return () => clearTimeout(timer);
   }, [
     isFetching,
     isGeneralDataFetching,
     allData?.length,
     allActivityData?.length,
+    searchQuery,
+    search_query,
+    page
   ]);
 
   useEffect(() => {
@@ -191,9 +221,9 @@ const Activity = () => {
   }
 
   if (
-    !(searchQuery || search_query) &&
     hasFetchedData &&
     !isLoading &&
+    !(searchQuery || search_query) &&
     allActivityData?.length === 0 &&
     showNoData
   ) {
@@ -228,7 +258,6 @@ const Activity = () => {
             xs={12}
             lg={!(searchQuery || search_query) ? 8 : 7}
             sx={{
-              // pb: "10px",
               maxWidth: "1080px !important",
               margin: { xs: "0", xl: "0  auto !important" },
               maxHeight: "calc(100vh - 100px)",
@@ -236,7 +265,6 @@ const Activity = () => {
               display: "flex",
               flexDirection: "column",
               rowGap: "12px",
-              // border:"1px solid red"
             }}
             ref={scrollContainerRef}
           >
