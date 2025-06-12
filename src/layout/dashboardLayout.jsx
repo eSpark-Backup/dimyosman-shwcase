@@ -13,8 +13,13 @@ import {
 } from "../store/slices/activity";
 import {
   emptyFilters,
+  setAllGeneralData,
+  setAllSearchData,
+  setName,
+  setSearch,
   setSearchQuery,
   setShouldReturn,
+  setSpaceSearchData,
 } from "../store/slices/search";
 import { setIsBrand, setObjectForNewBrand, updateBrands } from "../store/slices/brand";
 import { setIsSpace, setObjectForNewSpace, updateSpace } from "../store/slices/space";
@@ -275,6 +280,11 @@ const DashboardLayout = ({ isTokenChecking }) => {
                   onClick={() => {
                     deleteCookie("search_query");
                     dispatch(setSearchQuery(null));
+                    dispatch(setAllSearchData([]));
+                    dispatch(setSpaceSearchData([]));
+                    dispatch(setAllGeneralData([]));
+                    dispatch(setSearch(""));
+                    dispatch(setName(""));
                     dispatch(setShouldReturn(false));
                     dispatch(emptyFilters());
                     if (item.title === "Profile") {

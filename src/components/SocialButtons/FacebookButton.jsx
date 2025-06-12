@@ -11,7 +11,14 @@ import { facebook } from "../../assets";
 
 import { deleteCookie, getCookie, setCookie } from "../../utils";
 import { useDispatch } from "react-redux";
-import { setSearchQuery } from "../../store/slices/search";
+import {
+  setAllGeneralData,
+  setAllSearchData,
+  setName,
+  setSearch,
+  setSearchQuery,
+  setSpaceSearchData,
+} from "../../store/slices/search";
 
 const FacebookButton = ({
   authBtnStyle,
@@ -21,7 +28,7 @@ const FacebookButton = ({
   errorRegister,
 }) => {
   const navigate = useNavigate();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const logoutSession = getCookie("logout");
 
   const { loginWithPopup, user, isAuthenticated } = useAuth0();
@@ -30,7 +37,7 @@ const FacebookButton = ({
     if (isAuthenticated) {
       if (!logoutSession) {
         console.log("User authenticated:", user);
-        
+
         // register({
         //   firstName: user.given_name,
         //   lastName: user.family_name,
@@ -51,12 +58,23 @@ const FacebookButton = ({
       deleteCookie("social_type");
       deleteCookie("search_query");
       dispatch(setSearchQuery(null));
+      dispatch(setAllSearchData([]));
+      dispatch(setSpaceSearchData([]));
+      dispatch(setAllGeneralData([]));
+      dispatch(setSearch(""));
+      dispatch(setName(""));
       toast.error(errorRegister?.data?.message);
     }
     if (isSuccessRegister && isAuthenticated) {
       navigate("/activity");
     }
-  }, [isErrorRegister, isSuccessRegister, navigate, errorRegister, isAuthenticated]);
+  }, [
+    isErrorRegister,
+    isSuccessRegister,
+    navigate,
+    errorRegister,
+    isAuthenticated,
+  ]);
 
   return (
     <Button

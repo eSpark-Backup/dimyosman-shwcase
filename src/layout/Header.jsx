@@ -37,7 +37,7 @@ import Notification from "../components/Notification";
 import Filters from "../components/Filters";
 import { emptyGoToMessage, emptyNotification, setFromNotification } from "../store/slices/notification";
 import { useAuth0 } from "@auth0/auth0-react";
-import { emptyFilters, setSearchQuery, setShouldReturn } from "../store/slices/search";
+import { emptyCategoryNames, emptyFilters, setAllFilterCategories, setAllGeneralData, setAllSearchData, setEntity, setGeneralSearching, setName, setPageNumber, setSearch, setSearchName, setSearchQuery, setSkip, setSpaceSearchData } from "../store/slices/search";
 
 const Header = ({ isLogin }) => {
   const isLessThan1281 = useMediaQuery("(max-width:1281px)");
@@ -49,7 +49,9 @@ const Header = ({ isLogin }) => {
 
   const { count, countInquiry } = useSelector((state) => state.notification);
   const userData = useSelector((state) => state.auth);
-  const { search_query } = useSelector((state) => state.search);
+  const { search_query, parameters, allFilterCategories, search } = useSelector(
+    (state) => state.search
+  );
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -70,18 +72,12 @@ const Header = ({ isLogin }) => {
 
   const { logout: logoutAuth } = useAuth0();
 
-  // useEffect(() => {
-  //   if ((searchQuery || search_query) && isLessThan1281) {
-  //     setOpenFilterDrawer(true);
-  //   }
-  // }, [searchQuery, search_query, isLessThan1281]);
-
   const handleLogout = () => {
     setCookie("logout", true);
     logoutAuthUtils(logoutAuth)
     
     deleteCookie("search_query");
-    dispatch(setSearchQuery(null));
+    removeForSearch();
 
     dispatch(logoutFunc());
     dispatch(removeMychat());
@@ -107,9 +103,18 @@ const Header = ({ isLogin }) => {
 
   const handleCloseFilterDrawer = () => {
     deleteCookie("search_query")
-    dispatch(setSearchQuery(null))
+    removeForSearch()
     dispatch(emptyFilters())
     setOpenFilterDrawer(false)
+  };
+
+  const removeForSearch = () => {
+    dispatch(setSearchQuery(null));
+    dispatch(setAllSearchData([]));
+    dispatch(setSpaceSearchData([]));
+    dispatch(setAllGeneralData([]));
+    dispatch(setSearch(""));
+    dispatch(setName(""));
   };
 
   const iconClick = (type) => {
@@ -145,26 +150,63 @@ const Header = ({ isLogin }) => {
       }
     };
 
-  const addPopuptabs = [
-    {
-      img: brand,
-      hoverImg: brandHover,
-      title: "Brand",
-      func: () => handleNavigate("/new-brand"),
-    },
-    {
-      img: event,
-      hoverImg: eventHover,
-      title: "Event",
-      func: () => handleNavigate("/new-event"),
-    },
-    {
-      img: space,
-      hoverImg: spaceHover,
-      title: "Space",
-      func: () => handleNavigate("/new-space"),
-    },
-  ];
+    const handleKeyDown = (event) => {
+      if (event.key === "Enter") {
+        filterClick({ type: "BRAND" });
+        dispatch(setName(search));
+      }
+    };
+
+    const filterClick = (entity) => {
+      if (entity.type === parameters.entity) {
+        return;
+      }
+
+      const updatedCategories = allFilterCategories.map((category) => {
+        return { ...category, selected: false };
+      });
+
+      dispatch(setAllFilterCategories(updatedCategories));
+      dispatch(setPageNumber(1));
+
+      commonReset();
+
+      dispatch(emptyCategoryNames());
+      dispatch(setEntity(entity.type));
+    };
+
+    const commonReset = () => {
+      dispatch(setSkip(false));
+      dispatch(setAllSearchData([]));
+      dispatch(setSpaceSearchData([]));
+    };
+
+    useEffect(() => {
+      if(!isLessThan1281) {
+        handleCloseFilterDrawer();
+      }
+    },[isLessThan1281])
+
+    const addPopuptabs = [
+      {
+        img: brand,
+        hoverImg: brandHover,
+        title: "Brand",
+        func: () => handleNavigate("/new-brand"),
+      },
+      {
+        img: event,
+        hoverImg: eventHover,
+        title: "Event",
+        func: () => handleNavigate("/new-event"),
+      },
+      {
+        img: space,
+        hoverImg: spaceHover,
+        title: "Space",
+        func: () => handleNavigate("/new-space"),
+      },
+    ];
 
   const profilePopuptabs = [
     {
@@ -282,7 +324,7 @@ const Header = ({ isLogin }) => {
             className="logo"
             style={{ cursor: isLogin ? "pointer" : "default" }}
             onClick={() => {
-              handleCloseFilterDrawer()
+              handleCloseFilterDrawer();
 
               isLogin && navigate("/activity");
             }}
@@ -301,7 +343,11 @@ const Header = ({ isLogin }) => {
                 <SearchBar
                   name={"query"}
                   placeholder={"Search..."}
-                  // handleFilterDrawer={handleFilterDrawer}
+                  onInputChange={(e) => dispatch(setSearch(e.target.value))}
+                  value={search}
+                  handleKeyDown={handleKeyDown}
+                  filterClick={filterClick}
+                  handleFilterDrawer={handleFilterDrawer}
                 />
               </div>
             </div>
@@ -323,7 +369,11 @@ const Header = ({ isLogin }) => {
                     minWidth: "auto",
                   }}
                 >
-                  <FilterListIcon onClick={() => handleFilterDrawer()} />
+                  <FilterListIcon
+                    onClick={() => {
+                      handleFilterDrawer();
+                    }}
+                  />
                 </Button>
               </li>
 
@@ -439,7 +489,7 @@ const Header = ({ isLogin }) => {
           },
         }}
       >
-        <Filters handleCloseFilterDrawer={handleCloseFilterDrawer} />
+        <Filters handleCloseFilterDrawer={handleCloseFilterDrawer} handleFilterDrawer={handleFilterDrawer} />
       </Drawer>
     </>
   );

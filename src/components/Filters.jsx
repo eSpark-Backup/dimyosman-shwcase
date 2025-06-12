@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
 
 import { toast } from "react-toastify";
 
 import {
   Box,
-  // Button,
   Grid,
   IconButton,
   InputAdornment,
@@ -14,7 +12,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  // Stack,
   Typography,
   useMediaQuery,
 } from "@mui/material";
@@ -32,7 +29,6 @@ import {
   mapMarker,
   mapMarkerBrand,
   mapMarkerSpace,
-  profileIcon,
   spaceIcon,
 } from "../assets";
 
@@ -42,13 +38,10 @@ import {
   useGetGeneralCategoriesQuery,
   useGetGeneralLocationQuery,
   useGetGeneralSearchQuery,
-  useGetLocationSearchQuery,
 } from "../services/general";
 
 import {
-  emptyAllLocations,
   emptyCategoryNames,
-  emptyFilters,
   setAllSearchData,
   setAllFilterCategories,
   setCategoryNames,
@@ -59,11 +52,14 @@ import {
   setSkip,
   setSpaceSearchData,
   setIsTyping,
-  setGeneralSearching,
-  // setAllLocations,
+  setSearch,
+  setName,
+  setAllGeneralSearchLoading,
+  setAllGeneralData,
 } from "../store/slices/search";
 
 import { getCookie } from "../utils";
+import SearchBar from "./SearchBar";
 
 const icons = [
   // { icon: allIconLight, type: "not" },
@@ -85,42 +81,20 @@ const icons = [
     activeBG: "rgba(120, 150, 195, 0.8)",
     type: "SPACE",
   },
-  // {
-  //   icon: profileIcon,
-  //   bg: "rgba(0, 20, 28, 0.1)",
-  //   activeBG: "rgba(0, 20, 28, 0.8)",
-  //   type: "not",
-  // },
 ];
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
-const Filters = ({
-  handleCloseFilterDrawer = () => {},
-  setOpenFilterDrawer = null,
-  setHasMore = null,
-  setLoadingStart = null,
-  // loadingStart = false,
-}) => {
-  const isLessThan1281 = useMediaQuery("(max-width:1281px)");
-
+const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
   const searchQuery = getCookie("search_query");
+    const isLessThan1281 = useMediaQuery("(max-width:1281px)");
+  
 
-  const { pathname } = useLocation();
-  // const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const {
-    parameters,
-    allFilterCategories,
-    allCategoriesNotSearch,
-    // allLocations,
-    isTyping,
-    search_query,
-    shouldReturn,
-    generalSearching
-  } = useSelector((state) => state.search);
-  // const { allActivityData } = useSelector((state) => state.activity);
+  const { parameters, allFilterCategories, isTyping, search_query, allData } =
+    useSelector((state) => state.search);
+  const { page } = useSelector((state) => state.activity);
 
   const mapRef = useRef(null);
 
@@ -129,9 +103,8 @@ const Filters = ({
 
   const [suggestions, setSuggestions] = useState([]);
   const [isSelecting, setIsSelecting] = useState(false);
+  const [search,setSearch] = useState("")
   const [value, setValue] = useState(parameters?.locaion || "");
-  // const [currentLoc, setCurrentLoc] = useState(true);
-  // const [askForLoc, setaskForLoc] = useState(false);
 
   const { data: getLocationData, error } = useGetGeneralLocationQuery(
     { query: value },
@@ -140,42 +113,35 @@ const Filters = ({
     }
   );
 
-  const {
-    data: locations,
-    isSuccess: isLocationSuccess,
-    isLoading: isLocationLoading,
-    isFetching: isLocationFetching,
-  } = useGetLocationSearchQuery(
-    {
-      entity: parameters.entity,
-    },
-    {
-      skip:
-        parameters?.lat?.length !== 0 ||
-        parameters?.categoryNames?.trim() !== "",
-      refetchOnMountOrArgChange: true,
-    }
-  );
-
-  const {
-    data: generalData,
-    isSuccess: isGeneralDataSuccess,
-    isLoading: isGeneralDataLoading,
-    isFetching: isGeneralDataFetching,
-  } = useGetGeneralSearchQuery(
+  const { data, isSuccess, isFetching, isLoading } = useGetGeneralSearchQuery(
     { parameters },
     {
-      skip: generalSearching,
-      refetchOnMountOrArgChange: true,
-    }
+      skip: !isLessThan1281,
+    },
+    { refetchOnMountOrArgChange: true }
   );
+
+  useEffect(() => {
+    if (isLessThan1281) {
+      if (isSuccess) {
+        if (data?.data) {
+          const generalKeys = {
+            BRAND: data?.data?.brands,
+            SPACE: data?.data?.spaces,
+            EVENT: data?.data?.events,
+          };
+
+          dispatch(setAllGeneralSearchLoading(isFetching));
+          dispatch(setAllSearchData(generalKeys[parameters.entity]));
+        }
+      }
+    }
+  }, [isLessThan1281, data, isSuccess, isFetching]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (mapRef.current && !mapRef.current.contains(event.target)) {
         setSuggestions([]);
-        // setCurrentLoc(false);
-        // setaskForLoc(false);
       }
     };
 
@@ -185,29 +151,9 @@ const Filters = ({
     };
   }, []);
 
-  // useEffect(() => {
-  //   if (pathname !== "/search") {
-  //       resetDebouncedRadius();
-  //       dispatch(emptyFilters());
-
-  //       emptyInputs();
-
-  //       dispatch(emptyAllLocations());
-  //       dispatch(setSkip(true));
-
-  //       dispatch(setAllSearchData([]));
-  //       dispatch(setSpaceSearchData([]));
-  //   }
-
-  //   if (pathname === "/search" && !isLessThan1281) {
-  //     setOpenFilterDrawer?.(false);
-  //   }
-  // }, [pathname, isLessThan1281]);
-
   const [searchCategory, setSearchCategory] = useState("");
 
   useEffect(() => {
-    // if (pathname === "/search" && debouncedRadius !== parameters.radius) {
     if (
       (searchQuery || search_query) &&
       debouncedRadius !== parameters.radius
@@ -217,10 +163,6 @@ const Filters = ({
       commonReset();
 
       dispatch(setPageNumber(1));
-      setHasMore?.(true);
-      setLoadingStart?.(false);
-
-      // setOpenFilterDrawer?.(false);
     }
   }, [debouncedRadius, dispatch, parameters.radius]);
 
@@ -243,16 +185,7 @@ const Filters = ({
     }
   );
 
-  // useEffect(() => {
-  //   if (pathname !== "/search") {
-  //     if (allCategoriesNotSearch?.length > 0) {
-  //       dispatch(setAllFilterCategories(allCategoriesNotSearch));
-  //     }
-  //   }
-  // }, [pathname]);
-
   useEffect(() => {
-    // if (pathname === "/search") {
     if (searchQuery || search_query) {
       if (generalCategories?.data?.length) {
         const updatedCategories = generalCategories?.data
@@ -283,20 +216,9 @@ const Filters = ({
     category.name.toLowerCase().includes(searchCategory.toLowerCase())
   );
 
-  // const actionAsDrawer = () => {
-  //   setOpenFilterDrawer?.(false);
-  //   navigate("/search");
-  // };
-
   const filterClick = (entity) => {
     if (entity.type === parameters.entity) {
       return;
-    }
-
-    if (parameters?.lat?.length !== 0) {
-      dispatch(setGeneralSearching(false))
-    } else {
-      dispatch(setGeneralSearching(true));
     }
 
     const updatedCategories = allFilterCategories.map((category) => {
@@ -306,18 +228,10 @@ const Filters = ({
     dispatch(setAllFilterCategories(updatedCategories));
     dispatch(setPageNumber(1));
 
-    setHasMore?.(true);
-    setLoadingStart?.(false);
-
     commonReset();
 
     dispatch(emptyCategoryNames());
     dispatch(setEntity(entity.type));
-
-    // if (pathname !== "/search") {
-    //   actionAsDrawer();
-    // }
-    // setOpenFilterDrawer?.(false);
   };
 
   const handleSearch = (e) => {
@@ -353,15 +267,6 @@ const Filters = ({
       return category;
     });
 
-    if (
-      updatedCategories?.some((cate) => cate.selected === true) ||
-      parameters?.lat?.length !== 0
-    ) {
-      dispatch(setGeneralSearching(false));
-    } else {
-      dispatch(setGeneralSearching(true));
-    }
-
     dispatch(setAllFilterCategories(updatedCategories));
 
     const selectedNames = updatedCategories
@@ -370,24 +275,19 @@ const Filters = ({
       .join(",");
 
     dispatch(setPageNumber(1));
-    setHasMore?.(true);
-    setLoadingStart?.(false);
 
     dispatch(setCategoryNames(selectedNames));
     dispatch(setSkip(false));
-
-    // if (pathname !== "/search") {
-    //   actionAsDrawer();
-    // }
-    // setOpenFilterDrawer?.(false);
   };
 
   const handleSelectPlace = (place) => {
     setValue(place.description);
     setSuggestions([]);
     setIsSelecting(true);
+
     dispatch(setIsTyping(true));
-    dispatch(setGeneralSearching(false));
+    dispatch(setPageNumber(1));
+    commonReset();
 
     // Fetch details for selected place
     fetch(
@@ -401,14 +301,8 @@ const Filters = ({
 
           dispatch(setLocation({ long: lng, lat, locaion: formattedAddress }));
 
-          // if (radiusInput?.length === 0) {
-          //   dispatch(setRadius(10));
-          //   setRadiusInput(10)
-          // }
-
           if (parameters?.lat !== lat || parameters?.long !== lng) {
             commonReset();
-            // setOpenFilterDrawer?.(false);
             dispatch(setPageNumber(1));
           }
         }
@@ -426,12 +320,6 @@ const Filters = ({
   };
 
   const emptyInputs = () => {
-    if (allCategoriesNotSearch?.some((cate) => cate.selected === true)) {
-      dispatch(setGeneralSearching(false));
-    } else {
-      dispatch(setGeneralSearching(true));
-    }
-
     setRadiusInput("");
     dispatch(setLocation({ lat: "", long: "", location: "" }));
     setValue("");
@@ -451,41 +339,12 @@ const Filters = ({
     },
   };
 
-  const filterOutActivity = () => {
-    const locationKeys = {
-      BRAND: locations?.data?.brands,
-      SPACE: locations?.data?.spaces,
-      EVENT: locations?.data?.events,
-    };
-
-    const generalKeys = {
-      BRAND: generalData?.data?.brands,
-      SPACE: generalData?.data?.spaces,
-      EVENT: generalData?.data?.events,
-    };
-
-    if (generalSearching) {
-      return locationKeys[parameters.entity];
-    } else {
-      return generalKeys[parameters.entity];
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      filterClick({ type: "BRAND" });
+      dispatch(setName(search));
     }
   };
-
-  const loaderOnMap = () => {
-    if (generalSearching) {
-      return isLocationLoading || isLocationFetching;
-    } else {
-      return isGeneralDataLoading || isGeneralDataFetching;
-    }
-  };
-
-  // if (isGeneralCategoryLoading || isGeneralCategoryFetching) {
-  //   return (
-  //     <Box sx={{ width: "100%" }}>
-  //       <LinearProgress />
-  //     </Box>
-  //   );
-  // }
 
   return (
     <Box
@@ -503,7 +362,6 @@ const Filters = ({
           display: { xs: "block", sm: "none" },
           textAlign: "end",
         }}
-        // onClick={() => setOpenFilterDrawer?.(false)}
         onClick={() => handleCloseFilterDrawer?.()}
       >
         <img src={close} alt="Close Icon" />
@@ -521,6 +379,19 @@ const Filters = ({
           {parameters.entity.length === 0 ? "Select Filter" : parameters.entity}
         </strong>
       </Typography>
+
+      {isLessThan1281 && (
+        <div className="search-box" style={{ marginTop: "10px" }}>
+          <SearchBar
+            name={"query"}
+            placeholder={"Search..."}
+            onInputChange={(e) => setSearch(e.target.value)}
+            value={search}
+            handleKeyDown={handleKeyDown}
+            filterClick={filterClick}
+          />
+        </div>
+      )}
 
       <Box
         sx={{
@@ -588,22 +459,12 @@ const Filters = ({
           <Input
             sx={inputStyles}
             value={value}
-            readOnly={
-              parameters?.entity?.length === 0
-                ? true
-                : // : currentLoc
-                  // ? true
-                  false
-            }
+            readOnly={parameters?.entity?.length === 0 ? true : false}
             onClick={() => {
               if (parameters?.entity?.length === 0) {
                 toast.error("Filter is not selected");
                 return;
               }
-
-              // if (currentLoc) {
-              //   setaskForLoc(true);
-              // }
             }}
             onInputChange={handleSearch}
             type="text"
@@ -637,60 +498,6 @@ const Filters = ({
               </InputAdornment>
             }
           />
-
-          {/* {askForLoc ? (
-              <Box
-                sx={{
-                  maxHeight: 200,
-                  overflowY: "auto",
-                  position: "absolute",
-                  zIndex: 1,
-                  width: "calc(100% - 8px)",
-                  backgroundColor: "white",
-                  border: "1px solid #ddd",
-                  marginRight: 2,
-                  textAlign: "center",
-                  padding: "16px 0px",
-                }}
-              >
-                <Typography>
-                  Do you want search with your current location
-                </Typography>
-  
-                <Stack
-                  flexDirection={"row"}
-                  justifyContent={"center"}
-                  gap={2}
-                  mt={2}
-                >
-                  <Button
-                    sx={{
-                      textTransform: "inherit",
-                      padding: "0px !important",
-                      fontSize: "16px",
-                      height: "28px",
-                    }}
-                    onClick={() => {}}
-                  >
-                    Yes
-                  </Button>
-                  <Button
-                    sx={{
-                      textTransform: "inherit",
-                      padding: "0px !important",
-                      fontSize: "16px",
-                      height: "28px",
-                    }}
-                    onClick={() => {
-                      setCurrentLoc(false);
-                      setaskForLoc(false);
-                    }}
-                  >
-                    No
-                  </Button>
-                </Stack>
-              </Box>
-            ) : null} */}
 
           {/* Suggestions List */}
           {suggestions.length > 0 && (
@@ -770,13 +577,13 @@ const Filters = ({
       ) : (
         <>
           <Box sx={{ width: "100%", height: "411px", mt: 2, mb: 4 }}>
-            {loaderOnMap() ? (
+            {isLoading || isFetching ? (
               <Box sx={{ width: "100%" }}>
                 <LinearProgress />
               </Box>
             ) : (
               <MapDisplay
-                locations={filterOutActivity()}
+                locations={allData}
                 marker={
                   parameters?.entity === "SPACE"
                     ? mapMarkerSpace
