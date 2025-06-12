@@ -56,6 +56,7 @@ import {
   setName,
   setAllGeneralSearchLoading,
   setAllGeneralData,
+  setLocationStart,
 } from "../store/slices/search";
 
 import { getCookie } from "../utils";
@@ -92,8 +93,14 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
 
   const dispatch = useDispatch();
 
-  const { parameters, allFilterCategories, isTyping, search_query, allData } =
-    useSelector((state) => state.search);
+  const {
+    parameters,
+    allFilterCategories,
+    isTyping,
+    search_query,
+    allData,
+    search,
+  } = useSelector((state) => state.search);
   const { page } = useSelector((state) => state.activity);
 
   const mapRef = useRef(null);
@@ -103,7 +110,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
 
   const [suggestions, setSuggestions] = useState([]);
   const [isSelecting, setIsSelecting] = useState(false);
-  const [search,setSearch] = useState("")
+  const [searchName,setSearch] = useState("")
   const [value, setValue] = useState(parameters?.locaion || "");
 
   const { data: getLocationData, error } = useGetGeneralLocationQuery(
@@ -217,7 +224,12 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
   );
 
   const filterClick = (entity) => {
-    if (entity.type === parameters.entity) {
+    const item = isLessThan1281 ? searchName : search;
+
+    if (
+      entity.type === parameters.entity &&
+      item.toLowerCase() === parameters.name.toLowerCase()
+    ) {
       return;
     }
 
@@ -232,6 +244,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
 
     dispatch(emptyCategoryNames());
     dispatch(setEntity(entity.type));
+    dispatch(setName(isLessThan1281 ? searchName : search));
   };
 
   const handleSearch = (e) => {
@@ -281,6 +294,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
   };
 
   const handleSelectPlace = (place) => {
+    dispatch(setLocationStart(true))
     setValue(place.description);
     setSuggestions([]);
     setIsSelecting(true);
@@ -317,6 +331,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
     dispatch(setSkip(false));
     dispatch(setAllSearchData([]));
     dispatch(setSpaceSearchData([]));
+    dispatch(setAllGeneralData([]));
   };
 
   const emptyInputs = () => {
@@ -342,7 +357,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
       filterClick({ type: "BRAND" });
-      dispatch(setName(search));
+      dispatch(setName(searchName));
     }
   };
 
@@ -386,7 +401,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
             name={"query"}
             placeholder={"Search..."}
             onInputChange={(e) => setSearch(e.target.value)}
-            value={search}
+            value={searchName}
             handleKeyDown={handleKeyDown}
             filterClick={filterClick}
           />

@@ -1,14 +1,15 @@
 import { useSelector } from "react-redux";
 
 import { Box } from "@mui/material";
-import { brandIcon, flag, spaceIcon } from "../assets";
 
 const SearchIconBox = ({ icon, filterClick }) => {
-    const { parameters } = useSelector((state) => state.search);
+  const { parameters } = useSelector((state) => state.search);
 
   return (
     <Box
-      onClick={() => filterClick({ type: icon.type })}
+      onClick={() => {
+        filterClick({ type: icon.type });
+      }}
       sx={{
         background: parameters.entity === icon.type ? icon.activeBG : icon.bg,
         width: "16px",

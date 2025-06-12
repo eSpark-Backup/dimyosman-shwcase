@@ -1,7 +1,12 @@
 import moment from "moment";
 
 import { fetchAddressFromCoordinates } from "../utils";
-import { setAllSearchData, setSpaceSearchData } from "../store/slices/search";
+import {
+  setAllGeneralData,
+  setAllSearchData,
+  setLocationStart,
+  setSpaceSearchData,
+} from "../store/slices/search";
 
 export const fetchSearchData = async ({
   dispatch,
@@ -28,6 +33,8 @@ export const fetchSearchData = async ({
 
   if (!updateGeneralData && page === 1) {
     dispatch(setAllSearchData([]));
+    dispatch(setSpaceSearchData([]));
+    dispatch(setAllGeneralData([]));
     setHasFetchedData(true);
     return;
   }
@@ -160,21 +167,29 @@ export const fetchSearchData = async ({
       })
     );
 
-    const mergedData = [...allData, ...updatedData];
+    dispatch(setLocationStart(false));
 
-    if (parameters.entity === "SPACE") {
-      const mergedSpacesData = [...spaceData, ...updateGeneralData].filter(
-        (item, index, self) =>
-          index === self.findIndex((t) => t?.id === item?.id)
+    if (page === 1) {
+      dispatch(setAllSearchData(updatedData));
+      dispatch(setSpaceSearchData(updateGeneralData));
+    } else {
+      const mergedData = [...allData, ...updatedData];
+
+      if (parameters.entity === "SPACE") {
+        const mergedSpacesData = [...spaceData, ...updateGeneralData].filter(
+          (item, index, self) =>
+            index === self.findIndex((t) => t?.id === item?.id)
+        );
+        dispatch(setSpaceSearchData(mergedSpacesData));
+      }
+
+      const uniqueData = Array.from(
+        new Map(mergedData.map((item) => [item.id, item])).values()
       );
-      dispatch(setSpaceSearchData(mergedSpacesData));
+
+      dispatch(setAllSearchData(uniqueData));
     }
 
-    const uniqueData = Array.from(
-      new Map(mergedData.map((item) => [item.id, item])).values()
-    );
-
-    dispatch(setAllSearchData(uniqueData));
     setTotal(generalData?.totalResults);
     setHasMore(
       generalData?.pagination?.currentPage < generalData?.pagination?.totalPages
