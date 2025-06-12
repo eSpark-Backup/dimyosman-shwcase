@@ -98,7 +98,15 @@ const MapDisplay = React.memo(
           return bounds.extend(locat);
         });
 
-        map.fitBounds(bounds);
+        if (locations.length === 1) {
+          map.setCenter({
+            lat: locations[0].location.lat || 0,
+            lng: locations[0].location.long || 0,
+          });
+          map.setZoom(14);
+        } else {
+          map.fitBounds(bounds);
+        }
       }
     }, [map, locations]);
 

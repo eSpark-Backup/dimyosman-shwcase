@@ -22,7 +22,7 @@ import {
 import { getCookie, setCookie } from "../utils";
 
 import { useGetGeneralCategoriesQuery } from "../services/general";
-import { brandIcon, flag, spaceIcon } from "../assets";
+import { brandIcon, flag, search, spaceIcon } from "../assets";
 
 const icons = [
   // { icon: allIconLight, type: "not" },
@@ -149,9 +149,17 @@ const SearchBar = ({
                 }}
                 disableRipple
               >
-                {icons.map((icon) => (
-                  <SearchIconBox icon={icon} filterClick={filterClick} />
-                ))}
+                {canType ? (
+                  <img src={search} alt="Search Icon" />
+                ) : (
+                  icons.map((icon) => (
+                    <SearchIconBox
+                      key={icon.type}
+                      icon={icon}
+                      filterClick={filterClick}
+                    />
+                  ))
+                )}
               </IconButton>
             </InputAdornment>
           ),
