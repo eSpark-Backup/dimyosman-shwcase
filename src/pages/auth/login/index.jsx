@@ -17,7 +17,7 @@ import { removeMychat } from "../../../store/slices/chat";
 import GoogleButton from "../../../components/SocialButtons/GoogleButton";
 import { deleteCookie, getCookie, logoutAuthUtils, removeActiveNotifications, removeNewInquiry } from "../../../utils";
 import { emptyNotification } from "../../../store/slices/notification";
-import { setSearchQuery } from "../../../store/slices/search";
+import { setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setSpaceSearchData } from "../../../store/slices/search";
 
 const AUTH0_APP_DOMAIN = import.meta.env.VITE_AUTH0_APP_DOMAIN;
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_AUTH0_GOOGLE_APP_CLIENT_ID;
@@ -49,27 +49,36 @@ const Login = () => {
 
   useEffect(() => {
     if (logoutSession && socialType) {
-      logoutAuthUtils(logout)
+      logoutAuthUtils(logout);
 
       setTimeout(() => {
         deleteCookie("logout");
         deleteCookie("social_type");
         deleteCookie("search_query");
-        dispatch(setSearchQuery(null));
+        removeForSearch();
       }, 10);
     }
   }, [logoutSession, socialType]);
 
   useEffect(() => {
     deleteCookie("search_query");
-    dispatch(setSearchQuery(null));
-    
+    removeForSearch();
+
     dispatch(logoutFunc());
     dispatch(removeMychat());
     dispatch(emptyNotification());
     removeActiveNotifications(dispatch);
     removeNewInquiry(dispatch);
   }, []);
+
+  const removeForSearch = () => {
+    dispatch(setSearchQuery(null));
+    dispatch(setAllSearchData([]));
+    dispatch(setSpaceSearchData([]));
+    dispatch(setAllGeneralData([]));
+    dispatch(setSearch(""));
+    dispatch(setName(""));
+  };
 
   useEffect(() => {
     if (isError) {

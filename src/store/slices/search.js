@@ -21,7 +21,11 @@ const initialState = {
   isTyping: false,
   search_query: null,
   shouldReturn: false,
-  generalSearching: true,
+  generalSearching: false,
+  generalSearchLoading: false,
+  searchName: "",
+  generalData: [],
+  search: "",
 };
 
 const slice = createSlice({
@@ -30,6 +34,12 @@ const slice = createSlice({
   reducers: {
     setAllSearchData: (state, action) => {
       state.allData = action.payload;
+    },
+    setAllGeneralData: (state, action) => {
+      state.generalData = action.payload;
+    },
+    setAllGeneralSearchLoading: (state, action) => {
+      state.generalSearchLoading = action.payload;
     },
     setSpaceSearchData: (state, action) => {
       state.spaceData = action.payload;
@@ -42,6 +52,9 @@ const slice = createSlice({
     },
     setName: (state, action) => {
       state.parameters.name = action.payload;
+    },
+    setSearch: (state, action) => {
+      state.search = action.payload;
     },
     setLocation: (state, { payload }) => {
       state.parameters.long = payload.long;
@@ -98,16 +111,22 @@ const slice = createSlice({
     },
     setGeneralSearching:(state,action) => {
       state.generalSearching = action.payload;
+    },
+    setSearchName:(state,action) => {
+      state.searchName = action.payload;
     }
   },
 });
 
 export const {
   setAllSearchData,
+  setAllGeneralData,
+  setAllGeneralSearchLoading,
   setSpaceSearchData,
   setAllFilterCategories,
   setEntity,
   setName,
+  setSearch,
   setLocation,
   setAdditional,
   setCategoryNames,
@@ -122,7 +141,8 @@ export const {
   setIsTyping,
   setSearchQuery,
   setShouldReturn,
-  setGeneralSearching
+  setGeneralSearching,
+  setSearchName,
 } = slice.actions;
 
 export default slice.reducer;

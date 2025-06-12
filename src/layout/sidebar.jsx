@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getSmallSidebar, sidebarRoutes } from "../constant";
 import { setActivityPageNumber, setAllActivityData, setSpaceData } from "../store/slices/activity";
 import { addHyphenToName, deleteCookie, getCookie } from "../utils";
-import { emptyFilters, setSearchQuery, setShouldReturn } from "../store/slices/search";
+import { emptyFilters, setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setShouldReturn, setSpaceSearchData } from "../store/slices/search";
 import { setFromSidebar } from "../store/slices/chat";
 
 const Sidebar = () => {
@@ -51,7 +51,12 @@ const Sidebar = () => {
             id={item.title}
             onClick={() => {
               deleteCookie("search_query");
-              dispatch(setSearchQuery(null))
+              dispatch(setSearchQuery(null));
+              dispatch(setAllSearchData([]));
+              dispatch(setSpaceSearchData([]));
+              dispatch(setAllGeneralData([]));
+              dispatch(setSearch(""));
+              dispatch(setName(""));
               dispatch(setShouldReturn(false))
               dispatch(emptyFilters());
 

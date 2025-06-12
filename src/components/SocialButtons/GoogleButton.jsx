@@ -11,7 +11,7 @@ import { google } from "../../assets";
 
 import { deleteCookie, getCookie, setCookie } from "../../utils";
 import { useDispatch } from "react-redux";
-import { setSearchQuery } from "../../store/slices/search";
+import { setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setSpaceSearchData } from "../../store/slices/search";
 
 const GoogleButton = ({
   authBtnStyle,
@@ -50,12 +50,23 @@ const GoogleButton = ({
       deleteCookie("social_type");
       deleteCookie("search_query");
       dispatch(setSearchQuery(null));
+      dispatch(setAllSearchData([]));
+      dispatch(setSpaceSearchData([]));
+      dispatch(setAllGeneralData([]));
+      dispatch(setSearch(""));
+      dispatch(setName(""));
       toast.error(errorRegister?.data?.message);
     }
     if (isSuccessRegister && isAuthenticated) {
       navigate("/activity");
     }
-  }, [isErrorRegister, isSuccessRegister, navigate, errorRegister, isAuthenticated]);
+  }, [
+    isErrorRegister,
+    isSuccessRegister,
+    navigate,
+    errorRegister,
+    isAuthenticated,
+  ]);
 
   const handleLogin = async () => {
     try {
