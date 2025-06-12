@@ -179,6 +179,9 @@ export class GeneralController {
         eventQuery.andWhere("event.eventName LIKE :name", {
           name: `%${name}%`,
         });
+        eventCountQuery.andWhere("event.eventName LIKE :name", {
+          name: `%${name}%`,
+        });
         brandQuery.andWhere("brand.brandName LIKE :name", {
           name: `%${name}%`,
         });
