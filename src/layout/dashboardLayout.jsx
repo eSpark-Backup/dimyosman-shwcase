@@ -291,6 +291,7 @@ const DashboardLayout = ({ isTokenChecking }) => {
                     dispatch(emptyFilters());
                     
                     if (item.title === "Profile") {
+                      deleteCookie("isCalled");
                       navigate(`/profile/${addHyphenToName(user?.name)}`, { state: { id: user?.id } });
                       setActive(false);
                       return;
