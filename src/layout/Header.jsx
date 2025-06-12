@@ -37,7 +37,20 @@ import Notification from "../components/Notification";
 import Filters from "../components/Filters";
 import { emptyGoToMessage, emptyNotification, setFromNotification } from "../store/slices/notification";
 import { useAuth0 } from "@auth0/auth0-react";
-import { emptyCategoryNames, emptyFilters, setAllFilterCategories, setAllGeneralData, setAllSearchData, setEntity, setGeneralSearching, setName, setPageNumber, setSearch, setSearchName, setSearchQuery, setSkip, setSpaceSearchData } from "../store/slices/search";
+import {
+  emptyCategoryNames,
+  emptyFilters,
+  setAllFilterCategories,
+  setAllGeneralData,
+  setAllSearchData,
+  setEntity,
+  setName,
+  setPageNumber,
+  setSearch,
+  setSearchQuery,
+  setSkip,
+  setSpaceSearchData,
+} from "../store/slices/search";
 
 const Header = ({ isLogin }) => {
   const isLessThan1281 = useMediaQuery("(max-width:1281px)");
@@ -158,7 +171,10 @@ const Header = ({ isLogin }) => {
     };
 
     const filterClick = (entity) => {
-      if (entity.type === parameters.entity) {
+      if (
+        entity.type === parameters.entity &&
+        search.toLowerCase() === parameters.name.toLowerCase()
+      ) {
         return;
       }
 
@@ -173,12 +189,14 @@ const Header = ({ isLogin }) => {
 
       dispatch(emptyCategoryNames());
       dispatch(setEntity(entity.type));
+      dispatch(setName(search));
     };
 
     const commonReset = () => {
       dispatch(setSkip(false));
       dispatch(setAllSearchData([]));
       dispatch(setSpaceSearchData([]));
+      dispatch(setAllGeneralData([]));
     };
 
     useEffect(() => {
@@ -343,7 +361,13 @@ const Header = ({ isLogin }) => {
                 <SearchBar
                   name={"query"}
                   placeholder={"Search..."}
-                  onInputChange={(e) => dispatch(setSearch(e.target.value))}
+                  onInputChange={(e) => {
+                    const value = e.target.value;
+                    if(value.length === 0) {
+                      dispatch(setName(""));
+                    }
+                    dispatch(setSearch(value));
+                  }}
                   value={search}
                   handleKeyDown={handleKeyDown}
                   filterClick={filterClick}

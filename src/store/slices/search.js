@@ -26,6 +26,7 @@ const initialState = {
   searchName: "",
   generalData: [],
   search: "",
+  locationStart:false
 };
 
 const slice = createSlice({
@@ -37,6 +38,9 @@ const slice = createSlice({
     },
     setAllGeneralData: (state, action) => {
       state.generalData = action.payload;
+    },
+    setLocationStart: (state, action) => {
+      state.locationStart = action.payload;
     },
     setAllGeneralSearchLoading: (state, action) => {
       state.generalSearchLoading = action.payload;
@@ -121,6 +125,7 @@ const slice = createSlice({
 export const {
   setAllSearchData,
   setAllGeneralData,
+  setLocationStart,
   setAllGeneralSearchLoading,
   setSpaceSearchData,
   setAllFilterCategories,

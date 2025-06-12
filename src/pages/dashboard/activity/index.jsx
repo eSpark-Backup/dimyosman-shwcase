@@ -28,8 +28,14 @@ const Activity = () => {
 
   const dispatch = useDispatch();
 
-  const { search_query, generalData, parameters, allData, spaceData } =
-    useSelector((state) => state.search);
+  const {
+    search_query,
+    generalData,
+    parameters,
+    allData,
+    spaceData,
+    locationStart,
+  } = useSelector((state) => state.search);
   const { allActivityData, activitySpaceData, page } = useSelector(
     (state) => state.activity
   );
@@ -58,6 +64,7 @@ const Activity = () => {
   const [inquiredDetail, setInquiredDetail] = useState({});
   const scrollContainerRef = useRef(null);
   const [hasMore, setHasMore] = useState(true);
+const [showNoData, setShowNoData] = useState(false);
 
   const andLoadingState = () => {
     if (searchQuery || search_query) {
@@ -127,6 +134,25 @@ const Activity = () => {
   }, [page, data?.data, generalData, searchQuery, search_query, parameters]);
 
   useEffect(() => {
+    // Reset the timer if loading starts
+    if (isFetching || isGeneralDataFetching) {
+      setShowNoData(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setShowNoData(true);
+    }, 1000); 
+
+    return () => clearTimeout(timer); 
+  }, [
+    isFetching,
+    isGeneralDataFetching,
+    allData?.length,
+    allActivityData?.length,
+  ]);
+
+  useEffect(() => {
     const scrollPosition = localStorage.getItem("scrollPosition");
     if (scrollContainerRef.current && scrollPosition) {
       scrollContainerRef.current.scrollTop = parseInt(scrollPosition, 10);
@@ -176,7 +202,8 @@ const Activity = () => {
     !(searchQuery || search_query) &&
     hasFetchedData &&
     !isLoading &&
-    allActivityData?.length === 0
+    allActivityData?.length === 0 &&
+    showNoData
   ) {
     return (
       <Box sx={{ width: "100%" }}>
@@ -195,7 +222,9 @@ const Activity = () => {
         {hasFetchedData &&
         !isGeneralDataLoading &&
         (searchQuery || search_query) &&
-        allData?.length === 0 ? (
+        allData?.length === 0 &&
+        showNoData &&
+        !locationStart ? (
           <Grid item xs={12} lg={7}>
             <Box sx={{ width: "100%" }}>
               <h1>No Data Found</h1>
@@ -258,9 +287,11 @@ const Activity = () => {
                 spaceStatus={item?.spaceStatus}
                 handleAction={(fullItem) => {
                   if (fullItem.activity === "space") {
-                    const detail = activitySpaceData?.find(
-                      (spc) => spc.id === fullItem.id
-                    );
+                    const detail = [
+                      ...(searchQuery || search_query
+                        ? spaceData
+                        : activitySpaceData),
+                    ]?.find((spc) => spc.id === fullItem.id);
                     setInquiredDetail(detail);
                     setOpenInquiryModal(true);
                   }
