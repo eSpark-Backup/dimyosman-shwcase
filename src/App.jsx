@@ -30,7 +30,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useVerifyTokenQuery } from './services/auth';
 // import Search from './pages/dashboard/search';
 import { useAuth0 } from '@auth0/auth0-react';
-import { logoutAuthUtils } from './utils';
+import { deleteCookie, logoutAuthUtils } from './utils';
 import SplashScreen from './layout/splash';
 import { useDispatch } from 'react-redux';
 import { setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setSpaceSearchData } from './store/slices/search';
