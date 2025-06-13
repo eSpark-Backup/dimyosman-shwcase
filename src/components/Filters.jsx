@@ -144,7 +144,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
 
       dispatch(setPageNumber(1));
     }
-  }, [debouncedRadius, dispatch, parameters.radius]);
+  }, [debouncedRadius, dispatch]);
 
   const {
     data: generalCategories,
@@ -317,6 +317,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
     dispatch(setIsTyping(false));
     dispatch(setPageNumber(1));
     resetDebouncedRadius();
+    dispatch(setSearchRecall(Date.now()))
   };
 
   const inputStyles = {
@@ -376,7 +377,13 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
           <SearchBar
             name={"query"}
             placeholder={"Search..."}
-            onInputChange={(e) => dispatch(setSearch(e.target.value))}
+            onInputChange={(e) => {
+              const value = e.target.value;
+              if (value.length === 0) {
+                dispatch(setName(""));
+              }
+              dispatch(setSearch(value));
+            }}
             value={search}
             handleKeyDown={handleKeyDown}
             filterClick={filterClick}
@@ -457,7 +464,13 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
                 return;
               }
             }}
-            onInputChange={handleSearch}
+            onInputChange={(e) => {
+              const value = e.target.value;
+              if(value.length === 0) {
+                emptyInputs()
+              }
+              handleSearch(e)
+            }}
             type="text"
             placeholder="Type Address..."
             autoComplete="off"
@@ -553,6 +566,11 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
             }}
             onInputChange={(e) => {
               const value = e.target.value;
+              if (value.length === 0) {
+                setRadiusInput("");
+                dispatch(setRadius(""));
+                resetDebouncedRadius();
+              }
               setRadiusInput(value);
             }}
             type="number"
