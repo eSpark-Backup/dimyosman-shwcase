@@ -69,6 +69,12 @@ const DashboardLayout = ({ isTokenChecking }) => {
       (!item?.link && item.title === "Profile") || item?.link === currentPath
   );
 
+  useEffect(() => {
+    if (pathname !== "/activity") {
+      deleteCookie("isCalled");
+    }
+  }, [pathname]);
+
   // if (loading || isTokenChecking) {
   //   return <SplashScreen />;
   // }
@@ -295,6 +301,7 @@ const DashboardLayout = ({ isTokenChecking }) => {
                     dispatch(setShouldReturn(false));
                     dispatch(emptyFilters());
                     localStorage.removeItem("scrollPosition");
+                    dispatch(setActivityPageNumber(1));
                     
                     if (item.title === "Profile") {
                       deleteCookie("isCalled");
@@ -306,7 +313,6 @@ const DashboardLayout = ({ isTokenChecking }) => {
                     if (item.title !== "Activity") {
                       dispatch(setAllActivityData([]));
                       dispatch(setSpaceData([]));
-                      dispatch(setActivityPageNumber(1));
                       deleteCookie("isCalled");
                     }
 

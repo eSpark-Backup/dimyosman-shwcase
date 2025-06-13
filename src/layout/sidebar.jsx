@@ -59,6 +59,8 @@ const Sidebar = () => {
               dispatch(setName(""));
               dispatch(setShouldReturn(false))
               dispatch(emptyFilters());
+              localStorage.removeItem("scrollPosition");
+              dispatch(setActivityPageNumber(1));
 
               if (item.title === "Profile") {
                 deleteCookie("isCalled");
@@ -69,10 +71,8 @@ const Sidebar = () => {
               }
 
               if (item.title !== "Activity") {
-                localStorage.removeItem("scrollPosition");
                 dispatch(setAllActivityData([]));
                 dispatch(setSpaceData([]));
-                dispatch(setActivityPageNumber(1));
                 deleteCookie("isCalled");
               }
 

@@ -24,6 +24,7 @@ import { deleteCookie, getCookie, setCookie } from "../utils";
 
 import { useGetGeneralCategoriesQuery } from "../services/general";
 import { brandIcon, flag, search, spaceIcon } from "../assets";
+import { setActivityPageNumber } from "../store/slices/activity";
 
 const icons = [
   // { icon: allIconLight, type: "not" },
@@ -113,6 +114,7 @@ const SearchBar = ({
           setCookie("search_query", true);
           dispatch(setSearchQuery(true));
           deleteCookie("isCalled");
+          dispatch(setActivityPageNumber(1))
           
           if (isLessThan1281 && pathname !== "/activity") {
               handleFilterDrawer?.();
@@ -120,6 +122,10 @@ const SearchBar = ({
           }
 
           if (!(searchQuery || search_query)) {
+            dispatch(setSearchRecall(Date.now()));
+          }
+
+          if ((searchQuery || search_query) && pathname !== "/activity") {
             dispatch(setSearchRecall(Date.now()));
           }
         }
