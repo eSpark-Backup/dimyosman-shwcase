@@ -464,7 +464,13 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
                 return;
               }
             }}
-            onInputChange={handleSearch}
+            onInputChange={(e) => {
+              const value = e.target.value;
+              if(value.length === 0) {
+                emptyInputs()
+              }
+              handleSearch(e)
+            }}
             type="text"
             placeholder="Type Address..."
             autoComplete="off"
@@ -560,6 +566,11 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
             }}
             onInputChange={(e) => {
               const value = e.target.value;
+              if (value.length === 0) {
+                setRadiusInput("");
+                dispatch(setRadius(""));
+                resetDebouncedRadius();
+              }
               setRadiusInput(value);
             }}
             type="number"
