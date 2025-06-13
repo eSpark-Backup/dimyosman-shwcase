@@ -11,7 +11,7 @@ import { apple } from "../../assets";
 
 import { deleteCookie, getCookie, setCookie } from "../../utils";
 import { useDispatch } from "react-redux";
-import { setSearchQuery } from "../../store/slices/search";
+import { setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setSpaceSearchData } from "../../store/slices/search";
 
 const AppleButton = ({
   authBtnStyle,
@@ -50,7 +50,13 @@ const AppleButton = ({
     if (isErrorRegister && isAuthenticated) {
       deleteCookie("social_type");
       deleteCookie("search_query");
+      deleteCookie("isCalled");
       dispatch(setSearchQuery(null));
+      dispatch(setAllSearchData([]));
+      dispatch(setSpaceSearchData([]));
+      dispatch(setAllGeneralData([]));
+      dispatch(setSearch(""));
+      dispatch(setName(""));
       toast.error(errorRegister?.data?.message);
     }
     if (isSuccessRegister && isAuthenticated) {

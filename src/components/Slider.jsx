@@ -15,7 +15,7 @@ const DynamicPaginationSwiper = ({ onClick, slides }) => {
       className="mySwiper"
       style={{ width: "100%", cursor: onClick ? "pointer" : "default" }}
     >
-      {slides.map((slideImage, index) => (
+      {slides?.map((slideImage, index) => (
         <SwiperSlide key={index}>
           <div className="slide-content" style={{ width: "100%", height: "700px" }}>
             <figure style={{ width: "100%", height: "100%" }} role="slider-images" aria-labelledby="slider-images-figcaption">

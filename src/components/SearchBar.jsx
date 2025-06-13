@@ -12,13 +12,41 @@ import {
   useTheme,
 } from "@mui/material";
 
-import { search } from "../assets";
+import SearchIconBox from "./SearchIconBox";
 
-import { setAllCategoriesNotSearch, setSearchQuery } from "../store/slices/search";
+import {
+  setAllCategoriesNotSearch,
+  setSearchQuery,
+  setSearchRecall,
+} from "../store/slices/search";
 
-import { getCookie, setCookie } from "../utils";
+import { deleteCookie, getCookie, setCookie } from "../utils";
 
 import { useGetGeneralCategoriesQuery } from "../services/general";
+import { brandIcon, flag, search, spaceIcon } from "../assets";
+import { setActivityPageNumber } from "../store/slices/activity";
+
+const icons = [
+  // { icon: allIconLight, type: "not" },
+  {
+    icon: brandIcon,
+    bg: "rgba(196, 119, 127, 0.2)",
+    activeBG: "rgba(196, 119, 127, 0.8)",
+    type: "BRAND",
+  },
+  {
+    icon: flag,
+    bg: "rgba(148, 185, 134, 0.2)",
+    activeBG: "rgba(148, 185, 134, 0.8)",
+    type: "EVENT",
+  },
+  {
+    icon: spaceIcon,
+    bg: "rgba(120, 150, 195, 0.2)",
+    activeBG: "rgba(120, 150, 195, 0.8)",
+    type: "SPACE",
+  },
+];
 
 const SearchBar = ({
   label,
@@ -29,24 +57,29 @@ const SearchBar = ({
   helperText,
   error,
   onBlur,
-  // handleFilterDrawer,
-  canType
+  canType,
+  handleKeyDown,
+  filterClick,
+  handleFilterDrawer
 }) => {
   const theme = useTheme();
 
   const isLessThan1281 = useMediaQuery("(max-width:1281px)");
 
-  const token = localStorage.getItem("token")
-  const searchQuery = getCookie("search_query")
+  const token = localStorage.getItem("token");
+  const searchQuery = getCookie("search_query");
 
-  // const { pathname } = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const {search_query} = useSelector(state => state.search)
+  const { pathname } = useLocation();
+
+  const { search_query, generalSearchLoading } = useSelector(
+    (state) => state.search
+  );
 
   const { data } = useGetGeneralCategoriesQuery(undefined, {
-    skip: !token || searchQuery || search_query, // pathname === "/search",
+    skip: !token || searchQuery || search_query,
   });
 
   useEffect(() => {
@@ -73,17 +106,28 @@ const SearchBar = ({
         display: "flex",
         flexDirection: "column",
         rowGap: "8px",
-        // cursor: pathname !== "/search" ? "pointer" : "default",
-        cursor: !canType && !(searchQuery || search_query) ? "pointer" : "default",
+        cursor: !canType && !(searchQuery || search_query) ? "pointer" : "text",
       }}
       onClick={() => {
-        // if (pathname !== "/search" || isLessThan1281) {
-        //   handleFilterDrawer && handleFilterDrawer();
-        // }
-        if (!canType && !(searchQuery || search_query) || isLessThan1281) {
-          navigate("/activity")
+        if (!canType) {
+          navigate("/activity");
           setCookie("search_query", true);
-          dispatch(setSearchQuery(true))
+          dispatch(setSearchQuery(true));
+          deleteCookie("isCalled");
+          dispatch(setActivityPageNumber(1))
+          
+          if (isLessThan1281 && pathname !== "/activity") {
+              handleFilterDrawer?.();
+              dispatch(setSearchRecall(Date.now()));
+          }
+
+          if (!(searchQuery || search_query)) {
+            dispatch(setSearchRecall(Date.now()));
+          }
+
+          if ((searchQuery || search_query) && pathname !== "/activity") {
+            dispatch(setSearchRecall(Date.now()));
+          }
         }
       }}
     >
@@ -98,20 +142,39 @@ const SearchBar = ({
       <TextField
         type="text"
         name={name}
-        // placeholder={placeholder}
-        placeholder={!(searchQuery || search_query) ? placeholder : "Search Query"}
+        placeholder={
+          !(searchQuery || search_query) ? placeholder : "Search Query"
+        }
         onChange={onInputChange}
         value={value}
         helperText={helperText}
         error={error}
         onBlur={onBlur}
         variant="outlined"
+        onKeyDown={handleKeyDown}
+        disabled={generalSearchLoading}
         InputProps={{
-          readOnly: canType ? false : true,
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton sx={{ pointerEvents: "none" }}>
-                <img src={search} alt="Search Icon" />
+              <IconButton
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                }}
+                disableRipple
+              >
+                {canType ? (
+                  <img src={search} alt="Search Icon" />
+                ) : (
+                  icons.map((icon) => (
+                    <SearchIconBox
+                      key={icon.type}
+                      icon={icon}
+                      filterClick={filterClick}
+                    />
+                  ))
+                )}
               </IconButton>
             </InputAdornment>
           ),
@@ -122,12 +185,14 @@ const SearchBar = ({
               color: theme.palette.primary.main,
               fontWeight: "500",
               fontSize: "16px",
-              // cursor: pathname !== "/search" ? "pointer" : "default",
-              cursor: !canType && !(searchQuery || search_query) ? "pointer" : canType ? 'text' : "default",
+              cursor:
+                !canType && !(searchQuery || search_query) ? "pointer" : "text",
 
               "& input": {
-                // cursor: pathname !== "/search" ? "pointer" : "default",
-                cursor: !canType && !(searchQuery || search_query) ? "pointer" : canType ? 'text' : "default",
+                cursor:
+                  !canType && !(searchQuery || search_query)
+                    ? "pointer"
+                    : "text",
               },
             },
           },
@@ -138,17 +203,3 @@ const SearchBar = ({
 };
 
 export default SearchBar;
-
-// "&.searchBar": {
-//     border: "1px solid #D1DBD7",
-//     borderRadius: "5px",
-//     height: "48px",
-//     color: "red",
-//     fontSize: "16px",
-//     fontWeight: "500",
-//     backgroundColor: "red",
-//     padding: " 0px 15px",
-//     ":focus": {
-//       border: "1px solid #D1DBD7",
-//     },
-//   },

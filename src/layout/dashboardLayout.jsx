@@ -4,17 +4,24 @@ import { useEffect, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./sidebar";
 import { getFullSidebar, getSmallSidebar, sidebarRoutes } from "../constant";
-import { addHyphenToName, deleteCookie, getCookie, useClickOutside } from "../utils";
+import { addHyphenToName, deleteCookie, getCookie, setCookie, useClickOutside } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setActivityPageNumber,
+  setActivityRecall,
   setAllActivityData,
   setSpaceData,
 } from "../store/slices/activity";
 import {
   emptyFilters,
+  setAllGeneralData,
+  setAllSearchData,
+  setName,
+  setSearch,
   setSearchQuery,
+  setSearchRecall,
   setShouldReturn,
+  setSpaceSearchData,
 } from "../store/slices/search";
 import { setIsBrand, setObjectForNewBrand, updateBrands } from "../store/slices/brand";
 import { setIsSpace, setObjectForNewSpace, updateSpace } from "../store/slices/space";
@@ -22,6 +29,7 @@ import { setIsEvent, setObjectForNewEvent, updateEvents } from "../store/slices/
 import { useNewBrandMutation } from "../services/brands";
 import { useNewSpaceMutation } from "../services/space";
 import { useNewEventMutation } from "../services/events";
+import { setFromSidebar } from "../store/slices/chat";
 
 const DashboardLayout = ({ isTokenChecking }) => {
   const { user } = useSelector((state) => state.auth);
@@ -60,6 +68,12 @@ const DashboardLayout = ({ isTokenChecking }) => {
     (item) =>
       (!item?.link && item.title === "Profile") || item?.link === currentPath
   );
+
+  useEffect(() => {
+    if (pathname !== "/activity") {
+      deleteCookie("isCalled");
+    }
+  }, [pathname]);
 
   // if (loading || isTokenChecking) {
   //   return <SplashScreen />;
@@ -135,6 +149,10 @@ const DashboardLayout = ({ isTokenChecking }) => {
     };
 
     const handlePopstate = async () => {
+      dispatch(setActivityRecall(Date.now()));
+      dispatch(setSearchRecall(Date.now()));
+      dispatch(setActivityPageNumber(1));
+
       if (isBrand && objectForNewBrand) {
         dispatch(setIsBrand(false));
         await callPostBrand(objectForNewBrand, "DRAFT", "brand");
@@ -275,19 +293,33 @@ const DashboardLayout = ({ isTokenChecking }) => {
                   onClick={() => {
                     deleteCookie("search_query");
                     dispatch(setSearchQuery(null));
+                    dispatch(setAllSearchData([]));
+                    dispatch(setSpaceSearchData([]));
+                    dispatch(setAllGeneralData([]));
+                    dispatch(setSearch(""));
+                    dispatch(setName(""));
                     dispatch(setShouldReturn(false));
                     dispatch(emptyFilters());
+                    localStorage.removeItem("scrollPosition");
+                    dispatch(setActivityPageNumber(1));
+                    
                     if (item.title === "Profile") {
+                      deleteCookie("isCalled");
                       navigate(`/profile/${addHyphenToName(user?.name)}`, { state: { id: user?.id } });
                       setActive(false);
                       return;
                     }
 
                     if (item.title !== "Activity") {
-                      localStorage.removeItem("scrollPosition");
                       dispatch(setAllActivityData([]));
                       dispatch(setSpaceData([]));
-                      dispatch(setActivityPageNumber(1));
+                      deleteCookie("isCalled");
+                    }
+
+                    if (item.title === "Activity" && !getCookie("isCalled")) {
+                      dispatch(setActivityRecall(Date.now()));
+
+                      setCookie("isCalled", true);
                     }
 
                     localStorage.removeItem("searchScrollPosition");

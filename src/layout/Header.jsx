@@ -37,10 +37,26 @@ import Notification from "../components/Notification";
 import Filters from "../components/Filters";
 import { emptyGoToMessage, emptyNotification, setFromNotification } from "../store/slices/notification";
 import { useAuth0 } from "@auth0/auth0-react";
-import { emptyFilters, setSearchQuery, setShouldReturn } from "../store/slices/search";
+import {
+  emptyCategoryNames,
+  emptyFilters,
+  setAllFilterCategories,
+  setAllGeneralData,
+  setAllSearchData,
+  setEntity,
+  setName,
+  setPageNumber,
+  setSearch,
+  setSearchQuery,
+  setSearchRecall,
+  setSkip,
+  setSpaceSearchData,
+} from "../store/slices/search";
+import { setActivityPageNumber } from "../store/slices/activity";
 
 const Header = ({ isLogin }) => {
   const isLessThan1281 = useMediaQuery("(max-width:1281px)");
+  const isLessThanEqual768 = useMediaQuery("(max-width:768px)");
   
   const getInquiryCount = getCookie("newInquiry") || 0;
   const getNotificationCount = getCookie("newNotification") || 0;
@@ -49,7 +65,9 @@ const Header = ({ isLogin }) => {
 
   const { count, countInquiry } = useSelector((state) => state.notification);
   const userData = useSelector((state) => state.auth);
-  const { search_query } = useSelector((state) => state.search);
+  const { search_query, parameters, allFilterCategories, search,allData } = useSelector(
+    (state) => state.search
+  );
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -70,18 +88,13 @@ const Header = ({ isLogin }) => {
 
   const { logout: logoutAuth } = useAuth0();
 
-  // useEffect(() => {
-  //   if ((searchQuery || search_query) && isLessThan1281) {
-  //     setOpenFilterDrawer(true);
-  //   }
-  // }, [searchQuery, search_query, isLessThan1281]);
-
   const handleLogout = () => {
     setCookie("logout", true);
     logoutAuthUtils(logoutAuth)
     
     deleteCookie("search_query");
-    dispatch(setSearchQuery(null));
+    deleteCookie("isCalled");
+    removeForSearch();
 
     dispatch(logoutFunc());
     dispatch(removeMychat());
@@ -100,16 +113,22 @@ const Header = ({ isLogin }) => {
   };
 
   const handleFilterDrawer = () => {
-    setCookie("search_query")
+    setCookie("search_query", true);
     dispatch(setSearchQuery(true))
     setOpenFilterDrawer(true);
   };
 
   const handleCloseFilterDrawer = () => {
-    deleteCookie("search_query")
-    dispatch(setSearchQuery(null))
-    dispatch(emptyFilters())
     setOpenFilterDrawer(false)
+  };
+
+  const removeForSearch = () => {
+    dispatch(setSearchQuery(null));
+    dispatch(setAllSearchData([]));
+    dispatch(setSpaceSearchData([]));
+    dispatch(setAllGeneralData([]));
+    dispatch(setSearch(""));
+    dispatch(setName(""));
   };
 
   const iconClick = (type) => {
@@ -145,26 +164,69 @@ const Header = ({ isLogin }) => {
       }
     };
 
-  const addPopuptabs = [
-    {
-      img: brand,
-      hoverImg: brandHover,
-      title: "Brand",
-      func: () => handleNavigate("/new-brand"),
-    },
-    {
-      img: event,
-      hoverImg: eventHover,
-      title: "Event",
-      func: () => handleNavigate("/new-event"),
-    },
-    {
-      img: space,
-      hoverImg: spaceHover,
-      title: "Space",
-      func: () => handleNavigate("/new-space"),
-    },
-  ];
+    const handleKeyDown = (event) => {
+      if (event.key === "Enter") {
+        filterClick({ type: "BRAND" });
+        dispatch(setName(search));
+      }
+    };
+
+    const filterClick = (entity) => {
+      if (
+        entity.type === parameters.entity &&
+        search.toLowerCase() === parameters.name.toLowerCase()
+      ) {
+        return;
+      }
+
+      const updatedCategories = allFilterCategories.map((category) => {
+        return { ...category, selected: false };
+      });
+
+      dispatch(setAllFilterCategories(updatedCategories));
+      dispatch(setPageNumber(1));
+
+      commonReset();
+
+      dispatch(emptyCategoryNames());
+      dispatch(setEntity(entity.type));
+      dispatch(setName(search));
+      dispatch(setSearchRecall(Date.now()));
+    };
+
+    const commonReset = () => {
+      dispatch(setSkip(false));
+      dispatch(setAllSearchData([]));
+      dispatch(setSpaceSearchData([]));
+      dispatch(setAllGeneralData([]));
+    };
+
+    useEffect(() => {
+      if (!isLessThan1281 && openFilterDrawer) {
+        handleCloseFilterDrawer();
+      }
+    }, [isLessThan1281, openFilterDrawer]);
+
+    const addPopuptabs = [
+      {
+        img: brand,
+        hoverImg: brandHover,
+        title: "Brand",
+        func: () => handleNavigate("/new-brand"),
+      },
+      {
+        img: event,
+        hoverImg: eventHover,
+        title: "Event",
+        func: () => handleNavigate("/new-event"),
+      },
+      {
+        img: space,
+        hoverImg: spaceHover,
+        title: "Space",
+        func: () => handleNavigate("/new-space"),
+      },
+    ];
 
   const profilePopuptabs = [
     {
@@ -282,7 +344,7 @@ const Header = ({ isLogin }) => {
             className="logo"
             style={{ cursor: isLogin ? "pointer" : "default" }}
             onClick={() => {
-              handleCloseFilterDrawer()
+              handleCloseFilterDrawer();
 
               isLogin && navigate("/activity");
             }}
@@ -301,31 +363,67 @@ const Header = ({ isLogin }) => {
                 <SearchBar
                   name={"query"}
                   placeholder={"Search..."}
-                  // handleFilterDrawer={handleFilterDrawer}
+                  onInputChange={(e) => {
+                    const value = e.target.value;
+                    if (value.length === 0) {
+                      dispatch(setName(""));
+                    }
+                    dispatch(setSearch(value));
+                  }}
+                  value={search}
+                  handleKeyDown={handleKeyDown}
+                  filterClick={filterClick}
+                  handleFilterDrawer={handleFilterDrawer}
                 />
               </div>
             </div>
           )}
           {isLogin ? (
             <ul style={{ position: "relative" }} className="nav-links2">
-              <li className="add_filter">
-                <Button
-                  sx={{
-                    backgroundColor: "rgb(0, 20, 28, 0.4)",
-                    width: "32px",
-                    height: "32px",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    borderRadius: "5px",
-                    cursor: "pointer",
-                    display: "flex",
-                    position: "relative",
-                    minWidth: "auto",
-                  }}
-                >
-                  <FilterListIcon onClick={() => handleFilterDrawer()} />
-                </Button>
-              </li>
+              {(isLessThanEqual768 ||
+                (pathname === "/activity" &&
+                  (searchQuery || search_query))) && (
+                <li className="add_filter">
+                  <Button
+                    sx={{
+                      backgroundColor: allData?.length
+                        ? "#00141C"
+                        : "rgb(0, 20, 28, 0.4)",
+                      width: "32px",
+                      height: "32px",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      borderRadius: "5px",
+                      cursor: "pointer",
+                      display: "flex",
+                      position: "relative",
+                      minWidth: "auto",
+                    }}
+                  >
+                    <FilterListIcon
+                      onClick={() => {
+                        navigate("/activity");
+                        setCookie("search_query", true);
+                        dispatch(setSearchQuery(true));
+                        handleFilterDrawer();
+                        deleteCookie("isCalled");
+                        dispatch(setActivityPageNumber(1))
+                        
+                        if (pathname !== "/activity" && isLessThanEqual768) {
+                          dispatch(setSearchRecall(Date.now()));
+                        }
+
+                        if (
+                          !(searchQuery || search_query) &&
+                          isLessThanEqual768
+                        ) {
+                          dispatch(setSearchRecall(Date.now()));
+                        }
+                      }}
+                    />
+                  </Button>
+                </li>
+              )}
 
               <li ref={addRef}>
                 <BadgeComp
@@ -427,11 +525,7 @@ const Header = ({ isLogin }) => {
 
       <Drawer
         anchor="right"
-        open={
-          (searchQuery || search_query) && isLessThan1281
-            ? true
-            : openFilterDrawer
-        }
+        open={openFilterDrawer}
         onClose={() => handleCloseFilterDrawer()}
         sx={{
           "& .MuiPaper-root": {
@@ -439,7 +533,10 @@ const Header = ({ isLogin }) => {
           },
         }}
       >
-        <Filters handleCloseFilterDrawer={handleCloseFilterDrawer} />
+        <Filters
+          handleCloseFilterDrawer={handleCloseFilterDrawer}
+          handleFilterDrawer={handleFilterDrawer}
+        />
       </Drawer>
     </>
   );

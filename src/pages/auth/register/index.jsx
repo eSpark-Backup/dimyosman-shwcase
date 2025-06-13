@@ -16,7 +16,7 @@ import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
 import GoogleButton from "../../../components/SocialButtons/GoogleButton";
 import { deleteCookie, getCookie, logoutAuthUtils, removeActiveNotifications, removeNewInquiry } from "../../../utils";
 import { emptyNotification } from '../../../store/slices/notification';
-import { setSearchQuery } from '../../../store/slices/search';
+import { setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setSpaceSearchData } from '../../../store/slices/search';
 
 const AUTH0_APP_DOMAIN = import.meta.env.VITE_AUTH0_APP_DOMAIN;
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_AUTH0_GOOGLE_APP_CLIENT_ID;
@@ -42,7 +42,13 @@ const Register = () => {
       setTimeout(() => {
         deleteCookie("logout");
         deleteCookie("search_query");
+        deleteCookie("isCalled");
         dispatch(setSearchQuery(null));
+        dispatch(setAllSearchData([]));
+        dispatch(setSpaceSearchData([]));
+        dispatch(setAllGeneralData([]));
+        dispatch(setSearch(""));
+        dispatch(setName(""));
         deleteCookie("social_type");
       }, 10);
     }
