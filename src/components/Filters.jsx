@@ -265,6 +265,8 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
 
     dispatch(setCategoryNames(selectedNames));
     dispatch(setSkip(false));
+    dispatch(setSearchRecall(Date.now()))
+    isLessThan769 && handleCloseFilterDrawer?.();
   };
 
   const handleSelectPlace = (place) => {

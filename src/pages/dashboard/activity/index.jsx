@@ -15,7 +15,7 @@ import { ActivityCard } from "../../../components";
 import SpaceInquireModal from "../../../components/SpaceInquireModal";
 import Filters from "../../../components/Filters";
 
-import { getCookie, setCookie } from "../../../utils";
+import { deleteCookie, getCookie, setCookie } from "../../../utils";
 
 import { useGetActivityDataQuery } from "../../../services/activity";
 import { setActivityPageNumber } from "../../../store/slices/activity";
@@ -42,17 +42,18 @@ const Activity = () => {
 
   const [total, setTotal] = useState(0);
 
-  const { data, isSuccess, isFetching, isLoading } = useGetActivityDataQuery(
-    {
-      page,
-      pageSize: 10,
-      recallActivity,
-    },
-    { skip: !!(searchQuery || search_query) },
-    {
-      refetchOnMountOrArgChange: !(searchQuery || search_query),
-    }
-  );
+  const { data, isSuccess, isFetching, isLoading, refetch } =
+    useGetActivityDataQuery(
+      {
+        page,
+        pageSize: 10,
+        recallActivity,
+      },
+      {
+        skip: !!(searchQuery || search_query),
+        refetchOnMountOrArgChange: !(searchQuery || search_query),
+      }
+    );
 
   const {
     data: generalData,
@@ -61,8 +62,8 @@ const Activity = () => {
     isFetching: isGeneralDataFetching,
   } = useGetGeneralSearchQuery(
     { parameters, page, pageSize: 10, recallSearch },
-    { skip: !(searchQuery || search_query) },
     {
+      skip: !(searchQuery || search_query),
       refetchOnMountOrArgChange: searchQuery || search_query,
     }
   );
