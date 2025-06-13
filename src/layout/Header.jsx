@@ -190,6 +190,7 @@ const Header = ({ isLogin }) => {
       dispatch(emptyCategoryNames());
       dispatch(setEntity(entity.type));
       dispatch(setName(search));
+      dispatch(setSearchRecall(Date.now()));
     };
 
     const commonReset = () => {

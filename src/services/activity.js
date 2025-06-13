@@ -18,8 +18,6 @@ export const activityApi = api.injectEndpoints({
                 };
             },
         }),
-        
-
     }),
 });
 

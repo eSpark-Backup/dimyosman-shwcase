@@ -19,6 +19,7 @@ import {
   setName,
   setSearch,
   setSearchQuery,
+  setSearchRecall,
   setShouldReturn,
   setSpaceSearchData,
 } from "../store/slices/search";
@@ -142,6 +143,10 @@ const DashboardLayout = ({ isTokenChecking }) => {
     };
 
     const handlePopstate = async () => {
+      dispatch(setActivityRecall(Date.now()));
+      dispatch(setSearchRecall(Date.now()));
+      dispatch(setActivityPageNumber(1));
+
       if (isBrand && objectForNewBrand) {
         dispatch(setIsBrand(false));
         await callPostBrand(objectForNewBrand, "DRAFT", "brand");
@@ -289,6 +294,7 @@ const DashboardLayout = ({ isTokenChecking }) => {
                     dispatch(setName(""));
                     dispatch(setShouldReturn(false));
                     dispatch(emptyFilters());
+                    localStorage.removeItem("scrollPosition");
                     
                     if (item.title === "Profile") {
                       deleteCookie("isCalled");
@@ -298,7 +304,6 @@ const DashboardLayout = ({ isTokenChecking }) => {
                     }
 
                     if (item.title !== "Activity") {
-                      localStorage.removeItem("scrollPosition");
                       dispatch(setAllActivityData([]));
                       dispatch(setSpaceData([]));
                       dispatch(setActivityPageNumber(1));

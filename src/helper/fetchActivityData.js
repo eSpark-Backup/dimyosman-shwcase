@@ -12,7 +12,7 @@ export const fetchActivityData = async ({
   setTotal,
   setHasMore,
   setHasFetchedData,
-  isSuccess
+  isSuccess,
 }) => {
   if (!isSuccess) return;
 
@@ -150,21 +150,28 @@ export const fetchActivityData = async ({
       })
     );
 
-    const mergedData = [...allActivityData, ...updatedData];
+    if (page === 1) {
+      dispatch(setAllActivityData(updatedData));
+      dispatch(setSpaceData(data?.data?.activity));
+    } else {
+      const mergedData = [...allActivityData, ...updatedData];
 
-    const mergedSpacesData = [
-      ...activitySpaceData,
-      ...data?.data?.activity,
-    ].filter(
-      (item, index, self) => index === self.findIndex((t) => t?.id === item?.id)
-    );
+      const mergedSpacesData = [
+        ...activitySpaceData,
+        ...data?.data?.activity,
+      ].filter(
+        (item, index, self) =>
+          index === self.findIndex((t) => t?.id === item?.id)
+      );
 
-    const uniqueData = Array.from(
-      new Map(mergedData.map((item) => [item.id, item])).values()
-    );
+      const uniqueData = Array.from(
+        new Map(mergedData.map((item) => [item.id, item])).values()
+      );
 
-    dispatch(setAllActivityData(uniqueData));
-    dispatch(setSpaceData(mergedSpacesData));
+      dispatch(setAllActivityData(uniqueData));
+      dispatch(setSpaceData(mergedSpacesData));
+    }
+
     setTotal(data?.data?.pagination?.totalItems);
     setHasMore(
       data?.data?.pagination?.currentPage < data?.data?.pagination?.totalPages
