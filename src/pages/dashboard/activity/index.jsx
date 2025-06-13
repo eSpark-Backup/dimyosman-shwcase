@@ -22,7 +22,10 @@ import { setActivityPageNumber } from "../../../store/slices/activity";
 import { fetchActivityData } from "../../../helper/fetchActivityData";
 import { fetchSearchData } from "../../../helper/fetchSearchData";
 import { useGetGeneralSearchQuery } from "../../../services/general";
-import { setAllGeneralData, setAllGeneralSearchLoading, setSearchRecall } from "../../../store/slices/search";
+import {
+  setAllGeneralData,
+  setAllGeneralSearchLoading,
+} from "../../../store/slices/search";
 
 const Activity = () => {
   const searchQuery = getCookie("search_query");
@@ -35,7 +38,7 @@ const Activity = () => {
     allData,
     spaceData,
     locationStart,
-    recallSearch
+    recallSearch,
   } = useSelector((state) => state.search);
   const { allActivityData, activitySpaceData, page, recallActivity } =
     useSelector((state) => state.activity);
@@ -48,8 +51,8 @@ const Activity = () => {
       pageSize: 10,
       recallActivity,
     },
-    { skip: !!(searchQuery || search_query) },
     {
+      skip: !!(searchQuery || search_query),
       refetchOnMountOrArgChange: !(searchQuery || search_query),
     }
   );
@@ -61,8 +64,8 @@ const Activity = () => {
     isFetching: isGeneralDataFetching,
   } = useGetGeneralSearchQuery(
     { parameters, page, pageSize: 10, recallSearch },
-    { skip: !(searchQuery || search_query) },
     {
+      skip: !(searchQuery || search_query),
       refetchOnMountOrArgChange: searchQuery || search_query,
     }
   );
@@ -179,7 +182,7 @@ const Activity = () => {
     allActivityData?.length,
     searchQuery,
     search_query,
-    page
+    page,
   ]);
 
   useEffect(() => {
