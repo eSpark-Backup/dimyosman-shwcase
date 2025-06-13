@@ -1,25 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Box, Stack, Typography } from "@mui/material";
 
 const OutlinedTabs = ({ tabs, onTabChange }) => {
-  const [selectedTab, setSelectedTab] = useState(tabs[0]);
-  const [renderedComponent, setRenderedComponent] = useState(null);
+  const visibleTabs = tabs.filter((tab) => tab.show !== false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const selectedTab = visibleTabs[selectedIndex];
 
-  useEffect(() => {
-    if (typeof tabs[0].component === "function") {
-      if (selectedTab && selectedTab.component) {
-        setRenderedComponent(<selectedTab.component {...selectedTab.props} />);
-      }
-    } else {
-      setRenderedComponent(selectedTab.component);
-    }
-
-    if (onTabChange) {
-      onTabChange(selectedTab);
-    }
-  }, [selectedTab, onTabChange]);
-
-  const newtabs = tabs.filter(item => item.show !== false)
+  const handleTabChange = (index) => {
+    setSelectedIndex(index);
+    if (onTabChange) onTabChange(visibleTabs[index]);
+  };
 
   return (
     <Box>
@@ -28,15 +18,16 @@ const OutlinedTabs = ({ tabs, onTabChange }) => {
         direction="row"
         justifyContent={{ xs: "flex-start", md: "space-between" }}
         alignItems="center"
-        sx={{
-          overflowX: "auto",
-        }}
+        sx={{ overflowX: "auto" }}
       >
-        {newtabs.map((tab) => {
-          const active = tab.label === selectedTab.label;
-          return  tab?.show === false ? null : <Box
+        {visibleTabs.map((tab, index) => {
+          const active = index === selectedIndex;
+          return (
+            <Box
+              key={tab.label}
+              onClick={() => handleTabChange(index)}
               sx={{
-                width: { xs: "150px", md: `${100 / newtabs.length}%` },
+                width: { xs: "150px", md: `${100 / visibleTabs.length}%` },
                 flexShrink: 0,
                 textAlign: "center",
                 cursor: "pointer",
@@ -50,15 +41,22 @@ const OutlinedTabs = ({ tabs, onTabChange }) => {
                   borderRadius: "5px 5px 0 0",
                 },
               }}
-              onClick={() => setSelectedTab(tab)}
-              key={tab.label}
             >
-              <Typography fontWeight={600} fontSize={16}>{tab.label}</Typography>
+              <Typography fontWeight={600} fontSize={16}>
+                {tab.label}
+              </Typography>
             </Box>
+          );
         })}
       </Stack>
+
       <Box marginY={2} paddingX={2}>
-        {renderedComponent}
+        {/* 👇 Always fresh component render */}
+        {typeof selectedTab.component === "function" ? (
+          <selectedTab.component {...selectedTab.props} />
+        ) : (
+          selectedTab.component
+        )}
       </Box>
     </Box>
   );

@@ -114,7 +114,7 @@ const Details = ({ spaceInquire, details, myProfile }) => {
               {overview}
             </Typography>
           ))}
-          {details.feature && (
+          {details?.feature && (
             <Box
               sx={{
                 marginTop: 2,
