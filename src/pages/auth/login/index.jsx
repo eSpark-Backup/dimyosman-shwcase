@@ -15,9 +15,10 @@ import { useGetMyChatsQuery } from "../../../services/chats";
 import { logout as logoutFunc } from "../../../store/slices/auth";
 import { removeMychat } from "../../../store/slices/chat";
 import GoogleButton from "../../../components/SocialButtons/GoogleButton";
-import { deleteCookie, getCookie, logoutAuthUtils, removeActiveNotifications, removeNewInquiry } from "../../../utils";
+import { deleteCookie, getCookie, logoutAuthUtils, removeActiveNotifications, removeNewInquiry, setCookie } from "../../../utils";
 import { emptyNotification } from "../../../store/slices/notification";
 import { setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setSpaceSearchData } from "../../../store/slices/search";
+import { setActivityPageNumber, setActivityRecall } from "../../../store/slices/activity";
 
 const AUTH0_APP_DOMAIN = import.meta.env.VITE_AUTH0_APP_DOMAIN;
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_AUTH0_GOOGLE_APP_CLIENT_ID;
@@ -88,6 +89,8 @@ const Login = () => {
     }
     if (isSuccess) {
       refetch()
+      dispatch(setActivityRecall(Date.now()))
+      dispatch(setActivityPageNumber(1))
       navigate("/activity");
     }
   }, [isError, isSuccess, navigate, error]);

@@ -15,17 +15,14 @@ import { ActivityCard } from "../../../components";
 import SpaceInquireModal from "../../../components/SpaceInquireModal";
 import Filters from "../../../components/Filters";
 
-import { getCookie, setCookie } from "../../../utils";
+import { deleteCookie, getCookie, setCookie } from "../../../utils";
 
 import { useGetActivityDataQuery } from "../../../services/activity";
 import { setActivityPageNumber } from "../../../store/slices/activity";
 import { fetchActivityData } from "../../../helper/fetchActivityData";
 import { fetchSearchData } from "../../../helper/fetchSearchData";
 import { useGetGeneralSearchQuery } from "../../../services/general";
-import {
-  setAllGeneralData,
-  setAllGeneralSearchLoading,
-} from "../../../store/slices/search";
+import { setAllGeneralData, setAllGeneralSearchLoading, setSearchRecall } from "../../../store/slices/search";
 
 const Activity = () => {
   const searchQuery = getCookie("search_query");
@@ -38,24 +35,25 @@ const Activity = () => {
     allData,
     spaceData,
     locationStart,
-    recallSearch,
+    recallSearch
   } = useSelector((state) => state.search);
   const { allActivityData, activitySpaceData, page, recallActivity } =
     useSelector((state) => state.activity);
 
   const [total, setTotal] = useState(0);
 
-  const { data, isSuccess, isFetching, isLoading } = useGetActivityDataQuery(
-    {
-      page,
-      pageSize: 10,
-      recallActivity,
-    },
-    {
-      skip: !!(searchQuery || search_query),
-      refetchOnMountOrArgChange: !(searchQuery || search_query),
-    }
-  );
+  const { data, isSuccess, isFetching, isLoading, refetch } =
+    useGetActivityDataQuery(
+      {
+        page,
+        pageSize: 10,
+        recallActivity,
+      },
+      {
+        skip: !!(searchQuery || search_query),
+        refetchOnMountOrArgChange: !(searchQuery || search_query),
+      }
+    );
 
   const {
     data: generalData,
@@ -182,7 +180,7 @@ const Activity = () => {
     allActivityData?.length,
     searchQuery,
     search_query,
-    page,
+    page
   ]);
 
   useEffect(() => {
