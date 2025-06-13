@@ -52,6 +52,7 @@ import {
   setSkip,
   setSpaceSearchData,
 } from "../store/slices/search";
+import { setActivityPageNumber } from "../store/slices/activity";
 
 const Header = ({ isLogin }) => {
   const isLessThan1281 = useMediaQuery("(max-width:1281px)");
@@ -190,6 +191,7 @@ const Header = ({ isLogin }) => {
       dispatch(emptyCategoryNames());
       dispatch(setEntity(entity.type));
       dispatch(setName(search));
+      dispatch(setSearchRecall(Date.now()));
     };
 
     const commonReset = () => {
@@ -405,6 +407,7 @@ const Header = ({ isLogin }) => {
                         dispatch(setSearchQuery(true));
                         handleFilterDrawer();
                         deleteCookie("isCalled");
+                        dispatch(setActivityPageNumber(1))
                         
                         if (pathname !== "/activity" && isLessThanEqual768) {
                           dispatch(setSearchRecall(Date.now()));

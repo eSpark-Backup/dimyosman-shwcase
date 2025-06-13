@@ -18,7 +18,7 @@ import Filters from "../../../components/Filters";
 import { getCookie, setCookie } from "../../../utils";
 
 import { useGetActivityDataQuery } from "../../../services/activity";
-import { setActivityPageNumber, setActivityRecall } from "../../../store/slices/activity";
+import { setActivityPageNumber } from "../../../store/slices/activity";
 import { fetchActivityData } from "../../../helper/fetchActivityData";
 import { fetchSearchData } from "../../../helper/fetchSearchData";
 import { useGetGeneralSearchQuery } from "../../../services/general";
@@ -42,18 +42,17 @@ const Activity = () => {
 
   const [total, setTotal] = useState(0);
 
-  const { data, isSuccess, isError, error, isFetching, isLoading} =
-    useGetActivityDataQuery(
-      {
-        page,
-        pageSize: 10,
-        recallActivity,
-      },
-      { skip: !!(searchQuery || search_query) },
-      {
-        refetchOnMountOrArgChange: !(searchQuery || search_query),
-      }
-    );
+  const { data, isSuccess, isFetching, isLoading } = useGetActivityDataQuery(
+    {
+      page,
+      pageSize: 10,
+      recallActivity,
+    },
+    { skip: !!(searchQuery || search_query) },
+    {
+      refetchOnMountOrArgChange: !(searchQuery || search_query),
+    }
+  );
 
   const {
     data: generalData,
@@ -145,7 +144,16 @@ const Activity = () => {
     };
 
     handleFetch(); // Call the async function
-  }, [page, data?.data, generalData?.data, searchQuery, search_query, parameters]);
+  }, [
+    page,
+    data?.data,
+    generalData?.data,
+    searchQuery,
+    search_query,
+    parameters,
+    recallActivity,
+    recallSearch,
+  ]);
 
   useEffect(() => {
     // Reset the timer if loading starts

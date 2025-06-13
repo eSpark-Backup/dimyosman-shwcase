@@ -55,6 +55,7 @@ import {
   setAllGeneralData,
   setLocationStart,
   setSearch,
+  setSearchRecall,
 } from "../store/slices/search";
 
 import { getCookie } from "../utils";
@@ -217,6 +218,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
     dispatch(emptyCategoryNames());
     dispatch(setEntity(entity.type));
     dispatch(setName(search));
+    dispatch(setSearchRecall(Date.now()));
   };
 
   const handleSearch = (e) => {
