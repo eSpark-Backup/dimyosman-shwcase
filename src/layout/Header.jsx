@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Box, Button, Drawer, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
-import FilterListIcon from '@mui/icons-material/FilterList';
+import SearchIcon from '@mui/icons-material/Search';
 import LoginIcon from '@mui/icons-material/Login';
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 import {
@@ -39,18 +39,17 @@ import { emptyGoToMessage, emptyNotification, setFromNotification } from "../sto
 import { useAuth0 } from "@auth0/auth0-react";
 import {
   emptyCategoryNames,
-  emptyFilters,
   setAllFilterCategories,
   setAllGeneralData,
   setAllSearchData,
   setEntity,
   setName,
-  setPageNumber,
+  setRadiusInput,
   setSearch,
   setSearchQuery,
   setSearchRecall,
-  setSkip,
   setSpaceSearchData,
+  setValue,
 } from "../store/slices/search";
 import { setActivityPageNumber } from "../store/slices/activity";
 
@@ -113,8 +112,6 @@ const Header = ({ isLogin }) => {
   };
 
   const handleFilterDrawer = () => {
-    setCookie("search_query", true);
-    dispatch(setSearchQuery(true))
     setOpenFilterDrawer(true);
   };
 
@@ -128,6 +125,8 @@ const Header = ({ isLogin }) => {
     dispatch(setSpaceSearchData([]));
     dispatch(setAllGeneralData([]));
     dispatch(setSearch(""));
+    dispatch(setValue(""));
+    dispatch(setRadiusInput(""));
     dispatch(setName(""));
   };
 
@@ -164,14 +163,41 @@ const Header = ({ isLogin }) => {
       }
     };
 
+    const queryCalled = () => {
+      setCookie("search_query", true);
+      deleteCookie("isCalled");
+      
+      dispatch(setSearchQuery(true));
+
+      pathname !== "/activity" && navigate("/activity");
+    };
+
     const handleKeyDown = (event) => {
       if (event.key === "Enter") {
-        filterClick({ type: "BRAND" });
+        if (search.trim().length === 0) return;
+
+        dispatch(setSearchRecall(Date.now()));
+        dispatch(setActivityPageNumber(1));
+        
+        if (parameters?.entity.trim().length === 0) {
+          dispatch(setEntity("BRAND"));
+        } else {
+          dispatch(setEntity(parameters?.entity));
+        }
+
         dispatch(setName(search));
+
+        if (!(searchQuery || search_query)) {
+          queryCalled();
+        }
       }
     };
 
     const filterClick = (entity) => {
+      if (!(searchQuery || search_query)) {
+        queryCalled();
+      }
+
       if (
         entity.type === parameters.entity &&
         search.toLowerCase() === parameters.name.toLowerCase()
@@ -184,18 +210,17 @@ const Header = ({ isLogin }) => {
       });
 
       dispatch(setAllFilterCategories(updatedCategories));
-      dispatch(setPageNumber(1));
+      dispatch(setSearchRecall(Date.now()));
 
       commonReset();
 
       dispatch(emptyCategoryNames());
       dispatch(setEntity(entity.type));
-      dispatch(setName(search));
-      dispatch(setSearchRecall(Date.now()));
+      dispatch(setActivityPageNumber(1));
+      search?.trim()?.length !== 0 && dispatch(setName(search));
     };
 
     const commonReset = () => {
-      dispatch(setSkip(false));
       dispatch(setAllSearchData([]));
       dispatch(setSpaceSearchData([]));
       dispatch(setAllGeneralData([]));
@@ -386,9 +411,7 @@ const Header = ({ isLogin }) => {
                 <li className="add_filter">
                   <Button
                     sx={{
-                      backgroundColor: allData?.length
-                        ? "#00141C"
-                        : "rgb(0, 20, 28, 0.4)",
+                      backgroundColor: "rgb(0, 20, 28, 0.4)",
                       width: "32px",
                       height: "32px",
                       justifyContent: "center",
@@ -400,25 +423,9 @@ const Header = ({ isLogin }) => {
                       minWidth: "auto",
                     }}
                   >
-                    <FilterListIcon
+                    <SearchIcon
                       onClick={() => {
-                        navigate("/activity");
-                        setCookie("search_query", true);
-                        dispatch(setSearchQuery(true));
                         handleFilterDrawer();
-                        deleteCookie("isCalled");
-                        dispatch(setActivityPageNumber(1))
-                        
-                        if (pathname !== "/activity" && isLessThanEqual768) {
-                          dispatch(setSearchRecall(Date.now()));
-                        }
-
-                        if (
-                          !(searchQuery || search_query) &&
-                          isLessThanEqual768
-                        ) {
-                          dispatch(setSearchRecall(Date.now()));
-                        }
                       }}
                     />
                   </Button>
