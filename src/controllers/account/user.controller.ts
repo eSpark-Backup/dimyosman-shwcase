@@ -840,7 +840,7 @@ export class UserController {
       });
       const { entities: rsvpEvents, raw } = rsvpEventsResult;
 
-      const rsvpCalendarEvents = rsvpEvents.map((rsvp, index) => {
+      const rsvpCalendarEvents = rsvpEvents.flatMap((rsvp, index) => {
         const rawData = raw[index];
         const event = rsvp.event;
         const eventDates: EventDate[] = Array.isArray(event.eventDate)
