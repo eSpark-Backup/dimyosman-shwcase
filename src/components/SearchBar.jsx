@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
 
 import {
   Box,
@@ -14,17 +13,12 @@ import {
 
 import SearchIconBox from "./SearchIconBox";
 
-import {
-  setAllCategoriesNotSearch,
-  setSearchQuery,
-  setSearchRecall,
-} from "../store/slices/search";
+import { setAllCategoriesNotSearch } from "../store/slices/search";
 
-import { deleteCookie, getCookie, setCookie } from "../utils";
+import { getCookie } from "../utils";
 
 import { useGetGeneralCategoriesQuery } from "../services/general";
 import { brandIcon, flag, search, spaceIcon } from "../assets";
-import { setActivityPageNumber } from "../store/slices/activity";
 
 const icons = [
   // { icon: allIconLight, type: "not" },
@@ -60,7 +54,6 @@ const SearchBar = ({
   canType,
   handleKeyDown,
   filterClick,
-  handleFilterDrawer
 }) => {
   const theme = useTheme();
 
@@ -70,9 +63,6 @@ const SearchBar = ({
   const searchQuery = getCookie("search_query");
 
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-
-  const { pathname } = useLocation();
 
   const { search_query, generalSearchLoading } = useSelector(
     (state) => state.search
@@ -106,29 +96,7 @@ const SearchBar = ({
         display: "flex",
         flexDirection: "column",
         rowGap: "8px",
-        cursor: !canType && !(searchQuery || search_query) ? "pointer" : "text",
-      }}
-      onClick={() => {
-        if (!canType) {
-          navigate("/activity");
-          setCookie("search_query", true);
-          dispatch(setSearchQuery(true));
-          deleteCookie("isCalled");
-          dispatch(setActivityPageNumber(1))
-          
-          if (isLessThan1281 && pathname !== "/activity") {
-              handleFilterDrawer?.();
-              dispatch(setSearchRecall(Date.now()));
-          }
-
-          if (!(searchQuery || search_query)) {
-            dispatch(setSearchRecall(Date.now()));
-          }
-
-          if ((searchQuery || search_query) && pathname !== "/activity") {
-            dispatch(setSearchRecall(Date.now()));
-          }
-        }
+        cursor: "text",
       }}
     >
       {label && (
@@ -142,9 +110,7 @@ const SearchBar = ({
       <TextField
         type="text"
         name={name}
-        placeholder={
-          !(searchQuery || search_query) ? placeholder : "Search Query"
-        }
+        placeholder={placeholder}
         onChange={onInputChange}
         value={value}
         helperText={helperText}
@@ -185,14 +151,10 @@ const SearchBar = ({
               color: theme.palette.primary.main,
               fontWeight: "500",
               fontSize: "16px",
-              cursor:
-                !canType && !(searchQuery || search_query) ? "pointer" : "text",
+              cursor: "text",
 
               "& input": {
-                cursor:
-                  !canType && !(searchQuery || search_query)
-                    ? "pointer"
-                    : "text",
+                cursor: "text",
               },
             },
           },

@@ -26,7 +26,11 @@ export const generalCategoriesApi = api.injectEndpoints({
         if (pageSize) queryParams.append("pageSize", pageSize);
         if (page) queryParams.append("page", page);
 
-        if (parameters.entity) queryParams.append("entity", parameters.entity);
+        if (parameters.entity) {
+          queryParams.append("entity", parameters.entity)
+        } else {
+          queryParams.append("entity", "BRAND")
+        };
         if (parameters.name) queryParams.append("name", parameters.name);
 
         if (parameters.long) queryParams.append("long", parameters.long);
