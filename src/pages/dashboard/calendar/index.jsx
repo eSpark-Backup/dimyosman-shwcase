@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import dayjs from "dayjs";
 
@@ -11,8 +12,10 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 
-import { bigCalendar, calenderIconLight } from "../../../assets";
+import { calenderIconLight } from "../../../assets";
 import { useGetCalendarQuery } from "../../../services/calendar";
+
+import { addHyphenToName } from "../../../utils";
 
 const datePickerStyle = {
   borderRadius: "5px",
@@ -53,6 +56,8 @@ const Calendar = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentView, setCurrentView] = useState("dayGridMonth");
   const { data, isLoading, isFetching, isError, error, isSuccess } = useGetCalendarQuery({}, { refetchOnMountOrArgChange: true })
+  const navigate = useNavigate()
+
   useEffect(() => {
     if (isSuccess && data?.data) {
       const fetchedEvents = data?.data?.map((item) => {
@@ -66,6 +71,7 @@ const Calendar = () => {
           end: end, // Use the adjusted end date
           title: item?.title,
           status: now > end.getTime() ? "no" : "yes",
+          id: item?.id,
         };
       });
       setEvents(fetchedEvents);
@@ -245,6 +251,9 @@ const Calendar = () => {
           center: "",
           end: "title",
         }}
+        eventDidMount={(info) => {
+          info.el.style.cursor = "pointer";
+        }}
         datesSet={() => {
           const titleElement = document.querySelector(".fc-toolbar-title");
           const btnType = document.querySelector(".fc-button-active");
@@ -273,7 +282,11 @@ const Calendar = () => {
         editable={false}
         selectable={true}
         dateClick={(info) => console.log(`Clicked on date: ${info.dateStr}`)}
-        eventClick={(info) => console.log(`Event: ${info.event.title}`)}
+        eventClick={(info) =>
+          navigate(`/event/${addHyphenToName(info.event.title)}`, {
+            state: { id: info.event.id },
+          })
+        }
         eventClassNames={(arg) => getEventClassNames(arg.event)}
         viewDidMount={handleViewDidMount}
         slotLabelFormat={{
