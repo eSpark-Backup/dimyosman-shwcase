@@ -1,5 +1,7 @@
 # SHWCASE Web Application
+
 #### Client Name: Dimy Osman
+ 
  
 ## Project Specifications
 

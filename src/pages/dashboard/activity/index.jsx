@@ -22,7 +22,12 @@ import { setActivityPageNumber } from "../../../store/slices/activity";
 import { fetchActivityData } from "../../../helper/fetchActivityData";
 import { fetchSearchData } from "../../../helper/fetchSearchData";
 import { useGetGeneralSearchQuery } from "../../../services/general";
-import { setAllGeneralData, setAllGeneralSearchLoading, setSearchRecall } from "../../../store/slices/search";
+import {
+  setAllGeneralData,
+  setAllGeneralSearchLoading,
+  setSearchQuery,
+} from "../../../store/slices/search";
+import store from "../../../store";
 
 const Activity = () => {
   const searchQuery = getCookie("search_query");
@@ -35,7 +40,7 @@ const Activity = () => {
     allData,
     spaceData,
     locationStart,
-    recallSearch
+    recallSearch,
   } = useSelector((state) => state.search);
   const { allActivityData, activitySpaceData, page, recallActivity } =
     useSelector((state) => state.activity);
@@ -69,6 +74,28 @@ const Activity = () => {
   );
 
   useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (searchQuery) {
+        localStorage.setItem("pageRefresh", true);
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const pageRefresh = localStorage.getItem("pageRefresh");
+
+    if (pageRefresh && searchQuery) {
+      deleteCookie("search_query");
+      dispatch(setSearchQuery(null));
+
+      localStorage.removeItem("pageRefresh");
+    }
+  }, [searchQuery]);
+
+  useEffect(() => {
     dispatch(setAllGeneralSearchLoading(isGeneralDataFetching));
     if (isGeneralDataSuccess) {
       dispatch(setAllGeneralData(generalData?.data));
@@ -93,14 +120,6 @@ const Activity = () => {
       return isGeneralDataLoading && isGeneralDataFetching;
     } else {
       return isLoading && isFetching;
-    }
-  };
-
-  const orLoadingState = () => {
-    if (searchQuery || search_query) {
-      return isGeneralDataLoading || isGeneralDataFetching;
-    } else {
-      return isLoading || isFetching;
     }
   };
 
@@ -180,7 +199,7 @@ const Activity = () => {
     allActivityData?.length,
     searchQuery,
     search_query,
-    page
+    page,
   ]);
 
   useEffect(() => {
@@ -221,7 +240,7 @@ const Activity = () => {
     }
   };
 
-  if (page === 1 && orLoadingState()) {
+  if (page === 1 && (isLoading || isFetching)) {
     return (
       <Box sx={{ width: "100%" }}>
         <LinearProgress />
@@ -250,12 +269,18 @@ const Activity = () => {
         sx={{ display: "flex", justifyContent: "space-between" }}
         spacing={!(searchQuery || search_query) ? 0 : 2}
       >
-        {hasFetchedData &&
-        !isGeneralDataLoading &&
-        (searchQuery || search_query) &&
-        allData?.length === 0 &&
-        showNoData &&
-        !locationStart ? (
+        {page === 1 && (isGeneralDataLoading || isGeneralDataFetching) ? (
+          <Grid item xs={12} lg={7}>
+            <Box sx={{ width: "100%" }}>
+              <LinearProgress />
+            </Box>
+          </Grid>
+        ) : hasFetchedData &&
+          !isGeneralDataLoading &&
+          (searchQuery || search_query) &&
+          allData?.length === 0 &&
+          showNoData &&
+          !locationStart ? (
           <Grid item xs={12} lg={7}>
             <Box sx={{ width: "100%" }}>
               <h1>No Data Found</h1>

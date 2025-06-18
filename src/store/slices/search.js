@@ -5,7 +5,7 @@ const initialState = {
   spaceData: [],
   skip: true,
   parameters: {
-    entity: "BRAND",
+    entity: "",
     name: "",
     locaion: "",
     long: "",
@@ -26,14 +26,20 @@ const initialState = {
   searchName: "",
   generalData: [],
   search: "",
-  locationStart:false,
+  locationStart: false,
   recallSearch: null,
+  value: "",
+  radiusInput: "",
+  suggestions: [],
 };
 
 const slice = createSlice({
   name: "search",
   initialState,
   reducers: {
+    setAllParameters: (state, action) => {
+      state.parameters = { ...state.parameters, ...action.payload };
+    },
     setAllSearchData: (state, action) => {
       state.allData = action.payload;
     },
@@ -61,6 +67,15 @@ const slice = createSlice({
     setSearch: (state, action) => {
       state.search = action.payload;
     },
+    setValue: (state, action) => {
+      state.value = action.payload;
+    },
+    setRadiusInput: (state, action) => {
+      state.radiusInput = action.payload;
+    },
+    setSuggestions: (state, action) => {
+      state.suggestions = action.payload;
+    },
     setLocation: (state, { payload }) => {
       state.parameters.long = payload.long;
       state.parameters.lat = payload.lat;
@@ -83,7 +98,7 @@ const slice = createSlice({
     },
     emptyFilters: (state) => {
       state.parameters = {
-        entity: "BRAND",
+        entity: "",
         name: "",
         locaion: "",
         long: "",
@@ -127,6 +142,7 @@ const slice = createSlice({
 });
 
 export const {
+  setAllParameters,
   setAllSearchData,
   setAllGeneralData,
   setLocationStart,
@@ -136,6 +152,9 @@ export const {
   setEntity,
   setName,
   setSearch,
+  setValue,
+  setRadiusInput,
+  setSuggestions,
   setLocation,
   setAdditional,
   setCategoryNames,
@@ -152,7 +171,7 @@ export const {
   setShouldReturn,
   setGeneralSearching,
   setSearchName,
-  setSearchRecall
+  setSearchRecall,
 } = slice.actions;
 
 export default slice.reducer;

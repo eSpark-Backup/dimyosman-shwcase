@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { toast } from "react-toastify";
 
@@ -19,6 +20,7 @@ import {
 import Input from "./input";
 import CheckBox from "./CheckBox";
 import MapDisplay from "./MapDisplay";
+import SearchBar from "./SearchBar";
 
 import {
   // allIconLight,
@@ -46,9 +48,7 @@ import {
   setCategoryNames,
   setEntity,
   setLocation,
-  setPageNumber,
   setRadius,
-  setSkip,
   setSpaceSearchData,
   setIsTyping,
   setName,
@@ -56,10 +56,11 @@ import {
   setLocationStart,
   setSearch,
   setSearchRecall,
+  setSearchQuery,
 } from "../store/slices/search";
+import { setActivityPageNumber } from "../store/slices/activity";
 
-import { getCookie } from "../utils";
-import SearchBar from "./SearchBar";
+import { deleteCookie, getCookie, setCookie } from "../utils";
 
 const icons = [
   // { icon: allIconLight, type: "not" },
@@ -90,6 +91,8 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
   const isLessThan769 = useMediaQuery("(max-width:768px)");
 
   const dispatch = useDispatch();
+  const navigate = useNavigate()
+  const { pathname } = useLocation();
 
   const {
     parameters,
@@ -109,6 +112,21 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [isSelecting, setIsSelecting] = useState(false);
   const [value, setValue] = useState(parameters?.locaion || "");
+  const [showNoData, setShowNoData] = useState(false)
+
+  useEffect(() => {
+    // Reset the timer if loading starts
+    if ((searchQuery || search_query) && generalSearchLoading) {
+      setShowNoData(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setShowNoData(true);
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [generalSearchLoading, allData?.length, searchQuery, search_query]);
 
   const { data: getLocationData, error } = useGetGeneralLocationQuery(
     { query: value },
@@ -142,7 +160,6 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
 
       commonReset();
 
-      dispatch(setPageNumber(1));
     }
   }, [debouncedRadius, dispatch]);
 
@@ -196,7 +213,20 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
     category.name.toLowerCase().includes(searchCategory.toLowerCase())
   );
 
+  const queryCalled = () => {
+    setCookie("search_query", true);
+    deleteCookie("isCalled");
+
+    dispatch(setSearchQuery(true));
+
+    pathname !== "/activity" && navigate("/activity");
+  };
+
   const filterClick = (entity) => {
+    if (!(searchQuery || search_query) && isLessThan769) {
+      queryCalled();
+    }
+
     if (
       entity.type === parameters.entity &&
       search.toLowerCase() === parameters.name.toLowerCase()
@@ -211,14 +241,13 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
     });
 
     dispatch(setAllFilterCategories(updatedCategories));
-    dispatch(setPageNumber(1));
+    dispatch(setSearchRecall(Date.now()));
 
     commonReset();
 
     dispatch(emptyCategoryNames());
     dispatch(setEntity(entity.type));
     dispatch(setName(search));
-    dispatch(setSearchRecall(Date.now()));
   };
 
   const handleSearch = (e) => {
@@ -261,23 +290,24 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
       .map((cat) => cat.name)
       .join(",");
 
-    dispatch(setPageNumber(1));
 
     dispatch(setCategoryNames(selectedNames));
-    dispatch(setSkip(false));
     dispatch(setSearchRecall(Date.now()))
     isLessThan769 && handleCloseFilterDrawer?.();
   };
 
   const handleSelectPlace = (place) => {
     isLessThan769 && handleCloseFilterDrawer?.();
+
+    if (!(searchQuery || search_query) && isLessThan769) {
+      queryCalled();
+    }
     dispatch(setLocationStart(true));
     setValue(place.description);
     setSuggestions([]);
     setIsSelecting(true);
 
     dispatch(setIsTyping(true));
-    dispatch(setPageNumber(1));
     commonReset();
 
     // Fetch details for selected place
@@ -291,10 +321,14 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
           const formattedAddress = data.results[0].formatted_address;
 
           dispatch(setLocation({ long: lng, lat, locaion: formattedAddress }));
+          if (parameters.entity.trim().length === 0) {
+            dispatch(setEntity("BRAND"));
+          } else {
+            dispatch(setEntity(parameters.entity));
+          }
 
           if (parameters?.lat !== lat || parameters?.long !== lng) {
             commonReset();
-            dispatch(setPageNumber(1));
           }
         }
         setSuggestions([]);
@@ -305,7 +339,6 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
   };
 
   const commonReset = () => {
-    dispatch(setSkip(false));
     dispatch(setAllSearchData([]));
     dispatch(setSpaceSearchData([]));
     dispatch(setAllGeneralData([]));
@@ -317,7 +350,6 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
     setValue("");
     dispatch(setRadius(""));
     dispatch(setIsTyping(false));
-    dispatch(setPageNumber(1));
     resetDebouncedRadius();
     dispatch(setSearchRecall(Date.now()))
   };
@@ -334,9 +366,22 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
 
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
-      isLessThan769 && handleCloseFilterDrawer?.();
-      filterClick({ type: "BRAND" });
+      dispatch(setSearchRecall(Date.now()));
+      dispatch(setActivityPageNumber(1));
+
+      if (parameters?.entity.trim().length === 0) {
+        dispatch(setEntity("BRAND"));
+      } else {
+        dispatch(setEntity(parameters?.entity));
+      }
+
       dispatch(setName(search));
+
+      if (!(searchQuery || search_query)) {
+        queryCalled();
+      }
+
+      isLessThan769 && handleCloseFilterDrawer?.();
     }
   };
 
@@ -427,7 +472,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
               },
             }}
             onClick={() => {
-              if (icon.type !== "not") {
+              if (icon.type !== "not" && !generalSearchLoading) {
                 filterClick(icon);
               }
             }}
@@ -459,13 +504,6 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
           <Input
             sx={inputStyles}
             value={value}
-            readOnly={parameters?.entity?.length === 0 ? true : false}
-            onClick={() => {
-              if (parameters?.entity?.length === 0) {
-                toast.error("Filter is not selected");
-                return;
-              }
-            }}
             onInputChange={(e) => {
               const value = e.target.value;
               if(value.length === 0) {
@@ -476,6 +514,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
             type="text"
             placeholder="Type Address..."
             autoComplete="off"
+            disabled={generalSearchLoading}
             endAdornment={
               <InputAdornment position="end">
                 <IconButton
@@ -556,11 +595,6 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
                 : false
             }
             onClick={() => {
-              if (parameters?.entity?.length === 0) {
-                toast.error("Filter is not selected");
-                return;
-              }
-
               if (!parameters?.lat || !parameters?.long) {
                 toast.error("Please add location first");
                 return;
@@ -577,18 +611,21 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
             }}
             type="number"
             placeholder="10km"
+            disabled={generalSearchLoading}
           />
         </Grid>
       </Grid>
 
-      {isGeneralCategoryLoading || isGeneralCategoryFetching ? (
+      {isGeneralCategoryLoading ||
+      isGeneralCategoryFetching ||
+      generalSearchLoading ? (
         <Box sx={{ width: "100%", mt: 2 }}>
           <LinearProgress />
         </Box>
       ) : (
         <>
           <Box sx={{ width: "100%", height: "411px", mt: 2, mb: 4 }}>
-            {generalSearchLoading ? (
+            {!showNoData ? (
               <Box sx={{ width: "100%" }}>
                 <LinearProgress />
               </Box>
@@ -640,6 +677,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
                   },
                 }}
                 value={searchCategory}
+                disabled={generalSearchLoading}
                 onInputChange={(e) => setSearchCategory(e.target.value)}
                 type="text"
                 placeholder="search Interests..."

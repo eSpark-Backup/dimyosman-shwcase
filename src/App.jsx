@@ -89,12 +89,19 @@ function App() {
     return <Outlet />;
   };
 
+  const PrivateRoute = () => {
+    if (!token) {
+      return <Navigate to="/auth?type=login" />;
+    }
+    return <Outlet />;
+  };
+
   return (
     <>
       <Header isLogin={!!token} />
       <Routes>
-          <Route path="/:type/:name/share" element={<SharedPage />} />
-          
+        <Route path="/:type/:name/share" element={<SharedPage />} />
+
         <Route element={<PublicRoute />}>
           <Route path="/" element={<Navigate to={"/auth?type=login"} />} />
           <Route path="/auth" element={<AuthBox />} />
@@ -103,33 +110,39 @@ function App() {
           <Route path="*" element={<Navigate to={"/auth?type=login"} />} />
         </Route>
 
-        <Route element={<DashboardLayout isTokenChecking={isLoading || isFetching} />}>
-          <Route path="/activity" element={<Activity />} />
-          {/* BRANDS */}
-          <Route path="/my-brands" element={<Brand />} />
-          <Route path="/brand/:name" element={<BrandDetails />} />
-          <Route path="/my-brands/:name" element={<BrandDetails />} />
-          <Route path="/new-brand" element={<NewBrand />} />
-          <Route path="/my-brands/:name/edit" element={<EditBrand />} />
-          {/* {EVENTS} */}
-          <Route path="/my-events" element={<Event />} />
-          <Route path="/my-events/:name" element={<EventDetails />} />
-          <Route path="/event/:name" element={<EventDetails />} />
-          <Route path="/new-event" element={<NewEvent />} />
-          <Route path="/my-events/:name/edit" element={<EditEvent />} />
-          {/* SPACES */}
-          <Route path="/my-spaces" element={<Space />} />
-          <Route path="/space/:name" element={<SpaceDetails />} />
-          <Route path="/my-spaces/:name" element={<SpaceDetails />} />
-          <Route path="/new-space" element={<NewSpace />} />
-          <Route path="/my-spaces/:name/edit" element={<EditSpace />} />
-          {/* OTHERS */}
-          <Route path="/profile/:name" element={<Profile />} />
-          <Route path="/profile/:name/edit" element={<EditProfile />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/message" element={<Message />} />
-          <Route path="/settings" element={<Settings />} />
-          {/* <Route path="/search" element={<Search />} /> */}
+        <Route element={<PrivateRoute />}>
+          <Route
+            element={
+              <DashboardLayout isTokenChecking={isLoading || isFetching} />
+            }
+          >
+            <Route path="/activity" element={<Activity />} />
+            {/* BRANDS */}
+            <Route path="/my-brands" element={<Brand />} />
+            <Route path="/brand/:name" element={<BrandDetails />} />
+            <Route path="/my-brands/:name" element={<BrandDetails />} />
+            <Route path="/new-brand" element={<NewBrand />} />
+            <Route path="/my-brands/:name/edit" element={<EditBrand />} />
+            {/* {EVENTS} */}
+            <Route path="/my-events" element={<Event />} />
+            <Route path="/my-events/:name" element={<EventDetails />} />
+            <Route path="/event/:name" element={<EventDetails />} />
+            <Route path="/new-event" element={<NewEvent />} />
+            <Route path="/my-events/:name/edit" element={<EditEvent />} />
+            {/* SPACES */}
+            <Route path="/my-spaces" element={<Space />} />
+            <Route path="/space/:name" element={<SpaceDetails />} />
+            <Route path="/my-spaces/:name" element={<SpaceDetails />} />
+            <Route path="/new-space" element={<NewSpace />} />
+            <Route path="/my-spaces/:name/edit" element={<EditSpace />} />
+            {/* OTHERS */}
+            <Route path="/profile/:name" element={<Profile />} />
+            <Route path="/profile/:name/edit" element={<EditProfile />} />
+            <Route path="/calendar" element={<Calendar />} />
+            <Route path="/message" element={<Message />} />
+            <Route path="/settings" element={<Settings />} />
+            {/* <Route path="/search" element={<Search />} /> */}
+          </Route>
         </Route>
       </Routes>
       <ToastContainer
