@@ -1,7 +1,6 @@
 import { Box, Button, Typography, useTheme } from '@mui/material'
-import React, { useEffect, useRef, useState } from 'react'
-import { close, copyIcon, fbIcon, shareHovered, shareNotHovered } from '../assets'
-import { socialShareOptions } from '../constant'
+import { useRef, useState } from 'react'
+import { shareHovered, shareNotHovered } from '../assets'
 import { useClickOutside } from '../utils'
 import ShareModal from './shareModal'
 import { toast } from 'react-toastify'
@@ -56,7 +55,7 @@ const ProfileAboutSection = ({ myProfileData, content }) => {
                         <img src={isIconHovered ? shareHovered : shareNotHovered} alt="Share Icon" />
                     </figure>
                 </Button>
-                <ShareModal myProfileData={myProfileData} shareableLink={myProfileData?.shareableLink} open={showShareBox} handleClose={() => setShowShareBox(false)} />
+                <ShareModal myProfileData={myProfileData} shareableLink={myProfileData?.shareableLink} open={showShareBox} handleClose={() => setShowShareBox(false)} profile />
             </Box>
         </Box >
     )
