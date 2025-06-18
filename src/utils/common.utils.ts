@@ -161,16 +161,16 @@ export const generateShareableLink = (
 
 
   if (entitiesArray.some((e) => e.type === "brand")) {
-    return `https://shwcase.esparkconsultants.com/brand/${sanitizedTypeName}/share?data=${encoded}`;
+    return `https://shwcase.co/brand/${sanitizedTypeName}/share?data=${encoded}`;
   } else if (entitiesArray.some((e) => e.type === "space")) {
-    return `https://shwcase.esparkconsultants.com/space/${sanitizedTypeName}/share?data=${encoded}`;
+    return `https://shwcase.co/space/${sanitizedTypeName}/share?data=${encoded}`;
   } else if (entitiesArray.some((e) => e.type === "event")) {
-    return `https://shwcase.esparkconsultants.com/event/${sanitizedTypeName}/share?data=${encoded}`;
+    return `https://shwcase.co/event/${sanitizedTypeName}/share?data=${encoded}`;
   } else if (entitiesArray.some((e) => e.type === "user")) {
-    return `https://shwcase.esparkconsultants.com/profile/${sanitizedTypeName}/share?data=${encoded}`;
+    return `https://shwcase.co/profile/${sanitizedTypeName}/share?data=${encoded}`;
   }
 
-  return `https://shwcase.esparkconsultants.com/share?data=${encoded}`;
+  return `https://shwcase.co/share?data=${encoded}`;
 };
 
 export const decryptShareableLink = (encryptedData: string) => {
