@@ -3,19 +3,13 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { useInView } from "react-intersection-observer";
 
-import {
-  Box,
-  Grid,
-  Typography,
-  LinearProgress,
-  CircularProgress,
-} from "@mui/material";
+import { Box, Grid, LinearProgress, CircularProgress } from "@mui/material";
 
 import { ActivityCard } from "../../../components";
 import SpaceInquireModal from "../../../components/SpaceInquireModal";
 import Filters from "../../../components/Filters";
 
-import { deleteCookie, getCookie, setCookie } from "../../../utils";
+import { getCookie, setCookie } from "../../../utils";
 
 import { useGetActivityDataQuery } from "../../../services/activity";
 import { setActivityPageNumber } from "../../../store/slices/activity";
@@ -25,9 +19,8 @@ import { useGetGeneralSearchQuery } from "../../../services/general";
 import {
   setAllGeneralData,
   setAllGeneralSearchLoading,
-  setSearchQuery,
+  setEntity,
 } from "../../../store/slices/search";
-import store from "../../../store";
 
 const Activity = () => {
   const searchQuery = getCookie("search_query");
@@ -88,8 +81,7 @@ const Activity = () => {
     const pageRefresh = localStorage.getItem("pageRefresh");
 
     if (pageRefresh && searchQuery) {
-      deleteCookie("search_query");
-      dispatch(setSearchQuery(null));
+      dispatch(setEntity("BRAND"));
 
       localStorage.removeItem("pageRefresh");
     }
