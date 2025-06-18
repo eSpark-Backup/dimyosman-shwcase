@@ -112,6 +112,21 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [isSelecting, setIsSelecting] = useState(false);
   const [value, setValue] = useState(parameters?.locaion || "");
+  const [showNoData, setShowNoData] = useState(false)
+
+  useEffect(() => {
+    // Reset the timer if loading starts
+    if ((searchQuery || search_query) && generalSearchLoading) {
+      setShowNoData(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setShowNoData(true);
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [generalSearchLoading, allData?.length, searchQuery, search_query]);
 
   const { data: getLocationData, error } = useGetGeneralLocationQuery(
     { query: value },
@@ -457,7 +472,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
               },
             }}
             onClick={() => {
-              if (icon.type !== "not") {
+              if (icon.type !== "not" && !generalSearchLoading) {
                 filterClick(icon);
               }
             }}
@@ -499,6 +514,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
             type="text"
             placeholder="Type Address..."
             autoComplete="off"
+            disabled={generalSearchLoading}
             endAdornment={
               <InputAdornment position="end">
                 <IconButton
@@ -595,18 +611,21 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
             }}
             type="number"
             placeholder="10km"
+            disabled={generalSearchLoading}
           />
         </Grid>
       </Grid>
 
-      {isGeneralCategoryLoading || isGeneralCategoryFetching ? (
+      {isGeneralCategoryLoading ||
+      isGeneralCategoryFetching ||
+      generalSearchLoading ? (
         <Box sx={{ width: "100%", mt: 2 }}>
           <LinearProgress />
         </Box>
       ) : (
         <>
           <Box sx={{ width: "100%", height: "411px", mt: 2, mb: 4 }}>
-            {generalSearchLoading ? (
+            {!showNoData ? (
               <Box sx={{ width: "100%" }}>
                 <LinearProgress />
               </Box>
@@ -658,6 +677,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
                   },
                 }}
                 value={searchCategory}
+                disabled={generalSearchLoading}
                 onInputChange={(e) => setSearchCategory(e.target.value)}
                 type="text"
                 placeholder="search Interests..."

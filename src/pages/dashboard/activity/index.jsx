@@ -22,7 +22,11 @@ import { setActivityPageNumber } from "../../../store/slices/activity";
 import { fetchActivityData } from "../../../helper/fetchActivityData";
 import { fetchSearchData } from "../../../helper/fetchSearchData";
 import { useGetGeneralSearchQuery } from "../../../services/general";
-import { setAllGeneralData, setAllGeneralSearchLoading, setEntity, setName, setSearch } from "../../../store/slices/search";
+import {
+  setAllGeneralData,
+  setAllGeneralSearchLoading,
+  setSearchQuery,
+} from "../../../store/slices/search";
 import store from "../../../store";
 
 const Activity = () => {
@@ -71,9 +75,8 @@ const Activity = () => {
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      const state = store.getState().search.parameters;
       if (searchQuery) {
-        localStorage.setItem("reduxState", JSON.stringify(state));
+        localStorage.setItem("pageRefresh", true);
       }
     };
 
@@ -82,17 +85,13 @@ const Activity = () => {
   }, [searchQuery]);
 
   useEffect(() => {
-    const saved = localStorage.getItem("reduxState");
+    const pageRefresh = localStorage.getItem("pageRefresh");
 
-    if (saved && searchQuery) {
-      const parseSave = JSON.parse(saved);
-      dispatch(setEntity(parseSave.entity))
-      dispatch(setSearch(parseSave.name));
-      dispatch(setName(parseSave.name));
+    if (pageRefresh && searchQuery) {
+      deleteCookie("search_query");
+      dispatch(setSearchQuery(null));
 
-      setTimeout(() => {
-        localStorage.removeItem("reduxState");
-      }, 1000);
+      localStorage.removeItem("pageRefresh");
     }
   }, [searchQuery]);
 

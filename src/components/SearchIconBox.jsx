@@ -3,12 +3,14 @@ import { useSelector } from "react-redux";
 import { Box } from "@mui/material";
 
 const SearchIconBox = ({ icon, filterClick }) => {
-  const { parameters } = useSelector((state) => state.search);
+  const { parameters, generalSearchLoading } = useSelector(
+    (state) => state.search
+  );
 
   return (
     <Box
       onClick={() => {
-        filterClick({ type: icon.type });
+        !generalSearchLoading && filterClick({ type: icon.type });
       }}
       sx={{
         background: parameters.entity === icon.type ? icon.activeBG : icon.bg,
@@ -18,6 +20,10 @@ const SearchIconBox = ({ icon, filterClick }) => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+
+        "&:hover": {
+          bgcolor: icon.activeBG,
+        },
       }}
     >
       <img

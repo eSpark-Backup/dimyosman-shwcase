@@ -39,6 +39,7 @@ import { emptyGoToMessage, emptyNotification, setFromNotification } from "../sto
 import { useAuth0 } from "@auth0/auth0-react";
 import {
   emptyCategoryNames,
+  emptyFilters,
   setAllFilterCategories,
   setAllGeneralData,
   setAllSearchData,
@@ -91,7 +92,6 @@ const Header = ({ isLogin }) => {
     setCookie("logout", true);
     logoutAuthUtils(logoutAuth)
     
-    deleteCookie("search_query");
     deleteCookie("isCalled");
     removeForSearch();
 
@@ -120,6 +120,7 @@ const Header = ({ isLogin }) => {
   };
 
   const removeForSearch = () => {
+    deleteCookie("search_query");
     dispatch(setSearchQuery(null));
     dispatch(setAllSearchData([]));
     dispatch(setSpaceSearchData([]));
@@ -128,6 +129,8 @@ const Header = ({ isLogin }) => {
     dispatch(setValue(""));
     dispatch(setRadiusInput(""));
     dispatch(setName(""));
+    dispatch(emptyFilters());
+    localStorage.removeItem("scrollPosition");
   };
 
   const iconClick = (type) => {
@@ -370,7 +373,7 @@ const Header = ({ isLogin }) => {
             style={{ cursor: isLogin ? "pointer" : "default" }}
             onClick={() => {
               handleCloseFilterDrawer();
-
+              removeForSearch()
               isLogin && navigate("/activity");
             }}
           >
