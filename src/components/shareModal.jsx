@@ -1,8 +1,9 @@
 import { toast } from "react-toastify";
 import { Box, Modal, Stack, Typography } from "@mui/material";
-import { brandBadge, close, copyIcon, eventBadge, spaceBadge } from "../assets";
+import { brandBadge, close, copyIcon, eventBadge, profileBadge, spaceBadge } from "../assets";
 
-const ShareModal = ({ myProfileData, open, handleClose, shareableLink, shareModalDetails }) => {
+const ShareModal = ({ myProfileData, open, handleClose, shareableLink, shareModalDetails, profile }) => {
+ 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(shareableLink);
@@ -58,8 +59,12 @@ const ShareModal = ({ myProfileData, open, handleClose, shareableLink, shareModa
                 }}
               >
                 <img
-                  style={{ width: "100%", height: "100%", borderRadius: "5px", }}
-                  src={myProfileData ? myProfileData?.profile : shareModalDetails?.profileImage}
+                  style={{ width: "100%", height: "100%", borderRadius: "5px" }}
+                  src={
+                    myProfileData
+                      ? myProfileData?.profile
+                      : shareModalDetails?.profileImage
+                  }
                   alt="profile"
                 />
                 <img
@@ -72,7 +77,9 @@ const ShareModal = ({ myProfileData, open, handleClose, shareableLink, shareModa
                     zIndex: 99,
                   }}
                   src={
-                    shareModalDetails?.profileType === "space"
+                    profile
+                      ? profileBadge
+                      : shareModalDetails?.profileType === "space"
                       ? spaceBadge
                       : shareModalDetails?.profileType === "event"
                       ? eventBadge
@@ -89,7 +96,9 @@ const ShareModal = ({ myProfileData, open, handleClose, shareableLink, shareModa
                   fontSize={24}
                   variant="h2"
                 >
-                  {myProfileData ? myProfileData?.profileName : shareModalDetails?.profileName}
+                  {myProfileData
+                    ? myProfileData?.profileName
+                    : shareModalDetails?.profileName}
                 </Typography>
               </Box>
             </Stack>
