@@ -7,6 +7,7 @@ import { setActivityPageNumber, setActivityRecall, setAllActivityData, setSpaceD
 import { addHyphenToName, deleteCookie, getCookie, setCookie } from "../utils";
 import { emptyFilters, setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setShouldReturn, setSpaceSearchData } from "../store/slices/search";
 import { setFromSidebar } from "../store/slices/chat";
+import { setCalendarStatesEmpty } from "../store/slices/event";
 
 const Sidebar = () => {
   const searchQuery = getCookie("search_query")
@@ -61,6 +62,7 @@ const Sidebar = () => {
               dispatch(emptyFilters());
               localStorage.removeItem("scrollPosition");
               dispatch(setActivityPageNumber(1));
+              dispatch(setCalendarStatesEmpty());
 
               if (item.title === "Profile") {
                 deleteCookie("isCalled");
