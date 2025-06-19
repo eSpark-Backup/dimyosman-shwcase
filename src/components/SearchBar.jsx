@@ -57,7 +57,7 @@ const SearchBar = ({
 }) => {
   const theme = useTheme();
 
-  const isLessThan1281 = useMediaQuery("(max-width:1281px)");
+  const isLessThan1024 = useMediaQuery("(max-width:1024px)");
 
   const token = localStorage.getItem("token");
   const searchQuery = getCookie("search_query");
@@ -73,7 +73,7 @@ const SearchBar = ({
   });
 
   useEffect(() => {
-    if (data?.data?.length && !isLessThan1281) {
+    if (data?.data?.length && !isLessThan1024) {
       const updatedCategories = data?.data
         .map((category, index) => ({
           id: index,
@@ -88,7 +88,7 @@ const SearchBar = ({
 
       dispatch(setAllCategoriesNotSearch(updatedCategories));
     }
-  }, [data, isLessThan1281]);
+  }, [data, isLessThan1024]);
 
   return (
     <Box

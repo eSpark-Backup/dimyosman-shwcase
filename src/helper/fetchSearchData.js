@@ -2,6 +2,7 @@ import moment from "moment";
 
 import { fetchAddressFromCoordinates } from "../utils";
 import {
+  setAllFilterCategories,
   setAllGeneralData,
   setAllSearchData,
   setLocationStart,
@@ -35,6 +36,7 @@ export const fetchSearchData = async ({
     dispatch(setAllSearchData([]));
     dispatch(setSpaceSearchData([]));
     dispatch(setAllGeneralData([]));
+    dispatch(setAllFilterCategories([]));
     setHasFetchedData(true);
     return;
   }

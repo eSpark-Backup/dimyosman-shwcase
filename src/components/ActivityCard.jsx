@@ -885,7 +885,7 @@ const ActivityCard = ({
             }
             sx={{
               backgroundColor: "transparent",
-              width: { xs: "120px", sm: "220px" },
+              width: { xs: "120px", sm: "190px" },
               height: "31px",
               fontSize: "16px",
               fontWeight: 600,
@@ -915,7 +915,7 @@ const ActivityCard = ({
             disabled={followLoading}
             sx={{
               backgroundColor: "rgb(209, 219, 215, 0.4)",
-              width: { xs: "120px", sm: "220px" },
+              width: { xs: "120px", sm: "190px" },
               height: "31px",
               fontSize: "16px",
               fontWeight: "700",
