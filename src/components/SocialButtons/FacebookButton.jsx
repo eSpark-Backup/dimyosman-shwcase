@@ -12,6 +12,7 @@ import { facebook } from "../../assets";
 import { deleteCookie, getCookie, setCookie } from "../../utils";
 import { useDispatch } from "react-redux";
 import {
+  setAllFilterCategories,
   setAllGeneralData,
   setAllSearchData,
   setName,
@@ -62,6 +63,7 @@ const FacebookButton = ({
       dispatch(setAllSearchData([]));
       dispatch(setSpaceSearchData([]));
       dispatch(setAllGeneralData([]));
+      dispatch(setAllFilterCategories([]));
       dispatch(setSearch(""));
       dispatch(setName(""));
       toast.error(errorRegister?.data?.message);

@@ -14,6 +14,7 @@ import {
 } from "../store/slices/activity";
 import {
   emptyFilters,
+  setAllFilterCategories,
   setAllGeneralData,
   setAllSearchData,
   setName,
@@ -296,6 +297,7 @@ const DashboardLayout = ({ isTokenChecking }) => {
                     dispatch(setAllSearchData([]));
                     dispatch(setSpaceSearchData([]));
                     dispatch(setAllGeneralData([]));
+                    dispatch(setAllFilterCategories([]));
                     dispatch(setSearch(""));
                     dispatch(setName(""));
                     dispatch(setShouldReturn(false));

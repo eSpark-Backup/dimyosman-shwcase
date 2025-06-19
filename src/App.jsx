@@ -33,7 +33,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { deleteCookie, logoutAuthUtils } from './utils';
 import SplashScreen from './layout/splash';
 import { useDispatch } from 'react-redux';
-import { setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setSpaceSearchData } from './store/slices/search';
+import { setAllFilterCategories, setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setSpaceSearchData } from './store/slices/search';
 
 function App() {
   const { pathname } = useLocation();
@@ -73,6 +73,7 @@ function App() {
       dispatch(setAllSearchData([]));
       dispatch(setSpaceSearchData([]));
       dispatch(setAllGeneralData([]));
+      dispatch(setAllFilterCategories([]));
       dispatch(setSearch(""));
       dispatch(setName(""));
     }

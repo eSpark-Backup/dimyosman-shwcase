@@ -17,7 +17,7 @@ import { removeMychat } from "../../../store/slices/chat";
 import GoogleButton from "../../../components/SocialButtons/GoogleButton";
 import { deleteCookie, getCookie, logoutAuthUtils, removeActiveNotifications, removeNewInquiry, setCookie } from "../../../utils";
 import { emptyNotification } from "../../../store/slices/notification";
-import { setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setSpaceSearchData } from "../../../store/slices/search";
+import { setAllFilterCategories, setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setSpaceSearchData } from "../../../store/slices/search";
 import { setActivityPageNumber, setActivityRecall } from "../../../store/slices/activity";
 
 const AUTH0_APP_DOMAIN = import.meta.env.VITE_AUTH0_APP_DOMAIN;
@@ -79,6 +79,7 @@ const Login = () => {
     dispatch(setAllSearchData([]));
     dispatch(setSpaceSearchData([]));
     dispatch(setAllGeneralData([]));
+    dispatch(setAllFilterCategories([]));
     dispatch(setSearch(""));
     dispatch(setName(""));
   };

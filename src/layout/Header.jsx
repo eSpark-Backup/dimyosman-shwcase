@@ -55,8 +55,8 @@ import {
 import { setActivityPageNumber } from "../store/slices/activity";
 
 const Header = ({ isLogin }) => {
-  const isLessThan1281 = useMediaQuery("(max-width:1281px)");
-  const isLessThanEqual768 = useMediaQuery("(max-width:768px)");
+  const isLessThan1024 = useMediaQuery("(max-width:1024px)");
+  const isGreaterThan1024 = useMediaQuery("(max-width:1025px)");
   
   const getInquiryCount = getCookie("newInquiry") || 0;
   const getNotificationCount = getCookie("newNotification") || 0;
@@ -125,6 +125,7 @@ const Header = ({ isLogin }) => {
     dispatch(setAllSearchData([]));
     dispatch(setSpaceSearchData([]));
     dispatch(setAllGeneralData([]));
+    dispatch(setAllFilterCategories([]));
     dispatch(setSearch(""));
     dispatch(setValue(""));
     dispatch(setRadiusInput(""));
@@ -227,13 +228,14 @@ const Header = ({ isLogin }) => {
       dispatch(setAllSearchData([]));
       dispatch(setSpaceSearchData([]));
       dispatch(setAllGeneralData([]));
+      dispatch(setAllFilterCategories([]));
     };
 
     useEffect(() => {
-      if (!isLessThan1281 && openFilterDrawer) {
+      if (!isGreaterThan1024 && openFilterDrawer) {
         handleCloseFilterDrawer();
       }
-    }, [isLessThan1281, openFilterDrawer]);
+    }, [isGreaterThan1024, openFilterDrawer]);
 
     const addPopuptabs = [
       {
@@ -408,7 +410,7 @@ const Header = ({ isLogin }) => {
           )}
           {isLogin ? (
             <ul style={{ position: "relative" }} className="nav-links2">
-              {(isLessThanEqual768 ||
+              {(isLessThan1024 ||
                 (pathname === "/activity" &&
                   (searchQuery || search_query))) && (
                 <li className="add_filter">
