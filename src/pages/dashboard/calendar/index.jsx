@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 
 import dayjs from "dayjs";
 
@@ -11,8 +13,12 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 
-import { bigCalendar, calenderIconLight } from "../../../assets";
+import { calenderIconLight } from "../../../assets";
 import { useGetCalendarQuery } from "../../../services/calendar";
+
+import { setIsCalendarEventDate, setIsCalendarEvents } from "../../../store/slices/event";
+
+import { addHyphenToName } from "../../../utils";
 
 const datePickerStyle = {
   borderRadius: "5px",
@@ -46,13 +52,21 @@ const Calendar = () => {
   const calendarRef = useRef(null);
   const popperRef = useRef(null);
 
+  const { calendarDate, calendarEvents } = useSelector((state) => state.event);
+
   const [timeZone, setTimeZone] = useState("");
-  const [events, setEvents] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(dayjs());
+  const [selectedDate, setSelectedDate] = useState(calendarDate || dayjs());
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentView, setCurrentView] = useState("dayGridMonth");
-  const { data, isLoading, isFetching, isError, error, isSuccess } = useGetCalendarQuery({}, { refetchOnMountOrArgChange: true })
+  const { data, isLoading, isFetching, isError, error, isSuccess } =
+    useGetCalendarQuery(
+      {},
+      { skip: !!calendarDate, refetchOnMountOrArgChange: true }
+    );
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   useEffect(() => {
     if (isSuccess && data?.data) {
       const fetchedEvents = data?.data?.map((item) => {
@@ -60,15 +74,18 @@ const Calendar = () => {
         // Ensure the end date is correctly set
         const end = new Date(item?.end);
         end.setHours(23, 59, 59, 999);  // Set to end of the day
-  
         return {
           start: item?.start,
           end: end, // Use the adjusted end date
           title: item?.title,
-          status: now > end.getTime() ? "no" : "yes",
+          id: item?.id,
+          extendedProps: {
+            status: now > end.getTime() ? "no" : "yes",
+            userId: item?.userId,
+          },
         };
       });
-      setEvents(fetchedEvents);
+      dispatch(setIsCalendarEvents(fetchedEvents));
     }
   }, [isSuccess, data]);
 
@@ -230,6 +247,7 @@ const Calendar = () => {
 
               setSelectedDate(date);
               setIsDatePickerOpen(false);
+              dispatch(setIsCalendarEventDate(date));
             }}
             defaultValue={dayjs(selectedDate) || dayjs()}
           />
@@ -239,11 +257,15 @@ const Calendar = () => {
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
+        initialDate={calendarDate?.toDate() || new Date()}
         ref={calendarRef}
         headerToolbar={{
           start: "dayGridMonth,timeGridWeek,timeGridDay",
           center: "",
           end: "title",
+        }}
+        eventDidMount={(info) => {
+          info.el.style.cursor = "pointer";
         }}
         datesSet={() => {
           const titleElement = document.querySelector(".fc-toolbar-title");
@@ -269,11 +291,20 @@ const Calendar = () => {
             dayHeaderContent: dayHeaderContent,
           },
         }}
-        events={events}
+        events={calendarEvents}
         editable={false}
         selectable={true}
-        dateClick={(info) => console.log(`Clicked on date: ${info.dateStr}`)}
-        eventClick={(info) => console.log(`Event: ${info.event.title}`)}
+        // dateClick={(info) => console.log(`Clicked on date: ${info.dateStr}`)}
+        eventClick={(info) =>
+          navigate(
+            `/${info.event.extendedProps.userId ? "event" : "my-events"}/${addHyphenToName(
+              info.event.title
+            )}`,
+            {
+              state: { id: info.event.id },
+            }
+          )
+        }
         eventClassNames={(arg) => getEventClassNames(arg.event)}
         viewDidMount={handleViewDidMount}
         slotLabelFormat={{

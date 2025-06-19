@@ -25,7 +25,7 @@ import {
 } from "../store/slices/search";
 import { setIsBrand, setObjectForNewBrand, updateBrands } from "../store/slices/brand";
 import { setIsSpace, setObjectForNewSpace, updateSpace } from "../store/slices/space";
-import { setIsEvent, setObjectForNewEvent, updateEvents } from "../store/slices/event";
+import { setCalendarStatesEmpty, setIsEvent, setObjectForNewEvent, updateEvents } from "../store/slices/event";
 import { useNewBrandMutation } from "../services/brands";
 import { useNewSpaceMutation } from "../services/space";
 import { useNewEventMutation } from "../services/events";
@@ -302,6 +302,7 @@ const DashboardLayout = ({ isTokenChecking }) => {
                     dispatch(emptyFilters());
                     localStorage.removeItem("scrollPosition");
                     dispatch(setActivityPageNumber(1));
+                    dispatch(setCalendarStatesEmpty());
                     
                     if (item.title === "Profile") {
                       deleteCookie("isCalled");

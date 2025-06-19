@@ -4,6 +4,8 @@ const initialState = {
   events: [],
   objectForNewEvent: null,
   isEvent: false,
+  calendarDate: null,
+  calendarEvents: [],
 };
 
 const slice = createSlice({
@@ -28,10 +30,29 @@ const slice = createSlice({
     },
     setIsEvent:(state,action) => {
       state.isEvent = action.payload;
-    }
+    },
+    setIsCalendarEvents: (state, action) => {
+      state.calendarEvents = action.payload;
+    },
+    setIsCalendarEventDate: (state, action) => {
+      state.calendarDate = action.payload;
+    },
+    setCalendarStatesEmpty: (state) => {
+      state.calendarEvents = [];
+      state.calendarDate = null;
+    },
   },
 });
 
-export const { addEvent, editEvent, updateEvents, setObjectForNewEvent, setIsEvent } = slice.actions;
+export const {
+  addEvent,
+  editEvent,
+  updateEvents,
+  setObjectForNewEvent,
+  setIsEvent,
+  setIsCalendarEvents,
+  setIsCalendarEventDate,
+  setCalendarStatesEmpty
+} = slice.actions;
 
 export default slice.reducer;

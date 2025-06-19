@@ -11,16 +11,20 @@ import Spaces from "./spaces";
 import Tenancy from "./teenacy";
 import { brandBadge, eventBadge, spaceBadge, star } from "../../assets";
 import { addHyphenToName, getCookie } from "../../utils";
+import { useDispatch } from "react-redux";
+import { setCalendarStatesEmpty } from "../../store/slices/event";
 
 const BESProfile = ({ spaceInquire, type, data}) => {
   const [openSliderModal, setOpenSliderModal] = useState(false);
   const handleCloseModal = () => setOpenSliderModal(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch()
   const { state } = useLocation();
   const navId = getCookie("navId")
   const { name } = useParams();
 
   const editProfile = () => {
+    dispatch(setCalendarStatesEmpty());
     const updateType = `my-${type}s`;
     navigate(`/${updateType}/${name}/edit`, { state: { id: state?.id || navId } });
   };
