@@ -88,7 +88,7 @@ const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
   const searchQuery = getCookie("search_query");
-  const isLessThan769 = useMediaQuery("(max-width:768px)");
+  const isLessThan1024 = useMediaQuery("(max-width:1024px)");
 
   const dispatch = useDispatch();
   const navigate = useNavigate()
@@ -155,7 +155,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
       (searchQuery || search_query) &&
       debouncedRadius !== parameters.radius
     ) {
-      isLessThan769 && handleCloseFilterDrawer?.();
+      isLessThan1024 && handleCloseFilterDrawer?.();
       dispatch(setRadius(debouncedRadius));
 
       commonReset();
@@ -223,7 +223,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
   };
 
   const filterClick = (entity) => {
-    if (!(searchQuery || search_query) && isLessThan769) {
+    if (!(searchQuery || search_query) && isLessThan1024) {
       queryCalled();
     }
 
@@ -234,7 +234,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
       return;
     }
 
-    isLessThan769 && handleCloseFilterDrawer?.();
+    isLessThan1024 && handleCloseFilterDrawer?.();
 
     const updatedCategories = allFilterCategories.map((category) => {
       return { ...category, selected: false };
@@ -247,6 +247,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
 
     dispatch(emptyCategoryNames());
     dispatch(setEntity(entity.type));
+    dispatch(setActivityPageNumber(1));
     dispatch(setName(search));
   };
 
@@ -293,13 +294,13 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
 
     dispatch(setCategoryNames(selectedNames));
     dispatch(setSearchRecall(Date.now()))
-    isLessThan769 && handleCloseFilterDrawer?.();
+    isLessThan1024 && handleCloseFilterDrawer?.();
   };
 
   const handleSelectPlace = (place) => {
-    isLessThan769 && handleCloseFilterDrawer?.();
+    isLessThan1024 && handleCloseFilterDrawer?.();
 
-    if (!(searchQuery || search_query) && isLessThan769) {
+    if (!(searchQuery || search_query) && isLessThan1024) {
       queryCalled();
     }
     dispatch(setLocationStart(true));
@@ -342,6 +343,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
     dispatch(setAllSearchData([]));
     dispatch(setSpaceSearchData([]));
     dispatch(setAllGeneralData([]));
+    dispatch(setAllFilterCategories([]));
   };
 
   const emptyInputs = () => {
@@ -381,7 +383,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
         queryCalled();
       }
 
-      isLessThan769 && handleCloseFilterDrawer?.();
+      isLessThan1024 && handleCloseFilterDrawer?.();
     }
   };
 
@@ -419,7 +421,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
         </strong>
       </Typography>
 
-      {isLessThan769 && (
+      {isLessThan1024 && (
         <div className="search-box" style={{ marginTop: "10px" }}>
           <SearchBar
             name={"query"}
@@ -506,10 +508,10 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
             value={value}
             onInputChange={(e) => {
               const value = e.target.value;
-              if(value.length === 0) {
-                emptyInputs()
+              if (value.length === 0) {
+                emptyInputs();
               }
-              handleSearch(e)
+              handleSearch(e);
             }}
             type="text"
             placeholder="Type Address..."
@@ -625,7 +627,7 @@ const Filters = ({ handleCloseFilterDrawer = () => {} }) => {
       ) : (
         <>
           <Box sx={{ width: "100%", height: "411px", mt: 2, mb: 4 }}>
-            {!showNoData ? (
+            {!showNoData && (searchQuery || search_query) ? (
               <Box sx={{ width: "100%" }}>
                 <LinearProgress />
               </Box>

@@ -262,7 +262,7 @@ const Activity = () => {
         spacing={!(searchQuery || search_query) ? 0 : 2}
       >
         {page === 1 && (isGeneralDataLoading || isGeneralDataFetching) ? (
-          <Grid item xs={12} lg={7}>
+          <Grid item xs={12} mdL={7}>
             <Box sx={{ width: "100%" }}>
               <LinearProgress />
             </Box>
@@ -273,7 +273,7 @@ const Activity = () => {
           allData?.length === 0 &&
           showNoData &&
           !locationStart ? (
-          <Grid item xs={12} lg={7}>
+          <Grid item xs={12} mdL={7}>
             <Box sx={{ width: "100%" }}>
               <h1>No Data Found</h1>
             </Box>
@@ -282,7 +282,7 @@ const Activity = () => {
           <Grid
             item
             xs={12}
-            lg={!(searchQuery || search_query) ? 8 : 7}
+            mdL={!(searchQuery || search_query) ? 8 : 7}
             sx={{
               maxWidth: "1080px !important",
               margin: { xs: "0", xl: "0  auto !important" },
@@ -368,11 +368,11 @@ const Activity = () => {
           <Grid
             item
             xs={12}
-            lg={3.8}
+            mdL={3.8}
             sx={{
               height: "70vh",
               overflow: "hidden",
-              display: { xs: "none", lg: "flex" },
+              display: { xs: "none", mdL: "flex" },
               flexDirection: "column",
               justifyContent: "space-between",
             }}
@@ -398,11 +398,11 @@ const Activity = () => {
           <Grid
             item
             xs={12}
-            lg={5}
+            mdL={5}
             sx={{
               maxHeight: "calc(100vh - 130px)",
               overflowY: "hidden",
-              display: { xs: "none", lg: "flex" },
+              display: { xs: "none", mdL: "flex" },
             }}
           >
             <Filters loadingStart={page === 1 && (isLoading || isFetching)} />

@@ -5,6 +5,7 @@ export const theme = createTheme({
       xs: 0,
       sm: 601,
       md: 769,
+      mdL: 1025,
       lg: 1281,
       xl: 1921,
     },
@@ -215,7 +216,7 @@ export const theme = createTheme({
       light: "#E3464B",
       dark: "#CA2C32",
       contrastText: "#FFFFFF",
-      danger: "#FF0000"
+      danger: "#FF0000",
     },
     text: {
       primary: "#9E9EA4",
@@ -224,11 +225,11 @@ export const theme = createTheme({
     },
     button: {
       primary: "#D1DBD766",
-      secondary: "#edf1ef"
+      secondary: "#edf1ef",
     },
     transparent: "transparent",
     border: {
-      primary: '1px solid #D1DBD7',
+      primary: "1px solid #D1DBD7",
       borderColor: ["#D1DBD780"],
     },
   },

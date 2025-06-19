@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getSmallSidebar, sidebarRoutes } from "../constant";
 import { setActivityPageNumber, setActivityRecall, setAllActivityData, setSpaceData } from "../store/slices/activity";
 import { addHyphenToName, deleteCookie, getCookie, setCookie } from "../utils";
-import { emptyFilters, setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setShouldReturn, setSpaceSearchData } from "../store/slices/search";
+import { emptyFilters, setAllFilterCategories, setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setShouldReturn, setSpaceSearchData } from "../store/slices/search";
 import { setFromSidebar } from "../store/slices/chat";
 import { setCalendarStatesEmpty } from "../store/slices/event";
 
@@ -56,6 +56,7 @@ const Sidebar = () => {
               dispatch(setAllSearchData([]));
               dispatch(setSpaceSearchData([]));
               dispatch(setAllGeneralData([]));
+              dispatch(setAllFilterCategories([]));
               dispatch(setSearch(""));
               dispatch(setName(""));
               dispatch(setShouldReturn(false))

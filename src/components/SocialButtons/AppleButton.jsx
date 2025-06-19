@@ -11,7 +11,7 @@ import { apple } from "../../assets";
 
 import { deleteCookie, getCookie, setCookie } from "../../utils";
 import { useDispatch } from "react-redux";
-import { setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setSpaceSearchData } from "../../store/slices/search";
+import { setAllFilterCategories, setAllGeneralData, setAllSearchData, setName, setSearch, setSearchQuery, setSpaceSearchData } from "../../store/slices/search";
 
 const AppleButton = ({
   authBtnStyle,
@@ -55,6 +55,7 @@ const AppleButton = ({
       dispatch(setAllSearchData([]));
       dispatch(setSpaceSearchData([]));
       dispatch(setAllGeneralData([]));
+      dispatch(setAllFilterCategories([]));
       dispatch(setSearch(""));
       dispatch(setName(""));
       toast.error(errorRegister?.data?.message);
