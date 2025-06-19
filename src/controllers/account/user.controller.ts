@@ -801,11 +801,13 @@ export class UserController {
         this.eventsRepo
           .createQueryBuilder("events")
           .where("events.user = :userId", { userId })
+          .leftJoinAndSelect("events.user", "user")
           .andWhere("events.status = :status", { status: EVENT_STATUS.PUBLISH })
           .getMany(),
         this.rsvpEventRepo
           .createQueryBuilder("rsvp")
           .leftJoinAndSelect("rsvp.event", "event")
+          .leftJoinAndSelect("event.user", "user")
           .leftJoin(
             (qb) => {
               return qb
