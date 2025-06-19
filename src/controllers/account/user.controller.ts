@@ -851,6 +851,7 @@ export class UserController {
           id: event.id,
           title: event.eventName,
           start: new Date(dateRange.startDate),
+          userId:event.user.id,
           end: new Date(dateRange.endDate),
           rsvpCount: rawData.event_rsvpCount,
         }));
