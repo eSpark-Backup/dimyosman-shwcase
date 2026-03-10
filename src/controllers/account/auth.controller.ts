@@ -21,7 +21,7 @@ const cookieOptions: {
   secure: boolean;
 } = {
   maxAge: 3600000,
-  sameSite: "lax",
+  sameSite: "none",
   httpOnly: true,
   secure: true,
 };
@@ -32,7 +32,7 @@ export class AuthController {
   async registerUser(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const {
@@ -51,7 +51,7 @@ export class AuthController {
         if (!socialId || !profileImage) {
           throw new ApiError(
             "Please provide socialId and profileImage for social login.",
-            HTTP_STATUS.BAD_REQUEST
+            HTTP_STATUS.BAD_REQUEST,
           );
         }
 
@@ -62,7 +62,7 @@ export class AuthController {
         if (existingUser && existingUser.isSocialLogin == false) {
           throw new ApiError(
             "Invalid Login Method or Email Already Exists",
-            HTTP_STATUS.BAD_REQUEST
+            HTTP_STATUS.BAD_REQUEST,
           );
         }
 
@@ -92,7 +92,7 @@ export class AuthController {
               _id: socketUser._id,
             },
             process.env.JWT_SECRET!,
-            { expiresIn: "24h" }
+            { expiresIn: "24h" },
           );
 
           res
@@ -102,7 +102,7 @@ export class AuthController {
               handleResponse("Social Login successful", {
                 token,
                 user: existingUser,
-              })
+              }),
             );
           return next();
         }
@@ -144,7 +144,7 @@ export class AuthController {
             _id: socketUser._id,
           },
           process.env.JWT_SECRET!,
-          { expiresIn: "24h" }
+          { expiresIn: "24h" },
         );
 
         res
@@ -154,7 +154,7 @@ export class AuthController {
             handleResponse("Social Sign Up Successfully", {
               token,
               user: newUser,
-            })
+            }),
           );
         return next();
       }
@@ -163,7 +163,7 @@ export class AuthController {
       if (!password) {
         throw new ApiError(
           "Password is required for standard login.",
-          HTTP_STATUS.BAD_REQUEST
+          HTTP_STATUS.BAD_REQUEST,
         );
       }
 
@@ -171,7 +171,7 @@ export class AuthController {
       if (existingUser) {
         throw new ApiError(
           "Email is already registered. Please log in.",
-          HTTP_STATUS.ALREADY_EXISTS
+          HTTP_STATUS.ALREADY_EXISTS,
         );
       }
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -213,7 +213,7 @@ export class AuthController {
           _id: socketUser._id,
         },
         process.env.JWT_SECRET!,
-        { expiresIn: "24h" }
+        { expiresIn: "24h" },
       );
       const { password: _, ...userWithoutPassword } = newUser;
 
@@ -224,11 +224,11 @@ export class AuthController {
           handleResponse("Sign Up Successfully", {
             token,
             user: userWithoutPassword,
-          })
+          }),
         );
     } catch (error) {
       logger.error(
-        `AuthController :: registerUser :: ${(error as Error)?.message}`
+        `AuthController :: registerUser :: ${(error as Error)?.message}`,
       );
       return next(error);
     }
@@ -237,7 +237,7 @@ export class AuthController {
   async deleteAccount(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { email } = req.body;
@@ -255,7 +255,7 @@ export class AuthController {
       return next();
     } catch (error) {
       logger.error(
-        `AuthController :: deleteAccount :: ${(error as Error)?.message}`
+        `AuthController :: deleteAccount :: ${(error as Error)?.message}`,
       );
       return next(error);
     }
@@ -264,7 +264,7 @@ export class AuthController {
   async loginUser(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { email, password, loginType, socialId } = req.body;
@@ -274,7 +274,7 @@ export class AuthController {
       if (!user) {
         throw new ApiError(
           "Invalid email or password.",
-          HTTP_STATUS.UN_AUTHORIZED
+          HTTP_STATUS.UN_AUTHORIZED,
         );
       }
 
@@ -285,7 +285,7 @@ export class AuthController {
       if (user.isSocialLogin) {
         throw new ApiError(
           "This email is registered as a social login. Please use social login.",
-          HTTP_STATUS.BAD_REQUEST
+          HTTP_STATUS.BAD_REQUEST,
         );
       }
 
@@ -294,7 +294,7 @@ export class AuthController {
       if (!isPasswordValid) {
         throw new ApiError(
           "Invalid email or password.",
-          HTTP_STATUS.UN_AUTHORIZED
+          HTTP_STATUS.UN_AUTHORIZED,
         );
       }
       const userChat = await UserForChat.findById(user.userChatId);
@@ -307,7 +307,7 @@ export class AuthController {
           _id: socketUser._id,
         },
         process.env.JWT_SECRET!,
-        { expiresIn: "24h" }
+        { expiresIn: "24h" },
       );
       const { password: _, ...userWithoutPassword } = user;
 
@@ -315,12 +315,12 @@ export class AuthController {
         .status(HTTP_STATUS.OK)
         .cookie(CHAT_COOKIE, token, cookieOptions)
         .json(
-          handleResponse("Login successful", { token, userWithoutPassword })
+          handleResponse("Login successful", { token, userWithoutPassword }),
         );
       return next();
     } catch (error) {
       logger.error(
-        `AuthController :: loginUser :: ${(error as Error)?.message}`
+        `AuthController :: loginUser :: ${(error as Error)?.message}`,
       );
       return next(error);
     }
@@ -329,7 +329,7 @@ export class AuthController {
   async forgotPassword(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { email } = req.body;
@@ -343,13 +343,13 @@ export class AuthController {
       if (user.isSocialLogin) {
         throw new ApiError(
           "This email is registered as a social login. Please use social login.",
-          HTTP_STATUS.BAD_REQUEST
+          HTTP_STATUS.BAD_REQUEST,
         );
       }
 
       const { token, expiresAt } = generateToken(
         { userId: user.id, newEmail: email },
-        "1h"
+        "1h",
       );
 
       const resetLink = `${process.env.FRONTEND_URL}reset-password?token=${token}&expiresAt=${expiresAt}`;
@@ -366,11 +366,11 @@ export class AuthController {
         handleResponse("Email Sent successfully", {
           id: user.id,
           email: user.email,
-        })
+        }),
       );
     } catch (error) {
       logger.error(
-        `AuthController :: forgotPassword :: "${(error as Error)?.message}"`
+        `AuthController :: forgotPassword :: "${(error as Error)?.message}"`,
       );
       return next(error);
     }
@@ -379,7 +379,7 @@ export class AuthController {
   async resetPassword(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { token, expiresAt } = req.params;
@@ -388,7 +388,7 @@ export class AuthController {
       if (!token || !expiresAt) {
         throw new ApiError(
           "Token and expiration time are required",
-          HTTP_STATUS.BAD_REQUEST
+          HTTP_STATUS.BAD_REQUEST,
         );
       }
 
@@ -415,7 +415,7 @@ export class AuthController {
       } catch (error) {
         throw new ApiError(
           "Invalid or tampered token",
-          HTTP_STATUS.BAD_REQUEST
+          HTTP_STATUS.BAD_REQUEST,
         );
       }
 
@@ -433,14 +433,14 @@ export class AuthController {
       if (user.passwordResetExpire != expiresAt) {
         throw new ApiError(
           "Invalid token or Link Expired",
-          HTTP_STATUS.BAD_REQUEST
+          HTTP_STATUS.BAD_REQUEST,
         );
       }
       const isPasswordSame = await bcrypt.compare(newPassword, user.password);
       if (isPasswordSame) {
         throw new ApiError(
           "New password cannot be the same as the old password",
-          HTTP_STATUS.BAD_REQUEST
+          HTTP_STATUS.BAD_REQUEST,
         );
       }
 
@@ -455,11 +455,11 @@ export class AuthController {
         handleResponse("Password reset successfully", {
           id: user.id,
           email: user.email,
-        })
+        }),
       );
     } catch (error) {
       logger.error(
-        `AuthController :: resetPassword :: "${(error as Error)?.message}"`
+        `AuthController :: resetPassword :: "${(error as Error)?.message}"`,
       );
       return next(error);
     }
