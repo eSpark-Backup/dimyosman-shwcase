@@ -47,6 +47,8 @@ const corsOptions = {
     "https://staging.shwcase.co/",
     "https://shwcase.co",
     "https://staging.shwcase.co",
+    "https://app.shwcase.co",
+    "https://app.shwcase.co/",
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   credentials: true,
@@ -82,7 +84,7 @@ AppDataSource.initialize()
       cookieParser()(
         req,
         req.res,
-        async (error: any) => await socketAuthenticator(error, socket, next)
+        async (error: any) => await socketAuthenticator(error, socket, next),
       );
     });
 
