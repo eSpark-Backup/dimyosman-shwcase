@@ -19,11 +19,13 @@ const cookieOptions: {
   sameSite: "none" | "lax" | "strict";
   httpOnly: boolean;
   secure: boolean;
+  domain: string;
 } = {
   maxAge: 3600000,
   sameSite: "none",
   httpOnly: true,
   secure: true,
+  domain: ".shwcase.co",
 };
 
 export class AuthController {

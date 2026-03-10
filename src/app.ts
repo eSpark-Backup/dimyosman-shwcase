@@ -36,7 +36,7 @@ import { createMessages, createSingleChats } from "./seeders/chat";
 import { logToDatabase } from "./services";
 const mongoURI = process.env.ME_CONFIG_MONGODB_URL;
 const app = express();
-app.use(cookieParser());
+
 const corsOptions = {
   origin: [
     "http://localhost:8080", // Local frontend URL
@@ -52,9 +52,17 @@ const corsOptions = {
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+    "Origin",
+  ],
 };
-
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+app.use(cookieParser());
 const server = createServer(app);
 
 const io = new Server(server, {
@@ -64,7 +72,6 @@ const io = new Server(server, {
 app.set("io", io);
 // createSingleChats(20);
 // createMessages(6);
-app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const swaggerSpec = swaggerJsDoc(swaggerOptions);
